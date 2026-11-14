@@ -167,6 +167,7 @@ async function endSession(reason) {
   const s = S.session;
   s.stats = stripStats(S.tracker.stats);
   s.end = s.points.length ? s.points[s.points.length - 1][0] : Date.now();
+  if (s.points.length) s.start = Math.min(s.start, s.points[0][0]);
   s.active = false;
   S.session = null; S.tracker = null;
   releaseWake();
