@@ -7,6 +7,8 @@ const ll = (lat, lon, r = 1) => {
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
 };
 
+const HOME_LIFT = 0.115, CARD_DIST = 1.75, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
+
 export class Globe {
   constructor(container, data, resorts) {
     this.el = container;
@@ -15,18 +17,20 @@ export class Globe {
     container.appendChild(r.domElement);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.01, 50);
-    this.dist = 3.9; this.lift = 0;
-    this.scene.add(new THREE.HemisphereLight('#ffffff', '#20304a', 1.5));
-    const sun = new THREE.DirectionalLight('#ffffff', 1.6);
+    this.home = 3.9; this.dist = 3.9; this.lift = HOME_LIFT; this.unlit = 0;
+    const hemi = (this.hemi = new THREE.HemisphereLight('#ffffff', '#20304a', 1.5));
+    this.scene.add(hemi);
+    const sun = (this.sun = new THREE.DirectionalLight('#ffffff', 1.6));
     sun.position.set(-1.5, 1.2, 2.5);
     this.scene.add(sun);
 
     const g = (this.globe = new THREE.Group());
     // 4096 px wide where the phone supports it, so the coast stays sharp when zoomed to a resort
-    const tex = new THREE.CanvasTexture(drawEarth(data, r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048));
+    this.canvas = drawEarth(data, r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048);
+    const tex = new THREE.CanvasTexture(this.canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy());
-    g.add(new THREE.Mesh(new THREE.SphereGeometry(1, 56, 36), new THREE.MeshLambertMaterial({ map: tex })));
+    g.add(new THREE.Mesh(new THREE.SphereGeometry(1, 56, 36), (this.mat = new THREE.MeshLambertMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0 }))));
     // soft atmosphere rim
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
     this.pins = [];
@@ -55,8 +59,10 @@ export class Globe {
     const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // keep the whole globe in view on a tall phone screen
-    this.fit = w / h < 1 ? 1 + (1 - w / h) * 0.75 : 1;
+    // far enough back that the whole globe fits the screen width on a tall phone
+    const home = Math.max(3.9, 1.16 / (Math.tan(THREE.MathUtils.degToRad(19)) * (w / h)));
+    if (this.dist === this.home) this.dist = home;
+    this.home = home;
     this.camera.updateProjectionMatrix();
   }
 
@@ -66,7 +72,7 @@ export class Globe {
     el.addEventListener('pointerdown', (e) => { last = { x: e.clientX, y: e.clientY }; this.spin = false; this.tween = null; el.setPointerCapture?.(e.pointerId); });
     el.addEventListener('pointermove', (e) => {
       if (!last) return;
-      const k = 0.005 * Math.min(1.5, this.dist / 3.9);
+      const k = 0.005 * Math.min(1.5, this.dist / this.home);
       this.globe.rotation.y += (e.clientX - last.x) * k;
       this.globe.rotation.x = Math.min(1.3, Math.max(-1.3, this.globe.rotation.x + (e.clientY - last.y) * k));
       last = { x: e.clientX, y: e.clientY };
@@ -76,35 +82,71 @@ export class Globe {
     el.style.touchAction = 'none';
   }
 
+  aim(rs) {
+    return { y: Math.PI / 2 - THREE.MathUtils.degToRad(rs.lon + 180), x: THREE.MathUtils.degToRad(rs.lat) };
+  }
+
+  go(to, dur, extra = {}) {
+    const g = this.globe;
+    return new Promise((resolve) => {
+      this.tween = { t: 0, dur, y0: g.rotation.y, x0: g.rotation.x, d0: this.dist, l0: this.lift, u0: this.unlit,
+        y1: to.y ?? g.rotation.y, x1: to.x ?? g.rotation.x, d1: to.d ?? this.dist, l1: to.l ?? this.lift, u1: to.u ?? this.unlit, resolve, ...extra };
+    });
+  }
+
   /** Turn the globe so the resort faces the camera and zoom in. Resolves when it arrives. */
-  flyTo(rs, dist = 1.75, seconds = 2.2) {
+  flyTo(rs, seconds = 2.2) {
     this.spin = false; this.focused = rs;
     clearTimeout(this.resume);
-    const g = this.globe;
-    const ry = Math.PI / 2 - THREE.MathUtils.degToRad(rs.lon + 180), rx = THREE.MathUtils.degToRad(rs.lat);
-    let dy = ry - g.rotation.y;
+    const a = this.aim(rs);
+    let dy = a.y - this.globe.rotation.y;
     dy = Math.atan2(Math.sin(dy), Math.cos(dy)); // shortest way round
     this.ring.position.copy(ll(rs.lat, rs.lon, 1.006));
     this.ring.lookAt(this.ring.position.clone().multiplyScalar(2));
     this.ring.visible = true;
-    return new Promise((resolve) => {
-      this.tween = { t: 0, dur: seconds, y0: g.rotation.y, y1: g.rotation.y + dy, x0: g.rotation.x, x1: rx, d0: this.dist, d1: dist, l0: this.lift, l1: 0.16, resolve };
-    });
+    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: 0.17 }, seconds);
   }
 
   /** Back to the slow spin (after closing a resort card). */
   release() {
     this.focused = null; this.ring.visible = false;
-    const g = this.globe;
-    this.tween = { t: 0, dur: 1.4, y0: g.rotation.y, y1: g.rotation.y, x0: g.rotation.x, x1: 0.42, d0: this.dist, d1: 3.9, l0: this.lift, l1: 0, resolve: () => { this.spin = true; } };
+    this.go({ d: this.home, l: HOME_LIFT }, 1.4).then(() => { this.spin = true; });
   }
 
-  /** Final dive towards the surface before the 3D map takes over. */
-  dive(seconds = 1.3) {
-    const g = this.globe;
-    return new Promise((resolve) => {
-      this.tween = { t: 0, dur: seconds, y0: g.rotation.y, y1: g.rotation.y, x0: g.rotation.x, x1: g.rotation.x, d0: this.dist, d1: 1.03, l0: this.lift, l1: 0, resolve, hard: true };
-    });
+  /**
+   * Zoom all the way down to the resort until the land colour under it fills the screen.
+   * Lighting fades out on the way so that final colour is exactly colorAt(rs), which the
+   * 3D map then starts from: the hand-off has no cut and no fade.
+   */
+  dive(seconds = 2.2) {
+    this.ring.visible = false;
+    return this.go({ d: SURFACE_DIST, l: 0, u: 1 }, seconds, { zoom: true, ease: 'in' });
+  }
+
+  /** Start on the ground at a resort (used when leaving the mountain), then pull back to the spinning globe. */
+  surface(rs) {
+    const a = this.aim(rs);
+    this.spin = false; this.tween = null; this.focused = null;
+    this.globe.rotation.set(a.x, a.y, 0);
+    this.dist = SURFACE_DIST; this.lift = 0; this.unlit = 1;
+  }
+
+  rise(seconds = 2.6) {
+    // pull straight back from the resort (no drift), then let the globe resume its spin
+    return this.go({ d: this.home, l: HOME_LIFT, u: 0 }, seconds, { zoom: true, ease: 'out' }).then(() => { this.spin = true; });
+  }
+
+  /** The exact on-screen colour of the globe at a resort once fully zoomed in (bilinear texel mix). */
+  colorAt(rs) {
+    const c = this.canvas, W = c.width, H = c.height, x = c.getContext('2d');
+    const fx = ((rs.lon + 180) / 360) * W - 0.5, fy = ((90 - rs.lat) / 180) * H - 0.5;
+    const i = Math.floor(fx), j = Math.floor(fy), u = fx - i, v = fy - j;
+    const d = x.getImageData(i, j, 2, 2).data, out = [0, 0, 0];
+    // the GPU blends texels in linear light, so do the same here
+    const lin = (s) => { s /= 255; return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4); };
+    const w = [(1 - u) * (1 - v), u * (1 - v), (1 - u) * v, u * v];
+    for (let k = 0; k < 4; k++) for (let ch = 0; ch < 3; ch++) out[ch] += lin(d[k * 4 + ch]) * w[k];
+    return new THREE.Color(out[0], out[1], out[2]);
   }
 
   loop() {
@@ -113,21 +155,33 @@ export class Globe {
     const now = performance.now(), dt = Math.min(0.12, (now - this.last) / 1000);
     this.last = now; this.t += dt;
     const g = this.globe;
-    if (this.spin) g.rotation.y += dt * 0.085;
+    if (this.spin) { g.rotation.y += dt * 0.085; g.rotation.x += (0.42 - g.rotation.x) * Math.min(1, dt * 0.6); } // drifts back to its resting tilt
     const tw = this.tween;
     if (tw) {
       tw.t = Math.min(1, tw.t + dt / tw.dur);
-      const k = tw.hard ? tw.t * tw.t : tw.t < 0.5 ? 4 * tw.t ** 3 : 1 - Math.pow(-2 * tw.t + 2, 3) / 2;
+      const x = tw.t;
+      const k = tw.ease === 'in' ? x * x * (3 - 2 * x) : tw.ease === 'out' ? x * x * (3 - 2 * x) : x < 0.5 ? 4 * x ** 3 : 1 - Math.pow(-2 * x + 2, 3) / 2;
       g.rotation.y = tw.y0 + (tw.y1 - tw.y0) * k;
       g.rotation.x = tw.x0 + (tw.x1 - tw.x0) * k;
-      this.dist = tw.d0 + (tw.d1 - tw.d0) * k;
+      // "zoom" tweens move at a constant zoom rate (equal steps in log altitude), like a camera zoom
+      this.dist = tw.zoom ? 1 + Math.exp(Math.log(tw.d0 - 1) + (Math.log(tw.d1 - 1) - Math.log(tw.d0 - 1)) * k) : tw.d0 + (tw.d1 - tw.d0) * k;
       this.lift = tw.l0 + (tw.l1 - tw.l0) * k;
-      if (tw.t >= 1) { this.tween = null; tw.resolve(); }
+      // lighting only matters close to the ground, so swap it over the last / first third of the zoom
+      const uk = tw.u1 > tw.u0 ? Math.max(0, (k - 0.6) / 0.4) : Math.min(1, k / 0.4);
+      this.unlit = tw.u0 + (tw.u1 - tw.u0) * uk;
+      if (tw.t >= 1) { this.tween = null; this.dist = tw.d1; this.unlit = tw.u1; tw.resolve(); }
     }
+    this.mat.emissiveIntensity = this.unlit;
+    this.hemi.intensity = 1.5 * (1 - this.unlit);
+    this.sun.intensity = 1.6 * (1 - this.unlit);
     if (this.ring.visible) { const s = 1 + 0.35 * Math.sin(this.t * 3); this.ring.scale.setScalar(s * Math.max(0.5, this.dist - 0.9)); this.ring.material.opacity = 0.9 - 0.3 * Math.sin(this.t * 3); }
-    for (const p of this.pins) p.pin.scale.setScalar(Math.max(0.35, (this.dist - 0.95) / 2.4));
-    const d = 1 + (this.dist - 1) * (this.dist > 2 ? this.fit : 1 + (this.fit - 1) * (this.dist - 1));
-    // `lift` slides the globe up the screen so the resort card has room underneath
+    // resort dots shrink away before the camera reaches them
+    const ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.max(0.35, (this.dist - 0.95) / 2.4);
+    for (const p of this.pins) { p.pin.visible = ps > 0.001; p.pin.scale.setScalar(ps || 0.001); }
+    const d = this.dist;
+    this.camera.near = Math.max(0.00002, (d - 1) * 0.4);
+    this.camera.updateProjectionMatrix();
+    // `lift` slides the globe up the screen so the list / resort card has room underneath
     this.camera.position.set(0, -this.lift * (d - 1), d);
     this.camera.lookAt(0, -this.lift * (d - 1), 0);
     this.renderer.render(this.scene, this.camera);

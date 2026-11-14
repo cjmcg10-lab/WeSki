@@ -10,9 +10,9 @@ people move, run stats with playback, and full offline use.
 
 | Area | Details |
 | --- | --- |
-| Start | Spinning globe with a resort picker (search or scroll); picking a resort flies in and hands over to the 3D map. Only Jay Peak has a built map so far. |
+| Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Only Jay Peak has a built map so far. |
 | Maps | 3D mountain from USGS 1 m LiDAR (14 m mesh), all 107 mapped trail segments, 9 lifts with moving chairs and tram cabins, 99 buildings, places, plus ~10 km of coarse surrounding terrain. 2D top-down toggle. |
-| Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣). |
+| Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣) painted onto the snow surface. |
 | Groups | Up to 20 people join by 6-character code. Location sharing is opt-in, can be paused, and shows when each person last updated. |
 | Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links; avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
 | Weather | Summit and base conditions, ski-specific alerts, 12-hour strip and 7-day forecast (Open-Meteo). |

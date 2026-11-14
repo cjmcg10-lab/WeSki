@@ -132,15 +132,19 @@ async function boot() {
 
 // ---------- start screen (globe + resort picker)
 let globe = null;
-async function openStart() {
+/** Show the globe. With `from` (a resort) it starts on the ground there, hidden, ready to pull back. */
+async function openStart(from = null) {
   const el = $('#start');
   const [{ Globe }, data] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json())]);
-  el.classList.remove('hidden', 'leaving');
+  el.classList.toggle('prep', !!from);          // laid out but invisible until the map has flown out
+  el.classList.remove('hidden');
   $('#resort-card').classList.add('hidden');
-  $('#start-panel').classList.remove('hidden');
+  $('#start-panel').classList.toggle('hidden', !!from);
+  $('.start-top').classList.toggle('hidden', !!from);
   $('#f-resort').value = '';
   renderResortList('');
   globe = new Globe($('#globe'), data, RESORTS);
+  if (from) globe.surface(from);
 }
 
 function renderResortList(q) {
@@ -164,20 +168,95 @@ async function pickResort(id) {
     : '<p class="soon">The 3D map for this resort has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
     <button class="back" data-act="resort-back">‹ All resorts</button>`;
   card.classList.remove('hidden');
-  if (r.available) initMap().catch(() => {}); // build the mountain while the card is on screen
+  // build the mountain while the card is on screen, then hold it still until it is needed
+  if (r.available) initMap().then(() => { if (globe) S.map.setPaused(true); }).catch(() => {});
 }
 
 async function skiHere(btn) {
   btn.disabled = true; btn.textContent = 'Loading the mountain…';
   try { await initMap(); } catch (e) { btn.disabled = false; btn.textContent = 'Ski here'; bootFailed(e); return; }
-  const g = globe;
+  const g = globe, r = RESORTS.find((x) => x.id === btn.dataset.id);
   globe = null;
   $('#resort-card').classList.add('hidden');
-  $('#start').classList.add('leaving');     // cross-fade to the 3D map while the globe dives in
-  S.map.intro(2.8);
-  await g.dive(1.3);
-  setTimeout(() => { $('#start').classList.add('hidden'); g.dispose(); }, 250);
+  $('.start-top').classList.add('hidden');
+  document.body.classList.add('flying');
+  // One continuous zoom: the globe dives until the land colour under the resort fills the
+  // screen; the 3D map starts high above the mountain in haze of exactly that colour and
+  // keeps descending as the haze clears. No fade, no cut.
+  const color = g.colorAt(r);
+  const landing = S.map.fly(1, color, 3.4);
+  S.map.setPaused(true);                        // hold the map's first frame while the globe is on top
+  await g.dive(2.3);
+  S.map.setPaused(false);
+  $('#start').classList.add('hidden');
+  g.dispose();
+  await landing;
+  document.body.classList.remove('flying');
   renderChrome();
+}
+
+/** Leave the mountain: climb away into the haze, then pull back from the ground to the spinning globe. */
+async function exitToGlobe() {
+  closeSheet();
+  document.body.classList.add('flying');
+  try {
+    await openStart(JAY);
+    await S.map.fly(-1, globe.colorAt(JAY), 2.4);
+    $('#start').classList.remove('prep');
+    S.map.setPaused(true);
+    await globe.rise(2.8);
+    $('.start-top').classList.remove('hidden');
+    $('#start-panel').classList.remove('hidden');
+  } catch (e) {
+    // no globe available (e.g. first run offline): stay on the mountain
+    console.warn(e);
+    $('#start').classList.add('hidden');
+    S.map.setPaused(false);
+    await S.map.fly(1, '#b9d7f0', 1.2);
+    toast('The resort picker could not be opened.');
+  }
+  document.body.classList.remove('flying');
+}
+
+/** "Choose a different resort": wrap up the ski day (saving it or not), then go back to the globe. */
+async function leaveResort(save) {
+  $('#modal').classList.add('hidden');
+  if (S.player) stopReplay();
+  if (S.nav) endNav();
+  if (S.group) {
+    S.group.client.leave();
+    S.group = null; S.sharing = false; prefs.set('group', null);
+    S.map.setFriends([]); S.map.setMeet(null);
+  }
+  if (S.session) {
+    if (save) await endSession('Ski day saved.');
+    else {
+      const id = S.session.id;
+      S.session = null; S.tracker = null;
+      releaseWake();
+      try { await sessions.del(id); } catch { /* nothing stored yet */ }
+      toast('Left without saving this session.');
+    }
+  }
+  S.historyLoaded = false;
+  S.loc.stop();
+  S.me = null; S.map.setMe(null);
+  S.pin = null; S.map.setPin(null);
+  renderChrome();
+  await exitToGlobe();
+}
+
+function askLeaveResort() {
+  const st = S.tracker ? S.tracker.stats : null;
+  const what = S.session
+    ? `This ${S.session.kind === 'group' ? 'group session' : 'tracking session'} has ${st.runCount} run${st.runCount === 1 ? '' : 's'} and ${S.tracker.points.length} GPS points${S.session.routes.length ? `, plus ${S.session.routes.length} route${S.session.routes.length > 1 ? 's' : ''}` : ''}.`
+    : 'Nothing is being tracked right now, so there is no new ski data to save.';
+  $('#modal').innerHTML = `<div class="modal-box"><h2>Choose a different resort?</h2>
+    <p>${what}${S.group ? ' You will also leave your group.' : ''}</p>
+    <button class="btn go" data-act="exit-save">Save ski data and exit</button>
+    <button class="btn danger" data-act="exit-nosave">Exit without saving</button>
+    <button class="btn alt" data-act="modal-cancel">Stay at ${esc(JAY.name)}</button></div>`;
+  $('#modal').classList.remove('hidden');
 }
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -734,7 +813,8 @@ function sheetMore() {
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
     <button class="btn alt" data-act="legend">Map legend</button>
-    <button class="btn alt" data-act="change-resort">Change resort (globe)</button>
+
+    <button class="btn exit" data-act="change-resort">Choose a different resort</button>
     <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open WeSki from the icon for full screen and offline use.</p></div>
     <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Slow zones and terrain parks: ${esc(S.resort.sources.zones)}.</p><p class="note">Not an official Jay Peak product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
 }
@@ -768,11 +848,11 @@ function sheetLegend() {
       ${line(COLORS.diff[0], '<b class="d0">●</b>&nbsp; Easier (green circle)')}${line(COLORS.diff[1], '<b class="d1">■</b>&nbsp; More difficult (blue square)')}
       ${line(COLORS.diff[2], '<b class="d2">◆</b>&nbsp; Most difficult (black diamond)')}${line(COLORS.diff[3], '<b class="d3">◆◆</b>&nbsp; Extreme terrain')}
       ${line(COLORS.diff[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
-    <div class="card"><h3>Zones (drawn under the trail)</h3>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.slow}">▽</div></div><span><b>Slow zone</b> — wide light-green band, ▽ symbol. Designated slow skiing and riding area.</span></div>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.park};color:#fff">⬣</div></div><span><b>Terrain park</b> — orange band, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
+    <div class="card"><h3>Zones (painted on the snow)</h3>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2">▽</div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846;color:#fff">⬣</div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
       <p class="note">Zones verified against Jay Peak's Winter 2025–26 trail map. The Gully's position is approximate.</p></div>
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (chairs and tram cabins move along the cable)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift cables (chairs and tram cabins circulate on them)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
 }
@@ -996,7 +1076,10 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'ski-here': skiHere(b); break;
     case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); globe?.release(); break;
-    case 'change-resort': closeSheet(); openStart().catch(() => toast('The resort picker needs a connection the first time.')); break;
+    case 'change-resort': askLeaveResort(); break;
+    case 'exit-save': leaveResort(true); break;
+    case 'exit-nosave': leaveResort(false); break;
+    case 'modal-cancel': $('#modal').classList.add('hidden'); break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();

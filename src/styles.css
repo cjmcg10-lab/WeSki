@@ -12,7 +12,7 @@ button { font: inherit; color: inherit; border: 0; background: none; padding: 0;
 input, select { font: inherit; color: inherit; }
 .hidden { display: none !important; }
 
-#map { position: fixed; inset: 0 0 var(--tabs) 0; touch-action: none; }
+#map { position: fixed; inset: 0; touch-action: none; }
 #map canvas { display: block; position: absolute; inset: 0; touch-action: none; }
 .map-overlay { pointer-events: none; }
 
@@ -137,9 +137,9 @@ body.playing #fabs { bottom: calc(var(--tabs) + 110px); }
 progress { width: 100%; height: 8px; accent-color: var(--blue); }
 
 /* ---------- start screen */
-#start { position: fixed; inset: 0; z-index: 45; background: radial-gradient(120% 90% at 50% 35%, #123a63 0%, #071a2e 60%, #030b16 100%); color: #fff; transition: opacity 1.5s ease-in; }
-#start.leaving { opacity: 0; pointer-events: none; }
-#globe { position: absolute; inset: 0 0 34vh 0; touch-action: none; transition: inset .6s; }
+#start { position: fixed; inset: 0; z-index: 45; background: radial-gradient(120% 90% at 50% 35%, #123a63 0%, #071a2e 60%, #030b16 100%); color: #fff; }
+#start.prep { visibility: hidden; }
+#globe { position: absolute; inset: 0; touch-action: none; }
 #globe canvas { display: block; }
 .start-top { position: absolute; top: calc(var(--sat) + 18px); left: 0; right: 0; text-align: center; pointer-events: none; }
 .start-top h1 { margin: 0; font-size: 34px; letter-spacing: -.8px; }
@@ -183,3 +183,13 @@ progress { width: 100%; height: 8px; accent-color: var(--blue); }
 .wx-day small { grid-column: 1 / -1; color: var(--muted); font-size: 12px; } .wx-day small.warn { color: #7a4a00; } .wx-day small.bad { color: #9b1c14; }
 #navbar .warnbox.over { background: #fde3e1; color: #7a1c14; }
 #sheet-body a { color: var(--blue); }
+
+/* ---------- flying between globe and mountain: app chrome waits off-stage */
+#topbar, #fabs, #tabs, #navbar { transition: opacity .45s; }
+body.flying #topbar, body.flying #fabs, body.flying #tabs, body.flying #navbar, body.flying #sheet, body.flying #player { opacity: 0; pointer-events: none; }
+.map-overlay { transition: none; }
+.btn.exit { background: #d92d20; color: #fff; }
+#modal { position: fixed; inset: 0; z-index: 60; background: rgba(6, 16, 28, .55); display: grid; place-items: center; padding: 20px; backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.modal-box { background: #fff; border-radius: 20px; padding: 20px 18px 12px; width: 100%; max-width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.modal-box h2 { margin: 0 0 6px; font-size: 21px; letter-spacing: -.3px; }
+.modal-box p { margin: 0 0 12px; color: var(--muted); }

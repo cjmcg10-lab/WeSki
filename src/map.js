@@ -47,7 +47,8 @@ export class SkiMap {
     this.ctx = this.overlay.getContext('2d');
 
     const s = (this.scene = new THREE.Scene());
-    s.background = new THREE.Color('#b9d7f0');
+    this.sky = new THREE.Color('#b9d7f0');
+    s.background = this.sky.clone();
     s.fog = new THREE.Fog('#b9d7f0', 7000, 21000);
     s.add(new THREE.HemisphereLight('#ffffff', '#8fa3b8', 0.95));
     const sun = new THREE.DirectionalLight('#fff3df', 2.3);
@@ -137,14 +138,28 @@ export class SkiMap {
     // One flat colour per triangle (no blending between vertices): crisp snow / glade / forest /
     // rock facets. Face normals are baked in, so the shader does no per-pixel flat-shading work.
     const tris = (nx - 1) * (ny - 1) * 2;
-    const pos = new Float32Array(tris * 9), col = new Uint8Array(tris * 9);
-    const SNOW = [246, 250, 253], GLADE = [176, 205, 190], ROCK = [124, 132, 141];
-    const forest = (alt) => {
-      // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
-      if (alt > 1040) return [150, 182, 176];
-      if (alt > 860) return [44, 104, 80];
-      return [52, 122, 78];
+    const pos = new Float32Array(tris * 9), col = new Float32Array(tris * 9);
+    // Colours go through THREE.Color so they are in the same colour space as the surrounding
+    // land (otherwise the detailed map renders visibly paler than what is around it).
+    const rgb = (r, g, b) => { const c = new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace); return [c.r, c.g, c.b]; };
+    const SNOW = rgb(246, 250, 253), GLADE = rgb(176, 205, 190), ROCK = rgb(124, 132, 141);
+    const F_HIGH = rgb(150, 182, 176), F_MID = rgb(44, 104, 80), F_LOW = rgb(52, 122, 78);
+    const SLOW = rgb(150, 232, 178), PARK = rgb(255, 168, 70);
+    // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
+    const forest = (alt) => (alt > 1040 ? F_HIGH : alt > 860 ? F_MID : F_LOW);
+    // Zones are painted into the snow itself (1 = slow zone, 2 = terrain park) so nothing
+    // floats above the ground to hide trails, lift chairs or people.
+    const zone = new Uint8Array(nx * ny);
+    const paint = (pts, rad, v) => {
+      for (let q = 0; q < pts.length; q += 2) {
+        const r = Math.ceil(rad / cell), ci = Math.round(pts[q] / cell), cj = Math.round(pts[q + 1] / cell);
+        for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
+          for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++)
+            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= rad) zone[j * nx + i] = Math.max(zone[j * nx + i], v);
+      }
     };
+    for (const t of this.resort.trails) if (t.slow) paint(t.pts, 26, 1);
+    for (const p of this.resort.parks) paint(p.pts, 17, 2);
     let k = 0;
     const put = (o, c) => {
       const i = o % nx, j = (o / nx) | 0;
@@ -155,7 +170,8 @@ export class SkiMap {
     const face = (a, b, c) => {
       const m = (mask[a] + mask[b] + mask[c]) / 3, alt = zmin + (h[a] + h[b] + h[c]) / 30;
       const zs = [h[a], h[b], h[c]], relief = (Math.max(...zs) - Math.min(...zs)) / 10 / cell;
-      const colr = m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
+      const zn = Math.max(zone[a], zone[b], zone[c]), zc = zone[a] + zone[b] + zone[c];
+      const colr = zn === 2 && zc >= 4 ? PARK : zn >= 1 && zc >= 2 && m >= 0.5 ? SLOW : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
       put(a, colr); put(b, colr); put(c, colr);
     };
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
@@ -164,7 +180,7 @@ export class SkiMap {
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3, true));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.computeVertexNormals();
     this.terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
     this.scene.add(this.terrain);
@@ -186,7 +202,11 @@ export class SkiMap {
       const inn = x > 20 && y > 20 && x < geo.W - 20 && y < geo.H - 20;
       inside[o] = inn ? 1 : 0;
       // inside the detailed map the coarse mesh follows the LiDAR surface, so the two meet cleanly at the border
-      const z = inn ? this.surfaceZ(x, y) - 2.5 : sh[o] + sr.zmin;
+      // Outside, ease from the LiDAR edge height into the coarse data over ~400 m so there is no step at the border.
+      const dx = Math.max(0, -x, x - geo.W), dy = Math.max(0, -y, y - geo.H), out = Math.hypot(dx, dy);
+      const edgeZ = this.surfaceZ(Math.min(geo.W, Math.max(0, x)), Math.min(geo.H, Math.max(0, y)));
+      const w = Math.min(1, out / 420), coarse = sh[o] + sr.zmin;
+      const z = inn ? edgeZ - 2.5 : out === 0 ? edgeZ - 1 : edgeZ * (1 - w) + coarse * w;
       pos[o * 3] = x - geo.W / 2; pos[o * 3 + 1] = z - zmin; pos[o * 3 + 2] = -(y - geo.H / 2);
       // same forest bands as the detailed map so the border between the two doesn't show
       if (z > 1040) c.copy(high); else if (z > 860) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (480 - z) / 250)));
@@ -213,7 +233,8 @@ export class SkiMap {
     for (let j = 0; j < fy - 1; j++) { edge(0, j * fc, 0, (j + 1) * fc); edge(geo.W, j * fc, geo.W, (j + 1) * fc); }
     const sg = new THREE.BufferGeometry();
     sg.setAttribute('position', new THREE.Float32BufferAttribute(sk, 3));
-    this.scene.add(new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: '#33684d', side: THREE.DoubleSide })));
+    sg.computeVertexNormals(); // without normals the skirt shades as garbage and shows through the haze
+    this.scene.add(new THREE.Mesh(sg, new THREE.MeshLambertMaterial({ color: 'rgb(52,122,78)', side: THREE.DoubleSide })));
   }
 
   buildTrees() {
@@ -265,7 +286,7 @@ export class SkiMap {
       color: opts.colors ? '#ffffff' : color, linewidth: width, vertexColors: !!opts.colors,
       transparent: true, opacity: opts.opacity ?? 1,
       depthTest: !opts.overlay, depthWrite: false, worldUnits: !!opts.world,
-      dashed: !!opts.dash, dashSize: opts.dash?.[0] ?? 1, gapSize: opts.dash?.[1] ?? 1,
+      fog: true, dashed: !!opts.dash, dashSize: opts.dash?.[0] ?? 1, gapSize: opts.dash?.[1] ?? 1,
     });
     const line = new LineSegments2(g, mat);
     if (opts.dash) line.computeLineDistances();
@@ -278,24 +299,15 @@ export class SkiMap {
     if (this.trailGroup) { this.scene.remove(this.trailGroup); this.trailGroup.traverse((o) => { o.geometry?.dispose(); o.material?.dispose(); }); }
     const G = (this.trailGroup = new THREE.Group());
     const R = this.resort, closed = this.closed;
-    const slow = [], casing = [], shut = [];
+    const casing = [], shut = [];
     const byStyle = {};
     for (const t of R.trails) {
-      if (t.slow) this.segs(t.pts, 2, slow);
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
       if (!t.glade) this.segs(t.pts, 2.7, casing);
       const key = t.d + (t.glade ? 'g' : '');
       this.segs(t.pts, 3.2, (byStyle[key] ||= []));
     }
     for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g'] ||= []));
-    // Zone overlays sit under the trail lines: wide translucent bands in their own colours.
-    // each zone is a band in real metres plus a thin on-screen band, so it stays visible when zoomed out
-    G.add(this.fatLine(slow, COLORS.slow, 40, { opacity: 0.5, order: 1, world: true }));
-    G.add(this.fatLine(slow, COLORS.slow, 10, { opacity: 0.45, order: 1 }));
-    const park = [];
-    for (const p of R.parks) this.segs(p.pts, 2.3, park);
-    G.add(this.fatLine(park, COLORS.park, 34, { opacity: 0.75, order: 2, world: true }));
-    G.add(this.fatLine(park, COLORS.park, 9, { opacity: 0.7, order: 2 }));
     G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
       const glade = key.endsWith('g');
@@ -323,7 +335,7 @@ export class SkiMap {
   buildLifts() {
     const R = this.resort;
     this.liftPaths = [];
-    const cable = [], towerMats = [], stationGeos = [];
+    const cable = [], carpet = [], towerMats = [], stationGeos = [];
     let chairCount = 0;
     for (const l of R.lifts) {
       const n = l.pts.length / 2, th = l.kind === 'tram' ? 26 : l.kind === 'carpet' ? 0.6 : 9.5;
@@ -334,30 +346,43 @@ export class SkiMap {
       }
       const cum = [0];
       for (let i = 1; i < n; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-      const path = { l, pts, cum, L: cum[n - 1], chairs: 0, first: chairCount };
-      for (let i = 1; i < n; i++) cable.push(pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z);
+      // r = half the distance between the uphill and downhill cables (= bullwheel radius)
+      const r = l.kind === 'tram' ? 5 : 2.4;
+      const path = { l, pts, cum, L: cum[n - 1], r, loop: 2 * cum[n - 1] + 2 * Math.PI * r, chairs: 0, first: chairCount };
       const dir = pts[n - 1].clone().sub(pts[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
-      if (l.kind !== 'carpet') {
+      if (l.kind === 'carpet') {
+        for (let i = 1; i < n; i++) carpet.push(pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z);
+      } else {
+        // One continuous haul cable: up one side, round the top bullwheel, down the other side,
+        // round the bottom bullwheel. Chairs and cabins ride exactly on this line.
+        const ring = [];
+        for (let i = 0; i < n; i++) ring.push(this.loopPoint(path, cum[i]).pos);
+        for (let k = 1; k < 8; k++) ring.push(this.loopPoint(path, path.L + (Math.PI * r * k) / 8).pos);
+        for (let i = n - 1; i >= 0; i--) ring.push(this.loopPoint(path, path.L + Math.PI * r + (path.L - cum[i])).pos);
+        for (let k = 1; k < 8; k++) ring.push(this.loopPoint(path, 2 * path.L + Math.PI * r + (Math.PI * r * k) / 8).pos);
+        for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); }
         for (let i = 1; i < n - 1; i++) towerMats.push({ p: this.world(l.pts[i * 2], l.pts[i * 2 + 1], 0), yaw, h: th, arm: l.kind === 'tram' ? 12 : 6 });
         for (const e of [0, n - 1]) {
           const g = M.stationGeometry(l.kind, l.kind === 'tram' ? 0 : 0x8b2f2f);
           const base = this.world(l.pts[e * 2], l.pts[e * 2 + 1], 0);
-          g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x - dir.x * (e ? -3 : 3), base.y - 1, base.z - dir.z * (e ? -3 : 3)));
+          g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
           stationGeos.push(g);
         }
       }
-      if (l.kind === 'chair') { path.chairs = Math.max(4, Math.floor((2 * path.L) / (l.name.includes('Express') ? 70 : 48))); chairCount += path.chairs; }
+      if (l.kind === 'chair') { path.chairs = Math.max(4, Math.floor(path.loop / (l.name.includes('Express') ? 70 : 48))); chairCount += path.chairs; }
       this.liftPaths.push(path);
     }
-    this.liftLine = this.fatLine(cable, COLORS.lift, 2.6, { order: 5 });
+    // Two red cables per lift; from far away they merge into the usual single red lift line.
+    this.liftLine = this.fatLine(cable, COLORS.lift, 1.7, { order: 5 });
     this.scene.add(this.liftLine);
+    this.scene.add(this.fatLine(carpet, COLORS.lift, 3, { order: 5 }));
     // towers: group by height so each height is one instanced mesh
     for (const [h, arm] of [[9.5, 6], [26, 12]]) {
       const list = towerMats.filter((t) => t.h === h);
       if (!list.length) continue;
       const mesh = new THREE.InstancedMesh(M.towerGeometry(h, arm), M.vcMat(), list.length);
-      const m = new THREE.Matrix4();
-      list.forEach((t, i) => { m.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, m); });
+      const mt = new THREE.Matrix4();
+      list.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, mt); });
       this.scene.add(mesh);
     }
     for (const g of stationGeos) this.scene.add(new THREE.Mesh(g, M.vcMat()));
@@ -370,7 +395,7 @@ export class SkiMap {
     this.liftLabels = this.liftPaths.map((p) => ({ l: p.l, p: this.pathPoint(p, p.L * 0.5, 0).pos.clone().add(new THREE.Vector3(0, 10, 0)) }));
   }
 
-  /** Position + yaw at distance d along a lift cable, shifted sideways by `side` metres. */
+  /** Position + yaw at distance d along a lift's centre line, shifted sideways by `side` metres. */
   pathPoint(path, d, side) {
     const { pts, cum } = path;
     let i = 1;
@@ -382,28 +407,54 @@ export class SkiMap {
     return { pos, yaw: Math.atan2(dx, dz) };
   }
 
+  /**
+   * Position + yaw at distance u around a lift's closed cable loop:
+   * [0, L) up the right-hand cable, a half turn round the top bullwheel, down the other
+   * cable, and a half turn round the bottom bullwheel back to the start.
+   */
+  loopPoint(path, u) {
+    const { pts, L, r, loop } = path, n = pts.length;
+    u = ((u % loop) + loop) % loop;
+    const turn = (c, a, b, ang, sign) => {
+      // a -> b is the lift direction at this end; swing from one cable to the other around c
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1, fx = dx / len, fz = dz / len, sx = -fz, sz = fx;
+      const co = Math.cos(ang) * sign, si = Math.sin(ang) * sign;
+      return { pos: new THREE.Vector3(c.x + sx * r * co + fx * r * si, c.y, c.z + sz * r * co + fz * r * si), yaw: Math.atan2(-sx * si + fx * co, -sz * si + fz * co) };
+    };
+    if (u < L) return this.pathPoint(path, u, r);
+    if (u < L + Math.PI * r) return turn(pts[n - 1], pts[n - 2], pts[n - 1], (u - L) / r, 1);
+    if (u < 2 * L + Math.PI * r) { const q = this.pathPoint(path, 2 * L + Math.PI * r - u, -r); q.yaw += Math.PI; return q; }
+    return turn(pts[0], pts[0], pts[1], (u - 2 * L - Math.PI * r) / r, -1);
+  }
+
   animateLifts(t) {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1.6, 1.6, 1.6), up = new THREE.Vector3(0, 1, 0);
     for (const p of this.liftPaths) {
       if (!p.chairs) continue;
       const running = !this.closed.has('l' + p.l.id);
       const speed = (p.l.name.includes('Express') ? 5 : 2.4) * 2.5; // sped up a little so motion reads at map scale
-      const loop = 2 * p.L, gap = loop / p.chairs;
+      const gap = p.loop / p.chairs;
       for (let i = 0; i < p.chairs; i++) {
-        const u = (i * gap + (running ? t * speed : 0)) % loop, upward = u < p.L;
-        const { pos, yaw } = this.pathPoint(p, upward ? u : loop - u, upward ? 2.3 : -2.3);
-        q.setFromAxisAngle(up, upward ? yaw : yaw + Math.PI);
+        const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
+        q.setFromAxisAngle(up, yaw);
         this.chairs.setMatrixAt(p.first + i, m.compose(pos, q, s));
       }
     }
     this.chairs.instanceMatrix.needsUpdate = true;
     if (this.tram) {
+      // Two cabins half a loop apart: while one climbs one cable the other descends the opposite
+      // one; each pauses in a station as it swings round to the other side, then heads back.
       const p = this.tram.path, running = !this.closed.has('l' + p.l.id);
-      const ride = 70, dwell = 10, cyc = 2 * (ride + dwell), ph = running ? t % cyc : 0;
-      const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
-      const e = tri * tri * (3 - 2 * tri);
+      const ride = 60, dwell = 12, cyc = 2 * (ride + dwell), half = Math.PI * p.r;
+      const ease = (x) => x * x * (3 - 2 * x);
       this.tram.cabins.forEach((c, i) => {
-        const { pos, yaw } = this.pathPoint(p, p.L * (i ? 1 - e : e), i ? -5 : 5);
+        const ph = ((running ? t : 0) + (i * cyc) / 2) % cyc;
+        let u;
+        if (ph < ride) u = p.L * ease(ph / ride);
+        else if (ph < ride + dwell) u = p.L + half * ease((ph - ride) / dwell);
+        else if (ph < 2 * ride + dwell) u = p.L + half + p.L * ease((ph - ride - dwell) / ride);
+        else u = 2 * p.L + half + half * ease((ph - 2 * ride - dwell) / dwell);
+        const { pos, yaw } = this.loopPoint(p, u);
         c.position.copy(pos); c.rotation.y = yaw;
       });
     }
@@ -680,7 +731,8 @@ export class SkiMap {
     requestAnimationFrame(() => this.loop());
     // Full frame rate while the map is being touched or flown; ~30 fps otherwise (saves battery/GPU).
     const now = performance.now();
-    const busy = now - (this.lastInput || 0) < 900 || this.introT != null;
+    if (this.paused) return;
+    const busy = now - (this.lastInput || 0) < 900 || !!this.flight;
     if (!busy && now - (this.lastFrame || 0) < 31) return;
     this.lastFrame = now;
     this.dt = Math.min(0.1, this.clock.getDelta());
@@ -688,23 +740,61 @@ export class SkiMap {
     this.frame();
   }
 
-  /** Fly in from high above the resort to the opening view (used after "Ski here"). */
-  intro(seconds = 2.6) {
-    const c = this.controls, end = this.cam3.position.clone();
-    this.introFrom = new THREE.Vector3(c.target.x, c.target.y + 15000, c.target.z + 600);
-    this.introTo = end; this.introT = 0; this.introDur = seconds;
-    this.cam3.position.copy(this.introFrom);
+  /**
+   * Fly between "high above, everything hidden in haze of `color`" and the normal view.
+   * dir +1 = descend into the mountain, -1 = climb away from it. The haze colour is the
+   * exact colour the globe shows at this spot, so the two views join without a cut or fade.
+   */
+  fly(dir, color, seconds = 3) {
+    this.setMode('3d');
+    const c = this.controls;
+    if (dir > 0 && this.homeView) { c.target.copy(this.homeView.target); this.cam3.position.copy(this.homeView.pos); }
+    if (!this.homeView) this.homeView = { target: c.target.clone(), pos: this.cam3.position.clone() };
+    const view = this.cam3.position.clone(), top = new THREE.Vector3(c.target.x, c.target.y + 16000, c.target.z + 40);
     c.enabled = false;
+    this.paused = false;
+    return new Promise((resolve) => {
+      this.flight = { dir, t: 0, dur: seconds, view, top, color: new THREE.Color(color), resolve };
+      // draw the first frame of the flight now, so the canvas never shows a stale view when revealed
+      this.dt = 0;
+      this.frame();
+    });
   }
+
+  /** k = 0: far above inside the haze; k = 1: the normal view. */
+  applyFlight(k) {
+    const f = this.flight, sky = this.sky;
+    this.cam3.position.lerpVectors(f.top, f.view, k);
+    this.cam3.lookAt(this.controls.target);
+    const fog = this.scene.fog;
+    // The haze keeps the globe's land colour while we look straight down, and only turns to
+    // sky colour over the last part of the descent, as the horizon tilts into view.
+    const mix = Math.min(1, Math.max(0, (k - 0.45) / 0.5));
+    fog.color.copy(f.color).lerp(sky, mix * mix * (3 - 2 * mix));
+    this.scene.background.copy(fog.color);
+    // Fully hidden from 16 km up (haze ends 1.5 km out); it thins quickly so the mountain resolves early.
+    const thin = Math.min(1, k / 0.55), lf = Math.log(1500) + (Math.log(60000) - Math.log(1500)) * thin;
+    fog.near = 7000 * k;
+    fog.far = k >= 1 ? 21000 : Math.max(fog.near + 1, Math.exp(lf) * (1 - mix) + 21000 * mix);
+    this.overlay.style.opacity = String(Math.min(1, Math.max(0, (k - 0.75) / 0.25)));
+  }
+
+  /** Stop drawing while the start screen covers the map. */
+  setPaused(p) { this.paused = p; }
 
   frame() {
     const c = this.controls;
-    if (this.introT != null) {
-      this.introT = Math.min(1, this.introT + this.dt / this.introDur);
-      const k = 1 - Math.pow(1 - this.introT, 3);
-      this.cam3.position.lerpVectors(this.introFrom, this.introTo, k);
-      this.cam3.lookAt(c.target);
-      if (this.introT >= 1) { this.introT = null; c.enabled = this.mode === '3d'; c.update(); }
+    if (this.flight) {
+      const f = this.flight;
+      f.t = Math.min(1, f.t + this.dt / f.dur);
+      // descending: fast at first, settling gently; climbing: the mirror image
+      const e = f.dir > 0 ? 1 - Math.pow(1 - f.t, 3) : 1 - f.t * f.t * f.t;
+      this.applyFlight(e);
+      if (f.t >= 1) {
+        this.flight = null;
+        if (f.dir > 0) { c.enabled = this.mode === '3d'; c.update(); }
+        f.resolve();
+      }
     } else if (this.mode === '3d') {
       c.update();
       // keep the orbit target on the snow and the camera above the terrain
