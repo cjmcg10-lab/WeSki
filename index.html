@@ -20,6 +20,16 @@
 
   <div id="splash"><div class="splash-box"><img src="/icons/icon-192.png" alt="" width="84" height="84" /><h1>WeSki</h1><p id="splash-msg">Loading Jay Peak…</p></div></div>
 
+  <section id="start" class="hidden">
+    <div id="globe"></div>
+    <div class="start-top"><h1>WeSki</h1><p>Choose your mountain</p></div>
+    <div id="start-panel">
+      <input class="field" id="f-resort" type="search" placeholder="Search resorts" autocomplete="off" autocorrect="off" spellcheck="false" />
+      <div id="resort-list"></div>
+    </div>
+    <div id="resort-card" class="hidden"></div>
+  </section>
+
   <header id="topbar">
     <div class="pill brand"><b>WeSki</b><span>Jay Peak</span></div>
     <div class="pills"><button class="pill" id="gps-pill" data-act="locate">GPS off</button><button class="pill hidden" id="group-pill" data-act="tab" data-tab="group"></button></div>
@@ -30,6 +40,7 @@
   <div id="fabs">
     <button id="mode-btn" data-act="mode" aria-label="Switch between 3D and 2D map">2D</button>
     <button data-act="locate" aria-label="Show my location"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="12" cy="12" r="4" fill="currentColor"/><circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4" stroke="currentColor" stroke-width="2"/></svg></button>
+    <button data-act="weather" aria-label="Ski weather"><svg viewBox="0 0 24 24" width="23" height="23"><path d="M7 15.500a4 4 0 0 1 .6-7.960A5.500 5.500 0 0 1 18.200 9 3.300 3.300 0 0 1 17.500 15.500z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M8.500 19v.01M12 20.500v.01M15.500 19v.01" stroke="currentColor" stroke-width="2.600" stroke-linecap="round"/></svg></button>
     <button data-act="legend" aria-label="Map legend"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M4 6h3M4 12h3M4 18h3" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M11 6h9M11 12h9M11 18h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </div>
 

@@ -10,8 +10,9 @@ import * as M from './models.js';
 
 export const COLORS = {
   diff: ['#1fa750', '#2b7de9', '#16181d', '#a3122f'],
-  slow: '#ffd21f',
-  park: '#b455ff',
+  slow: '#4fe08a',
+  park: '#ff8a00',
+  track: '#ff2d92',
   lift: '#e03131',
   route: '#00d5ff',
   closed: '#8d949e',
@@ -23,7 +24,8 @@ const POI_STYLE = {
 };
 
 export class SkiMap {
-  constructor(container, resort, geo) {
+  constructor(container, resort, geo, surroundH = null) {
+    this.surroundH = surroundH;
     this.el = container;
     this.resort = resort;
     this.geo = geo;
@@ -46,9 +48,9 @@ export class SkiMap {
 
     const s = (this.scene = new THREE.Scene());
     s.background = new THREE.Color('#b9d7f0');
-    s.fog = new THREE.Fog('#b9d7f0', 6000, 22000);
-    s.add(new THREE.HemisphereLight('#ffffff', '#7f93a8', 1.15));
-    const sun = new THREE.DirectionalLight('#fff3df', 1.9);
+    s.fog = new THREE.Fog('#b9d7f0', 7000, 21000);
+    s.add(new THREE.HemisphereLight('#ffffff', '#8fa3b8', 0.95));
+    const sun = new THREE.DirectionalLight('#fff3df', 2.3);
     sun.position.set(-0.6, 0.8, 0.45);
     s.add(sun);
 
@@ -79,6 +81,9 @@ export class SkiMap {
     this.cam3.position.set(mid.x + 3900, c.target.y + 2500, mid.z - 2300);
     c.update();
 
+    r.domElement.addEventListener('pointerdown', () => { this.lastInput = performance.now(); });
+    r.domElement.addEventListener('pointermove', () => { this.lastInput = performance.now(); });
+    r.domElement.addEventListener('wheel', () => { this.lastInput = performance.now(); }, { passive: true });
     this.bind2D();
     this.bindTap();
     this.resize();
@@ -90,10 +95,22 @@ export class SkiMap {
 
   // ---------- coordinates
   world(x, y, lift = 0) {
-    return new THREE.Vector3(x - this.geo.W / 2, this.geo.elev(x, y) - this.resort.grid.zmin + lift, -(y - this.geo.H / 2));
+    return new THREE.Vector3(x - this.geo.W / 2, this.surfaceZ(x, y) - this.resort.grid.zmin + lift, -(y - this.geo.H / 2));
   }
   local(wx, wz) { return [wx + this.geo.W / 2, this.geo.H / 2 - wz]; }
-  groundY(wx, wz) { const [x, y] = this.local(wx, wz); return this.geo.elev(x, y) - this.resort.grid.zmin; }
+  groundY(wx, wz) { const [x, y] = this.local(wx, wz); return this.surfaceZ(x, y) - this.resort.grid.zmin; }
+
+  /**
+   * Elevation of the drawn surface: exactly the flat triangle under (x, y), so trails,
+   * buildings and people sit on the facets instead of sinking into or floating over them.
+   */
+  surfaceZ(x, y) {
+    const { nx, ny, cell, zmin } = this.resort.grid, h = this.geo.h;
+    const fx = Math.min(Math.max(x / cell, 0), nx - 1.001), fy = Math.min(Math.max(y / cell, 0), ny - 1.001);
+    const i = fx | 0, j = fy | 0, u = fx - i, v = fy - j, o = j * nx + i;
+    const za = h[o], zb = h[o + 1], zd = h[o + nx], ze = h[o + nx + 1];
+    return zmin + (u >= v ? za + u * (zb - za) + v * (ze - zb) : za + u * (ze - zd) + v * (zd - za)) / 10;
+  }
 
   // ---------- scene building
   buildTerrain() {
@@ -104,53 +121,99 @@ export class SkiMap {
       const r = Math.ceil(rad / cell), ci = Math.round(x / cell), cj = Math.round(y / cell);
       for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
         for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++) {
-          const d = Math.hypot(i * cell - x, j * cell - y);
-          if (d <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v * Math.min(1, 1.6 - d / rad));
+          if (Math.hypot(i * cell - x, j * cell - y) <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v);
         }
     };
-    for (const t of this.resort.trails) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], t.glade ? 12 : t.d === 0 ? 30 : 24, t.glade ? 0.45 : 1);
-    for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 34, 0.8);
+    for (const t of this.resort.trails) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], t.glade ? 16 : t.d === 0 ? 30 : 25, t.glade ? 0.4 : 1);
+    for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 30, 1);
     for (const l of this.resort.lifts) {
       const n = Math.ceil(l.len / 12);
       for (let k = 0; k <= n; k++) {
         const f = k / n, x = l.pts[0] + (l.pts[l.pts.length - 2] - l.pts[0]) * f, y = l.pts[1] + (l.pts[l.pts.length - 1] - l.pts[1]) * f;
-        stamp(x, y, 12, 0.55);
+        stamp(x, y, 9, 0.4);
       }
     }
     this.snowMask = mask;
-    const pos = new Float32Array(nx * ny * 3), col = new Float32Array(nx * ny * 3);
-    const snow = new THREE.Color('#f4f8fc'), f1 = new THREE.Color('#1f4a34'), f2 = new THREE.Color('#34704b'), rime = new THREE.Color('#9fb9b4'), rock = new THREE.Color('#6f7780');
-    const c = new THREE.Color();
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-      const o = j * nx + i, z = h[o] / 10;
-      pos[o * 3] = i * cell - geo.W / 2; pos[o * 3 + 1] = z; pos[o * 3 + 2] = -(j * cell - geo.H / 2);
-      const noise = (Math.sin(i * 12.9898 + j * 78.233) * 43758.5453) % 1;
-      c.copy(f1).lerp(f2, Math.abs(noise));
-      const alt = z + zmin;
-      if (alt > 950) c.lerp(rime, Math.min(1, (alt - 950) / 220) * 0.8);
-      if (i > 0 && i < nx - 1 && j > 0 && j < ny - 1) {
-        const sl = Math.hypot(h[o + 1] - h[o - 1], h[o + nx] - h[o - nx]) / 10 / (2 * cell);
-        if (sl > 0.75) c.lerp(rock, Math.min(1, (sl - 0.75) * 3));
-      }
-      c.lerp(snow, Math.min(1, mask[o]));
-      col[o * 3] = c.r; col[o * 3 + 1] = c.g; col[o * 3 + 2] = c.b;
-    }
-    const idx = new Uint32Array((nx - 1) * (ny - 1) * 6);
+    // One flat colour per triangle (no blending between vertices): crisp snow / glade / forest /
+    // rock facets. Face normals are baked in, so the shader does no per-pixel flat-shading work.
+    const tris = (nx - 1) * (ny - 1) * 2;
+    const pos = new Float32Array(tris * 9), col = new Uint8Array(tris * 9);
+    const SNOW = [246, 250, 253], GLADE = [176, 205, 190], ROCK = [124, 132, 141];
+    const forest = (alt) => {
+      // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
+      if (alt > 1040) return [150, 182, 176];
+      if (alt > 860) return [44, 104, 80];
+      return [52, 122, 78];
+    };
     let k = 0;
+    const put = (o, c) => {
+      const i = o % nx, j = (o / nx) | 0;
+      pos[k] = i * cell - geo.W / 2; pos[k + 1] = h[o] / 10; pos[k + 2] = -(j * cell - geo.H / 2);
+      col[k] = c[0]; col[k + 1] = c[1]; col[k + 2] = c[2];
+      k += 3;
+    };
+    const face = (a, b, c) => {
+      const m = (mask[a] + mask[b] + mask[c]) / 3, alt = zmin + (h[a] + h[b] + h[c]) / 30;
+      const zs = [h[a], h[b], h[c]], relief = (Math.max(...zs) - Math.min(...zs)) / 10 / cell;
+      const colr = m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
+      put(a, colr); put(b, colr); put(c, colr);
+    };
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
       const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
-      idx[k++] = a; idx[k++] = b; idx[k++] = e; idx[k++] = a; idx[k++] = e; idx[k++] = d;
+      face(a, b, e); face(a, e, d);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3, true));
+    g.computeVertexNormals();
+    this.terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    this.scene.add(this.terrain);
+    this.buildSurround();
+  }
+
+  /**
+   * The land around the resort: a coarse 140 m mesh reaching ~10 km out, so the mountain
+   * sits in its real landscape instead of on a blank slab. ~50k triangles, no textures.
+   */
+  buildSurround() {
+    const sr = this.resort.surround, sh = this.surroundH, geo = this.geo;
+    if (!sr || !sh) return;
+    const { nx, ny, cell, x0, y0 } = sr, zmin = this.resort.grid.zmin;
+    const pos = new Float32Array(nx * ny * 3), col = new Float32Array(nx * ny * 3), inside = new Uint8Array(nx * ny);
+    const low = new THREE.Color('#6a9a68'), band = new THREE.Color('rgb(52,122,78)'), mid = new THREE.Color('rgb(44,104,80)'), high = new THREE.Color('rgb(150,182,176)'), c = new THREE.Color();
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const o = j * nx + i, x = x0 + i * cell, y = y0 + j * cell;
+      const inn = x > 20 && y > 20 && x < geo.W - 20 && y < geo.H - 20;
+      inside[o] = inn ? 1 : 0;
+      // inside the detailed map the coarse mesh follows the LiDAR surface, so the two meet cleanly at the border
+      const z = inn ? this.surfaceZ(x, y) - 2.5 : sh[o] + sr.zmin;
+      pos[o * 3] = x - geo.W / 2; pos[o * 3 + 1] = z - zmin; pos[o * 3 + 2] = -(y - geo.H / 2);
+      // same forest bands as the detailed map so the border between the two doesn't show
+      if (z > 1040) c.copy(high); else if (z > 860) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (480 - z) / 250)));
+      col[o * 3] = c.r; col[o * 3 + 1] = c.g; col[o * 3 + 2] = c.b;
+    }
+    const idx = [];
+    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+      if (inside[a] && inside[b] && inside[d] && inside[e]) continue; // hidden under the detailed map
+      idx.push(a, b, e, a, e, d);
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.setIndex(new THREE.BufferAttribute(idx, 1));
-    this.terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
-    this.scene.add(this.terrain);
-    // skirt so the model reads as a solid block
-    const base = new THREE.Mesh(new THREE.BoxGeometry(geo.W, 60, geo.H), new THREE.MeshLambertMaterial({ color: '#56616e' }));
-    base.position.y = -31;
-    this.scene.add(base);
+    g.setIndex(idx);
+    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+    // short skirt under the edge of the detailed map hides any sliver between the two meshes
+    const { nx: fx, ny: fy, cell: fc } = this.resort.grid, sk = [];
+    const edge = (x1, y1, x2, y2) => {
+      const a = this.world(x1, y1, 0), b = this.world(x2, y2, 0);
+      sk.push(a.x, a.y, a.z, b.x, b.y, b.z, b.x, b.y - 40, b.z, a.x, a.y, a.z, b.x, b.y - 40, b.z, a.x, a.y - 40, a.z);
+    };
+    for (let i = 0; i < fx - 1; i++) { edge(i * fc, 0, (i + 1) * fc, 0); edge(i * fc, geo.H, (i + 1) * fc, geo.H); }
+    for (let j = 0; j < fy - 1; j++) { edge(0, j * fc, 0, (j + 1) * fc); edge(geo.W, j * fc, geo.W, (j + 1) * fc); }
+    const sg = new THREE.BufferGeometry();
+    sg.setAttribute('position', new THREE.Float32BufferAttribute(sk, 3));
+    this.scene.add(new THREE.Mesh(sg, new THREE.MeshBasicMaterial({ color: '#33684d', side: THREE.DoubleSide })));
   }
 
   buildTrees() {
@@ -159,23 +222,24 @@ export class SkiMap {
     const q = 6, qx = Math.ceil(nx / q), qy = Math.ceil(ny / q), near = new Uint8Array(qx * qy);
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (mask[j * nx + i] > 0.3) {
       const ci = (i / q) | 0, cj = (j / q) | 0;
-      for (let b = Math.max(0, cj - 5); b <= Math.min(qy - 1, cj + 5); b++) for (let a = Math.max(0, ci - 5); a <= Math.min(qx - 1, ci + 5); a++) near[b * qx + a] = 1;
+      for (let b = Math.max(0, cj - 4); b <= Math.min(qy - 1, cj + 4); b++) for (let a = Math.max(0, ci - 4); a <= Math.min(qx - 1, ci + 4); a++) near[b * qx + a] = 1;
     }
     let seed = 7;
     const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
     const spots = [];
     for (let j = 1; j < ny - 1; j += 2) for (let i = 1; i < nx - 1; i += 2) {
-      if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.25) continue;
-      if (rnd() < 0.42) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
+      if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.15) continue;
+      if (rnd() < 0.3) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
     }
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
+    const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
     spots.forEach(([x, y, r], i) => {
-      const p = this.world(x, y, -0.5), s = 2.3 + r * 1.6;
-      m.compose(p, qn, sc.set(s * 1.25, s, s * 1.25));
+      const p = this.world(x, y, -0.5), s = 2.6 + r * 1.5;
+      m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3));
       mesh.setMatrixAt(i, m);
       const alt = p.y + this.resort.grid.zmin;
-      c.set('#234f37').lerp(new THREE.Color('#3f7d55'), r).lerp(new THREE.Color('#c9d8d6'), alt > 980 ? Math.min(0.7, (alt - 980) / 250) : 0);
+      c.copy(dark).lerp(light, r).lerp(frost, alt > 1000 ? Math.min(0.75, (alt - 1000) / 200) : 0);
       mesh.setColorAt(i, c);
     });
     this.trees = mesh;
@@ -225,10 +289,13 @@ export class SkiMap {
     }
     for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g'] ||= []));
     // Zone overlays sit under the trail lines: wide translucent bands in their own colours.
-    G.add(this.fatLine(slow, COLORS.slow, 38, { opacity: 0.45, order: 1, world: true }));
+    // each zone is a band in real metres plus a thin on-screen band, so it stays visible when zoomed out
+    G.add(this.fatLine(slow, COLORS.slow, 40, { opacity: 0.5, order: 1, world: true }));
+    G.add(this.fatLine(slow, COLORS.slow, 10, { opacity: 0.45, order: 1 }));
     const park = [];
     for (const p of R.parks) this.segs(p.pts, 2.3, park);
-    G.add(this.fatLine(park, COLORS.park, 34, { opacity: 0.78, order: 2, world: true }));
+    G.add(this.fatLine(park, COLORS.park, 34, { opacity: 0.75, order: 2, world: true }));
+    G.add(this.fatLine(park, COLORS.park, 9, { opacity: 0.7, order: 2 }));
     G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
       const glade = key.endsWith('g');
@@ -371,7 +438,40 @@ export class SkiMap {
     this.pinObj = M.makePin('#ff3b30'); this.pinObj.visible = false; this.scene.add(this.pinObj);
     this.meetObj = M.makeFlag('#ff9f0a'); this.meetObj.visible = false; this.scene.add(this.meetObj);
     this.routeLine = null; this.trackLine = null;
-    this.playObj = M.makeAvatar('boy-ski', '#ff9f0a'); this.playObj.visible = false; this.scene.add(this.playObj);
+    this.playObj = new THREE.Group(); this.playObj.visible = false; this.scene.add(this.playObj);
+  }
+
+  /** (Re)build a person marker when the avatar or colour changes; returns true if rebuilt. */
+  dress(obj, avatar, color, ring) {
+    const key = avatar + color + ring;
+    if (obj.userData.key === key) return false;
+    obj.clear();
+    const av = M.makeAvatar(avatar, color);
+    obj.add(av);
+    if (ring) obj.add(M.makeRing(ring));
+    obj.userData.key = key; obj.userData.avatar = av;
+    return true;
+  }
+
+  /** Aim a person at a new position/heading; frame() glides them there. */
+  aim(obj, x, y, heading, moving, snap) {
+    const p = this.world(x, y, 0.4), u = obj.userData;
+    if (snap || !u.target || u.target.distanceTo(p) > 400) obj.position.copy(p);
+    u.target = p;
+    if (heading != null) { u.yaw = Math.PI - heading; if (snap || u.yawNow == null) { u.yawNow = u.yaw; obj.rotation.y = u.yaw; } }
+    u.moving = !!moving;
+  }
+
+  glide(obj, dt) {
+    const u = obj.userData;
+    if (u.target) obj.position.lerp(u.target, 1 - Math.exp(-dt * 5));
+    if (u.yaw != null) {
+      let d = u.yaw - u.yawNow;
+      d = Math.atan2(Math.sin(d), Math.cos(d));
+      u.yawNow += d * (1 - Math.exp(-dt * 6));
+      obj.rotation.y = u.yawNow;
+    }
+    if (u.avatar) M.animateAvatar(u.avatar, this.t, dt, u.moving);
   }
 
   // ---------- public state setters
@@ -401,37 +501,24 @@ export class SkiMap {
   setUnits(u) { this.units = u; }
 
   setMe(me) {
-    // me: {x, y, heading, avatar, color, name} | null
+    // me: {x, y, heading, avatar, color, moving} | null
     this.me = me;
     if (!me) { this.meObj.visible = false; return; }
-    const key = me.avatar + me.color;
-    if (this.meObj.userData.key !== key) {
-      this.meObj.clear();
-      this.meObj.add(M.makeAvatar(me.avatar, me.color), M.makeRing(COLORS.me));
-      this.meObj.userData.key = key;
-    }
-    this.meObj.position.copy(this.world(me.x, me.y, 0.4));
-    if (me.heading != null) this.meObj.rotation.y = Math.PI - me.heading;
+    const fresh = this.dress(this.meObj, me.avatar, me.color, COLORS.me);
+    this.aim(this.meObj, me.x, me.y, me.heading, me.moving, fresh);
   }
 
-  /** friends: [{id, name, avatar, color, x, y, heading, age (s), stale, paused, online}] */
+  /** friends: [{id, name, avatar, color, x, y, heading, moving, age (s), stale, paused, online}] */
   setFriends(list) {
     const ids = new Set(list.map((f) => f.id));
     for (const [id, f] of this.friends) if (!ids.has(id)) { this.scene.remove(f.obj); this.friends.delete(id); }
     for (const d of list) {
       let f = this.friends.get(d.id);
-      const key = d.avatar + d.color + (d.stale ? 's' : '');
-      if (!f || f.key !== key) {
-        if (f) this.scene.remove(f.obj);
-        const obj = new THREE.Group();
-        obj.add(M.makeAvatar(d.avatar, d.stale ? '#8d949e' : d.color), M.makeRing(d.stale ? '#8d949e' : d.color));
-        this.scene.add(obj);
-        f = { obj, key };
-        this.friends.set(d.id, f);
-      }
+      if (!f) { f = { obj: new THREE.Group() }; this.scene.add(f.obj); this.friends.set(d.id, f); }
+      const col = d.stale ? '#8d949e' : d.color;
+      const fresh = this.dress(f.obj, d.avatar, col, col);
       f.data = d;
-      f.obj.position.copy(this.world(d.x, d.y, 0.4));
-      if (d.heading != null) f.obj.rotation.y = Math.PI - d.heading;
+      this.aim(f.obj, d.x, d.y, d.heading, d.moving, fresh);
     }
   }
 
@@ -457,19 +544,20 @@ export class SkiMap {
       if (b[5]) continue;
       const pa = this.world(a[1], a[2], 5), pb = this.world(b[1], b[2], 5);
       pos.push(pa.x, pa.y, pa.z, pb.x, pb.y, pb.z);
-      c.set(b[4] === 1 ? '#ff7a1a' : b[4] === 2 ? '#c9ced6' : '#ffd9a8');
+      c.set(b[4] === 1 ? COLORS.track : b[4] === 2 ? '#c9ced6' : '#ffc2df');
       col.push(c.r, c.g, c.b, c.r, c.g, c.b);
     }
     this.trackLine = this.fatLine(pos, '#fff', 4.5, { colors: col, overlay: true, order: 19 });
     this.scene.add(this.trackLine);
   }
 
+  /** Replay marker: the same animated avatar as live tracking. p: {x, y, heading, moving, avatar, color, snap} */
   setPlayhead(p) {
     this.playObj.visible = !!p;
-    if (!p) return;
-    this.playObj.position.copy(this.world(p.x, p.y, 0.4));
-    if (p.heading != null) this.playObj.rotation.y = Math.PI - p.heading;
     this.play = p;
+    if (!p) { this.playObj.userData.target = null; return; }
+    const fresh = this.dress(this.playObj, p.avatar || 'boy-ski', p.color || COLORS.track, '');
+    this.aim(this.playObj, p.x, p.y, p.heading, p.moving, fresh || p.snap);
   }
 
   /** Smoothly centre the map on a local point. */
@@ -590,13 +678,34 @@ export class SkiMap {
   loop() {
     if (!this.running) return;
     requestAnimationFrame(() => this.loop());
-    this.t += Math.min(0.1, this.clock.getDelta());
+    // Full frame rate while the map is being touched or flown; ~30 fps otherwise (saves battery/GPU).
+    const now = performance.now();
+    const busy = now - (this.lastInput || 0) < 900 || this.introT != null;
+    if (!busy && now - (this.lastFrame || 0) < 31) return;
+    this.lastFrame = now;
+    this.dt = Math.min(0.1, this.clock.getDelta());
+    this.t += this.dt;
     this.frame();
+  }
+
+  /** Fly in from high above the resort to the opening view (used after "Ski here"). */
+  intro(seconds = 2.6) {
+    const c = this.controls, end = this.cam3.position.clone();
+    this.introFrom = new THREE.Vector3(c.target.x, c.target.y + 15000, c.target.z + 600);
+    this.introTo = end; this.introT = 0; this.introDur = seconds;
+    this.cam3.position.copy(this.introFrom);
+    c.enabled = false;
   }
 
   frame() {
     const c = this.controls;
-    if (this.mode === '3d') {
+    if (this.introT != null) {
+      this.introT = Math.min(1, this.introT + this.dt / this.introDur);
+      const k = 1 - Math.pow(1 - this.introT, 3);
+      this.cam3.position.lerpVectors(this.introFrom, this.introTo, k);
+      this.cam3.lookAt(c.target);
+      if (this.introT >= 1) { this.introT = null; c.enabled = this.mode === '3d'; c.update(); }
+    } else if (this.mode === '3d') {
       c.update();
       // keep the orbit target on the snow and the camera above the terrain
       const tx = Math.min(this.geo.W / 2, Math.max(-this.geo.W / 2, c.target.x)), tz = Math.min(this.geo.H / 2, Math.max(-this.geo.H / 2, c.target.z));
@@ -621,11 +730,12 @@ export class SkiMap {
       const s = is3 ? Math.max(2.2, this.cam3.position.distanceTo(obj.position) * k) : 14 / this.zoom2 / 3;
       obj.scale.setScalar(s);
     };
-    if (this.me) { this.meObj.visible = is3; scaleFor(this.meObj, 0.02); }
-    for (const f of this.friends.values()) { f.obj.visible = is3; scaleFor(f.obj, 0.02); }
+    const dt = this.dt || 0.016;
+    if (this.me) { this.meObj.visible = is3; this.glide(this.meObj, dt); scaleFor(this.meObj, 0.02); }
+    for (const f of this.friends.values()) { f.obj.visible = is3; this.glide(f.obj, dt); scaleFor(f.obj, 0.02); }
     if (this.pin) scaleFor(this.pinObj, 0.014);
     if (this.meet) scaleFor(this.meetObj, 0.016);
-    if (this.playObj.visible) scaleFor(this.playObj, 0.02);
+    if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
     this.renderer.render(this.scene, this.camera);
     this.drawOverlay();
   }
@@ -698,9 +808,9 @@ export class SkiMap {
     };
     if (this.pin) marker(this.pin, this.pinObj, '#d92d20', 'Pin', { type: 'pin' });
     if (this.meet) marker(this.meet, this.meetObj, '#c96f00', this.meet.name || 'Meet here', { type: 'meet' });
-    if (this.playObj.visible && !is3) {
+    if (this.play && !is3) {
       const p = this.project(this.playObj.position);
-      if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, 7); ctx.fillStyle = '#ff7a1a'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke(); }
+      if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, 7); ctx.fillStyle = this.play?.color || COLORS.track; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke(); }
     }
 
     // POIs
@@ -722,7 +832,7 @@ export class SkiMap {
       }
     }
     // zone + lift + trail names
-    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label('⬣ ' + z.name, s, '#7b22c9', 11, 700); }
+    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label('⬣ ' + z.name, s, '#b85a00', 11, 700); }
     if (near > 1.15) for (const z of this.liftLabels) {
       const s = this.project(z.p);
       if (s) label(z.l.name + (this.closed.has('l' + z.l.id) ? ' (closed)' : ''), s, this.closed.has('l' + z.l.id) ? '#6b7280' : '#b01d1d', 11, 700);

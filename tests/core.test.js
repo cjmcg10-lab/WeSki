@@ -36,13 +36,33 @@ describe('routing', () => {
     expect(r.steps.some((s) => s.kind === 'lift')).toBe(true);
     expect(r.vertUp).toBeGreaterThan(500);
   });
-  it('respects maximum difficulty', () => {
+  it('stays within the maximum difficulty when a way exists', () => {
     const from = { node: poi('Aerial Tram (top)').n }, to = { node: poi('Tramside Base Lodge').n };
     for (const maxDiff of [1, 2, 3]) {
       const r = router.route(from, to, { maxDiff, closed: new Set() });
       expect(r.ok).toBe(true);
+      expect(r.over).toEqual([]);
       expect(Math.max(...r.steps.filter((s) => s.kind === 'ski').map((s) => s.d))).toBeLessThanOrEqual(maxDiff);
     }
+  });
+  it('still gives directions from a trail above the limit, leaving it as soon as possible', () => {
+    const jfk = trail('JFK'), a = pointAlong(jfk.pts, jfk.len * 0.3);
+    const to = { node: poi('Tramside Base Lodge').n };
+    const r = router.route({ x: a[0], y: a[1] }, to, { maxDiff: 0, closed: new Set() });
+    expect(r.ok).toBe(true);
+    expect(r.overNow).toBe(true);
+    expect(r.over.length).toBeGreaterThan(0);
+    const free = router.route({ x: a[0], y: a[1] }, to, { maxDiff: 3, closed: new Set() });
+    const overDist = (x, max) => x.steps.filter((s) => s.kind === 'ski' && s.d > max).reduce((n, s) => n + s.dist, 0);
+    expect(overDist(r, 0)).toBeLessThanOrEqual(overDist(free, 0)); // no more hard terrain than the unrestricted route
+    expect(r.time).toBeLessThan(3600); // reported time is real time, not the penalised search cost
+  });
+  it('warns rather than refuses when the only way is above the limit', () => {
+    // From the tram summit there is no green way down: the route must exist and flag the harder trails.
+    const r = router.route({ node: poi('Aerial Tram (top)').n }, { node: poi('Tramside Base Lodge').n }, { maxDiff: 0, closed: new Set() });
+    expect(r.ok).toBe(true);
+    expect(r.over.length).toBeGreaterThan(0);
+    expect(r.overNow).toBe(false);
   });
   it('avoids confirmed closures and reports when limits block the way', () => {
     const from = { node: poi('Tramside Base Lodge').n }, to = { node: poi('Sky Haus Deli').n };
@@ -52,7 +72,7 @@ describe('routing', () => {
     const r2 = router.route(from, to, { maxDiff: 3, closed });
     if (r2.ok) expect(r2.steps.some((s) => s.kind === 'lift' && s.ref === usedLift.ref)).toBe(false);
     const allLifts = new Set(resort.lifts.map((l) => 'l' + l.id));
-    expect(router.route(from, to, { maxDiff: 3, closed: allLifts })).toEqual({ ok: false, reason: 'no_route_limits' });
+    expect(router.route(from, to, { maxDiff: 3, closed: allLifts })).toEqual({ ok: false, reason: 'no_route_closures' });
   });
   it('never skis uphill or rides a lift down', () => {
     const r = router.route({ node: poi('Stateside Hotel & Base Lodge').n }, { node: poi('Tramside Base Lodge').n }, all);

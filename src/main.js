@@ -5,6 +5,8 @@ import { SkiMap, COLORS, fmtAge } from './map.js';
 import { Locator } from './location.js';
 import { GroupClient, createGroup } from './group.js';
 import { sessions, prefs, persist } from './store.js';
+import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
+import { RESORTS } from './resorts.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -66,35 +68,116 @@ function avatarSvg(type, color) {
 }
 
 // ---------- boot
-async function boot() {
-  try {
-    const [resort, buf] = await Promise.all([
-      fetch('/data/resort.json').then((r) => { if (!r.ok) throw new Error('map data'); return r.json(); }),
-      fetch('/data/terrain.bin').then((r) => { if (!r.ok) throw new Error('terrain'); return r.arrayBuffer(); }),
-    ]);
+const JAY = RESORTS[0];
+const fetchOk = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r; });
+// Map data starts downloading straight away; the 3D scene is built once a resort is chosen.
+const dataP = Promise.all([
+  fetchOk('/data/resort.json').then((r) => r.json()),
+  fetchOk('/data/terrain.bin').then((r) => r.arrayBuffer()),
+  fetchOk('/data/surround.bin').then((r) => r.arrayBuffer()).catch(() => null),
+]);
+dataP.catch(() => {});
+let mapP = null;
+
+function initMap() {
+  return (mapP ||= (async () => {
+    const [resort, buf, sur] = await dataP;
     S.resort = resort;
     S.geo = new Geo(resort, new Uint16Array(buf));
     S.router = new Router(resort);
-    S.map = new SkiMap($('#map'), resort, S.geo);
+    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
     S.map.setUnits(S.units);
     S.map.setClosures(S.closures);
     S.map.onTap(onMapTap);
     S.loc = new Locator(S.geo, onFix, (m) => { S.gpsMsg = m; renderChrome(); if (m.startsWith('Location is blocked')) toast(m, 7000); });
     if (S.testMode) S.loc.setSim(true);
-    $('#splash').classList.add('done');
-    setTimeout(() => $('#splash').remove(), 600);
     renderChrome();
     await recoverSession();
     const saved = prefs.get('group', null);
     if (saved && S.profile.name) joinGroup(saved.code, saved.sharing, true);
     setInterval(tick, 1000);
     window.weski = S; // handy for debugging from the Safari console
-  } catch (e) {
-    $('#splash-msg').textContent = navigator.onLine === false
-      ? 'You are offline and the map has not been downloaded on this phone yet. Connect once to load it.'
-      : 'Could not load the map. Check your connection and reopen.';
-    console.error(e);
+  })());
+}
+
+function bootFailed(e) {
+  console.error(e);
+  const msg = navigator.onLine === false
+    ? 'You are offline and the map has not been downloaded on this phone yet. Connect once to load it.'
+    : 'Could not load the map. Check your connection and reopen.';
+  if ($('#splash-msg')) $('#splash-msg').textContent = msg; else toast(msg, 8000);
+}
+
+function hideSplash() {
+  const sp = $('#splash');
+  if (!sp) return;
+  sp.classList.add('done');
+  setTimeout(() => sp.remove(), 600);
+}
+
+async function boot() {
+  // Straight to the map when rejoining a group (you're mid-ski-day) or when asked to skip.
+  const skip = prefs.get('group', null) || new URLSearchParams(location.search).has('skip');
+  if (skip) {
+    try { await initMap(); hideSplash(); } catch (e) { bootFailed(e); }
+    return;
   }
+  try { await openStart(); hideSplash(); } catch (e) {
+    // The globe is a nicety: if it can't load, go straight to the mountain.
+    console.warn('start screen unavailable', e);
+    $('#start').classList.add('hidden');
+    try { await initMap(); hideSplash(); } catch (err) { bootFailed(err); }
+  }
+}
+
+// ---------- start screen (globe + resort picker)
+let globe = null;
+async function openStart() {
+  const el = $('#start');
+  const [{ Globe }, data] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json())]);
+  el.classList.remove('hidden', 'leaving');
+  $('#resort-card').classList.add('hidden');
+  $('#start-panel').classList.remove('hidden');
+  $('#f-resort').value = '';
+  renderResortList('');
+  globe = new Globe($('#globe'), data, RESORTS);
+}
+
+function renderResortList(q) {
+  q = q.trim().toLowerCase();
+  const list = RESORTS.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
+  $('#resort-list').innerHTML = list.length
+    ? list.map((r) => `<button class="resort-row" data-act="pick-resort" data-id="${r.id}"><span class="dotc ${r.available ? 'on' : ''}"></span><span class="grow"><b>${esc(r.name)}</b><small>${esc(r.region)}</small></span><span class="tag ${r.available ? 'avail' : ''}">${r.available ? 'Ready' : 'Coming soon'}</span></button>`).join('')
+    : '<p class="start-empty">No resort matches that search yet.</p>';
+}
+
+async function pickResort(id) {
+  const r = RESORTS.find((x) => x.id === id);
+  if (!r || !globe) return;
+  $('#f-resort').blur();
+  $('#start-panel').classList.add('hidden');
+  await globe.flyTo(r);
+  const card = $('#resort-card');
+  card.innerHTML = `<h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p>
+    ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
+      <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski here</button>`
+    : '<p class="soon">The 3D map for this resort has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
+    <button class="back" data-act="resort-back">‹ All resorts</button>`;
+  card.classList.remove('hidden');
+  if (r.available) initMap().catch(() => {}); // build the mountain while the card is on screen
+}
+
+async function skiHere(btn) {
+  btn.disabled = true; btn.textContent = 'Loading the mountain…';
+  try { await initMap(); } catch (e) { btn.disabled = false; btn.textContent = 'Ski here'; bootFailed(e); return; }
+  const g = globe;
+  globe = null;
+  $('#resort-card').classList.add('hidden');
+  $('#start').classList.add('leaving');     // cross-fade to the 3D map while the globe dives in
+  S.map.intro(2.8);
+  await g.dive(1.3);
+  setTimeout(() => { $('#start').classList.add('hidden'); g.dispose(); }, 250);
+  renderChrome();
 }
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
@@ -104,7 +187,7 @@ persist();
 document.addEventListener('click', onClick);
 document.addEventListener('input', onInput);
 document.addEventListener('change', onInput);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
+document.addEventListener('visibilitychange', () => { if (!S.map) return; if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
 window.addEventListener('pagehide', autosave);
 boot();
 
@@ -116,16 +199,21 @@ function onFix(fix) {
     const d = Math.hypot(x - S.me.x, y - S.me.y);
     heading = d > 3 ? Math.atan2(x - S.me.x, y - S.me.y) : S.me.heading;
   }
-  S.me = { x, y, lat: fix.lat, lon: fix.lon, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y) };
+  // speed from consecutive fixes (lightly smoothed) drives the riding animation
+  let speed = S.me?.speed || 0;
+  if (S.me && fix.t > S.me.t) speed = speed * 0.4 + (Math.hypot(x - S.me.x, y - S.me.y) / ((fix.t - S.me.t) / 1000)) * 0.6;
+  if (speed > 45) speed = 0;
+  S.me = { x, y, lat: fix.lat, lon: fix.lon, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y), speed };
   S.gpsMsg = '';
   if (S.tracker) S.tracker.add(fix);
-  S.map.setMe(S.me.inBounds ? { x, y, heading, avatar: S.profile.avatar, color: S.profile.color } : null);
+  const riding = speed > 1.2 && !(S.tracker && S.tracker.state === ST.LIFT);
+  S.map.setMe(S.me.inBounds ? { x, y, heading, avatar: S.profile.avatar, color: S.profile.color, moving: riding } : null);
   if (S.group && S.sharing) {
     const now = Date.now(), last = S.lastSent;
     const moved = last ? Math.hypot(x - last.x, y - last.y) : Infinity;
     if (!last || now - last.t > (moved > 4 ? 4000 : 20000)) {
       S.lastSent = { x, y, t: now };
-      S.group.client.sendPos({ lat: fix.lat, lon: fix.lon, acc: fix.acc, spd: S.tracker ? S.tracker.speed : 0, hdg: heading == null ? null : (heading * 180) / Math.PI, st: ['idle', 'ski', 'lift'][S.tracker ? S.tracker.state : 0] });
+      S.group.client.sendPos({ lat: fix.lat, lon: fix.lon, acc: fix.acc, spd: Math.min(60, speed), hdg: heading == null ? null : (heading * 180) / Math.PI, st: ['idle', 'ski', 'lift'][S.tracker ? S.tracker.state : 0] });
     }
   }
   if (S.followMe && S.me.inBounds) { S.map.focus(x, y, 700); S.followMe = false; }
@@ -276,6 +364,7 @@ function friends() {
       f.inBounds = S.geo.inBounds(f.x, f.y);
       f.heading = m.pos.hdg == null ? null : (m.pos.hdg * Math.PI) / 180;
       f.stale = f.age > STALE_S || !m.sharing;
+      f.moving = !f.stale && f.age < 30 && m.pos.spd > 1.2 && m.pos.st !== 'lift';
     }
     return f;
   });
@@ -333,7 +422,7 @@ function recalcNav(force = false) {
   if (!force && now - nav.lastCalc < 1500) return;
   nav.lastCalc = now;
   const dest = navDest();
-  nav.problem = null; nav.warn = null;
+  nav.problem = null; nav.warn = null; nav.over = null;
   if (!dest || dest.gone) { nav.problem = { title: `${dest?.name || 'That place'} is no longer available`, text: dest?.gone ? 'They left the group.' : '' }; nav.route = null; }
   else {
     nav.name = dest.name;
@@ -347,6 +436,7 @@ function recalcNav(force = false) {
         const changed = !nav.route || Math.abs(r.time - nav.route.time) > 45 || r.steps.map((s) => s.name).join() !== nav.route.steps.map((s) => s.name).join();
         if (nav.route && changed && !force) toast(f ? `Rerouted — ${f.name} or you moved` : 'Rerouted');
         nav.route = r;
+        nav.over = overWarning(r);
         recordRoute(dest.name, r);
         const left = Math.hypot(S.me.x - dest.x, S.me.y - dest.y);
         nav.arrived = left < 30;
@@ -356,7 +446,7 @@ function recalcNav(force = false) {
         nav.problem = {
           from_off_network: { title: "You're off the mapped trails", text: 'Directions start once you are within 250 m of a Jay Peak trail, lift or base area.', meet: !!f },
           to_off_network: { title: `${who} is off the mapped network`, text: 'Their location is not near any mapped trail, lift or walkway, so there is no verified route.', meet: !!f },
-          no_route_limits: { title: `Can't reach ${who} within your limits`, text: `No route using trails up to ${DIFF_NAMES[S.maxDiff]} with the current closures. Raise your max difficulty in More, or meet somewhere you can both reach.`, meet: true },
+          no_route_closures: { title: `Closures block the way to ${who}`, text: 'Every route uses a lift or trail you marked closed. Reopen it in More → Closures if that has changed, or meet somewhere you can both reach.', meet: true },
           no_route: { title: `No mapped route to ${who}`, text: 'The mapped trails, lifts and walkways do not connect you.', meet: true },
         }[r.reason];
       }
@@ -364,6 +454,17 @@ function recalcNav(force = false) {
   }
   S.map.setRoute(nav.route ? nav.route.pts : null);
   renderChrome();
+}
+
+/** Warning text when a route has to use trails above the skier's chosen maximum. */
+function overWarning(r) {
+  if (!r.over.length) return null;
+  const names = [...new Set(r.over.map((s) => `${s.name} (${DIFF_NAMES[s.d]})`))];
+  const dist = fmtDist(r.over.reduce((n, s) => n + s.dist, 0)), lim = DIFF_NAMES[S.maxDiff];
+  const later = r.over.filter((s, i) => !(r.overNow && s === r.steps[0]));
+  if (r.overNow && !later.length) return { title: `You're on a trail above your ${lim} limit`, text: `This route gets you off ${names.join(', ')} the quickest way (${dist}), then stays within your limit.` };
+  if (r.overNow) return { title: `Above your ${lim} limit`, text: `You're on a harder trail now, and there is no other way from here: ${dist} on ${names.join(', ')}. Take it slow or ask patrol for help.` };
+  return { title: `No ${lim}-only way there`, text: `The only route includes ${dist} above your limit: ${names.join(', ')}. Everything else stays within it.` };
 }
 
 function recordRoute(name, r) {
@@ -381,7 +482,7 @@ function proposeMeet() {
   const me = S.me && S.router.snap(S.me.x, S.me.y) ? { x: S.me.x, y: S.me.y } : null;
   const fr = f?.has && S.router.snap(f.x, f.y) ? { x: f.x, y: f.y } : null;
   const best = suggestMeetingPoint(S.router, me, fr, routeOpts());
-  if (!best) { toast('No meeting point is reachable with your current limits.'); return; }
+  if (!best) { toast('No meeting point is reachable with the current closures.'); return; }
   const p = best.poi, [lat, lon] = S.geo.toLatLon(p.x, p.y), name = p.name.replace(' (base)', ' base');
   if (S.group) S.group.client.setMeet({ lat, lon, name });
   S.map.setMeet({ x: p.x, y: p.y, name });
@@ -404,9 +505,9 @@ function describeSpot(x, y) {
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
     bits.unshift(`<span class="d${best.t.d}">${DIFF_SYM[best.t.d]}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
-    if (best.t.slow) bits.push(`<span style="color:#9a7b00">▽ Slow zone</span>`);
+    if (best.t.slow) bits.push(`<span style="color:#128a4a">▽ Slow zone</span>`);
     const park = S.resort.parks.find((p) => nearestOnLine(p.pts, x, y).d < 30);
-    if (park) bits.push(`<span style="color:#7b22c9">⬣ ${esc(park.name)}</span>`);
+    if (park) bits.push(`<span style="color:#b85a00">⬣ ${esc(park.name)}</span>`);
     if (S.closures.has('t' + best.t.id)) bits.push('Marked closed');
   }
   return bits.join(' · ');
@@ -439,6 +540,7 @@ function renderChrome() {
     const s = r.steps[0];
     if (s && !nav.arrived) html += `<div class="next">${stepIcon(s)}<span>${stepText(s)}${r.steps[1] ? `, then ${stepText(r.steps[1], true)}` : ''}</span></div>`;
   }
+  if (nav.over && r) html += `<div class="warnbox over"><b>⚠ ${esc(nav.over.title)}</b>${esc(nav.over.text)}</div>`;
   if (w) html += box(w);
   if (p) html += box(p);
   html += '<div class="btns">';
@@ -474,7 +576,7 @@ function closeSheet() {
 
 function renderSheet() {
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = $('#sheet-title').textContent === title;
   $('#sheet-title').textContent = title;
@@ -626,12 +728,13 @@ function routeRow(r, id, i) {
 function sheetMore() {
   const off = prefs.get('offline', null);
   return ['More', `
-    <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions never use trails harder than this.</p></div>
+    <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
     <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire Jay Peak map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
     <button class="btn alt" data-act="legend">Map legend</button>
+    <button class="btn alt" data-act="change-resort">Change resort (globe)</button>
     <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open WeSki from the icon for full screen and offline use.</p></div>
     <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Slow zones and terrain parks: ${esc(S.resort.sources.zones)}.</p><p class="note">Not an official Jay Peak product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
 }
@@ -664,12 +767,12 @@ function sheetLegend() {
   return ['Legend', `<div class="card"><h3>Trail difficulty</h3>
       ${line(COLORS.diff[0], '<b class="d0">●</b>&nbsp; Easier (green circle)')}${line(COLORS.diff[1], '<b class="d1">■</b>&nbsp; More difficult (blue square)')}
       ${line(COLORS.diff[2], '<b class="d2">◆</b>&nbsp; Most difficult (black diamond)')}${line(COLORS.diff[3], '<b class="d3">◆◆</b>&nbsp; Extreme terrain')}
-      ${line(COLORS.diff[1], 'Dashed = glade (tree skiing)', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
+      ${line(COLORS.diff[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
     <div class="card"><h3>Zones (drawn under the trail)</h3>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.slow}">▽</div></div><span><b>Slow zone</b> — yellow band, ▽ symbol. Designated slow skiing and riding area.</span></div>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.park};color:#fff">⬣</div></div><span><b>Terrain park</b> — purple band, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.slow}">▽</div></div><span><b>Slow zone</b> — wide light-green band, ▽ symbol. Designated slow skiing and riding area.</span></div>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:${COLORS.park};color:#fff">⬣</div></div><span><b>Terrain park</b> — orange band, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
       <p class="note">Zones verified against Jay Peak's Winter 2025–26 trail map. The Gully's position is approximate.</p></div>
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (chairs and tram cabins move along the cable)')}${line(COLORS.route, 'Your directions')}${line('#ff7a1a', 'Replayed run (grey = lift ride)')}</div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (chairs and tram cabins move along the cable)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
 }
@@ -699,8 +802,61 @@ function sheetPlace(ev) {
 function sheetSteps() {
   const r = S.nav?.route;
   if (!r) return ['Directions', '<p class="sub">No route.</p>', true];
-  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · max ${DIFF_NAMES[S.maxDiff]}</p><div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails (downhill), lifts (uphill) and walking links only. Times are estimates.</p>`];
+  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card" style="background:#fdecea;color:#7a1c14"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.over ? ' · <b style="color:#b3261e">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails (downhill), lifts (uphill) and walking links only. Times are estimates.</p>`];
 }
+
+// ---------- weather
+const tempU = (c) => (imp() ? Math.round(c * 1.8 + 32) : Math.round(c));
+const fmtTemp = (c) => `${tempU(c)}°`;
+const fmtWind = (ms) => `${Math.round(imp() ? ms * 2.23694 : ms * 3.6)}`;
+const fmtSnow = (cm) => (imp() ? `${cm / 2.54 < 0.95 && cm > 0.2 ? '<1' : Math.round(cm / 2.54)} in` : `${cm < 0.95 && cm > 0.2 ? '<1' : Math.round(cm)} cm`);
+const compass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
+const hourLabel = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}${h < 12 ? 'a' : 'p'}`; };
+const dayLabel = (iso, i) => (i === 0 ? 'Today' : new Date(iso + 'T12:00').toLocaleDateString([], { weekday: 'short' }));
+
+async function refreshWeather(force) {
+  S.wx = S.wx || {};
+  S.wx.loading = true;
+  if (S.sheet === 'weather') renderSheet();
+  try { S.wx = { data: await loadWeather(JAY, force) }; } catch (e) { S.wx = { error: navigator.onLine === false ? 'You are offline and no forecast is saved on this phone yet.' : 'The weather service did not answer. Try again in a moment.' }; }
+  if (S.sheet === 'weather') renderSheet();
+}
+
+function sheetWeather() {
+  const wx = S.wx || {};
+  if (wx.error) return ['Ski weather', `<div class="card"><p class="sub">${esc(wx.error)}</p><button class="btn alt" data-act="wx-refresh">Try again</button></div>`];
+  if (!wx.data) return ['Ski weather', '<div class="card"><p class="sub">Loading the forecast…</p></div>'];
+  const { summit: s, base: b, at, stale } = wx.data, c = s.current, d = s.daily, h = s.hourly, hi = hourIndex(s);
+  const [label, glyph] = describeCode(c.weather_code);
+  const day = (i) => ({ snow: d.snowfall_sum[i] || 0, rain: d.rain_sum[i] || 0, gust: d.wind_gusts_10m_max[i] || 0, feelsMin: d.apparent_temperature_min[i], tMax: d.temperature_2m_max[i], tMin: d.temperature_2m_min[i] });
+  const vis = h.visibility?.[hi], frz = h.freezing_level_height?.[hi];
+  const next24 = h.snowfall.slice(hi, hi + 24).reduce((n, v) => n + (v || 0), 0);
+  const notes = (i, cur) => skiNotes(day(i), cur, fmtSnow).map(([k, t]) => `<div class="wx-note ${k}">${esc(t)}</div>`).join('');
+  const cell = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+  const hours = h.time.slice(hi, hi + 12).map((t, k) => {
+    const i = hi + k;
+    return `<div class="wx-hour"><span>${k === 0 ? 'Now' : hourLabel(t)}</span><i>${describeCode(h.weather_code[i])[1]}</i><b>${fmtTemp(h.temperature_2m[i])}</b><small>${h.snowfall[i] > 0.05 ? '❄ ' + fmtSnow(h.snowfall[i]) : (h.precipitation_probability[i] ?? 0) + '%'}</small><small>${fmtWind(h.wind_gusts_10m[i])} ${speedUnit()}</small></div>`;
+  }).join('');
+  const today = `
+    <div class="wx-hero"><div class="g">${glyph}</div><div><div class="t">${fmtTemp(c.temperature_2m)}<small> summit</small></div><div class="l">${label} · feels like ${fmtTemp(c.apparent_temperature)}</div><div class="l">Base ${fmtTemp(b.current.temperature_2m)} · today ${fmtTemp(d.temperature_2m_min[0])} to ${fmtTemp(d.temperature_2m_max[0])}</div></div></div>
+    ${notes(0, { vis })}
+    <div class="stats" style="margin-top:10px">
+      ${cell(fmtSnow(d.snowfall_sum[0] || 0), 'New snow today')}${cell(fmtSnow(next24), 'Next 24 h')}${cell(c.snow_depth != null ? fmtSnow(c.snow_depth * 100) : '–', 'Snow depth')}
+      ${cell(`${fmtWind(c.wind_speed_10m)}<small>${speedUnit()}</small>`, `Wind ${compass(c.wind_direction_10m)}`)}${cell(`${fmtWind(c.wind_gusts_10m)}<small>${speedUnit()}</small>`, 'Gusts')}${cell(`${fmtWind(d.wind_gusts_10m_max[0])}<small>${speedUnit()}</small>`, 'Peak gust today')}
+      ${cell(vis != null ? (imp() ? `${(vis / 1609.34).toFixed(vis < 1609 ? 1 : 0)}<small>mi</small>` : `${(vis / 1000).toFixed(vis < 1000 ? 1 : 0)}<small>km</small>`) : '–', 'Visibility')}${cell(frz != null ? fmtVert(frz).replace(' ', '<small>') + '</small>' : '–', 'Freezing level')}${cell(`${d.precipitation_probability_max[0] ?? 0}<small>%</small>`, 'Precip chance')}
+    </div>
+    <div class="card"><h3>Next 12 hours at the summit · temp, snow or precip chance, gusts</h3><div class="wx-hours">${hours}</div></div>
+    <p class="note">Sunrise ${hourLabelFull(d.sunrise[0])} · sunset ${hourLabelFull(d.sunset[0])} · cloud cover ${c.cloud_cover}%</p>`;
+  const week = S.wxWeek ? `<div class="card"><h3>7-day ski forecast (summit)</h3>${d.time.map((t, i) => {
+    const n = skiNotes(day(i), null, fmtSnow)[0];
+    return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${describeCode(d.weather_code[i])[1]}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''} · ${d.precipitation_probability_max[i] ?? 0}% precip · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
+  }).join('')}<p class="note">Columns: low / high, new snow, peak gust.</p></div>` : '';
+  return ['Ski weather · Jay Peak', `${today}
+    <button class="btn ${S.wxWeek ? 'alt' : ''}" data-act="wx-week">${S.wxWeek ? 'Hide 7-day forecast' : 'Show 7-day forecast'}</button>${week}
+    <p class="note">${stale ? 'Could not refresh — showing the forecast saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''} · Summit ${fmtVert(JAY.top)}, base ${fmtVert(JAY.base)} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></p>
+    <button class="btn alt" data-act="wx-refresh">Refresh</button>`];
+}
+const hourLabelFull = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}:${iso.slice(14, 16)} ${h < 12 ? 'am' : 'pm'}`; };
 
 // ---------- playback
 function startReplay(s, runIdx) {
@@ -735,10 +891,15 @@ function playFrame(now) {
   while (P.i < P.pts.length - 2 && P.pts[P.i + 1][0] <= P.t) P.i++;
   while (P.i > 0 && P.pts[P.i][0] > P.t) P.i--;
   const a = P.pts[P.i], b = P.pts[Math.min(P.i + 1, P.pts.length - 1)];
-  if (P.playing && b[0] - a[0] > 60000 && P.t < b[0] - 2000) P.t = b[0] - 2000;
+  if (P.playing && b[0] - a[0] > 60000 && P.t < b[0] - 2000) { P.t = b[0] - 2000; P.jump = true; }
   const f = b[0] > a[0] ? Math.min(1, Math.max(0, (P.t - a[0]) / (b[0] - a[0]))) : 0;
   const x = a[1] + (b[1] - a[1]) * f, y = a[2] + (b[2] - a[2]) * f;
-  S.map.setPlayhead(S.geo.inBounds(x, y) ? { x, y, heading: Math.atan2(b[1] - a[1], b[2] - a[2]) } : null);
+  const sp = smoothSpeed(P.pts, Math.min(P.i + 1, P.pts.length - 1));
+  const hd = Math.hypot(b[1] - a[1], b[2] - a[2]) > 0.5 ? Math.atan2(b[1] - a[1], b[2] - a[2]) : P.hd;
+  P.hd = hd;
+  // Same avatar and riding animation as live tracking: carving while skiing, still on lifts and stops.
+  S.map.setPlayhead(S.geo.inBounds(x, y) ? { x, y, heading: hd, avatar: S.profile.avatar, color: S.profile.color, moving: P.playing && b[4] === ST.SKI && sp > 1.2, snap: P.seeking || P.jump } : null);
+  P.jump = false;
   if (!P.seeking) $('#pl-seek').value = String(Math.round(((P.t - t0) / (t1 - t0 || 1)) * 1000));
   const st = b[4];
   $('#pl-a').textContent = `${P.label} · ${fmtClock(P.t)} · ${['stopped', 'skiing', 'on lift'][st]}`;
@@ -784,6 +945,7 @@ async function downloadOffline() {
 // ---------- events
 function onInput(e) {
   const t = e.target;
+  if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group && S.profile.name) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
   else if (t.id === 'f-test' && e.type === 'change') {
@@ -828,6 +990,13 @@ async function onClick(e) {
     case 'close-sheet': closeSheet(); break;
     case 'mode': S.map.setMode(S.map.mode === '3d' ? '2d' : '3d'); renderChrome(); break;
     case 'legend': openSheet('legend'); break;
+    case 'weather': if (S.sheet === 'weather') closeSheet(); else { openSheet('weather'); refreshWeather(false); } break;
+    case 'wx-week': S.wxWeek = !S.wxWeek; renderSheet(); break;
+    case 'wx-refresh': refreshWeather(true); break;
+    case 'pick-resort': pickResort(d.id); break;
+    case 'ski-here': skiHere(b); break;
+    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); globe?.release(); break;
+    case 'change-resort': closeSheet(); openStart().catch(() => toast('The resort picker needs a connection the first time.')); break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();

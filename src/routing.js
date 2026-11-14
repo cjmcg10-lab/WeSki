@@ -7,6 +7,7 @@ const SKI_SPEED = [6, 8, 7, 5];     // m/s by difficulty (harder terrain is skie
 const WALK_SPEED = 1.2;
 const LINK_SPEED = 2.5;             // short skate/slide between adjacent trails or off a lift
 const LIFT_WAIT = 150;              // seconds of queueing + loading
+const OVER_PENALTY = 30;            // trails above the skier's limit cost 30x: used only to get off them, or when nothing else works
 export const SNAP_MAX = 250;        // further than this from every trail/lift/walkway = off the network
 
 export class Router {
@@ -21,14 +22,28 @@ export class Router {
     });
   }
 
-  /** Why an edge can't be used, or null. opts: {maxDiff, closed:Set<'t12'|'l3'>} */
+  /** Confirmed closures are the only hard block. opts: {maxDiff, closed:Set<'t12'|'l3'>} */
   blocked(e, opts) {
-    if (e.k === 'p') {
-      const t = this.resort.trails[e.r];
-      if (opts.closed?.has('t' + e.r)) return 'closed';
-      if (t.d > (opts.maxDiff ?? 3)) return 'difficulty';
-    } else if (e.k === 'l' && opts.closed?.has('l' + e.r)) return 'closed';
+    if (e.k === 'p' && opts.closed?.has('t' + e.r)) return 'closed';
+    if (e.k === 'l' && opts.closed?.has('l' + e.r)) return 'closed';
     return null;
+  }
+
+  /** Is this edge a trail harder than the skier's chosen maximum? */
+  over(e, opts) {
+    return e.k === 'p' && this.resort.trails[e.r].d > (opts.maxDiff ?? 3);
+  }
+
+  /**
+   * Search cost. Trails above the limit are never forbidden (someone standing on a black
+   * still needs a way down) but are heavily penalised, so a route leaves them as soon as
+   * possible and only uses them when there is no other way.
+   */
+  cost(e, len, opts) {
+    if (!this.over(e, opts)) return this.time(e, len);
+    // Each extra level above the limit costs far more, so a blue is taken before a black.
+    const levels = this.resort.trails[e.r].d - (opts.maxDiff ?? 3);
+    return this.time(e, len) * OVER_PENALTY * 4 ** (levels - 1);
   }
 
   /** Seconds to traverse `len` metres of an edge. */
@@ -53,15 +68,17 @@ export class Router {
 
   /**
    * Route between two places. Each place is {x,y} (snapped to the network) or {node}.
-   * Returns {ok:true, time, dist, pts, steps, vertDown, vertUp} or {ok:false, reason}.
-   * reason: 'from_off_network' | 'to_off_network' | 'no_route' | 'no_route_limits'
+   * Returns {ok:true, time, dist, pts, steps, vertDown, vertUp, over, overNow} or {ok:false, reason}.
+   *   over:    steps on trails above opts.maxDiff (empty when the route stays within the limit)
+   *   overNow: the route starts on such a trail (the skier is standing on it)
+   * reason: 'from_off_network' | 'to_off_network' | 'no_route' | 'no_route_closures'
    */
   route(from, to, opts = {}) {
     const res = this._route(from, to, opts);
     if (res.ok || res.reason !== 'no_route') return res;
-    // Would it work without the skier's limits? Then say the limits are the reason.
-    const free = this._route(from, to, { maxDiff: 3, closed: new Set() });
-    return free.ok ? { ok: false, reason: 'no_route_limits' } : res;
+    // Would it work if nothing were closed? Then say the closures are the reason.
+    const free = this._route(from, to, { maxDiff: opts.maxDiff, closed: new Set() });
+    return free.ok ? { ok: false, reason: 'no_route_closures' } : res;
   }
 
   _route(from, to, opts) {
@@ -76,10 +93,10 @@ export class Router {
     if (sFrom) {
       // You may always leave the edge you are standing on, even if it is above your limit or closed.
       const e = this.edges[sFrom.e];
-      dist[e.b] = this.time(e, e.len - sFrom.along);
+      dist[e.b] = this.cost(e, e.len - sFrom.along, opts);
       prev[e.b] = { start: [sFrom.e, sFrom.along, e.len] };
       if (e.bi) {
-        dist[e.a] = this.time(e, sFrom.along);
+        dist[e.a] = this.cost(e, sFrom.along, opts);
         prev[e.a] = { start: [sFrom.e, sFrom.along, 0] };
       }
     } else dist[from.node] = 0;
@@ -93,7 +110,7 @@ export class Router {
       for (const o of this.out[u]) {
         const e = this.edges[o.e];
         if (this.blocked(e, opts)) continue;
-        const d = best + this.time(e, e.len);
+        const d = best + this.cost(e, e.len, opts);
         if (d < dist[o.to]) { dist[o.to] = d; prev[o.to] = { from: u, e: o.e, rev: o.rev }; }
       }
     }
@@ -104,14 +121,14 @@ export class Router {
       const e = this.edges[sTo.e];
       const ok = !this.blocked(e, opts);
       if (sFrom && sFrom.e === sTo.e && (e.bi || sTo.along >= sFrom.along)) {
-        const t = this.time(e, Math.abs(sTo.along - sFrom.along));
+        const t = this.cost(e, Math.abs(sTo.along - sFrom.along), opts);
         end = { node: -1, time: t, tail: [sTo.e, sFrom.along, sTo.along] };
       }
-      if (ok && dist[e.a] + this.time(e, sTo.along) < (end?.time ?? Infinity)) {
-        end = { node: e.a, time: dist[e.a] + this.time(e, sTo.along), tail: [sTo.e, 0, sTo.along] };
+      if (ok && dist[e.a] + this.cost(e, sTo.along, opts) < (end?.time ?? Infinity)) {
+        end = { node: e.a, time: dist[e.a] + this.cost(e, sTo.along, opts), tail: [sTo.e, 0, sTo.along] };
       }
-      if (ok && e.bi && dist[e.b] + this.time(e, e.len - sTo.along) < (end?.time ?? Infinity)) {
-        end = { node: e.b, time: dist[e.b] + this.time(e, e.len - sTo.along), tail: [sTo.e, e.len, sTo.along] };
+      if (ok && e.bi && dist[e.b] + this.cost(e, e.len - sTo.along, opts) < (end?.time ?? Infinity)) {
+        end = { node: e.b, time: dist[e.b] + this.cost(e, e.len - sTo.along, opts), tail: [sTo.e, e.len, sTo.along] };
       }
     } else if (dist[to.node] < Infinity) end = { node: to.node, time: dist[to.node], tail: null };
     if (!end || !(end.time < Infinity)) return { ok: false, reason: 'no_route' };
@@ -128,13 +145,13 @@ export class Router {
       n = p.from;
     }
     parts.reverse();
-    return this._describe(parts, end.time);
+    return this._describe(parts, opts);
   }
 
-  _describe(parts, time) {
+  _describe(parts, opts) {
     const pts = [];
     const steps = [];
-    let dist = 0, vertDown = 0, vertUp = 0;
+    let dist = 0, vertDown = 0, vertUp = 0, time = 0;
     for (const [ei, a0, a1] of parts) {
       const e = this.edges[ei];
       const total = lineLength(e.pts) || 1;
@@ -151,14 +168,18 @@ export class Router {
       const ref = e.k === 'p' || e.k === 'l' ? e.r : -1;
       const name = e.k === 'p' ? this.resort.trails[e.r].name || 'Connector trail' : e.k === 'l' ? this.resort.lifts[e.r].name : null;
       const last = steps[steps.length - 1];
-      const t = this.time(e, len) - (e.k === 'l' && len < e.len ? 0 : 0);
+      const t = this.time(e, len);
+      time += t;
       if (last && last.kind === kind && last.name === name) { last.dist += len; last.time += t; last.end = [seg[seg.length - 2], seg[seg.length - 1]]; }
       else if (e.k === 'x' && last) { last.dist += len; last.time += t; }
       else steps.push({ kind, ref, name, d: e.k === 'p' ? this.resort.trails[e.r].d : -1, dist: len, time: t, start: [seg[0], seg[1]], end: [seg[seg.length - 2], seg[seg.length - 1]] });
     }
     // Fold tiny leftover fragments into their neighbours so the list reads cleanly.
     const tidy = steps.filter((s) => s.kind === 'ski' || s.kind === 'lift' || s.dist >= 15 || steps.length === 1);
-    return { ok: true, time, dist, pts, steps: tidy.length ? tidy : steps, vertDown, vertUp };
+    const list = tidy.length ? tidy : steps, max = opts.maxDiff ?? 3;
+    for (const s of list) s.over = s.kind === 'ski' && s.d > max;
+    const over = list.filter((s) => s.over);
+    return { ok: true, time, dist, pts, steps: list, vertDown, vertUp, over, overNow: !!list[0]?.over };
   }
 
   _z(e, along) {

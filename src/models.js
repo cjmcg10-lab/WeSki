@@ -19,8 +19,10 @@ const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 const vcMat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
 
 /**
- * A skier or snowboarder, ~1.8 units tall, facing +Z (travel direction).
+ * A skier or snowboarder, ~1.8 units tall, travelling towards +Z.
  * avatar: 'boy-ski' | 'girl-ski' | 'boy-board' | 'girl-board'
+ * The skis / board always point along the direction of travel; a snowboarder's body is
+ * turned sideways on the board. `userData.rig` is the part that animateAvatar() moves.
  */
 export function makeAvatar(avatar, color) {
   const [who, ride] = avatar.split('-');
@@ -40,27 +42,49 @@ export function makeAvatar(avatar, color) {
   parts.push(part(new THREE.SphereGeometry(0.215, 6, 4, 0, Math.PI * 2, 0, Math.PI * 0.55), helmet, 0, 1.6, 0.13));
   parts.push(part(box(0.3, 0.09, 0.08), 0x20242c, 0, 1.6, 0.31));
   if (girl) {
-    // ponytail / braids so the silhouette reads differently from the boy
+    // braids so the silhouette reads differently from the boy
     parts.push(part(box(0.1, 0.42, 0.1), 0x8a4b22, -0.13, 1.3, -0.1, -0.25));
     parts.push(part(box(0.1, 0.42, 0.1), 0x8a4b22, 0.13, 1.3, -0.1, -0.25));
   } else {
     parts.push(part(box(0.34, 0.36, 0.16), pants, 0, 1.1, -0.2, 0.22)); // backpack
   }
+  const gear = [];
   if (board) {
-    parts.push(part(box(0.3, 0.05, 1.5), 0x15181f, 0, 0.1, 0));
-    parts.push(part(box(0.32, 0.03, 1.2), helmet, 0, 0.135, 0));
+    gear.push(part(box(0.3, 0.05, 1.55), 0x15181f, 0, 0.1, 0));       // long axis = direction of travel
+    gear.push(part(box(0.32, 0.03, 1.25), helmet, 0, 0.135, 0));
   } else {
-    parts.push(part(box(0.11, 0.04, 1.75), 0x15181f, -0.15, 0.1, 0.1));
-    parts.push(part(box(0.11, 0.04, 1.75), 0x15181f, 0.15, 0.1, 0.1));
+    gear.push(part(box(0.11, 0.04, 1.75), 0x15181f, -0.15, 0.1, 0.1));
+    gear.push(part(box(0.11, 0.04, 1.75), 0x15181f, 0.15, 0.1, 0.1));
     parts.push(part(box(0.03, 0.95, 0.03), 0x30343c, -0.44, 0.62, 0.02, 0.9));
     parts.push(part(box(0.03, 0.95, 0.03), 0x30343c, 0.44, 0.62, 0.02, 0.9));
   }
   const body = new THREE.Mesh(mergeGeometries(parts), vcMat());
-  // A snowboarder stands sideways on the board.
+  // Sideways stance: the rider stands across the board, which keeps pointing downhill.
   if (board) body.rotation.y = Math.PI / 2;
+  const rig = new THREE.Group();
+  rig.add(new THREE.Mesh(mergeGeometries(gear), vcMat()), body);
   const g = new THREE.Group();
-  g.add(body);
+  g.add(rig);
+  g.userData = { rig, body, board, phase: Math.random() * 6.28, amt: 0 };
   return g;
+}
+
+/**
+ * Riding animation. While `moving`, a skier links carved turns (lean, steer, knee flex,
+ * side-to-side track); a snowboarder rocks between heel and toe edge. Eases in and out.
+ */
+export function animateAvatar(g, t, dt, moving) {
+  const u = g.userData;
+  if (!u.rig) return;
+  u.amt += ((moving ? 1 : 0) - u.amt) * Math.min(1, dt * 4);
+  const a = u.amt;
+  if (a < 0.002) { u.rig.rotation.set(0, 0, 0); u.rig.position.set(0, 0, 0); u.body.position.y = 0; return; }
+  const ph = t * (u.board ? 2.3 : 3.1) + u.phase, s = Math.sin(ph);
+  u.rig.rotation.y = s * (u.board ? 0.5 : 0.38) * a;          // steer into the turn
+  u.rig.rotation.z = -s * (u.board ? 0.2 : 0.34) * a;         // lean / edge angle
+  u.rig.rotation.x = u.board ? Math.sin(ph) * 0.12 * a : 0;
+  u.rig.position.x = Math.sin(ph - 0.7) * 0.55 * a;           // S-shaped track
+  u.body.position.y = -Math.abs(Math.cos(ph)) * 0.07 * a;     // flex through the turn
 }
 
 /** Ring drawn under an avatar (stale friends get a grey one). */
@@ -125,10 +149,7 @@ export function stationGeometry(kind, color) {
 
 /** Small conifer, base at y=0. */
 export function treeGeometry() {
-  return mergeGeometries([
-    new THREE.ConeGeometry(1, 2.4, 5).translate(0, 2.2, 0).toNonIndexed(),
-    new THREE.ConeGeometry(0.7, 1.8, 5).translate(0, 3.5, 0).toNonIndexed(),
-  ]);
+  return new THREE.ConeGeometry(1, 4.2, 4).translate(0, 2.1, 0); // one 4-sided cone: cheap on phones
 }
 
 /** Map pin (dropped pin) and flag (meeting point), base at y=0, ~3 units tall. */
