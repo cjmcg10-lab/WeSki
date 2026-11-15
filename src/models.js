@@ -110,6 +110,18 @@ export function chairGeometry(seats) {
   ]);
 }
 
+/** Gondola cabin hanging from the cable at y=0, facing +Z. */
+export function gondolaGeometry() {
+  return mergeGeometries([
+    part(box(0.14, 1.5, 0.14), 0x3a3f4a, 0, -0.75, 0),
+    part(box(0.9, 0.16, 0.5), 0x3a3f4a, 0, -1.5, 0),
+    part(box(2.0, 0.2, 2.3), 0xe9edf2, 0, -1.65, 0),
+    part(box(1.9, 1.0, 2.2), 0x1d2530, 0, -2.25, 0),
+    part(box(2.0, 0.95, 2.3), 0xd32f2f, 0, -3.2, 0),
+    part(box(1.6, 0.2, 1.9), 0x2a2f38, 0, -3.75, 0),
+  ]);
+}
+
 /** Aerial tram cabin hanging from the cable at y=0, long axis along Z. */
 export function tramGeometry(color) {
   const dark = 0x1d2530;

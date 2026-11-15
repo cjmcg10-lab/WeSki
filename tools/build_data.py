@@ -8,7 +8,9 @@ Outputs (public/data):
   - terrain.bin   Uint16 little-endian heights (decimetres above zmin), row 0 = south
   - resort.json   projection, trails, lifts, buildings, POIs, zones, routing graph
 
-usage: build_data.py <osm.xml> <out_dir> <dem.tif> [<dem.tif> ...]
+Everything specific to one resort lives in tools/resorts/<id>.json (see README).
+
+usage: build_data.py <resort.json config> <osm.xml> <out_dir> <dem.tif> [<dem.tif> ...]
 """
 import json
 import math
@@ -27,29 +29,20 @@ from shapely.ops import substring
 CELL = 14.0          # terrain grid spacing, metres
 MARGIN = 450.0       # margin around the resort features, metres
 
-# --- Zones verified against the official Jay Peak Winter 2025-26 trail map
-# (jaypeakresort.com/sites/default/files/2026-02/JPR_TrailMap_Winter_2025+2026_ToPRINT.pdf)
-# and jaypeakresort.com/terrain-parks.  Slow zone = green-hatched area on that map.
-SLOW_ZONE_TRAILS = {
-    "Interstate", "The Subway", "Harmony Lane", "Deer Run", "Queen's Highway",
-    "Raccoon Run", "Chalet Meadows", "The Boulevard", "Rabbit Trail",
-    "Perry Merrill Ave", "Kangaroo Trail", "Grammy Jay", "Progression Terrain",
-}
-# park name -> (trail it sits on, lateral offset in metres (+ = skier's left), level, note)
-PARKS = [
-    ("The Rusch", "Lower Can Am", 0, "Intermediate / Advanced", "Medium to big features, on Lower Can Am off the Taxi Quad"),
-    ("Rabbit Park", "Rabbit Trail", 0, "Beginner", "On Rabbit Trail"),
-    ("The Rabbit Hole", "Rabbit Trail", 28, "Beginner glade", "Tree island skier's left of Rabbit Trail"),
-    ("Shakedown", "Chalet Meadows", 14, "Beginner (intro park)", "Skier's left of Chalet Meadows above Stateside Base Lodge"),
-]
+LIFT_KINDS = {"cable_car": "tram", "gondola": "gondola", "chair_lift": "chair", "mixed_lift": "chair", "magic_carpet": "carpet",
+              "t-bar": "surface", "j-bar": "surface", "platter": "surface", "drag_lift": "surface", "rope_tow": "surface"}
 DIFF = {"novice": 0, "easy": 0, "intermediate": 1, "advanced": 2, "expert": 3, "extreme": 3, "freeride": 3}
 WALK_HIGHWAYS = {"footway", "steps", "pedestrian", "path", "service", "residential", "unclassified", "living_street"}
 
 
 def main():
-    osm_path, out_dir, dems = sys.argv[1], sys.argv[2], sys.argv[3:]
+    cfg = json.load(open(sys.argv[1]))
+    osm_path, out_dir, dems = sys.argv[2], sys.argv[3], sys.argv[4:]
+    SLOW_ZONE_TRAILS = set(cfg.get("slow_zone_trails", []))
     root = ET.parse(osm_path).getroot()
-    tf = Transformer.from_crs("EPSG:4326", "EPSG:26918", always_xy=True)
+    srcs = [rasterio.open(p) for p in dems]
+    CRS = srcs[0].crs                       # the LiDAR tiles' own projection (a UTM zone)
+    tf = Transformer.from_crs("EPSG:4326", CRS, always_xy=True)
     nodes = {}
     node_tags = {}
     for n in root.findall("node"):
@@ -65,7 +58,18 @@ def main():
             ways.append((w.get("id"), nd, tags))
 
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
-    lifts = [w for w in ways if w[2].get("aerialway") in ("cable_car", "chair_lift", "magic_carpet", "gondola", "t-bar", "platter", "drag_lift")]
+    lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS]
+    # Keep only this resort: neighbouring ski areas often share a ridge (Stowe / Smugglers' Notch).
+    # The resort's own boundary in OpenStreetMap (landuse=winter_sports) decides what belongs.
+    area = None
+    for wid, nd, t in ways:
+        if t.get("landuse") == "winter_sports" and t.get("name") == cfg.get("area_name") and nd[0] == nd[-1]:
+            area = Polygon([nodes[i] for i in nd]).buffer(cfg.get("area_buffer", 150))
+    if cfg.get("area_name"):
+        assert area is not None, f"no winter_sports area named {cfg['area_name']!r} in the OSM extract"
+        inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
+        pistes = [w for w in pistes if inside_area(w)]
+        lifts = [w for w in lifts if inside_area(w)]
 
     # ---- bounds (UTM) from pistes + lifts
     core = [w for w in pistes if w[2].get("area") != "yes"] + lifts   # backcountry freeride areas don't set the extent
@@ -77,7 +81,6 @@ def main():
     ny = int(math.ceil((max(ys) + MARGIN - y0) / CELL)) + 1
 
     # ---- terrain: average 1 m LiDAR cells into CELL-sized samples centred on grid nodes
-    srcs = [rasterio.open(p) for p in dems]
     b = (x0 - CELL / 2, y0 - CELL / 2, x0 + (nx - 0.5) * CELL, y0 + (ny - 0.5) * CELL)
     arr, _ = merge(srcs, bounds=b, res=CELL, resampling=Resampling.average, nodata=-999999.0)
     h = arr[0][::-1, :].astype(np.float64)[:ny, :nx]   # row 0 = south
@@ -107,7 +110,7 @@ def main():
         return pad <= p[0] <= W - pad and pad <= p[1] <= H - pad
 
     # ---- projection polynomial (lat/lon <-> local metres), fitted to the real UTM transform
-    inv = Transformer.from_crs("EPSG:26918", "EPSG:4326", always_xy=True)
+    inv = Transformer.from_crs(CRS, "EPSG:4326", always_xy=True)
     lon_c, lat_c = inv.transform(x0 + W / 2, y0 + H / 2)
     gx, gy = np.meshgrid(np.linspace(-800, W + 800, 25), np.linspace(-800, H + 800, 25))
     glon, glat = inv.transform(gx + x0, gy + y0)
@@ -172,9 +175,9 @@ def main():
             pts.reverse()
             nd = nd[::-1]
         line = LineString(pts)
-        kind = {"cable_car": "tram", "chair_lift": "chair", "magic_carpet": "carpet"}.get(t["aerialway"], "chair")
-        name = t.get("name", "Lift")
-        speed = {"tram": 8.0, "chair": 2.4, "carpet": 0.8}[kind]
+        kind = LIFT_KINDS[t["aerialway"]]
+        name = t.get("name") or {"carpet": "Magic carpet", "surface": "Surface lift"}.get(kind, "Lift")
+        speed = {"tram": 8.0, "gondola": 5.0, "chair": 2.4, "carpet": 0.8, "surface": 2.5}[kind]
         if "Express" in name:
             speed = 5.0
         dur = float(t["aerialway:duration"]) * 60 if "aerialway:duration" in t else line.length / speed
@@ -183,6 +186,8 @@ def main():
             "id": len(lift_out), "osm": int(wid), "name": name, "kind": kind,
             "seats": int(t.get("aerialway:occupancy", 0) or 0), "len": round(line.length),
             "dur": round(dur), "bot": round(elev(*pts[0])), "top": round(elev(*pts[-1])),
+            # can be ridden in either direction (a lift linking two base areas): tagged in OSM, or listed in the resort config
+            "both": t.get("oneway") == "no" or name in cfg.get("two_way_lifts", []),
             "pts": flat(pts), "towers": [p for tw in towers for p in tw],
             "_line": line,
         })
@@ -222,7 +227,7 @@ def main():
     pois = []
 
     def add_poi(name, kind, p):
-        if name in ("Jay Peak", "Jay Peak Resort") and kind != "peak":
+        if name in cfg.get("skip_pois", []) and kind != "peak":
             return   # generic resort markers that duplicate the lodge/summit labels
         if name and inside(p, 20):
             pois.append({"id": len(pois), "name": name, "kind": kind, "x": round(p[0], 1), "y": round(p[1], 1)})
@@ -264,7 +269,7 @@ def main():
     for T, nd in zip(trails, trail_ways):
         gw.append({"k": "p", "ref": T["id"], "line": T["_line"], "nd": nd, "bridge": T["bridge"]})
     for L, nd in zip(lift_out, lift_ways):
-        gw.append({"k": "l", "ref": L["id"], "line": L["_line"], "nd": nd, "bridge": True})
+        gw.append({"k": "l", "ref": L["id"], "line": L["_line"], "nd": nd, "bridge": True, "bi": L["both"]})
     bases = [Point(L["pts"][0], L["pts"][1]) for L in lift_out]
     walk_ways = []
     for wid, nd, t in ways:
@@ -339,9 +344,9 @@ def main():
         bot, top = G.node(c[0]), G.node(c[-1])
         for o in ps:
             if o["line"].distance(Point(c[-1])) < 110:
-                links.append((top, cut(o, c[-1]), "x", False))
+                links.append((top, cut(o, c[-1]), "x", bool(w.get("bi"))))
             if o["line"].distance(Point(c[0])) < 110:
-                links.append((cut(o, c[0]), bot, "x", False))
+                links.append((cut(o, c[0]), bot, "x", bool(w.get("bi"))))
         for o in ls:
             oc = list(o["line"].coords)
             if o is not w and math.dist(oc[0], c[0]) < 220:
@@ -375,7 +380,7 @@ def main():
             if w["k"] != "l":
                 pts = densify(pts, 12.0)
             edges.append({"a": n1, "b": n2, "k": w["k"], "r": w["ref"], "len": round(d2 - d1, 1),
-                          "bi": w["k"] == "w", "pts": flat(pts)})
+                          "bi": w["k"] == "w" or bool(w.get("bi")), "pts": flat(pts)})
     # POIs join the network through a short walk
     all_lines = [(w, w["line"]) for w in gw if w["k"] != "l"]
     for P in pois:
@@ -401,7 +406,7 @@ def main():
             if w["k"] != "l":
                 pts = densify(pts, 12.0)
             edges.append({"a": n1, "b": n2, "k": w["k"], "r": w["ref"], "len": round(d2 - d1, 1),
-                          "bi": w["k"] == "w", "pts": flat(pts)})
+                          "bi": w["k"] == "w" or bool(w.get("bi")), "pts": flat(pts)})
     seen_l = set()
     for a, b_, k, bi in links:
         if a == b_ or (a, b_) in seen_l or (bi and (b_, a) in seen_l):
@@ -414,9 +419,11 @@ def main():
     report(G, edges, trails, lift_out, pois)
 
     # ---- parks (geometry derived from the trail they sit on)
+    # config: [name, trail, lateral offset in m (+ = skier's left), level, note]
     parks = []
-    for name, tname, off, level, note in PARKS:
+    for name, tname, off, level, note in cfg.get("parks", []):
         segs = [T for T in trails if T["name"] == tname]
+        assert segs, f"park {name!r}: no trail named {tname!r}"
         for T in segs:
             line = T["_line"]
             if off:
@@ -425,28 +432,40 @@ def main():
                     line = max(line.geoms, key=lambda g: g.length)
             parks.append({"name": name, "level": level, "note": note, "trail": T["id"],
                           "pts": flat(densify(list(line.coords)))})
-    # The Gully: shown on the official map between The Rusch (Lower Can Am) and the Rabbit Hole.
-    lca = [T["_line"] for T in trails if T["name"] == "Lower Can Am"]
-    rab = [T["_line"] for T in trails if T["name"] == "Rabbit Trail"]
-    if lca and rab:
-        a, b_ = max(lca, key=lambda l: l.length), max(rab, key=lambda l: l.length)
+    # config: [name, trail A, trail B, note] - a park the trail map shows between two trails (position approximate)
+    for name, ta, tb, note in cfg.get("parks_between", []):
+        la = [T["_line"] for T in trails if T["name"] == ta]
+        lb = [T["_line"] for T in trails if T["name"] == tb]
+        assert la and lb, f"park {name!r}: trails {ta!r} / {tb!r} not found"
+        a, b_ = max(la, key=lambda l: l.length), max(lb, key=lambda l: l.length)
         mid = [((pa.x + pb.x) / 2, (pa.y + pb.y) / 2) for pa, pb in
                ((a.interpolate(f, normalized=True), b_.interpolate(f, normalized=True)) for f in np.linspace(0.15, 0.75, 8))]
-        parks.append({"name": "The Gully", "level": "Terrain park", "trail": -1, "approx": True,
-                      "note": "Between The Rusch and the Rabbit Hole (position approximate)",
+        parks.append({"name": name, "level": "Terrain park", "trail": -1, "approx": True, "note": note,
                       "pts": flat(densify(mid))})
+    missing = SLOW_ZONE_TRAILS - {T["name"] for T in trails}
+    assert not missing, f"slow-zone trails not found in OSM: {missing}"
 
     for T in trails + lift_out:
         del T["_line"]
     pois = [P for P in pois if P["n"] >= 0]
     for i, P in enumerate(pois):
         P["id"] = i
+    # summary used by the resort picker and the weather window
+    main = [L for L in lift_out if L["kind"] not in ("carpet", "surface")] or lift_out
+    hi = max(main, key=lambda L: L["top"])
+    lo = min(main, key=lambda L: L["bot"])
+    ll = lambda x, y: [round(v, 5) for v in reversed(inv.transform(x + x0, y + y0))]
+    top_el = max(max(T["top"] for T in trails), hi["top"])
     out = {
-        "name": "Jay Peak Resort",
+        "id": cfg["id"], "name": cfg["name"], "region": cfg["region"], "tz": cfg["tz"],
+        "summary": {
+            "top": top_el, "base": lo["bot"], "trails": len({T["name"] for T in trails if T["name"]}), "lifts": len(lift_out),
+            "summit": ll(hi["pts"][-2], hi["pts"][-1]), "baseAt": ll(lo["pts"][0], lo["pts"][1]),
+        },
         "sources": {
-            "terrain": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+            "terrain": cfg.get("terrain_source", "USGS 3DEP 1 m LiDAR DEM (public domain)"),
             "map": "© OpenStreetMap contributors (ODbL)",
-            "zones": "Jay Peak Resort Winter 2025-26 trail map and terrain parks page",
+            **({"zones": cfg["zones_source"]} if cfg.get("zones_source") else {}),
         },
         "grid": {"nx": nx, "ny": ny, "cell": CELL, "zmin": zmin, "zmax": round(float(h.max()), 1)},
         "proj": {"lon0": lon_c, "lat0": lat_c, "cx": list(cx), "cy": list(cy),
@@ -501,13 +520,14 @@ def report(G, edges, trails, lifts, pois):
         return seen
 
     lift_edges = [e for e in edges if e["k"] == "l"]
-    tram = next(e for e in lift_edges if lifts[e["r"]]["kind"] == "tram")
+    # start from the lowest lift base: the main base area
+    tram = min(lift_edges, key=lambda e: G.elev(*G.pts[e["a"]]))
     r = reach(tram["a"])
     cover = {e["r"] for e in edges if e["k"] == "p" and e["a"] in r}
     miss = sorted({T["name"] or f"unnamed#{T['id']}" for T in trails if T["id"] not in cover})
-    print(f"from the Tram base: {len(cover)}/{len(trails)} trail segments reachable; not reachable: {miss}")
+    print(f"from the base of {lifts[tram['r']]['name']}: {len(cover)}/{len(trails)} trail segments reachable; not reachable: {miss}")
     for e in lift_edges:
-        print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to tram base {tram['a'] in reach(e['b'])}")
+        print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to that base {tram['a'] in reach(e['b'])}")
     print("  POIs off-network:", [P["name"] for P in pois if P["n"] < 0],
           "| unreachable:", [P["name"] for P in pois if P["n"] >= 0 and P["n"] not in r])
 

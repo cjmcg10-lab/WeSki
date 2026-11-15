@@ -4,9 +4,9 @@ import { Tracker, computeStats, smoothSpeed, ST } from './tracker.js';
 import { SkiMap, COLORS, fmtAge } from './map.js';
 import { Locator } from './location.js';
 import { GroupClient, createGroup } from './group.js';
-import { sessions, prefs, persist } from './store.js';
+import { sessions, kv, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
-import { RESORTS } from './resorts.js';
+import { COMING_SOON } from './resorts.js';
 import { Clouds } from './clouds.js';
 
 const $ = (s) => document.querySelector(s);
@@ -43,7 +43,8 @@ const S = {
   units: prefs.get('units', 'imperial'),
   crumbsOn: prefs.get('crumbsOn', false), crumbScope: 'session',
   maxDiff: prefs.get('maxDiff', 2),
-  closures: new Set(prefs.get('closures', [])),
+  closures: new Set(),
+  place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
@@ -105,37 +106,65 @@ function avatarSvg(type, color) {
   return `<svg viewBox="0 0 64 64">${snow}${poles}${gear}${legs}${braids}${torso}${arms}${head}</svg>`;
 }
 
-// ---------- boot
-const JAY = RESORTS[0];
+// ---------- resorts
+let PLACES = [];            // every resort in the picker; the ones with `available` have a built map
 const fetchOk = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r; });
-// Map data starts downloading straight away; the 3D scene is built once a resort is chosen.
-const dataP = Promise.all([
-  fetchOk('/data/resort.json').then((r) => r.json()),
-  fetchOk('/data/terrain.bin').then((r) => r.arrayBuffer()),
-  fetchOk('/data/surround.bin').then((r) => r.arrayBuffer()).catch(() => null),
-]);
-dataP.catch(() => {});
-let mapP = null;
+async function loadPlaces() {
+  if (PLACES.length) return;
+  const built = await fetchOk('/data/index.json').then((r) => r.json());
+  const have = new Set(built.map((r) => r.id));
+  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id))];
+}
+const placeById = (id) => PLACES.find((r) => r.id === id);
+/** Settings that belong to one mountain (closures, saved routes, tracks...) are stored per resort. */
+const pkey = (k) => `${k}:${S.place.id}`;
+const resortOf = (session) => session.resort || 'jay-peak'; // sessions saved before multi-resort were all Jay Peak
 
-function initMap() {
-  return (mapP ||= (async () => {
-    const [resort, buf, sur] = await dataP;
+// ---------- boot
+let mapP = null, mapId = null, ticking = false;
+
+/** Open a resort: load its data and build its 3D map (replacing any other mountain that was open). */
+function initMap(id) {
+  if (mapP && mapId === id) return mapP;
+  const prev = mapP;
+  mapId = id;
+  return (mapP = (async () => {
+    if (prev) await prev.catch(() => {});
+    await loadPlaces();
+    const pl = placeById(id);
+    if (!pl?.available) throw new Error('no map for ' + id);
+    const [resort, buf, sur] = await Promise.all([
+      fetchOk(`/data/${id}/resort.json`).then((r) => r.json()),
+      fetchOk(`/data/${id}/terrain.bin`).then((r) => r.arrayBuffer()),
+      fetchOk(`/data/${id}/surround.bin`).then((r) => r.arrayBuffer()).catch(() => null),
+    ]);
+    if (mapId !== id) return;                 // another resort was picked while this one was loading
+    if (S.map) {                              // leaving the previous mountain
+      S.loc?.setSim(false); S.loc?.stop();
+      S.map.dispose();
+      S.map = null;
+    }
+    S.place = pl;
     S.resort = resort;
     S.geo = new Geo(resort, new Uint16Array(buf));
     S.router = new Router(resort);
+    S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
+    S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
     S.map.setUnits(S.units);
     S.map.setClosures(S.closures);
     S.map.onTap(onMapTap);
     S.loc = new Locator(S.geo, onFix, (m) => { S.gpsMsg = m; renderChrome(); if (m.startsWith('Location is blocked')) toast(m, 7000); });
     if (S.testMode) S.loc.setSim(true);
+    $('#brand-resort').textContent = pl.name;
+    prefs.set('lastResort', id);
+    try { S.tracksSaved = (await kv.get(pkey('tracks'))) || []; } catch { S.tracksSaved = []; }
     renderChrome();
     await recoverSession();
-    const saved = prefs.get('group', null);
-    if (saved && S.profile.name) joinGroup(saved.code, saved.sharing, true);
-    setInterval(tick, 1000);
+    if (S.crumbsOn) { startCrumbs(); loadHistory(); }
+    if (!ticking) { ticking = true; setInterval(tick, 1000); }
     window.weski = S; // handy for debugging from the Safari console
-  })());
+  })().catch((e) => { if (mapId === id) { mapP = null; mapId = null; } throw e; }));
 }
 
 function bootFailed(e) {
@@ -154,17 +183,24 @@ function hideSplash() {
 }
 
 async function boot() {
+  try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   // Straight to the map when rejoining a group (you're mid-ski-day) or when asked to skip.
-  const skip = prefs.get('group', null) || new URLSearchParams(location.search).has('skip');
-  if (skip) {
-    try { await initMap(); hideSplash(); } catch (e) { bootFailed(e); }
+  const saved = prefs.get('group', null), q = new URLSearchParams(location.search);
+  if (saved || q.has('skip')) {
+    const want = (saved && saved.resort) || q.get('skip') || 'jay-peak';
+    try {
+      await initMap(placeById(want)?.available ? want : 'jay-peak');
+      hideSplash();
+      if (saved && S.profile.name) joinGroup(saved.code, saved.sharing, true);
+    } catch (e) { bootFailed(e); }
     return;
   }
   try { await openStart(); hideSplash(); } catch (e) {
-    // The globe is a nicety: if it can't load, go straight to the mountain.
+    // The globe is a nicety: if it can't load, go straight to the last mountain.
     console.warn('start screen unavailable', e);
     $('#start').classList.add('hidden');
-    try { await initMap(); hideSplash(); } catch (err) { bootFailed(err); }
+    const last = prefs.get('lastResort', 'jay-peak');
+    try { await initMap(placeById(last)?.available ? last : 'jay-peak'); hideSplash(); } catch (err) { bootFailed(err); }
   }
 }
 
@@ -173,7 +209,7 @@ let globe = null, clouds = null;
 /** Show the globe. With `from` (a resort) it starts on the ground there, hidden, ready to pull back. */
 async function openStart(from = null) {
   const el = $('#start');
-  const [{ Globe }, data] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json())]);
+  const [{ Globe }, meta, bin] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json()), fetchOk('/data/globe.bin').then((r) => r.arrayBuffer()), loadPlaces()]);
   el.classList.toggle('prep', !!from);          // laid out but invisible until the map has flown out
   el.classList.remove('hidden');
   $('#resort-card').classList.add('hidden');
@@ -181,20 +217,20 @@ async function openStart(from = null) {
   $('.start-top').classList.toggle('hidden', !!from);
   $('#f-resort').value = '';
   renderResortList('');
-  globe = new Globe($('#globe'), data, RESORTS);
+  globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
   if (from) globe.surface(from);
 }
 
 function renderResortList(q) {
   q = q.trim().toLowerCase();
-  const list = RESORTS.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
+  const list = PLACES.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
   $('#resort-list').innerHTML = list.length
     ? list.map((r) => `<button class="resort-row" data-act="pick-resort" data-id="${r.id}"><span class="dotc ${r.available ? 'on' : ''}"></span><span class="grow"><b>${esc(r.name)}</b><small>${esc(r.region)}</small></span><span class="tag ${r.available ? 'avail' : ''}">${r.available ? 'Ready' : 'Coming soon'}</span></button>`).join('')
     : '<p class="start-empty">No resort matches that search yet.</p>';
 }
 
 async function pickResort(id) {
-  const r = RESORTS.find((x) => x.id === id);
+  const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
   $('#start-panel').classList.add('hidden');
@@ -207,13 +243,14 @@ async function pickResort(id) {
     <button class="back" data-act="resort-back">‹ All resorts</button>`;
   card.classList.remove('hidden');
   // build the mountain while the card is on screen, then hold it still until it is needed
-  if (r.available) initMap().then(() => { if (globe) S.map.setPaused(true); }).catch(() => {});
+  if (r.available) initMap(r.id).then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
 }
 
 async function skiHere(btn) {
   btn.disabled = true; btn.textContent = 'Loading the mountain…';
-  try { await initMap(); } catch (e) { btn.disabled = false; btn.textContent = 'Ski here'; bootFailed(e); return; }
-  const g = globe, r = RESORTS.find((x) => x.id === btn.dataset.id);
+  const r = placeById(btn.dataset.id);
+  try { await initMap(r.id); } catch (e) { btn.disabled = false; btn.textContent = 'Ski here'; bootFailed(e); return; }
+  const g = globe;
   globe = null;
   $('#resort-card').classList.add('hidden');
   $('.start-top').classList.add('hidden');
@@ -244,11 +281,11 @@ async function exitToGlobe() {
   closeSheet();
   document.body.classList.add('flying');
   try {
-    await openStart(JAY);
+    await openStart(S.place);
     const sky = (clouds ||= new Clouds($('#clouds')));
     sky.start(-1);                              // climb up into the clouds, swap inside them, come out above the globe
     const into = new Promise((res) => setTimeout(() => sky.to(1, 0.7).then(res), 800));
-    await Promise.all([S.map.fly(-1, globe.colorAt(JAY), 1.5), into]);
+    await Promise.all([S.map.fly(-1, globe.colorAt(S.place), 1.5), into]);
     $('#start').classList.remove('prep');
     S.map.setPaused(true);
     sky.to(0, 1.1).then(() => sky.stop());
@@ -272,6 +309,7 @@ async function leaveResort(save) {
   $('#modal').classList.add('hidden');
   if (S.player) stopReplay();
   if (S.nav) endNav();
+  await stopCrumbs();
   if (S.group) {
     S.group.client.leave();
     S.group = null; S.sharing = false; prefs.set('group', null);
@@ -304,7 +342,7 @@ function askLeaveResort() {
     <p>${what}${S.group ? ' You will also leave your group.' : ''}</p>
     <button class="btn go" data-act="exit-save">Save ski data and exit</button>
     <button class="btn danger" data-act="exit-nosave">Exit without saving</button>
-    <button class="btn alt" data-act="modal-cancel">Stay at ${esc(JAY.name)}</button></div>`;
+    <button class="btn alt" data-act="modal-cancel">Stay at ${esc(S.place.name)}</button></div>`;
   $('#modal').classList.remove('hidden');
 }
 
@@ -316,7 +354,7 @@ document.addEventListener('click', onClick);
 document.addEventListener('input', onInput);
 document.addEventListener('change', onInput);
 document.addEventListener('visibilitychange', () => { if (!S.map) return; if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
-window.addEventListener('pagehide', autosave);
+window.addEventListener('pagehide', () => { autosave(); if (S.crumbRec) saveTracks(true); });
 boot();
 
 // ---------- location
@@ -333,7 +371,7 @@ function onFix(fix) {
   if (speed > 45) speed = 0;
   S.me = { x, y, lat: fix.lat, lon: fix.lon, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y), speed };
   S.gpsMsg = '';
-  if (S.tracker) S.tracker.add(fix);
+  if (S.tracker) S.tracker.add(fix); else if (S.crumbRec) S.crumbRec.add(fix);
   const riding = speed > 1.2 && !(S.tracker && S.tracker.state === ST.LIFT);
   S.map.setMe(S.me.inBounds ? { x, y, heading, avatar: S.profile.avatar, color: S.profile.color, moving: riding } : null);
   if (S.group && S.sharing) {
@@ -357,16 +395,17 @@ function ensureLocation() {
 let lock = null;
 async function wakeLock() {
   // Keep the screen awake while tracking/sharing: iOS stops web GPS when the screen locks.
-  if (!(S.tracker || (S.group && S.sharing)) || document.visibilityState !== 'visible') return;
+  if (!(S.tracker || S.crumbRec || (S.group && S.sharing)) || document.visibilityState !== 'visible') return;
   try { if (!lock || lock.released) lock = await navigator.wakeLock?.request('screen'); } catch { /* not supported / denied */ }
 }
-function releaseWake() { if (!(S.tracker || (S.group && S.sharing))) { lock?.release?.().catch(() => {}); lock = null; } }
+function releaseWake() { if (!(S.tracker || S.crumbRec || (S.group && S.sharing))) { lock?.release?.().catch(() => {}); lock = null; } }
 
 // ---------- sessions (solo tracking and group sessions)
 function startSession(kind) {
   if (S.tracker) { if (kind === 'group') { S.session.kind = 'group'; S.session.group = S.group?.code; } return; }
   S.tracker = new Tracker(S.geo, S.resort.lifts);
-  S.session = { id: 's' + Date.now(), kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
+  stopCrumbs();                               // stats tracking records the track itself from here on
+  S.session = { id: 's' + Date.now(), resort: S.place.id, kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
   ensureLocation();
   wakeLock();
 }
@@ -390,7 +429,7 @@ async function endSession(reason) {
   const worth = s.points.length >= 5 || s.routes.length;
   try { if (worth) await sessions.put(s); else await sessions.del(s.id); } catch (e) { toast('Could not save this session on the phone.'); return null; }
   S.historyLoaded = false;
-  if (S.crumbsOn) loadHistory();
+  if (S.crumbsOn) { loadHistory(); startCrumbs(); }
   if (worth) toast(`${reason} Saved ${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} to History.`);
   renderChrome();
   return worth ? s : null;
@@ -407,7 +446,7 @@ async function recoverSession() {
   try { list = await sessions.list(); } catch { return; }
   for (const s of list.filter((x) => x.active)) {
     const lastT = s.points.length ? s.points[s.points.length - 1][0] : s.start;
-    if (!S.session && Date.now() - lastT < 10 * 60 * 1000) {
+    if (!S.session && resortOf(s) === S.place.id && Date.now() - lastT < 10 * 60 * 1000) {
       S.tracker = new Tracker(S.geo, S.resort.lifts);
       S.tracker.points = s.points;
       S.tracker.state = s.points.length ? s.points[s.points.length - 1][4] : 0;
@@ -422,21 +461,71 @@ async function recoverSession() {
 }
 
 // ---------- my tracks (breadcrumbs)
-/** Draw a light dotted trail of where you have skied: this session, or every saved session too. */
+// "Show where I've skied" works on its own: with stats tracking off it runs a light,
+// location-only recorder. Those tracks are kept for the map only - never in History.
+const MAX_TRACK_POINTS = 60000;
+
+/** Keep just the skied parts of a recording (plus the point before each, so segments join up). */
+function skiOnly(P) {
+  const out = [];
+  let kept = -2;
+  for (let i = 1; i < P.length; i++) {
+    if (P[i][4] !== ST.SKI || P[i][5]) continue;
+    if (kept !== i - 1) out.push([...P[i - 1].slice(0, 4), 0, 1]);   // start of a stretch: marked as a gap so it isn't joined to the last one
+    out.push(P[i].slice(0, 6));
+    kept = i;
+  }
+  return out;
+}
+
+function startCrumbs() {
+  if (!S.crumbsOn || S.tracker || S.crumbRec || !S.map) return;
+  S.crumbRec = new Tracker(S.geo, S.resort.lifts);
+  ensureLocation();
+  wakeLock();
+}
+
+async function saveTracks(withLive = false) {
+  const lists = withLive && S.crumbRec ? [...S.tracksSaved, skiOnly(S.crumbRec.points)] : S.tracksSaved;
+  try { await kv.set(pkey('tracks'), lists.filter((l) => l.length > 1)); } catch { /* storage full or unavailable */ }
+}
+
+/** Stop the location-only recorder and keep what it recorded. */
+async function stopCrumbs() {
+  if (!S.crumbRec) return;
+  const pts = skiOnly(S.crumbRec.points);
+  S.crumbRec = null;
+  if (pts.length > 1) {
+    S.tracksSaved.push(pts);
+    let total = S.tracksSaved.reduce((n, l) => n + l.length, 0);
+    while (total > MAX_TRACK_POINTS && S.tracksSaved.length > 1) total -= S.tracksSaved.shift().length;   // oldest tracks go first
+    await saveTracks();
+  }
+  releaseWake();
+}
+
+/** Draw a light dotted trail of where you have skied. */
 function showTracks() {
   if (!S.map) return;
   if (!S.crumbsOn) { S.map.setBreadcrumbs(null); return; }
   const lists = [];
   if (S.tracker) lists.push(S.tracker.points);
-  if (S.crumbScope === 'all' || !S.tracker) for (const s of S.history || []) lists.push(s.points);
+  if (S.crumbRec) lists.push(S.crumbRec.points);
+  if (S.crumbScope === 'all') {
+    lists.push(...(S.tracksSaved || []));
+    for (const s of S.history || []) lists.push(s.points);
+  }
   S.map.setBreadcrumbs(lists);
 }
 
 function tracksCard() {
-  const all = S.crumbScope === 'all' || !S.tracker;
+  const all = S.crumbScope === 'all';
+  const saved = (S.tracksSaved || []).length + (S.history || []).length;
   return `<div class="card"><h3>My tracks</h3>
-    <div class="rowf"><div class="grow"><b>Show where I've skied</b><div class="sub">A dotted pink trail on the map along the runs you have come down. Lift rides are left out.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
-    ${S.tracker ? `<div class="seg" style="margin-top:10px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This session</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">All saved sessions</button></div>` : '<p class="note">Showing every session saved on this phone. Start tracking to add to it live.</p>'}</div>`;
+    <div class="rowf"><div class="grow"><b>Show where I've skied</b><div class="sub">A dotted pink trail on the map along the runs you come down. Lift rides are left out.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
+    <p class="note">${S.crumbsOn ? (S.tracker ? 'Recording along with your stats.' : `Recording your location only — no speed or run stats, and nothing is added to History.${S.me ? '' : ' Waiting for GPS.'}`) : 'Works with or without stats tracking. Needs the app open with the screen on.'}</p>
+    <div class="seg" style="margin-top:8px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This outing</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">Everything saved${saved ? ` (${saved})` : ''}</button></div>
+    ${(S.tracksSaved || []).length ? '<button class="btn alt" data-act="clear-tracks" style="margin-bottom:0">Clear saved location-only tracks</button>' : ''}</div>`;
 }
 
 // ---------- group
@@ -472,7 +561,7 @@ async function joinGroup(code, sharing = false, silent = false) {
     },
   });
   g.client.sharing = sharing;
-  prefs.set('group', { code, sharing });
+  prefs.set('group', { code, sharing, resort: S.place.id });
   if (sharing) { ensureLocation(); wakeLock(); }
   renderChrome();
 }
@@ -492,7 +581,7 @@ async function leaveGroup(closeForAll) {
 function setSharing(on) {
   S.sharing = on;
   S.group?.client.setSharing(on);
-  prefs.set('group', { code: S.group.code, sharing: on });
+  prefs.set('group', { code: S.group.code, sharing: on, resort: S.place.id });
   if (on) { ensureLocation(); wakeLock(); S.lastSent = null; if (S.me) onFix({ lat: S.me.lat, lon: S.me.lon, acc: S.me.acc, heading: S.me.heading, t: Date.now() }); }
   else releaseWake();
   renderChrome(); renderSheet();
@@ -528,7 +617,7 @@ function syncFriends() {
 
 function setClosures(set, share = true) {
   S.closures = set;
-  prefs.set('closures', [...set]);
+  prefs.set(pkey('closures'), [...set]);
   S.map.setClosures(set);
   if (share && S.group) S.group.client.setClosures([...set]);
   if (S.nav) recalcNav(true);
@@ -592,7 +681,7 @@ function recalcNav(force = false) {
         nav.route = null;
         const who = f ? f.name : dest.name;
         nav.problem = {
-          from_off_network: { title: "You're off the mapped trails", text: 'Directions start once you are within 250 m of a Jay Peak trail, lift or base area.', meet: !!f },
+          from_off_network: { title: "You're off the mapped trails", text: 'Directions start once you are within 250 m of a mapped trail, lift or base area here.', meet: !!f },
           to_off_network: { title: `${who} is off the mapped network`, text: 'Their location is not near any mapped trail, lift or walkway, so there is no verified route.', meet: !!f },
           no_route_closures: { title: `Closures block the way to ${who}`, text: 'Every route uses a lift or trail you marked closed. Reopen it in More → Closures if that has changed, or meet somewhere you can both reach.', meet: true },
           no_route: { title: `No mapped route to ${who}`, text: 'The mapped trails, lifts and walkways do not connect you.', meet: true },
@@ -618,10 +707,10 @@ function overWarning(r) {
 function recordRoute(name, r) {
   const rec = { t: Date.now(), to: name, time: r.time, dist: r.dist, steps: r.steps.map((s) => ({ kind: s.kind, name: s.name, d: s.d, dist: s.dist })), pts: r.pts.map((v) => Math.round(v)) };
   // Kept with the current session, or in a standalone list when nothing is being tracked.
-  const list = S.session ? S.session.routes : prefs.get('routes', []), last = list[list.length - 1];
+  const list = S.session ? S.session.routes : prefs.get(pkey('routes'), []), last = list[list.length - 1];
   if (last && last.to === name && Date.now() - last.t < 30 * 60 * 1000) list[list.length - 1] = { ...rec, t: last.t };
   else list.push(rec);
-  if (!S.session) prefs.set('routes', list.slice(-15));
+  if (!S.session) prefs.set(pkey('routes'), list.slice(-15));
 }
 
 /** Offer a shared meeting point both people can reach, and share it with the group. */
@@ -786,7 +875,7 @@ function memberStatus(m) {
   else if (m.stale) { status = `Stale · last updated ${fmtAge(m.age)}`; cls = 'stale'; }
   else status = `Live · updated ${fmtAge(m.age)}${m.pos.st === 'lift' ? ' · on a lift' : m.pos.st === 'ski' ? ' · skiing' : ''}`;
   if (!m.online) status += ' · app closed';
-  if (m.has && !m.inBounds) status += ' · away from Jay Peak';
+  if (m.has && !m.inBounds) status += ` · away from ${S.place.name}`;
   return [status, cls];
 }
 
@@ -846,13 +935,17 @@ function renderTrackLive() {
 function sheetHistory() {
   const list = S.history || [];
   if (!S.historyLoaded) { loadHistory(); return ['History', '<p class="sub">Loading…</p>']; }
-  const loose = prefs.get('routes', []);
+  const loose = prefs.get(pkey('routes'), []);
   const looseHtml = loose.length ? `<div class="card"><h3>Recent directions</h3>${loose.slice().reverse().map((r, k) => routeRow(r, 'loose', loose.length - 1 - k)).join('')}</div>` : '';
-  if (!list.length) return ['History', looseHtml + '<div class="card"><p class="sub">No saved sessions yet. End a tracking session or leave a group and your runs, routes and stats appear here — stored on this phone and available offline.</p></div>'];
-  return ['History', `<div class="card">${list.map((s) => `<button class="list-item" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}</div>${looseHtml}<p class="note">Stored on this phone only. Works offline.</p>`];
+  if (!list.length) return [`History · ${S.place.name}`, looseHtml + (S.historyElsewhere ? `<p class="note">${S.historyElsewhere} saved session${S.historyElsewhere > 1 ? 's' : ''} at other resorts — open that resort to see ${S.historyElsewhere > 1 ? 'them' : 'it'}.</p>` : '') + '<div class="card"><p class="sub">No saved sessions here yet. End a tracking session or leave a group and your runs, routes and stats appear here — stored on this phone and available offline.</p></div>'];
+  return [`History · ${S.place.name}`, `<div class="card">${list.map((s) => `<button class="list-item" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}</div>${looseHtml}<p class="note">Stored on this phone only. Works offline.${S.historyElsewhere ? ` ${S.historyElsewhere} more session${S.historyElsewhere > 1 ? 's' : ''} at other resorts — open that resort to see ${S.historyElsewhere > 1 ? 'them' : 'it'}.` : ''}</p>`];
 }
 async function loadHistory() {
-  try { S.history = (await sessions.list()).filter((s) => !s.active); } catch { S.history = []; }
+  // History, replay and tracks are per mountain: a recording only makes sense on the map it was made on.
+  let all = [];
+  try { all = (await sessions.list()).filter((s) => !s.active); } catch { /* storage unavailable */ }
+  S.history = all.filter((s) => resortOf(s) === S.place.id);
+  S.historyElsewhere = all.length - S.history.length;
   showTracks();
   S.historyLoaded = true;
   if (S.sheet === 'history' || S.sheet === 'session') renderSheet();
@@ -877,11 +970,11 @@ function routeRow(r, id, i) {
 }
 
 function sheetMore() {
-  const off = prefs.get('offline', null);
+  const off = prefs.get(pkey('offline'), null);
   return ['More', `
     <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
     <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
-    <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire Jay Peak map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
+    <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire ${esc(S.place.name)} map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
@@ -889,7 +982,7 @@ function sheetMore() {
 
     <button class="btn exit" data-act="change-resort">Choose a different resort</button>
     <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open WeSki from the icon for full screen and offline use.</p></div>
-    <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Slow zones and terrain parks: ${esc(S.resort.sources.zones)}.</p><p class="note">Not an official Jay Peak product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
+    <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Slow zones and terrain parks: ${S.resort.sources.zones ? esc(S.resort.sources.zones) : 'not verified for this resort yet, so none are shown'}.</p><p class="note">Not an official ${esc(S.place.name)} product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
 }
 
 function closedNames() {
@@ -924,7 +1017,7 @@ function sheetLegend() {
     <div class="card"><h3>Zones (painted on the snow)</h3>
       <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2"><svg viewBox="0 0 14 14"><path d="M1.500 2.500h11L7 12z" fill="none" stroke="#0b5c2c" stroke-width="1.6" stroke-linejoin="round"/></svg></div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
       <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846"><svg viewBox="0 0 14 14"><path d="M7 1l5.200 3v6L7 13l-5.200-3V4z" fill="#fff"/></svg></div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
-      <p class="note">Zones verified against Jay Peak's Winter 2025–26 trail map. The Gully's position is approximate.</p></div>
+      <p class="note">${S.resort.sources.zones ? `Zones verified against: ${esc(S.resort.sources.zones)}.${S.resort.parks.some((p) => p.approx) ? ' Positions marked approximate on the map are estimates.' : ''}` : `Slow zones and terrain parks have not been verified for ${esc(S.place.name)} yet, so none are shown.`}</p></div>
     <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift, just above and between its two cables)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
@@ -971,14 +1064,14 @@ async function refreshWeather(force) {
   S.wx = S.wx || {};
   S.wx.loading = true;
   if (S.sheet === 'weather') renderSheet();
-  try { S.wx = { data: await loadWeather(JAY, force) }; } catch (e) { S.wx = { error: navigator.onLine === false ? 'You are offline and no forecast is saved on this phone yet.' : 'The weather service did not answer. Try again in a moment.' }; }
+  try { S.wx = { data: await loadWeather(S.place, force) }; } catch (e) { S.wx = { error: navigator.onLine === false ? 'You are offline and no forecast is saved on this phone yet.' : 'The weather service did not answer. Try again in a moment.' }; }
   if (S.sheet === 'weather') renderSheet();
 }
 
 function sheetWeather() {
   const wx = S.wx || {};
-  if (wx.error) return ['Ski weather', `<div class="card"><p class="sub">${esc(wx.error)}</p><button class="btn alt" data-act="wx-refresh">Try again</button></div>`];
-  if (!wx.data) return ['Ski weather', '<div class="card"><p class="sub">Loading the forecast…</p></div>'];
+  if (wx.error) return [`Ski weather · ${S.place.name}`, `<div class="card"><p class="sub">${esc(wx.error)}</p><button class="btn alt" data-act="wx-refresh">Try again</button></div>`];
+  if (!wx.data) return [`Ski weather · ${S.place.name}`, '<div class="card"><p class="sub">Loading the forecast…</p></div>'];
   const { summit: s, base: b, at, stale } = wx.data, c = s.current, d = s.daily, h = s.hourly, hi = hourIndex(s);
   const [label, glyph] = describeCode(c.weather_code);
   const day = (i) => ({ snow: d.snowfall_sum[i] || 0, rain: d.rain_sum[i] || 0, gust: d.wind_gusts_10m_max[i] || 0, feelsMin: d.apparent_temperature_min[i], tMax: d.temperature_2m_max[i], tMin: d.temperature_2m_min[i] });
@@ -1004,9 +1097,9 @@ function sheetWeather() {
     const n = skiNotes(day(i), null, fmtSnow)[0];
     return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${describeCode(d.weather_code[i])[1]}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''} · ${d.precipitation_probability_max[i] ?? 0}% precip · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
   }).join('')}<p class="note">Columns: low / high, new snow, peak gust.</p></div>` : '';
-  return ['Ski weather · Jay Peak', `${today}
+  return [`Ski weather · ${S.place.name}`, `${today}
     <button class="btn ${S.wxWeek ? 'alt' : ''}" data-act="wx-week">${S.wxWeek ? 'Hide 7-day forecast' : 'Show 7-day forecast'}</button>${week}
-    <p class="note">${stale ? 'Could not refresh — showing the forecast saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''} · Summit ${fmtVert(JAY.top)}, base ${fmtVert(JAY.base)} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></p>
+    <p class="note">${stale ? 'Could not refresh — showing the forecast saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''} · Summit ${fmtVert(S.place.top)}, base ${fmtVert(S.place.base)} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></p>
     <button class="btn alt" data-act="wx-refresh">Refresh</button>`];
 }
 const hourLabelFull = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}:${iso.slice(14, 16)} ${h < 12 ? 'am' : 'pm'}`; };
@@ -1074,7 +1167,8 @@ function stopReplay() {
 async function downloadOffline() {
   const box = $('#offline-box');
   try {
-    const list = await (await fetch('/offline.json', { cache: 'no-store' })).json();
+    // the app itself plus this mountain's map
+    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', 'terrain.bin', 'surround.bin'].map((f) => `/data/${S.place.id}/${f}`));
     const cache = await caches.open('weski-map');
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
@@ -1087,8 +1181,8 @@ async function downloadOffline() {
       done++;
       $('#dl-n').textContent = done; $('#dl-p').value = done;
     }
-    prefs.set('offline', { at: Date.now(), bytes });
-    toast('Jay Peak is saved for offline use.');
+    prefs.set(pkey('offline'), { at: Date.now(), bytes });
+    toast(`${S.place.name} is saved for offline use.`);
   } catch (e) {
     toast('Download failed. Check your connection and try again.');
   }
@@ -1101,7 +1195,12 @@ function onInput(e) {
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group && S.profile.name) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
-  else if (t.id === 'f-crumbs' && e.type === 'change') { S.crumbsOn = t.checked; prefs.set('crumbsOn', S.crumbsOn); if (!S.historyLoaded) loadHistory(); showTracks(); renderSheet(); }
+  else if (t.id === 'f-crumbs' && e.type === 'change') {
+    S.crumbsOn = t.checked; prefs.set('crumbsOn', S.crumbsOn);
+    if (S.crumbsOn) { startCrumbs(); if (!S.historyLoaded) loadHistory(); if (!S.me && !S.tracker) toast(S.testMode ? 'Test mode: tap the map, then “Put me here”.' : 'Finding your location…'); }
+    else stopCrumbs();
+    showTracks(); renderSheet(); renderChrome();
+  }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -1159,7 +1258,7 @@ async function onClick(e) {
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();
       if (S.me && S.me.inBounds) S.map.focus(S.me.x, S.me.y, 700);
-      else if (S.me) toast("You're outside the Jay Peak map area — your position will appear when you're at the resort.", 4500);
+      else if (S.me) toast(`You're outside the ${S.place.name} map area — your position will appear when you're at the resort.`, 4500);
       else { S.followMe = true; toast('Finding your location…'); }
       renderChrome();
       break;
@@ -1179,7 +1278,7 @@ async function onClick(e) {
       break;
     }
     case 'share-code': {
-      const text = `Join my WeSki group at Jay Peak. Open ${location.origin} and enter code ${S.group.code}`;
+      const text = `Join my WeSki group at ${S.place.name}. Open ${location.origin} and enter code ${S.group.code}`;
       if (navigator.share) navigator.share({ text }).catch(() => {});
       else { try { await navigator.clipboard.writeText(text); toast('Invite copied.'); } catch { toast(`Code: ${S.group.code}`); } }
       break;
@@ -1192,6 +1291,7 @@ async function onClick(e) {
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
     case 'steps': openSheet('steps'); break;
+    case 'clear-tracks': if (confirm('Remove the saved location-only tracks from the map? Sessions in History are not affected.')) { S.tracksSaved = []; await saveTracks(); S.map.crumbCount = -2; showTracks(); renderSheet(); } break;
     case 'crumb-scope': S.crumbScope = d.v; if (!S.historyLoaded) loadHistory(); showTracks(); renderSheet(); break;
     case 'theme': prefs.set('theme', d.v); applyTheme(d.v); renderSheet(); break;
     case 'meet': proposeMeet(); break;
@@ -1210,7 +1310,7 @@ async function onClick(e) {
     case 'open-session': openSheet('session', d.id); break;
     case 'delete-session': if (confirm('Delete this session from this phone?')) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
     case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s) startReplay(s, d.run != null ? +d.run : null); break; }
-    case 'show-route': { const r = d.id === 'loose' ? prefs.get('routes', [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
+    case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
     case 'play-toggle': { const P = S.player; if (P.t >= P.pts[P.pts.length - 1][0]) { P.t = P.pts[0][0]; P.i = 0; } P.playing = !P.playing; b.textContent = P.playing ? '❚❚' : '▶'; break; }
     case 'play-rate': { const P = S.player, r = [5, 20, 60, 180]; P.rate = r[(r.indexOf(P.rate) + 1) % r.length]; b.textContent = P.rate + '×'; break; }
     case 'play-close': stopReplay(); break;
@@ -1240,7 +1340,8 @@ function tick() {
     if (S.nav?.target.type === 'friend' && ticks % 5 === 0) recalcNav(true);
   }
   if (S.session && ticks % 20 === 0) autosave();
-  if (S.tracker && S.crumbsOn && ticks % 4 === 0) showTracks();
+  if (S.crumbsOn && (S.tracker || S.crumbRec) && ticks % 4 === 0) showTracks();
+  if (S.crumbRec && ticks % 30 === 0) saveTracks(true);
   if (ticks % 5 === 0) renderChrome();
   if (S.sheet === 'track' && S.tracker) renderTrackLive();
 }

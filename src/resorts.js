@@ -1,10 +1,6 @@
-// Resorts shown on the start-screen globe. Only resorts with `available: true` have a built
-// 3D map; the rest are placeholders so they can be found and flown to.
-export const RESORTS = [
-  { id: 'jay-peak', name: 'Jay Peak', region: 'Vermont, USA', lat: 44.9243, lon: -72.5262, baseLat: 44.9388, baseLon: -72.506, top: 1175, base: 560, tz: 'America/New_York', trails: 81, lifts: 9, available: true },
-  { id: 'stowe', name: 'Stowe', region: 'Vermont, USA', lat: 44.5303, lon: -72.7814 },
-  { id: 'smugglers-notch', name: "Smugglers' Notch", region: 'Vermont, USA', lat: 44.5884, lon: -72.7901 },
-  { id: 'sugarbush', name: 'Sugarbush', region: 'Vermont, USA', lat: 44.1359, lon: -72.8944 },
+// Resorts listed on the start-screen globe that do not have a built 3D map yet. Resorts with a
+// map come from /data/index.json (written by tools/build_index.py) and are not listed here.
+export const COMING_SOON = [
   { id: 'killington', name: 'Killington', region: 'Vermont, USA', lat: 43.6045, lon: -72.8201 },
   { id: 'burke', name: 'Burke Mountain', region: 'Vermont, USA', lat: 44.5712, lon: -71.8923 },
   { id: 'whiteface', name: 'Whiteface', region: 'New York, USA', lat: 44.3659, lon: -73.9026 },

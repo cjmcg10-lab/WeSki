@@ -8,6 +8,8 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
 
+const RED_UP = 5;   // metres the red lift line sits above its cables
+
 export const COLORS = {
   diff: ['#1fa750', '#2b7de9', '#16181d', '#a3122f'],
   slow: '#4fe08a',
@@ -85,12 +87,17 @@ export class SkiMap {
     c.dampingFactor = 0.12;
     c.maxPolarAngle = THREE.MathUtils.degToRad(80);
     c.minDistance = 120;
-    c.maxDistance = 9500;
+    c.maxDistance = 14000;
     c.zoomSpeed = 1.2;
     // Opening view: the whole mountain from the east (base areas in front, summit behind).
     const mid = this.world(geo.W * 0.5, geo.H * 0.5, 0);
     c.target.set(mid.x, this.groundY(mid.x, mid.z), mid.z);
-    this.cam3.position.set(mid.x + 3900, c.target.y + 2500, mid.z - 2300);
+    // Opening view: stand out beyond the base areas looking up at the summit, far enough back
+    // that the whole resort fits a tall phone screen (which is narrow side to side).
+    const ex = Math.abs(this.right2.x) * geo.W + Math.abs(this.right2.z) * geo.H, ey = Math.abs(this.up2.x) * geo.W + Math.abs(this.up2.z) * geo.H;
+    const aspect = (container.clientWidth || 390) / (container.clientHeight || 760), tv = Math.tan(THREE.MathUtils.degToRad(21));
+    const back = Math.min(13000, Math.max((ex * 0.36) / (tv * Math.min(1, aspect)), (ey * 0.42) / tv));
+    this.cam3.position.set(mid.x - this.up2.x * back * 0.8, c.target.y + back * 0.6, mid.z - this.up2.z * back * 0.8);
     c.update();
 
     r.domElement.addEventListener('pointerdown', () => { this.lastInput = performance.now(); });
@@ -99,10 +106,25 @@ export class SkiMap {
     this.bind2D();
     this.bindTap();
     this.resize();
-    new ResizeObserver(() => this.resize()).observe(container);
+    this.ro = new ResizeObserver(() => this.resize());
+    this.ro.observe(container);
     this.running = true;
-    document.addEventListener('visibilitychange', () => { this.running = document.visibilityState === 'visible'; if (this.running) this.loop(); });
+    this.onVis = () => { if (this.dead) return; this.running = document.visibilityState === 'visible'; if (this.running) this.loop(); };
+    document.addEventListener('visibilitychange', this.onVis);
     this.loop();
+  }
+
+  /** Tear the map down (when switching to another resort) and give its graphics memory back. */
+  dispose() {
+    this.dead = true; this.running = false;
+    this.ro.disconnect();
+    document.removeEventListener('visibilitychange', this.onVis);
+    this.controls.dispose();
+    this.scene.traverse((o) => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose()); });
+    this.renderer.dispose();
+    this.renderer.forceContextLoss?.();
+    this.renderer.domElement.remove();
+    this.overlay.remove();
   }
 
   // ---------- coordinates
@@ -346,14 +368,14 @@ export class SkiMap {
     const R = this.resort;
     this.liftPaths = [];
     const cable = [], symbol = [], towerMats = [], stationGeos = [];
-    let chairCount = 0;
+    let chairCount = 0, cabinCount = 0;
     for (const l of R.lifts) {
-      if (l.kind === 'carpet') {
+      if (l.kind === 'carpet' || l.kind === 'surface') {
         const a = this.world(l.pts[0], l.pts[1], 3), b = this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3);
         symbol.push(a.x, a.y, a.z, b.x, b.y, b.z); this.liftPaths.push({ l, carpet: true, pts: [this.world(l.pts[0], l.pts[1], 3), this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3)], cum: [0, l.len], L: l.len }); continue; }
-      const tram = l.kind === 'tram', n = l.pts.length / 2, th = tram ? 26 : 9.5, endH = tram ? 13 : 6.5;
+      const tram = l.kind === 'tram', gondola = l.kind === 'gondola', n = l.pts.length / 2, th = tram ? 26 : gondola ? 13 : 9.5, endH = tram ? 13 : gondola ? 7.5 : 6.5;
       // r = half the spacing between the two cables (= bullwheel radius on a chairlift)
-      const r = tram ? 5 : 2.4;
+      const r = tram ? 5 : gondola ? 3 : 2.4;
       const sup = [];
       for (let i = 0; i < n; i++) sup.push(this.world(l.pts[i * 2], l.pts[i * 2 + 1], i === 0 || i === n - 1 ? endH : th));
       // The cable hangs between its supports: each span gets a shallow sag.
@@ -378,12 +400,15 @@ export class SkiMap {
         for (let i = cum.length - 1; i >= 0; i--) ring.push(this.loopPoint(path, L + Math.PI * r + (L - cum[i])).pos);
         for (let k = 1; k < 10; k++) ring.push(this.loopPoint(path, 2 * L + Math.PI * r + (Math.PI * r * k) / 10).pos);
         line(ring, true);
-        path.chairs = Math.max(4, Math.floor(path.loop / (l.name.includes('Express') ? 70 : 48)));
-        chairCount += path.chairs;
+        // chairs (or gondola cabins) spaced along the loop
+        path.chairs = Math.max(4, Math.floor(path.loop / (gondola ? 85 : l.name.includes('Express') ? 70 : 48)));
+        path.gondola = gondola;
+        if (gondola) { path.first = cabinCount; cabinCount += path.chairs; } else { path.first = chairCount; chairCount += path.chairs; }
       }
-      // The single red line that stands for the lift: it follows the cables, midway between
-      // the two of them and a little above, so it is always in view and sits on the real lift.
-      for (let i = 1; i < pts.length; i++) symbol.push(pts[i - 1].x, pts[i - 1].y + 1.6, pts[i - 1].z, pts[i].x, pts[i].y + 1.6, pts[i].z);
+      // The single red line that stands for the lift: it follows the cables, midway between the
+      // two of them and clearly above (RED_UP metres), and is drawn after them, so from far away
+      // the red always lies on top of the dark cables instead of blending into them.
+      for (let i = 1; i < pts.length; i++) symbol.push(pts[i - 1].x, pts[i - 1].y + RED_UP, pts[i - 1].z, pts[i].x, pts[i].y + RED_UP, pts[i].z);
       const dir = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
       // towers stand on the ground under each support; their crossarm reaches both cables
       for (let i = 1; i < n - 1; i++) towerMats.push({ p: this.world(l.pts[i * 2], l.pts[i * 2 + 1], 0), yaw, h: th, arm: 2 * r + 0.8 });
@@ -395,9 +420,9 @@ export class SkiMap {
       }
       this.liftPaths.push(path);
     }
-    this.scene.add(this.fatLine(symbol, COLORS.lift, 2.8, { order: 5 }));
+    this.scene.add(this.fatLine(symbol, COLORS.lift, 2.8, { order: 8 }));
     // steel cables: thin and dark, so the red map line stays the one line you read per lift
-    this.liftLine = this.fatLine(cable, '#2c3138', 1.1, { order: 6 });
+    this.liftLine = this.fatLine(cable, '#3d444d', 1, { order: 6, opacity: 0.8 });
     this.scene.add(this.liftLine);
     // towers: one instanced mesh per tower type
     const types = new Map();
@@ -412,6 +437,10 @@ export class SkiMap {
     this.chairs = new THREE.InstancedMesh(M.chairGeometry(4), M.vcMat(), Math.max(1, chairCount));
     this.chairs.frustumCulled = false;
     this.scene.add(this.chairs);
+    this.cabins = new THREE.InstancedMesh(M.gondolaGeometry(), M.vcMat(), Math.max(1, cabinCount));
+    this.cabins.frustumCulled = false;
+    this.cabins.visible = cabinCount > 0;
+    this.scene.add(this.cabins);
     const tram = this.liftPaths.find((p) => p.tram);
     this.tram = tram ? { path: tram, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] } : null;
     if (this.tram) for (const c of this.tram.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
@@ -455,15 +484,16 @@ export class SkiMap {
     for (const p of this.liftPaths) {
       if (!p.chairs) continue;
       const running = !this.closed.has('l' + p.l.id);
-      const speed = (p.l.name.includes('Express') ? 5 : 2.4) * 2; // real line speed x2 so the motion reads at map scale
+      const speed = (p.gondola || p.l.name.includes('Express') ? 5 : 2.4) * 2; // real line speed x2 so the motion reads at map scale
       const gap = p.loop / p.chairs;
       for (let i = 0; i < p.chairs; i++) {
         const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
         q.setFromAxisAngle(up, yaw);
-        this.chairs.setMatrixAt(p.first + i, m.compose(pos, q, s));
+        (p.gondola ? this.cabins : this.chairs).setMatrixAt(p.first + i, m.compose(pos, q, s));
       }
     }
     this.chairs.instanceMatrix.needsUpdate = true;
+    this.cabins.instanceMatrix.needsUpdate = true;
     if (this.tram) {
       // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
       // other descends; both wait in their stations, then swap directions.
@@ -594,7 +624,7 @@ export class SkiMap {
     }
     if (!pos.length) return;
     // small dots, narrower than a trail line and part see-through, so the trails stay readable underneath
-    this.crumbs = this.fatLine(pos, '#ff5aa8', 3, { order: 7, dash: [3, 8], opacity: 0.9 });
+    this.crumbs = this.fatLine(pos, '#ff5aa8', 3, { order: 9, dash: [3, 8], opacity: 0.9 });
     this.scene.add(this.crumbs);
   }
 
@@ -780,7 +810,7 @@ export class SkiMap {
   }
 
   loop() {
-    if (!this.running) return;
+    if (!this.running || this.dead) return;
     requestAnimationFrame(() => this.loop());
     // Full frame rate while the map is being touched or flown; ~30 fps otherwise (saves battery/GPU).
     const now = performance.now();

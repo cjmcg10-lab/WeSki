@@ -1,0 +1,77 @@
+{
+  "id": "jay-peak",
+  "name": "Jay Peak",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "area_name": "Jay Peak Resort",
+  "area_buffer": 400,
+  "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+  "osm_bbox": [
+    -72.57,
+    44.895,
+    -72.46,
+    44.975
+  ],
+  "dem_tiles": [
+    "x69y498",
+    "x69y499"
+  ],
+  "skip_pois": [
+    "Jay Peak",
+    "Jay Peak Resort"
+  ],
+  "zones_source": "Jay Peak Resort Winter 2025-26 trail map and terrain parks page",
+  "slow_zone_trails": [
+    "Interstate",
+    "The Subway",
+    "Harmony Lane",
+    "Deer Run",
+    "Queen's Highway",
+    "Raccoon Run",
+    "Chalet Meadows",
+    "The Boulevard",
+    "Rabbit Trail",
+    "Perry Merrill Ave",
+    "Kangaroo Trail",
+    "Grammy Jay",
+    "Progression Terrain"
+  ],
+  "parks": [
+    [
+      "The Rusch",
+      "Lower Can Am",
+      0,
+      "Intermediate / Advanced",
+      "Medium to big features, on Lower Can Am off the Taxi Quad"
+    ],
+    [
+      "Rabbit Park",
+      "Rabbit Trail",
+      0,
+      "Beginner",
+      "On Rabbit Trail"
+    ],
+    [
+      "The Rabbit Hole",
+      "Rabbit Trail",
+      28,
+      "Beginner glade",
+      "Tree island skier's left of Rabbit Trail"
+    ],
+    [
+      "Shakedown",
+      "Chalet Meadows",
+      14,
+      "Beginner (intro park)",
+      "Skier's left of Chalet Meadows above Stateside Base Lodge"
+    ]
+  ],
+  "parks_between": [
+    [
+      "The Gully",
+      "Lower Can Am",
+      "Rabbit Trail",
+      "Between The Rusch and the Rabbit Hole (position approximate)"
+    ]
+  ]
+}

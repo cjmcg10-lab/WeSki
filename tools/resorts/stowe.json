@@ -1,0 +1,23 @@
+{
+  "id": "stowe",
+  "name": "Stowe",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "area_name": "Stowe Mountain Resort",
+  "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+  "osm_bbox": [
+    -72.835,
+    44.497,
+    -72.725,
+    44.563
+  ],
+  "dem_tiles": [
+    "x67y494"
+  ],
+  "skip_pois": [
+    "Stowe Mountain Resort"
+  ],
+  "two_way_lifts": [
+    "Over Easy Transfer Gondola"
+  ]
+}

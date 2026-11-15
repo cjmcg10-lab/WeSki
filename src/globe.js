@@ -2,6 +2,19 @@
 // land outlines), slowly spinning. Picking a resort turns the globe to it and zooms in.
 import * as THREE from 'three';
 
+const LAYERS = ['land', 'coast', 'borders', 'states', 'hiCoast', 'hiBorders'];
+/** The point lists of one layer of globe.bin, as [lon, lat, lon, lat, ...] arrays in degrees. */
+function layer(meta, bin, name) {
+  let o = 0;
+  for (const l of LAYERS) { if (l === name) break; o += meta[l].reduce((n, c) => n + c, 0) * 2; }
+  return meta[name].map((count) => {
+    const a = new Float32Array(count * 2);
+    for (let i = 0; i < count * 2; i++) a[i] = bin[o + i] / meta.scale;
+    o += count * 2;
+    return a;
+  });
+}
+
 const ll = (lat, lon, r = 1) => {
   const phi = THREE.MathUtils.degToRad(lon + 180), c = Math.cos(THREE.MathUtils.degToRad(lat));
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
@@ -10,7 +23,7 @@ const ll = (lat, lon, r = 1) => {
 const HOME_LIFT = 0.115, CARD_DIST = 1.75, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
 
 export class Globe {
-  constructor(container, data, resorts) {
+  constructor(container, meta, bin, resorts) {
     this.el = container;
     const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'low-power' }));
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
@@ -26,11 +39,34 @@ export class Globe {
 
     const g = (this.globe = new THREE.Group());
     // 4096 px wide where the phone supports it, so the coast stays sharp when zoomed to a resort
-    this.canvas = drawEarth(data, r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048);
+    this.canvas = drawEarth(layer(meta, bin, 'land'), r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048);
     const tex = new THREE.CanvasTexture(this.canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy());
     g.add(new THREE.Mesh(new THREE.SphereGeometry(1, 56, 36), (this.mat = new THREE.MeshLambertMaterial({ map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: 0 }))));
+    // Coastlines and borders are also real lines on the sphere (not only part of the picture
+    // wrapped around it), so their edge stays sharp however far you zoom in. Around the resorts that have
+    // maps they come from the most detailed 1:10m data.
+    const lines = (names, color, opacity) => {
+      const pos = [];
+      for (const name of names) for (const l of layer(meta, bin, name)) {
+        let prev = null;
+        for (let i = 0; i < l.length; i += 2) {
+          const p = ll(l[i + 1], l[i], 1.0007);
+          if (prev && Math.abs(l[i] - l[i - 2]) < 90) pos.push(prev.x, prev.y, prev.z, p.x, p.y, p.z);
+          prev = p;
+        }
+      }
+      // plain hairlines: tens of thousands of them cost almost nothing to draw
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+      const line = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color, transparent: true, opacity, depthWrite: false }));
+      line.frustumCulled = false;
+      g.add(line);
+    };
+    lines(['states'], '#12303f', 0.35);
+    lines(['borders', 'hiBorders'], '#12303f', 0.6);
+    lines(['coast', 'hiCoast'], '#ffffff', 1);
     // soft atmosphere rim
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
     this.pins = [];
@@ -199,41 +235,40 @@ export class Globe {
   }
 }
 
-/** Equirectangular earth: flat ocean, land shaded from temperate green to polar white. */
-function drawEarth(data, W = 2048) {
+/** Equirectangular earth: flat ocean, land shaded from temperate green to polar white (fill only; the outlines are drawn as lines). */
+function drawEarth(land, W = 2048) {
   const H = W / 2, c = document.createElement('canvas');
   c.width = W; c.height = H;
   const x = c.getContext('2d');
   const sea = x.createLinearGradient(0, 0, 0, H);
   sea.addColorStop(0, '#16467a'); sea.addColorStop(0.5, '#1b5c9c'); sea.addColorStop(1, '#16467a');
   x.fillStyle = sea; x.fillRect(0, 0, W, H);
-  const land = x.createLinearGradient(0, 0, 0, H);
-  for (const [stop, col] of [[0, '#f4f8fb'], [0.14, '#e9f1f3'], [0.24, '#7fb08c'], [0.36, '#5fa06f'], [0.5, '#8fb46a'], [0.64, '#5fa06f'], [0.8, '#9cbf9f'], [0.9, '#f4f8fb'], [1, '#f4f8fb']]) land.addColorStop(stop, col);
-  // Rings that cross the date line are unwrapped into continuous longitudes and drawn at
-  // -360, 0 and +360 degrees (the canvas clips the copies), so nothing streaks across the map.
-  const path = (ring, shift) => {
-    x.beginPath();
-    let lon = ring[0];
+  const fill = x.createLinearGradient(0, 0, 0, H);
+  for (const [stop, col] of [[0, '#f4f8fb'], [0.14, '#e9f1f3'], [0.24, '#7fb08c'], [0.36, '#5fa06f'], [0.5, '#8fb46a'], [0.64, '#5fa06f'], [0.8, '#9cbf9f'], [0.9, '#f4f8fb'], [1, '#f4f8fb']]) fill.addColorStop(stop, col);
+  x.fillStyle = fill; x.strokeStyle = 'rgba(255,255,255,0.5)'; x.lineWidth = W / 1500; x.lineJoin = 'round';
+  for (const ring of land) {
+    // Rings that cross the date line are unwrapped into continuous longitudes and drawn at
+    // -360, 0 and +360 degrees (the canvas clips the copies), so nothing streaks across the map.
+    let lo = 180, hi = -180, south = 90, wraps = false;
     for (let i = 0; i < ring.length; i += 2) {
-      if (i) { let d = ring[i] - ring[i - 2]; if (d > 180) d -= 360; else if (d < -180) d += 360; lon += d; }
-      const px = ((lon + shift + 180) / 360) * W, py = ((90 - ring[i + 1]) / 180) * H;
-      if (i) x.lineTo(px, py); else x.moveTo(px, py);
+      lo = Math.min(lo, ring[i]); hi = Math.max(hi, ring[i]); south = Math.min(south, ring[i + 1]);
+      if (i && Math.abs(ring[i] - ring[i - 2]) > 180) wraps = true;
     }
-  };
-  const wraps = (ring) => { for (let i = 2; i < ring.length; i += 2) if (Math.abs(ring[i] - ring[i - 2]) > 180) return true; return false; };
-  const each = (ring, fn) => { for (const s of wraps(ring) ? [-360, 0, 360] : [0]) { path(ring, s); fn(); } };
-  x.fillStyle = land; x.strokeStyle = 'rgba(255,255,255,0.55)'; x.lineWidth = W / 1280; x.lineJoin = 'round';
-  for (const ring of data.land) {
-    let lo = 180, hi = -180, south = 90;
-    for (let i = 0; i < ring.length; i += 2) { lo = Math.min(lo, ring[i]); hi = Math.max(hi, ring[i]); south = Math.min(south, ring[i + 1]); }
-    const polar = hi - lo > 300 && south < -60;
+    for (const shift of wraps ? [-360, 0, 360] : [0]) {
+      x.beginPath();
+      let lon = ring[0];
+      for (let i = 0; i < ring.length; i += 2) {
+        if (i) { let d = ring[i] - ring[i - 2]; if (d > 180) d -= 360; else if (d < -180) d += 360; lon += d; }
+        const px = ((lon + shift + 180) / 360) * W, py = ((90 - ring[i + 1]) / 180) * H;
+        if (i) x.lineTo(px, py); else x.moveTo(px, py);
+      }
+      x.closePath(); x.fill();
+      // a soft outline baked into the picture gives the coast some weight from far away; the hairline on top keeps it sharp up close
+      if (!(hi - lo > 300 && south < -60)) x.stroke();
+    }
     // Antarctica's outline stops a few degrees short of the pole (the source data is clipped
-    // there), which left a hole at the bottom of the globe: fill the polar cap below it, and
-    // skip the outline so the clip edge does not show as a ring around the pole.
-    each(ring, () => { x.closePath(); x.fill(); if (!polar) x.stroke(); });
-    if (polar) { const y = ((90 - (south + 2.5)) / 180) * H; x.fillRect(0, y, W, H - y); } // start a little above the wavering clip edge
+    // there), which would leave a hole at the bottom of the globe: fill the polar cap below it.
+    if (hi - lo > 300 && south < -60) { const y = ((90 - (south + 2.5)) / 180) * H; x.fillRect(0, y, W, H - y); }
   }
-  x.strokeStyle = 'rgba(20,50,60,0.28)'; x.lineWidth = W / 2048;
-  for (const b of data.borders) each(b, () => x.stroke());
   return c;
 }

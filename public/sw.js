@@ -11,12 +11,14 @@ self.addEventListener('install', (event) => {
   );
 });
 
+const RESORT_DATA = /^\/data\/[^/]+\//;   // one folder of map data per resort, cached when first opened
+
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     for (const name of await caches.keys()) if (name !== CACHE) await caches.delete(name);
     const cache = await caches.open(CACHE);
     const keep = new Set(FILES);
-    for (const req of await cache.keys()) if (!keep.has(new URL(req.url).pathname)) await cache.delete(req);
+    for (const req of await cache.keys()) { const p = new URL(req.url).pathname; if (!keep.has(p) && !RESORT_DATA.test(p)) await cache.delete(req); }
     await self.clients.claim();
   })());
 });
@@ -26,11 +28,18 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    if (RESORT_DATA.test(url.pathname)) {
+      // Resort maps: answer from the phone straight away if we have it, and refresh the copy
+      // in the background when online, so the map opens offline and still picks up updates.
+      const hit = await cache.match(url.pathname);
+      const fresh = fetch(req).then((res) => { if (res.ok) cache.put(url.pathname, res.clone()); return res; });
+      if (hit) { fresh.catch(() => {}); return hit; }
+      return fresh;
+    }
     const hit = await cache.match(req.mode === 'navigate' ? '/' : req, { ignoreSearch: true });
     if (hit) return hit;
     try {
-      const res = await fetch(req);
-      return res;
+      return await fetch(req);
     } catch (e) {
       if (req.mode === 'navigate') { const shell = await cache.match('/'); if (shell) return shell; }
       throw e;

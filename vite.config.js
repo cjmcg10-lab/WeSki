@@ -16,7 +16,12 @@ function swManifest() {
         for (const f of readdirSync(d)) {
           const p = join(d, f);
           if (statSync(p).isDirectory()) walk(p);
-          else if (f !== 'sw.js') files.push('/' + relative(dist, p).replace(/\\/g, '/'));
+          else if (f !== 'sw.js') {
+            const url = '/' + relative(dist, p).replace(/\\/g, '/');
+            // each resort's map (data/<id>/...) is fetched and cached when that resort is opened,
+            // not up front: only the app shell, globe and resort list are precached
+            if (!/^\/data\/[^/]+\//.test(url)) files.push(url);
+          }
         }
       };
       walk(dist);

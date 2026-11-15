@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""Extra map data for WeSki (run after build_data.py).
+"""Surrounding terrain for one resort (run after build_data.py).
 
   surround.bin  coarse terrain for ~10 km around the resort, from the free AWS/Mapzen
                 Terrarium elevation tiles (SRTM/3DEP derived), 140 m grid, Uint16 metres
-  globe.json    world land polygons + borders for the start-screen globe, from
-                Natural Earth 1:110m via the world-atlas package (public domain)
 
-usage: build_extras.py <public/data dir>
+usage: build_extras.py <public/data/<resort id> dir>
 """
 import io
 import json
@@ -61,43 +59,3 @@ resort["surround"] = {"nx": nx, "ny": ny, "cell": CELL, "x0": -PAD, "y0": -PAD, 
 resort["sources"]["surround"] = "Mapzen/AWS Terrain Tiles (SRTM, USGS 3DEP)"
 json.dump(resort, open(f"{out}/resort.json", "w"), separators=(",", ":"))
 print(f"surround {nx}x{ny} @ {CELL} m, z {z.min():.0f}..{z.max():.0f}, {(tx1 - tx0 + 1) * (ty1 - ty0 + 1)} tiles")
-
-# ---------- globe
-topo = json.loads(get("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json"))
-sx, sy = topo["transform"]["scale"]
-ox, oy = topo["transform"]["translate"]
-arcs = []
-for arc in topo["arcs"]:
-    x = y = 0
-    pts = []
-    for dx, dy in arc:
-        x += dx
-        y += dy
-        pts.append((round(x * sx + ox, 2), round(y * sy + oy, 2)))
-    arcs.append(pts)
-
-
-def ring(idx):
-    pts = []
-    for k in idx:
-        a = arcs[k] if k >= 0 else arcs[~k][::-1]
-        pts.extend(a if not pts else a[1:])
-    return [c for pt in pts for c in pt]
-
-
-land = []
-for geom in topo["objects"]["land"]["geometries"]:
-    polys = geom["arcs"] if geom["type"] == "MultiPolygon" else [geom["arcs"]]
-    for poly in polys:
-        land.append(ring(poly[0]))   # outer rings only: lakes are too small to matter at this scale
-# borders: arcs shared by two countries
-use = {}
-for geom in topo["objects"]["countries"]["geometries"]:
-    polys = geom["arcs"] if geom["type"] == "MultiPolygon" else [geom["arcs"]]
-    for poly in polys:
-        for r in poly:
-            for k in r:
-                use[k if k >= 0 else ~k] = use.get(k if k >= 0 else ~k, 0) + 1
-borders = [[c for pt in arcs[k] for c in pt] for k, c_ in use.items() if c_ > 1]
-json.dump({"land": land, "borders": borders, "source": "Natural Earth 1:110m (public domain) via world-atlas"}, open(f"{out}/globe.json", "w"), separators=(",", ":"))
-print(f"globe: {len(land)} land rings, {len(borders)} borders")
