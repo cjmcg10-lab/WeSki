@@ -7,6 +7,8 @@ import { GroupClient, createGroup } from './group.js';
 import { sessions, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
 import { RESORTS } from './resorts.js';
+import { matchTrails, exploredIds, trailChecklist } from './explored.js';
+import { Clouds } from './clouds.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -19,6 +21,7 @@ const S = {
   resort: null, geo: null, router: null, map: null, loc: null,
   profile: prefs.get('profile', null) || { id: randomId(), name: '', avatar: 'boy-ski', color: PALETTE[5] },
   units: prefs.get('units', 'imperial'),
+  exOnMap: prefs.get('exOnMap', false), exScope: 'session',
   maxDiff: prefs.get('maxDiff', 2),
   closures: new Set(prefs.get('closures', [])),
   testMode: prefs.get('testMode', false),
@@ -131,7 +134,7 @@ async function boot() {
 }
 
 // ---------- start screen (globe + resort picker)
-let globe = null;
+let globe = null, clouds = null;
 /** Show the globe. With `from` (a resort) it starts on the ground there, hidden, ready to pull back. */
 async function openStart(from = null) {
   const el = $('#start');
@@ -184,12 +187,18 @@ async function skiHere(btn) {
   // screen; the 3D map starts high above the mountain in haze of exactly that colour and
   // keeps descending as the haze clears. No fade, no cut.
   const color = g.colorAt(r);
-  const landing = S.map.fly(1, color, 3.4);
+  const landing = S.map.fly(1, color, 3.6);
   S.map.setPaused(true);                        // hold the map's first frame while the globe is on top
-  await g.dive(2.3);
+  // Clouds: near the end of the dive you drop into a cloud layer; the globe hands over to the
+  // mountain inside it, and you come out of the bottom of the clouds above the resort.
+  const sky = (clouds ||= new Clouds($('#clouds')));
+  sky.start(1);
+  const into = new Promise((res) => setTimeout(() => sky.to(1, 1.15).then(res), 1150));
+  await Promise.all([g.dive(2.3), into]);
   S.map.setPaused(false);
   $('#start').classList.add('hidden');
   g.dispose();
+  sky.to(0, 1.9).then(() => sky.stop());
   await landing;
   document.body.classList.remove('flying');
   renderChrome();
@@ -201,15 +210,20 @@ async function exitToGlobe() {
   document.body.classList.add('flying');
   try {
     await openStart(JAY);
-    await S.map.fly(-1, globe.colorAt(JAY), 2.4);
+    const sky = (clouds ||= new Clouds($('#clouds')));
+    sky.start(-1);                              // climb up into the clouds, swap inside them, come out above the globe
+    const into = new Promise((res) => setTimeout(() => sky.to(1, 1.1).then(res), 1250));
+    await Promise.all([S.map.fly(-1, globe.colorAt(JAY), 2.4), into]);
     $('#start').classList.remove('prep');
     S.map.setPaused(true);
+    sky.to(0, 1.6).then(() => sky.stop());
     await globe.rise(2.8);
     $('.start-top').classList.remove('hidden');
     $('#start-panel').classList.remove('hidden');
   } catch (e) {
     // no globe available (e.g. first run offline): stay on the mountain
     console.warn(e);
+    clouds?.stop();
     $('#start').classList.add('hidden');
     S.map.setPaused(false);
     await S.map.fly(1, '#b9d7f0', 1.2);
@@ -232,7 +246,7 @@ async function leaveResort(save) {
     if (save) await endSession('Ski day saved.');
     else {
       const id = S.session.id;
-      S.session = null; S.tracker = null;
+      S.session = null; S.tracker = null; S.exAcc = null; S.exIdx = 1;
       releaseWake();
       try { await sessions.del(id); } catch { /* nothing stored yet */ }
       toast('Left without saving this session.');
@@ -317,6 +331,7 @@ function releaseWake() { if (!(S.tracker || (S.group && S.sharing))) { lock?.rel
 function startSession(kind) {
   if (S.tracker) { if (kind === 'group') { S.session.kind = 'group'; S.session.group = S.group?.code; } return; }
   S.tracker = new Tracker(S.geo, S.resort.lifts);
+  S.exAcc = new Map(); S.exIdx = 1;
   S.session = { id: 's' + Date.now(), kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
   ensureLocation();
   wakeLock();
@@ -332,11 +347,13 @@ async function autosave() {
 async function endSession(reason) {
   if (!S.session) return null;
   const s = S.session;
+  updateExplored(true);
+  s.explored = [...exploredIds(S.resort, S.exAcc || new Map())];
   s.stats = stripStats(S.tracker.stats);
   s.end = s.points.length ? s.points[s.points.length - 1][0] : Date.now();
   if (s.points.length) s.start = Math.min(s.start, s.points[0][0]);
   s.active = false;
-  S.session = null; S.tracker = null;
+  S.session = null; S.tracker = null; S.exAcc = null; S.exIdx = 1;
   releaseWake();
   const worth = s.points.length >= 5 || s.routes.length;
   try { if (worth) await sessions.put(s); else await sessions.del(s.id); } catch (e) { toast('Could not save this session on the phone.'); return null; }
@@ -360,6 +377,7 @@ async function recoverSession() {
       S.tracker = new Tracker(S.geo, S.resort.lifts);
       S.tracker.points = s.points;
       S.tracker.state = s.points.length ? s.points[s.points.length - 1][4] : 0;
+      S.exAcc = new Map(); S.exIdx = 1;
       S.session = s;
       ensureLocation(); wakeLock();
       toast('Resumed your tracking session.');
@@ -368,6 +386,42 @@ async function recoverSession() {
       if (s.points.length >= 5 || s.routes?.length) await sessions.put(s); else await sessions.del(s.id);
     }
   }
+}
+
+// ---------- explored trails
+/** Fold newly recorded skiing into the current session's explored set (a little behind live, so run/lift labels have settled). */
+function updateExplored(final = false) {
+  if (!S.tracker) return;
+  const P = S.tracker.points;
+  let to = P.length;
+  if (!final) { const cut = (P.length ? P[P.length - 1][0] : 0) - 20000; while (to > 0 && P[to - 1][0] > cut) to--; }
+  S.exAcc ||= new Map();
+  if (to > (S.exIdx || 1)) { matchTrails(S.resort, P, S.exIdx || 1, to, S.exAcc); S.exIdx = to; }
+}
+
+/** Trail ids explored in the chosen scope: this session, or everything saved on this phone plus this session. */
+function exploredSet() {
+  const ids = S.exAcc ? exploredIds(S.resort, S.exAcc) : new Set();
+  if (S.exScope === 'all' || !S.tracker) for (const s of S.history || []) for (const id of s.explored || []) ids.add(id);
+  return ids;
+}
+
+function showExplored() {
+  if (!S.map) return;
+  if (!S.exOnMap) { S.map.setExplored(null); return; }
+  const ids = exploredSet();
+  S.map.setExplored(ids, new Set(trailChecklist(S.resort, ids).filter((t) => t.done).map((t) => t.name)));
+}
+
+function exploredCard() {
+  const ids = exploredSet(), list = trailChecklist(S.resort, ids), done = list.filter((t) => t.done).length;
+  const all = S.exScope === 'all' || !S.tracker;
+  return `<div class="card"><h3>Trails explored</h3>
+    ${S.tracker ? `<div class="seg" style="margin-bottom:8px"><button data-act="ex-scope" data-v="session" class="${all ? '' : 'on'}">This session</button><button data-act="ex-scope" data-v="all" class="${all ? 'on' : ''}">All time</button></div>` : ''}
+    <div class="rowf"><div class="grow"><b>${done} of ${list.length} trails</b><div class="sub">${all ? 'Across every session saved on this phone' : 'Skied since you started tracking'}</div></div><span class="sub">On map</span><label class="switch"><input type="checkbox" id="f-explored" ${S.exOnMap ? 'checked' : ''} /><i></i></label></div>
+    <div class="explore-bar"><i style="width:${list.length ? (done / list.length) * 100 : 0}%"></i></div>
+    <p class="note">${S.exOnMap ? 'Map: trails you have skied are bold with a ✓; the rest are faded.' : 'Turn on “On map” to see skied trails bold and the rest faded.'}</p>
+    <div class="chips">${list.filter((t) => t.done).map((t) => `<span class="chip done"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)} ✓</span>`).join('')}${list.filter((t) => !t.done).map((t) => `<span class="chip"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)}</span>`).join('')}</div></div>`;
 }
 
 // ---------- group
@@ -760,10 +814,12 @@ function sheetTrack() {
     return ['Stats', `<div class="card"><p class="sub">Track speed, runs, distance and vertical. Lift rides are detected and kept separate, and GPS spikes are filtered out.</p>
       <button class="btn go" data-act="start-track">Start tracking</button>
       <p class="note">Joining a group starts a group session automatically. Everything is saved on this phone when you end.</p></div>
+      ${exploredCard()}
       ${S.gpsMsg ? `<p class="note">${esc(S.gpsMsg)}</p>` : ''}`];
   }
   const st = S.tracker.stats, s = S.session;
   return [s.kind === 'group' ? `Group session ${s.group || ''}` : 'Solo tracking', `<div id="live-stats">${statGrid(st, true)}</div>
+    ${exploredCard()}
     <p class="note">Started ${fmtClock(s.start)} · ${S.tracker.points.length} GPS points${st.rejected ? ` · ${st.rejected} bad fixes filtered` : ''}${S.me ? '' : ' · waiting for GPS'}</p>
     ${s.kind === 'group' && S.group ? '<p class="note">This session ends and saves when you leave or close the group.</p><button class="btn danger" data-act="leave-group">Leave group &amp; save</button>' : '<button class="btn danger" data-act="end-track">End &amp; save</button>'}`];
 }
@@ -782,6 +838,9 @@ function sheetHistory() {
 }
 async function loadHistory() {
   try { S.history = (await sessions.list()).filter((s) => !s.active); } catch { S.history = []; }
+  // sessions saved before this feature existed: work out their explored trails once
+  for (const s of S.history) if (!s.explored) { s.explored = [...exploredIds(S.resort, matchTrails(S.resort, s.points))]; sessions.put(s).catch(() => {}); }
+  showExplored();
   S.historyLoaded = true;
   if (S.sheet === 'history' || S.sheet === 'session') renderSheet();
 }
@@ -795,6 +854,7 @@ function sheetSession(id) {
     <button class="btn" data-act="replay" data-id="${s.id}" ${s.points.length < 2 ? 'disabled' : ''}>▶ Replay on map</button>
     ${statGrid(s.stats, false)}
     <div class="card"><h3>Runs</h3>${runs || '<p class="sub">No complete runs in this session.</p>'}</div>
+    <div class="card"><h3>Trails skied</h3>${(() => { const l = trailChecklist(S.resort, new Set(s.explored || [])).filter((t) => t.done); return l.length ? `<div class="chips">${l.map((t) => `<span class="chip done"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)}</span>`).join('')}</div>` : '<p class="sub">No mapped trails matched in this session.</p>'; })()}</div>
     ${routes ? `<div class="card"><h3>Routes</h3>${routes}</div>` : ''}
     <button class="btn alt" data-act="tab" data-tab="history">Back to history</button>
     <button class="btn danger" data-act="delete-session" data-id="${s.id}">Delete session</button>`];
@@ -849,10 +909,10 @@ function sheetLegend() {
       ${line(COLORS.diff[2], '<b class="d2">◆</b>&nbsp; Most difficult (black diamond)')}${line(COLORS.diff[3], '<b class="d3">◆◆</b>&nbsp; Extreme terrain')}
       ${line(COLORS.diff[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
     <div class="card"><h3>Zones (painted on the snow)</h3>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2">▽</div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846;color:#fff">⬣</div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2"><svg viewBox="0 0 14 14"><path d="M1.500 2.500h11L7 12z" fill="none" stroke="#0b5c2c" stroke-width="1.6" stroke-linejoin="round"/></svg></div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
+      <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846"><svg viewBox="0 0 14 14"><path d="M7 1l5.200 3v6L7 13l-5.200-3V4z" fill="#fff"/></svg></div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
       <p class="note">Zones verified against Jay Peak's Winter 2025–26 trail map. The Gully's position is approximate.</p></div>
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift cables (chairs and tram cabins circulate on them)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift; thin dark cables carry the chairs and tram cabins)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
 }
@@ -1028,6 +1088,7 @@ function onInput(e) {
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group && S.profile.name) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
+  else if (t.id === 'f-explored' && e.type === 'change') { S.exOnMap = t.checked; prefs.set('exOnMap', S.exOnMap); if (!S.historyLoaded) loadHistory(); showExplored(); renderSheet(); }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -1063,6 +1124,7 @@ async function onClick(e) {
   const act = b.dataset.act, d = b.dataset;
   switch (act) {
     case 'tab':
+      if (d.tab === 'track' && !S.historyLoaded) loadHistory();
       if (d.tab === 'map') closeSheet();
       else if (S.sheet === d.tab) closeSheet();
       else openSheet(d.tab);
@@ -1117,6 +1179,7 @@ async function onClick(e) {
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
     case 'steps': openSheet('steps'); break;
+    case 'ex-scope': S.exScope = d.v; showExplored(); renderSheet(); break;
     case 'meet': proposeMeet(); break;
     case 'meet-here': {
       const [lat, lon] = S.geo.toLatLon(S.pin.x, S.pin.y);
@@ -1163,6 +1226,7 @@ function tick() {
     if (S.nav?.target.type === 'friend' && ticks % 5 === 0) recalcNav(true);
   }
   if (S.session && ticks % 20 === 0) autosave();
+  if (S.tracker && ticks % 5 === 0) { updateExplored(); showExplored(); if (S.sheet === 'track') renderSheet(); }
   if (ticks % 5 === 0) renderChrome();
   if (S.sheet === 'track' && S.tracker) renderTrackLive();
 }

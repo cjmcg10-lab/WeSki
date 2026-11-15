@@ -102,7 +102,8 @@ export class Globe {
     let dy = a.y - this.globe.rotation.y;
     dy = Math.atan2(Math.sin(dy), Math.cos(dy)); // shortest way round
     this.ring.position.copy(ll(rs.lat, rs.lon, 1.006));
-    this.ring.lookAt(this.ring.position.clone().multiplyScalar(2));
+    // lay the ring flat on the sphere: its face normal (+Z) points straight out from the surface
+    this.ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.ring.position.clone().normalize());
     this.ring.visible = true;
     return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: 0.17 }, seconds);
   }
@@ -221,7 +222,16 @@ function drawEarth(data, W = 2048) {
   const wraps = (ring) => { for (let i = 2; i < ring.length; i += 2) if (Math.abs(ring[i] - ring[i - 2]) > 180) return true; return false; };
   const each = (ring, fn) => { for (const s of wraps(ring) ? [-360, 0, 360] : [0]) { path(ring, s); fn(); } };
   x.fillStyle = land; x.strokeStyle = 'rgba(255,255,255,0.55)'; x.lineWidth = W / 1280; x.lineJoin = 'round';
-  for (const ring of data.land) each(ring, () => { x.closePath(); x.fill(); x.stroke(); });
+  for (const ring of data.land) {
+    let lo = 180, hi = -180, south = 90;
+    for (let i = 0; i < ring.length; i += 2) { lo = Math.min(lo, ring[i]); hi = Math.max(hi, ring[i]); south = Math.min(south, ring[i + 1]); }
+    const polar = hi - lo > 300 && south < -60;
+    // Antarctica's outline stops a few degrees short of the pole (the source data is clipped
+    // there), which left a hole at the bottom of the globe: fill the polar cap below it, and
+    // skip the outline so the clip edge does not show as a ring around the pole.
+    each(ring, () => { x.closePath(); x.fill(); if (!polar) x.stroke(); });
+    if (polar) { const y = ((90 - (south + 2.5)) / 180) * H; x.fillRect(0, y, W, H - y); } // start a little above the wavering clip edge
+  }
   x.strokeStyle = 'rgba(20,50,60,0.28)'; x.lineWidth = W / 2048;
   for (const b of data.borders) each(b, () => x.stroke());
   return c;

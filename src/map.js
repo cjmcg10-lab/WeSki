@@ -57,7 +57,18 @@ export class SkiMap {
 
     this.cam3 = new THREE.PerspectiveCamera(42, 1, 8, 40000);
     this.cam2 = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 20000);
-    this.cam2.up.set(0, 0, -1);
+    // 2D map is turned so the base areas sit at the bottom of the screen and the summit at the top.
+    {
+      let bx = 0, by = 0, top = null;
+      for (const l of resort.lifts) {
+        bx += l.pts[0] / resort.lifts.length; by += l.pts[1] / resort.lifts.length;
+        if (!top || l.top > top.top) top = l;
+      }
+      const ux = top.pts[top.pts.length - 2] - bx, uy = top.pts[top.pts.length - 1] - by, len = Math.hypot(ux, uy) || 1;
+      this.up2 = new THREE.Vector3(ux / len, 0, -uy / len);            // local +y (north) is world -z
+      this.right2 = new THREE.Vector3(-this.up2.z, 0, this.up2.x);
+    }
+    this.cam2.up.copy(this.up2);
     this.camera = this.cam3;
     this.zoom2 = 0.09; // px per metre in 2D
     this.center2 = new THREE.Vector3();
@@ -300,18 +311,19 @@ export class SkiMap {
     const G = (this.trailGroup = new THREE.Group());
     const R = this.resort, closed = this.closed;
     const casing = [], shut = [];
-    const byStyle = {};
+    const byStyle = {}, ex = this.explored;
     for (const t of R.trails) {
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
-      if (!t.glade) this.segs(t.pts, 2.7, casing);
-      const key = t.d + (t.glade ? 'g' : '');
+      const faint = ex && !ex.has(t.id);            // not skied yet (explored view only)
+      if (!t.glade && !faint) this.segs(t.pts, 2.7, casing);
+      const key = t.d + (t.glade ? 'g' : '') + (faint ? 'f' : '');
       this.segs(t.pts, 3.2, (byStyle[key] ||= []));
     }
-    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g'] ||= []));
-    G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
+    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g' + (ex ? 'f' : '')] ||= []));
+    G.add(this.fatLine(casing, '#ffffff', ex ? 7 : 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
-      const glade = key.endsWith('g');
-      G.add(this.fatLine(pos, COLORS.diff[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
+      const glade = key.includes('g'), faint = key.endsWith('f');
+      G.add(this.fatLine(pos, COLORS.diff[+key[0]], (glade ? 2.6 : 3.2) * (ex && !faint ? 1.25 : 1), { order: 4, dash: glade ? [16, 11] : null, opacity: faint ? 0.3 : undefined }));
     }
     G.add(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
     this.scene.add(G);
@@ -335,52 +347,62 @@ export class SkiMap {
   buildLifts() {
     const R = this.resort;
     this.liftPaths = [];
-    const cable = [], carpet = [], towerMats = [], stationGeos = [];
+    const cable = [], symbol = [], towerMats = [], stationGeos = [];
     let chairCount = 0;
     for (const l of R.lifts) {
-      const n = l.pts.length / 2, th = l.kind === 'tram' ? 26 : l.kind === 'carpet' ? 0.6 : 9.5;
-      const pts = [];
-      for (let i = 0; i < n; i++) {
-        const end = i === 0 || i === n - 1;
-        pts.push(this.world(l.pts[i * 2], l.pts[i * 2 + 1], end ? Math.min(th, l.kind === 'tram' ? 12 : 4.2) : th));
+      // The single red line is the map symbol for the lift, drawn on the snow under it.
+      this.segs(densify(l.pts, 12), 2.4, symbol);
+      if (l.kind === 'carpet') { this.liftPaths.push({ l, carpet: true, pts: [this.world(l.pts[0], l.pts[1], 3), this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3)], cum: [0, l.len], L: l.len }); continue; }
+      const tram = l.kind === 'tram', n = l.pts.length / 2, th = tram ? 26 : 9.5, endH = tram ? 13 : 6.5;
+      // r = half the spacing between the two cables (= bullwheel radius on a chairlift)
+      const r = tram ? 5 : 2.4;
+      const sup = [];
+      for (let i = 0; i < n; i++) sup.push(this.world(l.pts[i * 2], l.pts[i * 2 + 1], i === 0 || i === n - 1 ? endH : th));
+      // The cable hangs between its supports: each span gets a shallow sag.
+      const pts = [sup[0]];
+      for (let i = 1; i < n; i++) {
+        const a = sup[i - 1], b = sup[i], span = a.distanceTo(b), sag = Math.min(tram ? 16 : 2.5, span * (tram ? 0.022 : 0.015)), steps = Math.max(2, Math.min(10, Math.round(span / 45)));
+        for (let k = 1; k <= steps; k++) { const f = k / steps, p = a.clone().lerp(b, f); p.y -= sag * 4 * f * (1 - f); pts.push(p); }
       }
       const cum = [0];
-      for (let i = 1; i < n; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
-      // r = half the distance between the uphill and downhill cables (= bullwheel radius)
-      const r = l.kind === 'tram' ? 5 : 2.4;
-      const path = { l, pts, cum, L: cum[n - 1], r, loop: 2 * cum[n - 1] + 2 * Math.PI * r, chairs: 0, first: chairCount };
-      const dir = pts[n - 1].clone().sub(pts[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
-      if (l.kind === 'carpet') {
-        for (let i = 1; i < n; i++) carpet.push(pts[i - 1].x, pts[i - 1].y, pts[i - 1].z, pts[i].x, pts[i].y, pts[i].z);
+      for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+      const L = cum[cum.length - 1];
+      const path = { l, tram, pts, cum, L, r, loop: 2 * L + 2 * Math.PI * r, chairs: 0, first: chairCount };
+      const line = (ring, close) => { for (let i = 0; i + 1 < ring.length + (close ? 1 : 0); i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); } };
+      if (tram) {
+        // Aerial tram: each cabin has its own pair of fixed cables, one on each side of the towers.
+        for (const side of [r, -r]) line(cum.map((d) => this.pathPoint(path, d, side).pos), false);
       } else {
-        // One continuous haul cable: up one side, round the top bullwheel, down the other side,
-        // round the bottom bullwheel. Chairs and cabins ride exactly on this line.
-        const ring = [];
-        for (let i = 0; i < n; i++) ring.push(this.loopPoint(path, cum[i]).pos);
-        for (let k = 1; k < 8; k++) ring.push(this.loopPoint(path, path.L + (Math.PI * r * k) / 8).pos);
-        for (let i = n - 1; i >= 0; i--) ring.push(this.loopPoint(path, path.L + Math.PI * r + (path.L - cum[i])).pos);
-        for (let k = 1; k < 8; k++) ring.push(this.loopPoint(path, 2 * path.L + Math.PI * r + (Math.PI * r * k) / 8).pos);
-        for (let i = 0; i < ring.length; i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); }
-        for (let i = 1; i < n - 1; i++) towerMats.push({ p: this.world(l.pts[i * 2], l.pts[i * 2 + 1], 0), yaw, h: th, arm: l.kind === 'tram' ? 12 : 6 });
-        for (const e of [0, n - 1]) {
-          const g = M.stationGeometry(l.kind, l.kind === 'tram' ? 0 : 0x8b2f2f);
-          const base = this.world(l.pts[e * 2], l.pts[e * 2 + 1], 0);
-          g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
-          stationGeos.push(g);
-        }
+        // Chairlift: one continuous haul cable - up one side, round the top bullwheel,
+        // down the other side, round the bottom bullwheel. The chairs are clamped to it.
+        const ring = cum.map((d) => this.loopPoint(path, d).pos);
+        for (let k = 1; k < 10; k++) ring.push(this.loopPoint(path, L + (Math.PI * r * k) / 10).pos);
+        for (let i = cum.length - 1; i >= 0; i--) ring.push(this.loopPoint(path, L + Math.PI * r + (L - cum[i])).pos);
+        for (let k = 1; k < 10; k++) ring.push(this.loopPoint(path, 2 * L + Math.PI * r + (Math.PI * r * k) / 10).pos);
+        line(ring, true);
+        path.chairs = Math.max(4, Math.floor(path.loop / (l.name.includes('Express') ? 70 : 48)));
+        chairCount += path.chairs;
       }
-      if (l.kind === 'chair') { path.chairs = Math.max(4, Math.floor(path.loop / (l.name.includes('Express') ? 70 : 48))); chairCount += path.chairs; }
+      const dir = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
+      // towers stand on the ground under each support; their crossarm reaches both cables
+      for (let i = 1; i < n - 1; i++) towerMats.push({ p: this.world(l.pts[i * 2], l.pts[i * 2 + 1], 0), yaw, h: th, arm: 2 * r + 0.8 });
+      for (const e of [0, n - 1]) {
+        const g = M.stationGeometry(l.kind, 0x8b2f2f, endH + 1, r);
+        const base = this.world(l.pts[e * 2], l.pts[e * 2 + 1], 0);
+        g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
+        stationGeos.push(g);
+      }
       this.liftPaths.push(path);
     }
-    // Two red cables per lift; from far away they merge into the usual single red lift line.
-    this.liftLine = this.fatLine(cable, COLORS.lift, 1.7, { order: 5 });
+    this.scene.add(this.fatLine(symbol, COLORS.lift, 2.8, { order: 5 }));
+    // steel cables: thin and dark, so the red map line stays the one line you read per lift
+    this.liftLine = this.fatLine(cable, '#2c3138', 1.1, { order: 6 });
     this.scene.add(this.liftLine);
-    this.scene.add(this.fatLine(carpet, COLORS.lift, 3, { order: 5 }));
-    // towers: group by height so each height is one instanced mesh
-    for (const [h, arm] of [[9.5, 6], [26, 12]]) {
-      const list = towerMats.filter((t) => t.h === h);
-      if (!list.length) continue;
-      const mesh = new THREE.InstancedMesh(M.towerGeometry(h, arm), M.vcMat(), list.length);
+    // towers: one instanced mesh per tower type
+    const types = new Map();
+    for (const t of towerMats) { const k = t.h + '|' + t.arm; if (!types.has(k)) types.set(k, []); types.get(k).push(t); }
+    for (const list of types.values()) {
+      const mesh = new THREE.InstancedMesh(M.towerGeometry(list[0].h + 1, list[0].arm), M.vcMat(), list.length);
       const mt = new THREE.Matrix4();
       list.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, mt); });
       this.scene.add(mesh);
@@ -389,7 +411,7 @@ export class SkiMap {
     this.chairs = new THREE.InstancedMesh(M.chairGeometry(4), M.vcMat(), Math.max(1, chairCount));
     this.chairs.frustumCulled = false;
     this.scene.add(this.chairs);
-    const tram = this.liftPaths.find((p) => p.l.kind === 'tram');
+    const tram = this.liftPaths.find((p) => p.tram);
     this.tram = tram ? { path: tram, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] } : null;
     if (this.tram) for (const c of this.tram.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
     this.liftLabels = this.liftPaths.map((p) => ({ l: p.l, p: this.pathPoint(p, p.L * 0.5, 0).pos.clone().add(new THREE.Vector3(0, 10, 0)) }));
@@ -432,7 +454,7 @@ export class SkiMap {
     for (const p of this.liftPaths) {
       if (!p.chairs) continue;
       const running = !this.closed.has('l' + p.l.id);
-      const speed = (p.l.name.includes('Express') ? 5 : 2.4) * 2.5; // sped up a little so motion reads at map scale
+      const speed = (p.l.name.includes('Express') ? 5 : 2.4) * 2; // real line speed x2 so the motion reads at map scale
       const gap = p.loop / p.chairs;
       for (let i = 0; i < p.chairs; i++) {
         const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
@@ -442,19 +464,14 @@ export class SkiMap {
     }
     this.chairs.instanceMatrix.needsUpdate = true;
     if (this.tram) {
-      // Two cabins half a loop apart: while one climbs one cable the other descends the opposite
-      // one; each pauses in a station as it swings round to the other side, then heads back.
+      // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
+      // other descends; both wait in their stations, then swap directions.
       const p = this.tram.path, running = !this.closed.has('l' + p.l.id);
-      const ride = 60, dwell = 12, cyc = 2 * (ride + dwell), half = Math.PI * p.r;
-      const ease = (x) => x * x * (3 - 2 * x);
+      const ride = 75, dwell = 14, cyc = 2 * (ride + dwell), ph = running ? t % cyc : 0;
+      const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
+      const e = tri * tri * (3 - 2 * tri);      // eases out of and into the stations
       this.tram.cabins.forEach((c, i) => {
-        const ph = ((running ? t : 0) + (i * cyc) / 2) % cyc;
-        let u;
-        if (ph < ride) u = p.L * ease(ph / ride);
-        else if (ph < ride + dwell) u = p.L + half * ease((ph - ride) / dwell);
-        else if (ph < 2 * ride + dwell) u = p.L + half + p.L * ease((ph - ride - dwell) / ride);
-        else u = 2 * p.L + half + half * ease((ph - 2 * ride - dwell) / dwell);
-        const { pos, yaw } = this.loopPoint(p, u);
+        const { pos, yaw } = this.pathPoint(p, p.L * (i ? 1 - e : e), i ? -p.r : p.r);
         c.position.copy(pos); c.rotation.y = yaw;
       });
     }
@@ -548,7 +565,16 @@ export class SkiMap {
     this.clamp2();
   }
 
-  setClosures(set) { this.closed = new Set(set); this.buildTrails(); }
+  setClosures(set) { this.closed = new Set(set); this.buildTrails(); this.overlayDirty = true; }
+
+  /** Explored view: `ids` = Set of trail ids already skied (others are drawn faint), or null to turn it off. */
+  setExplored(ids, names = null) {
+    this.exploredNames = names;
+    const next = ids ? [...ids].sort((a, b) => a - b).join() : null;
+    if (next === this.exploredKey) return;
+    this.exploredKey = next; this.explored = ids ? new Set(ids) : null;
+    this.buildTrails(); this.overlayDirty = true;
+  }
   setUnits(u) { this.units = u; }
 
   setMe(me) {
@@ -573,8 +599,8 @@ export class SkiMap {
     }
   }
 
-  setPin(p) { this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
-  setMeet(p) { this.meet = p; this.meetObj.visible = !!p; if (p) this.meetObj.position.copy(this.world(p.x, p.y, 0)); }
+  setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
+  setMeet(p) { this.overlayDirty = true; this.meet = p; this.meetObj.visible = !!p; if (p) this.meetObj.position.copy(this.world(p.x, p.y, 0)); }
 
   setRoute(pts) {
     if (this.routeLine) { for (const l of this.routeLine) { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); } this.routeLine = null; }
@@ -652,8 +678,7 @@ export class SkiMap {
       const s = state();
       if (last) {
         if (s.d && last.d) this.zoomAt(s.x, s.y, s.d / last.d);
-        this.center2.x -= (s.x - last.x) / this.zoom2;
-        this.center2.z -= (s.y - last.y) / this.zoom2;
+        this.center2.addScaledVector(this.right2, -(s.x - last.x) / this.zoom2).addScaledVector(this.up2, (s.y - last.y) / this.zoom2);
         this.clamp2();
       }
       last = s;
@@ -667,12 +692,16 @@ export class SkiMap {
     const z0 = this.zoom2, z1 = Math.min(2.5, Math.max(this.minZoom2(), z0 * k));
     // keep the point under the fingers fixed
     const dx = sx - this.w / 2, dy = sy - this.h / 2;
-    this.center2.x += dx / z0 - dx / z1;
-    this.center2.z += dy / z0 - dy / z1;
+    this.center2.addScaledVector(this.right2, dx / z0 - dx / z1).addScaledVector(this.up2, -(dy / z0 - dy / z1));
     this.zoom2 = z1;
     this.clamp2();
   }
-  minZoom2() { return Math.min(this.w / this.geo.W, this.h / this.geo.H) * 0.85; }
+  minZoom2() {
+    // size of the (rotated) map rectangle along the screen's axes
+    const W = this.geo.W, H = this.geo.H, r = this.right2, u = this.up2;
+    const ex = Math.abs(r.x) * W + Math.abs(r.z) * H, ey = Math.abs(u.x) * W + Math.abs(u.z) * H;
+    return Math.min(this.w / ex, this.h / ey) * 0.85;
+  }
   clamp2() {
     this.zoom2 = Math.max(this.zoom2, this.minZoom2());
     this.center2.x = Math.min(this.geo.W / 2, Math.max(-this.geo.W / 2, this.center2.x));
@@ -702,8 +731,8 @@ export class SkiMap {
   pickGround(sx, sy) {
     const ndc = new THREE.Vector3((sx / this.w) * 2 - 1, -(sy / this.h) * 2 + 1, 0.5);
     if (this.mode === '2d') {
-      const x = this.center2.x + (sx - this.w / 2) / this.zoom2, z = this.center2.z + (sy - this.h / 2) / this.zoom2;
-      const l = this.local(x, z);
+      const q = this.center2.clone().addScaledVector(this.right2, (sx - this.w / 2) / this.zoom2).addScaledVector(this.up2, -(sy - this.h / 2) / this.zoom2);
+      const l = this.local(q.x, q.z);
       return this.geo.inBounds(l[0], l[1]) ? l : null;
     }
     const o = this.cam3.position.clone(), d = ndc.unproject(this.cam3).sub(o).normalize();
@@ -719,7 +748,8 @@ export class SkiMap {
   resize() {
     const w = (this.w = this.el.clientWidth || 1), h = (this.h = this.el.clientHeight || 1);
     this.renderer.setSize(w, h);
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.overlayKey = '';
     this.overlay.width = w * dpr; this.overlay.height = h * dpr;
     this.overlay.style.width = w + 'px'; this.overlay.style.height = h + 'px';
     this.dpr = dpr;
@@ -783,7 +813,7 @@ export class SkiMap {
   setPaused(p) { this.paused = p; }
 
   frame() {
-    const c = this.controls;
+    const c = this.controls, is3 = this.mode === '3d';
     if (this.flight) {
       const f = this.flight;
       f.t = Math.min(1, f.t + this.dt / f.dur);
@@ -813,9 +843,10 @@ export class SkiMap {
       cam.lookAt(this.center2.x, 0, this.center2.z);
       cam.updateProjectionMatrix();
     }
-    this.animateLifts(this.t);
+    // chairs are sub-pixel from far away: skip moving ~400 of them when zoomed right out
+    const farOut = is3 ? this.cam3.position.distanceTo(c.target) > 7500 : this.zoom2 < 0.12;
+    if (!farOut || this.flight) this.animateLifts(this.t);
     // Avatars and markers are scaled with distance so they stay readable at mountain scale.
-    const is3 = this.mode === '3d';
     const scaleFor = (obj, k) => {
       const s = is3 ? Math.max(2.2, this.cam3.position.distanceTo(obj.position) * k) : 14 / this.zoom2 / 3;
       obj.scale.setScalar(s);
@@ -827,7 +858,15 @@ export class SkiMap {
     if (this.meet) scaleFor(this.meetObj, 0.016);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
     this.renderer.render(this.scene, this.camera);
-    this.drawOverlay();
+    // The label layer (lots of outlined text) is the most expensive 2D work, so it is only
+    // redrawn when the view or the things on it changed, and at most ~4x a second otherwise.
+    const cam = this.camera, e = cam.matrixWorld.elements, now = performance.now();
+    const key = `${this.mode}|${e[12].toFixed(1)}|${e[13].toFixed(1)}|${e[14].toFixed(1)}|${e[0].toFixed(4)}|${e[5].toFixed(4)}|${e[10].toFixed(4)}|${this.zoom2.toFixed(4)}|${this.w}x${this.h}`;
+    const people = this.me || this.friends.size || this.play;
+    if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
+      this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
+      this.drawOverlay();
+    }
   }
 
   project(v) {
@@ -864,6 +903,16 @@ export class SkiMap {
       return true;
     };
 
+    if (!is3) {
+      // north arrow (the 2D map is turned so uphill is up)
+      const nx = -this.right2.z, ny = this.up2.z, cx = 30, cy = 112;   // screen direction of north (world -z)
+      ctx.save(); ctx.translate(cx, cy);
+      ctx.beginPath(); ctx.arc(0, 0, 17, 0, 7); ctx.fillStyle = 'rgba(255,255,255,0.92)'; ctx.fill();
+      ctx.rotate(Math.atan2(nx, -ny));
+      ctx.beginPath(); ctx.moveTo(0, -12); ctx.lineTo(5, 3); ctx.lineTo(0, 0); ctx.lineTo(-5, 3); ctx.closePath(); ctx.fillStyle = '#d92d20'; ctx.fill();
+      ctx.restore();
+      boxes.push([cx - 18, cy - 18, 36, 36]);
+    }
     // people first: they always win label space
     const people = [];
     if (this.me) people.push({ ...this.me, id: 'me', name: 'You', me: true, obj: this.meObj });
@@ -934,7 +983,8 @@ export class SkiMap {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        label(`${sym[z.t.d]} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut ? '#6b7280' : COLORS.diff[z.t.d], 10.5, 600);
+        const done = this.explored && this.exploredNames?.has(z.t.name), dim = this.explored && !done;
+        label(`${done ? '✓ ' : ''}${sym[z.t.d]} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut || dim ? '#7b8490' : COLORS.diff[z.t.d], 10.5, done ? 800 : 600);
       }
     }
   }

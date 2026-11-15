@@ -130,20 +130,27 @@ export function towerGeometry(h, arm) {
 }
 
 /** Lift terminal: hut + bullwheel. */
-export function stationGeometry(kind, color) {
+/**
+ * Lift terminal, origin on the ground under the end of the cable, +Z along the lift line.
+ * Chairlift: a mast carrying the horizontal bullwheel the haul cable turns around (at `wheelY`),
+ * under a roof, with an operator hut beside it. Tram: an open dock the cabins pull into.
+ */
+export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4) {
   if (kind === 'tram') {
     return mergeGeometries([
-      part(box(13, 9, 15), 0xcfc8bc, 0, 4.5, 0),
-      part(box(14, 1.2, 16), 0x4a505c, 0, 9.6, 0),
-      part(box(9, 5, 6), 0x2b313b, 0, 5.5, 8),
+      part(box(1, 13, 16), 0xcfc8bc, -8.5, 6.5, 0),
+      part(box(1, 13, 16), 0xcfc8bc, 8.5, 6.5, 0),
+      part(box(18.5, 1.2, 17), 0x4a505c, 0, 14.6, 0),
+      part(box(17, 0.6, 16), 0x8a8f98, 0, 0.3, 0),
+      part(box(1.2, 14, 1.2), 0x565c68, 0, 7, 0),
     ]);
   }
   return mergeGeometries([
-    part(box(6, 3.4, 9), color, 0, 5.2, 0),
-    part(box(6.6, 0.5, 9.6), 0x343a44, 0, 7.1, 0),
-    part(box(0.7, 3.6, 0.7), 0x6d7480, 0, 1.8, -2.5),
-    part(box(0.7, 3.6, 0.7), 0x6d7480, 0, 1.8, 2.5),
-    part(new THREE.CylinderGeometry(2.4, 2.4, 0.3, 10), 0x30343c, 0, 3.4, 0),
+    part(box(0.9, wheelY + 1.6, 0.9), 0x6d7480, 0, (wheelY + 1.6) / 2, 0),
+    part(new THREE.CylinderGeometry(r, r, 0.35, 14), 0x30343c, 0, wheelY, 0),
+    part(box(r * 2 + 3, 0.5, r * 2 + 5), color, 0, wheelY + 1.8, 0),
+    part(box(2.4, 2.6, 2.6), 0xcfc8bc, r + 3.2, 1.3, 0),
+    part(box(2.8, 0.3, 3), 0x343a44, r + 3.2, 2.75, 0),
   ]);
 }
 

@@ -16,6 +16,7 @@ people move, run stats with playback, and full offline use.
 | Groups | Up to 20 people join by 6-character code. Location sharing is opt-in, can be paused, and shows when each person last updated. |
 | Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links; avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
 | Weather | Summit and base conditions, ski-specific alerts, 12-hour strip and 7-day forecast (Open-Meteo). |
+| Explored | Shows which trails you have skied (this session or all time); the map can fade the ones you haven't. |
 | Stats | Current / average / top speed, runs, distance, vertical. Lift rides counted separately; GPS spikes filtered. |
 | History | Sessions, runs and routes are stored on the phone (IndexedDB) and can be replayed on the map, offline. |
 
