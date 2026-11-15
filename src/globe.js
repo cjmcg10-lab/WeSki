@@ -2,7 +2,7 @@
 // land outlines), slowly spinning. Picking a resort turns the globe to it and zooms in.
 import * as THREE from 'three';
 
-const LAYERS = ['land', 'coast', 'borders', 'states', 'hiCoast', 'hiBorders'];
+const LAYERS = ['land', 'coast', 'borders', 'states', 'hiCoast', 'hiBorders', 'water'];
 /** The point lists of one layer of globe.bin, as [lon, lat, lon, lat, ...] arrays in degrees. */
 function layer(meta, bin, name) {
   let o = 0;
@@ -39,7 +39,7 @@ export class Globe {
 
     const g = (this.globe = new THREE.Group());
     // 4096 px wide where the phone supports it, so the coast stays sharp when zoomed to a resort
-    this.canvas = drawEarth(layer(meta, bin, 'land'), r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048);
+    this.canvas = drawEarth(layer(meta, bin, 'land'), meta.water ? layer(meta, bin, 'water') : [], r.capabilities.maxTextureSize >= 4096 ? 4096 : 2048);
     const tex = new THREE.CanvasTexture(this.canvas);
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.anisotropy = Math.min(8, r.capabilities.getMaxAnisotropy());
@@ -236,7 +236,7 @@ export class Globe {
 }
 
 /** Equirectangular earth: flat ocean, land shaded from temperate green to polar white (fill only; the outlines are drawn as lines). */
-function drawEarth(land, W = 2048) {
+function drawEarth(land, water, W = 2048) {
   const H = W / 2, c = document.createElement('canvas');
   c.width = W; c.height = H;
   const x = c.getContext('2d');
@@ -269,6 +269,16 @@ function drawEarth(land, W = 2048) {
     // Antarctica's outline stops a few degrees short of the pole (the source data is clipped
     // there), which would leave a hole at the bottom of the globe: fill the polar cap below it.
     if (hi - lo > 300 && south < -60) { const y = ((90 - (south + 2.5)) / 180) * H; x.fillRect(0, y, W, H - y); }
+  }
+  // inland seas (the Caspian) are holes in the land outline: paint them back as water
+  x.fillStyle = sea;
+  for (const ring of water) {
+    x.beginPath();
+    for (let i = 0; i < ring.length; i += 2) {
+      const px = ((ring[i] + 180) / 360) * W, py = ((90 - ring[i + 1]) / 180) * H;
+      if (i) x.lineTo(px, py); else x.moveTo(px, py);
+    }
+    x.closePath(); x.fill(); x.stroke();
   }
   return c;
 }

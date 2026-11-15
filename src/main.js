@@ -1,5 +1,6 @@
 import { Geo, nearestOnLine } from './geo.js';
-import { Router, suggestMeetingPoint, DIFF_NAMES } from './routing.js';
+import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
+import { Guide, Speaker } from './voice.js';
 import { Tracker, computeStats, smoothSpeed, ST } from './tracker.js';
 import { SkiMap, COLORS, fmtAge } from './map.js';
 import { Locator } from './location.js';
@@ -43,6 +44,8 @@ const S = {
   units: prefs.get('units', 'imperial'),
   crumbsOn: prefs.get('crumbsOn', false), crumbScope: 'session',
   maxDiff: prefs.get('maxDiff', 2),
+  uphill: prefs.get('uphill', 'normal'),   // uphill tolerance for directions: low | normal | high
+  voice: prefs.get('voice', false),        // spoken directions
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
@@ -147,7 +150,7 @@ function initMap(id) {
     S.place = pl;
     S.resort = resort;
     S.geo = new Geo(resort, new Uint16Array(buf));
-    S.router = new Router(resort);
+    S.router = new Router(resort, S.geo);
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
@@ -191,7 +194,7 @@ async function boot() {
     try {
       await initMap(placeById(want)?.available ? want : 'jay-peak');
       hideSplash();
-      if (saved && S.profile.name) joinGroup(saved.code, saved.sharing, true);
+      if (saved) joinGroup(saved.code, saved.sharing, true);
     } catch (e) { bootFailed(e); }
     return;
   }
@@ -395,10 +398,10 @@ function ensureLocation() {
 let lock = null;
 async function wakeLock() {
   // Keep the screen awake while tracking/sharing: iOS stops web GPS when the screen locks.
-  if (!(S.tracker || S.crumbRec || (S.group && S.sharing)) || document.visibilityState !== 'visible') return;
+  if (!(S.tracker || S.crumbRec || S.nav || (S.group && S.sharing)) || document.visibilityState !== 'visible') return;
   try { if (!lock || lock.released) lock = await navigator.wakeLock?.request('screen'); } catch { /* not supported / denied */ }
 }
-function releaseWake() { if (!(S.tracker || S.crumbRec || (S.group && S.sharing))) { lock?.release?.().catch(() => {}); lock = null; } }
+function releaseWake() { if (!(S.tracker || S.crumbRec || S.nav || (S.group && S.sharing))) { lock?.release?.().catch(() => {}); lock = null; } }
 
 // ---------- sessions (solo tracking and group sessions)
 function startSession(kind) {
@@ -624,11 +627,12 @@ function setClosures(set, share = true) {
 }
 
 // ---------- navigation
-const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures });
+const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill });
 
 function startNav(target) {
-  S.nav = { target, route: null, problem: null, lastCalc: 0, key: '' };
-  ensureLocation();
+  S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
+  guide.reset();
+  ensureLocation(); wakeLock();
   closeSheet();
   recalcNav(true);
   if (S.nav?.route) S.map.fit(S.nav.route.pts);
@@ -636,6 +640,7 @@ function startNav(target) {
 
 function endNav() {
   S.nav = null;
+  speaker.stop(); releaseWake(); setPocket(false);
   S.map.setRoute(null);
   S.loc.simPath = null;
   renderChrome();
@@ -670,8 +675,10 @@ function recalcNav(force = false) {
       if (f && f.stale) nav.warn = { title: `${f.name}'s location is stale`, text: `${f.paused ? 'They paused sharing. ' : ''}Last update ${fmtAge(f.age)} — this route goes to where they were.`, meet: true };
       const r = S.router.route({ x: S.me.x, y: S.me.y }, dest.place, routeOpts());
       if (r.ok) {
-        const changed = !nav.route || Math.abs(r.time - nav.route.time) > 45 || r.steps.map((s) => s.name).join() !== nav.route.steps.map((s) => s.name).join();
-        if (nav.route && changed && !force) toast(f ? `Rerouted — ${f.name} or you moved` : 'Rerouted');
+        // A reroute is a new list of steps, not just the old list getting shorter as you ski it.
+        const sig = (rt) => rt.steps.map((s) => `${s.kind}:${s.name}`).join('|');
+        const changed = !!nav.route && !(`|${sig(nav.route)}`).endsWith(`|${sig(r)}`);
+        if (changed) { nav.fresh = true; nav.rerouted = true; if (!force) toast(f ? `Rerouted — ${f.name} or you moved` : 'Rerouted'); }
         nav.route = r;
         nav.over = overWarning(r);
         recordRoute(dest.name, r);
@@ -690,7 +697,54 @@ function recalcNav(force = false) {
     }
   }
   S.map.setRoute(nav.route ? nav.route.pts : null);
+  speakNav();
   renderChrome();
+}
+
+// ---------- spoken directions
+const speaker = new Speaker();
+const spokenDist = (m) => {
+  if (!imp()) return m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} metres` : `${(m / 1000).toFixed(1)} kilometres`;
+  const ft = m * 3.28084;
+  return ft < 1000 ? `${Math.max(50, Math.round(ft / 50) * 50)} feet` : `${(m / 1609.34).toFixed(1)} miles`;
+};
+const guide = new Guide(spokenDist);
+
+/** Say whatever is due for the current position (called after every route update). */
+function speakNav() {
+  const nav = S.nav;
+  if (!nav || !nav.route) return;
+  if (S.voice) for (const line of guide.update(nav, S.me?.speed || 0)) speaker.say(line, nav.fresh);
+  nav.fresh = false; nav.rerouted = false;
+}
+
+function setVoice(on) {
+  S.voice = on; prefs.set('voice', on);
+  if (on) {
+    speaker.unlock();
+    if (!speaker.ok) toast('This browser has no speech voice.');
+    else if (S.nav?.route) { guide.reset(); S.nav.fresh = true; speakNav(); }
+    else speaker.say('Spoken directions are on.');
+    wakeLock();
+  } else { speaker.stop(); setPocket(false); }
+  renderChrome();
+}
+// Speech may only start from a tap on iPhone: unlock it on the first touch after opening the app.
+document.addEventListener('pointerdown', () => { if (S.voice) speaker.unlock(); }, { once: true });
+
+/** Pocket mode: a black, touch-proof screen that keeps the phone awake so GPS and voice keep going in a pocket. */
+function setPocket(on) {
+  const el = $('#pocket');
+  if (!el) return;
+  el.classList.toggle('hidden', !on);
+  if (on) wakeLock();
+}
+{
+  let hold = null;
+  const el = document.getElementById('pocket');
+  const end = () => { clearTimeout(hold); el.classList.remove('holding'); };
+  el.addEventListener('pointerdown', (e) => { e.preventDefault(); el.classList.add('holding'); hold = setTimeout(() => { end(); setPocket(false); }, 1500); });
+  for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, end);
 }
 
 /** Warning text when a route has to use trails above the skier's chosen maximum. */
@@ -771,9 +825,9 @@ function renderChrome() {
   nb.classList.remove('hidden');
   const r = nav.route, p = nav.problem, w = nav.warn;
   const box = (b) => `<div class="warnbox"><b>${esc(b.title)}</b>${esc(b.text)}</div>`;
-  let html = `<div class="row"><div class="to">To ${esc(nav.name || nav.target.name || 'destination')}</div><button class="end" data-act="end-nav">End</button></div>`;
+  let html = `<div class="row"><div class="to">To ${esc(nav.name || nav.target.name || 'destination')}</div><button class="${S.voice ? 'voice on' : 'voice'}" data-act="voice" aria-label="Spoken directions ${S.voice ? 'on' : 'off'}">${S.voice ? '🔊 Voice on' : '🔇 Voice off'}</button><button class="end" data-act="end-nav">End</button></div>`;
   if (r) {
-    html += `<div class="meta">${nav.arrived ? "You've arrived" : `${fmtDur(r.time)} · ${fmtDist(r.dist)} · ↓${fmtVert(r.vertDown)} ↑${fmtVert(r.vertUp)}`}</div>`;
+    html += `<div class="meta">${nav.arrived ? "You've arrived" : `${fmtDur(r.time)} · ${fmtDist(r.dist)} · ↓${fmtVert(r.vertDown)} ↑${fmtVert(r.vertUp)}${r.climb >= 1 ? ` · ${fmtVert(r.climb)} on foot` : ''}`}</div>`;
     const s = r.steps[0];
     if (s && !nav.arrived) html += `<div class="next">${stepIcon(s)}<span>${stepText(s)}${r.steps[1] ? `, then ${stepText(r.steps[1], true)}` : ''}</span></div>`;
   }
@@ -783,17 +837,22 @@ function renderChrome() {
   html += '<div class="btns">';
   if (r) html += `<button data-act="steps">Steps (${r.steps.length})</button>`;
   if ((p?.meet || w?.meet)) html += `<button class="primary" data-act="meet">Set a shared meeting point</button>`;
+  if (S.voice && r) html += `<button data-act="pocket">Pocket mode</button>`;
   if (S.testMode && r && !nav.arrived) html += `<button data-act="sim-go">▶ Simulate skiing it</button>`;
   html += '</div>';
   if (html !== S.navHtml) { S.navHtml = html; nb.innerHTML = html; } // don't replace buttons mid-tap
 }
 
 function stepIcon(s) {
-  const bg = s.kind === 'ski' ? COLORS.diff[s.d] : s.kind === 'lift' ? COLORS.lift : '#59636e';
-  return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? DIFF_SYM[s.d][0] : s.kind === 'lift' ? '↑' : 'W'}</span>`;
+  const bg = s.kind === 'ski' ? COLORS.diff[s.d] : s.kind === 'lift' ? COLORS.lift : s.kind === 'up' || s.kind === 'cross' ? '#b3620a' : '#59636e';
+  return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? DIFF_SYM[s.d][0] : s.kind === 'lift' ? '↑' : s.kind === 'up' ? '⇡' : s.kind === 'cross' ? '⇢' : 'W'}</span>`;
 }
 function stepText(s, lower) {
-  const t = s.kind === 'ski' ? `Ski ${s.name}` : s.kind === 'lift' ? `Ride ${s.name}` : s.kind === 'walk' ? `Walk ${fmtDist(s.dist)}` : `Continue ${fmtDist(s.dist)}`;
+  const how = s.grade <= 0 ? 'Skate back' : s.grade === 1 ? 'Climb back' : 'Sidestep back up';
+  const t = s.kind === 'ski' ? `Ski ${s.name}` : s.kind === 'lift' ? `Ride ${s.name}`
+    : s.kind === 'up' ? `${how} ${fmtDist(s.dist)}${s.name ? ` ${s.grade <= 0 ? 'along' : 'on'} ${s.name}` : ''}`
+    : s.kind === 'cross' ? `Cut across ${fmtDist(s.dist)}${s.to ? ` to ${s.to}` : ''}`
+    : s.kind === 'walk' ? `Walk ${fmtDist(s.dist)}` : `Continue ${fmtDist(s.dist)}`;
   return esc(lower ? t[0].toLowerCase() + t.slice(1) : t);
 }
 
@@ -830,7 +889,7 @@ function renderSheet() {
 function profileForm() {
   const p = S.profile;
   return `<div class="card"><h3>You</h3>
-    <label class="lbl">Display name</label><input class="field" id="f-name" maxlength="20" placeholder="Your name" value="${esc(p.name)}" autocomplete="off" />
+    <label class="lbl">Display name (optional)</label><input class="field" id="f-name" maxlength="20" placeholder="Optional" value="${esc(p.name)}" autocomplete="off" />
     <label class="lbl">Avatar</label><div class="avatars">${AVATARS.map(([k, n]) => `<button data-act="avatar" data-v="${k}" class="${p.avatar === k ? 'on' : ''}">${avatarSvg(k, p.color)}${n}</button>`).join('')}</div>
     <label class="lbl">Color</label><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>
   </div>`;
@@ -973,6 +1032,8 @@ function sheetMore() {
   const off = prefs.get(pkey('offline'), null);
   return ['More', `
     <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
+    <div class="card"><h3>Uphill tolerance</h3><div class="seg">${Object.entries(TOLERANCE).filter(([k]) => k !== 'none').map(([k, t]) => `<button data-act="uphill" data-v="${k}" class="${S.uphill === k ? 'on' : ''}">${t.label}</button>`).join('')}</div><p class="note">${{ low: 'Low: only an easy skate or a step or two up; otherwise directions take the downhill way round.', normal: 'Normal: accepts a short moderate climb or a cut-across to the next trail when it saves a lot of time.', high: 'High: accepts a real sidestep or short boot-pack to avoid a lap.' }[S.uphill]} Steeper ground, harder trails and steep side slopes all count against a climb.</p></div>
+    <div class="card"><div class="rowf"><div class="grow"><b>Spoken directions</b><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed. The screen must stay on: use Pocket mode while riding.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire ${esc(S.place.name)} map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
@@ -1048,7 +1109,7 @@ function sheetPlace(ev) {
 function sheetSteps() {
   const r = S.nav?.route;
   if (!r) return ['Directions', '<p class="sub">No route.</p>', true];
-  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails (downhill), lifts (uphill) and walking links only. Times are estimates.</p>`];
+  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.climb >= 1 ? ` · ${fmtVert(s.climb)} climb` : ''}${s.grade >= 0 ? ` · ${GRADE_NAMES[s.grade]}` : s.kind === 'cross' ? ' · level or downhill' : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails, lifts and walking links, plus short climbs and cut-acrosses allowed by your uphill tolerance (${TOLERANCE[S.uphill].label}, set in More). A cut-across is judged from the terrain only: the app cannot see trees, ropes or signs, so look before you go. Times are estimates.</p>`];
 }
 
 // ---------- weather
@@ -1193,7 +1254,7 @@ async function downloadOffline() {
 function onInput(e) {
   const t = e.target;
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
-  if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group && S.profile.name) S.group.client.updateProfile(S.profile); }
+  if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
   else if (t.id === 'f-crumbs' && e.type === 'change') {
     S.crumbsOn = t.checked; prefs.set('crumbsOn', S.crumbsOn);
@@ -1201,6 +1262,7 @@ function onInput(e) {
     else stopCrumbs();
     showTracks(); renderSheet(); renderChrome();
   }
+  else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -1221,13 +1283,6 @@ function onInput(e) {
     P.t = t0 + ((t1 - t0) * +t.value) / 1000;
     P.seeking = e.type === 'input';
   }
-}
-
-function needName() {
-  if (S.profile.name) return false;
-  toast('Enter a display name first.');
-  $('#f-name')?.focus();
-  return true;
 }
 
 async function onClick(e) {
@@ -1266,12 +1321,10 @@ async function onClick(e) {
     case 'avatar': S.profile.avatar = d.v; prefs.set('profile', S.profile); S.group?.client.updateProfile(S.profile); renderSheet(); break;
     case 'color': S.profile.color = d.v; prefs.set('profile', S.profile); S.group?.client.updateProfile(S.profile); renderSheet(); break;
     case 'create-group':
-      if (needName()) break;
       b.disabled = true;
       try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { toast(err.message); b.disabled = false; }
       break;
     case 'join-group': {
-      if (needName()) break;
       const code = ($('#f-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       if (code.length !== 6) { toast('Enter the 6-character group code.'); break; }
       joinGroup(code); openSheet('group');
@@ -1314,6 +1367,9 @@ async function onClick(e) {
     case 'play-toggle': { const P = S.player; if (P.t >= P.pts[P.pts.length - 1][0]) { P.t = P.pts[0][0]; P.i = 0; } P.playing = !P.playing; b.textContent = P.playing ? '❚❚' : '▶'; break; }
     case 'play-rate': { const P = S.player, r = [5, 20, 60, 180]; P.rate = r[(r.indexOf(P.rate) + 1) % r.length]; b.textContent = P.rate + '×'; break; }
     case 'play-close': stopReplay(); break;
+    case 'uphill': S.uphill = d.v; prefs.set('uphill', S.uphill); if (S.nav) recalcNav(true); renderSheet(); break;
+    case 'voice': setVoice(!S.voice); break;
+    case 'pocket': setPocket(true); break;
     case 'max-diff': S.maxDiff = +d.v; prefs.set('maxDiff', S.maxDiff); if (S.nav) recalcNav(true); renderSheet(); break;
     case 'units': S.units = d.v; prefs.set('units', S.units); S.map.setUnits(S.units); renderSheet(); renderChrome(); break;
     case 'open-closures': S.closureQ = ''; openSheet('closures'); break;

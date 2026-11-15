@@ -57,6 +57,17 @@ def main():
         if all(i in nodes for i in nd) and len(nd) >= 2:
             ways.append((w.get("id"), nd, tags))
 
+    # English names where the map has them (Japan), plus per-resort corrections from the config
+    RENAME = cfg.get("rename", {})
+    for _, _, t in ways:
+        n = t.get("name:en") or t.get("name") or t.get("piste:name")
+        if n:
+            t["name"] = RENAME.get(n, n)
+    for t in node_tags.values():
+        n = t.get("name:en") or t.get("name")
+        if n:
+            t["name"] = RENAME.get(n, n)
+
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
     lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS]
     # Keep only this resort: neighbouring ski areas often share a ridge (Stowe / Smugglers' Notch).
@@ -85,7 +96,11 @@ def main():
     arr, _ = merge(srcs, bounds=b, res=CELL, resampling=Resampling.average, nodata=-999999.0)
     h = arr[0][::-1, :].astype(np.float64)[:ny, :nx]   # row 0 = south
     assert h.shape == (ny, nx), (h.shape, ny, nx)
-    assert (h > -1000).all(), "DEM has holes inside the resort bounds"
+    if not (h > -1000).all():
+        jj, ii = np.nonzero(h <= -1000)
+        raise SystemExit(f"DEM has holes inside the resort bounds: {len(jj)} cells ({len(jj) / h.size * 100:.2f}%), "
+                         f"E {x0 + ii.min() * CELL:.0f}..{x0 + ii.max() * CELL:.0f}, N {y0 + jj.min() * CELL:.0f}..{y0 + jj.max() * CELL:.0f} "
+                         f"(needed E {b[0]:.0f}..{b[2]:.0f}, N {b[1]:.0f}..{b[3]:.0f})")
     zmin = math.floor(h.min())
     q = np.round((h - zmin) * 10).astype("<u2")
     with open(f"{out_dir}/terrain.bin", "wb") as f:
@@ -194,6 +209,8 @@ def main():
         lift_ways.append(nd)
 
     # ---- buildings
+    from shapely.ops import unary_union
+    ski_zone = unary_union([T["_line"] for T in trails] + [L["_line"] for L in lift_out]).buffer(cfg.get("building_range", 350)) if cfg.get("building_range", 350) else None
     buildings = []
     for wid, nd, t in ways:
         if "building" not in t or nd[0] != nd[-1] or len(nd) < 4:
@@ -202,6 +219,8 @@ def main():
         if not all(inside(p, 30) for p in pts):
             continue
         poly = Polygon(pts)
+        if ski_zone is not None and not ski_zone.intersects(poly):
+            continue
         if not poly.is_valid or poly.area < 12:
             continue
         if poly.exterior.is_ccw is False:
@@ -349,7 +368,7 @@ def main():
                 links.append((cut(o, c[0]), bot, "x", bool(w.get("bi"))))
         for o in ls:
             oc = list(o["line"].coords)
-            if o is not w and math.dist(oc[0], c[0]) < 220:
+            if o is not w and math.dist(oc[0], c[0]) < cfg.get("base_link", 220):
                 links.append((bot, G.node(oc[0]), "w", True))
             if o is not w and math.dist(oc[0], c[-1]) < 120:     # top of one lift beside base of another
                 links.append((top, G.node(oc[0]), "w", True))
@@ -472,6 +491,8 @@ def main():
                  "xm": W / 2, "ym": H / 2, "clon": list(clon), "clat": list(clat)},
         "trails": trails, "areas": areas, "lifts": lift_out, "buildings": buildings, "pois": pois,
         "parks": parks,
+        # lifts that stand on their own (a village beginner tow reached by road, not on skis)
+        "isolated": [L["id"] for L in lift_out if L["name"] in cfg.get("isolated_lifts", [])],
         "graph": {"nodes": [[round(p[0], 1), round(p[1], 1), round(elev(*p), 1)] for p in G.pts], "edges": edges},
     }
     with open(f"{out_dir}/resort.json", "w") as f:
@@ -520,14 +541,17 @@ def report(G, edges, trails, lifts, pois):
         return seen
 
     lift_edges = [e for e in edges if e["k"] == "l"]
-    # start from the lowest lift base: the main base area
-    tram = min(lift_edges, key=lambda e: G.elev(*G.pts[e["a"]]))
-    r = reach(tram["a"])
+    # start from the lift base that reaches the most of the mountain: the main base area
+    # (the lowest lift is often a village beginner tow that stands on its own)
+    reaches = {e["a"]: reach(e["a"]) for e in lift_edges}
+    tram = max(lift_edges, key=lambda e: (len(reaches[e["a"]]), -G.elev(*G.pts[e["a"]])))
+    r = reaches[tram["a"]]
     cover = {e["r"] for e in edges if e["k"] == "p" and e["a"] in r}
     miss = sorted({T["name"] or f"unnamed#{T['id']}" for T in trails if T["id"] not in cover})
     print(f"from the base of {lifts[tram['r']]['name']}: {len(cover)}/{len(trails)} trail segments reachable; not reachable: {miss}")
     for e in lift_edges:
-        print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to that base {tram['a'] in reach(e['b'])}")
+        if not (e["a"] in r and tram["a"] in reach(e["b"])):
+            print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to that base {tram['a'] in reach(e['b'])}")
     print("  POIs off-network:", [P["name"] for P in pois if P["n"] < 0],
           "| unreachable:", [P["name"] for P in pois if P["n"] >= 0 and P["n"] not in r])
 

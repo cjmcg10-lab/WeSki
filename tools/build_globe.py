@@ -7,7 +7,8 @@
                 coast   coastlines to draw as crisp lines, 1:50m, outside the detailed regions
                 borders country borders, 1:50m, outside the detailed regions
                 states  US state borders
-                hi      1:10m coastlines + borders inside a box around the resorts that have maps
+                hi      1:10m coastlines + borders inside boxes around the resorts that have maps
+                water   inland seas (holes in the land outlines), painted as water
 
 usage: build_globe.py <public/data dir>
 """
@@ -64,11 +65,11 @@ def thin(pts, step):
     return res
 
 
-def clip(pts, box, inside):
-    """Split a line into the runs that are inside (or outside) the box."""
+def clip(pts, boxes, inside):
+    """Split a line into the runs that are inside (or outside) the detail boxes."""
     runs, cur = [], []
     for p in pts:
-        hit = box[0] <= p[0] <= box[2] and box[1] <= p[1] <= box[3]
+        hit = any(b[0] <= p[0] <= b[2] and b[1] <= p[1] <= b[3] for b in boxes)
         if hit == inside:
             cur.append(p)
         else:
@@ -82,13 +83,20 @@ def clip(pts, box, inside):
 
 # box around every resort that has a built map (plus a generous margin)
 ids = [d for d in json.load(open(f"{out}/index.json"))]
-lats = [r["lat"] for r in ids]
-lons = [r["lon"] for r in ids]
-BOX = (min(lons) - 9, min(lats) - 7, max(lons) + 9, max(lats) + 7)
+# one box per group of nearby resorts, so mountains on other continents don't make the whole world detailed
+BOX = []
+for r in ids:
+    b = [r["lon"] - 7, r["lat"] - 5, r["lon"] + 7, r["lat"] + 5]
+    for o in BOX:
+        if b[0] <= o[2] and o[0] <= b[2] and b[1] <= o[3] and o[1] <= b[3]:
+            o[:] = [min(o[0], b[0]), min(o[1], b[1]), max(o[2], b[2]), max(o[3], b[3])]
+            break
+    else:
+        BOX.append(b)
 
 w50 = get("world-atlas@2/countries-50m.json")
 a50 = arcs_of(w50)
-land = []
+land, water = [], []
 for g in w50["objects"]["land"]["geometries"]:
     for poly in polys(g):
         pts = []
@@ -96,6 +104,13 @@ for g in w50["objects"]["land"]["geometries"]:
             a = a50[k] if k >= 0 else a50[~k][::-1]
             pts.extend(a if not pts else a[1:])
         land.append(thin(pts, 0.02))
+        # holes in the land are inland seas (the Caspian): painted back as water by the app
+        for hole in poly[1:]:
+            pts = []
+            for k in hole:
+                a = a50[k] if k >= 0 else a50[~k][::-1]
+                pts.extend(a if not pts else a[1:])
+            water.append(thin(pts, 0.02))
 u50 = usage(w50, "countries")
 coast, borders = [], []
 for k, n in u50.items():
@@ -113,7 +128,7 @@ for k, n in usage(w10, "countries").items():
     for run in clip(a10[k], BOX, True):
         (hi_coast if n == 1 else hi_border).append(thin(run, 0.004))
 
-layers = {"land": land, "coast": coast, "borders": borders, "states": states, "hiCoast": hi_coast, "hiBorders": hi_border}
+layers = {"land": land, "coast": coast, "borders": borders, "states": states, "hiCoast": hi_coast, "hiBorders": hi_border, "water": water}
 blob = bytearray()
 meta = {"scale": SCALE, "box": BOX, "source": "Natural Earth 1:50m and 1:10m, US Census state lines (public domain) via world-atlas / us-atlas"}
 for name, lists in layers.items():
@@ -124,4 +139,4 @@ for name, lists in layers.items():
             blob += int(round(max(-90, min(90, lat)) * SCALE)).to_bytes(2, "little", signed=True)
 open(f"{out}/globe.bin", "wb").write(blob)
 json.dump(meta, open(f"{out}/globe.json", "w"), separators=(",", ":"))
-print({k: (len(v), sum(len(l) for l in v)) for k, v in layers.items()}, "bytes", len(blob), "box", [round(v, 1) for v in BOX])
+print({k: (len(v), sum(len(l) for l in v)) for k, v in layers.items()}, "bytes", len(blob), "boxes", [[round(v, 1) for v in b] for b in BOX])

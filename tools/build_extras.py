@@ -53,6 +53,10 @@ fx, fy = px - tx0 * 256 - 0.5, py - ty0 * 256 - 0.5
 i, j = np.clip(fx.astype(int), 0, mosaic.shape[1] - 2), np.clip(fy.astype(int), 0, mosaic.shape[0] - 2)
 u, v = fx - i, fy - j
 z = mosaic[j, i] * (1 - u) * (1 - v) + mosaic[j, i + 1] * u * (1 - v) + mosaic[j + 1, i] * (1 - u) * v + mosaic[j + 1, i + 1] * u * v
+# single-cell voids in the source tiles show up as spikes hundreds of metres deep: replace them with the local median
+pad = np.pad(z, 1, mode="edge")
+med = np.median(np.stack([pad[a:a + z.shape[0], b:b + z.shape[1]] for a in range(3) for b in range(3)]), axis=0)
+z = np.where(np.abs(z - med) > 250, med, z)
 zmin = math.floor(z.min())
 np.round(z - zmin).astype("<u2").tofile(f"{out}/surround.bin")
 resort["surround"] = {"nx": nx, "ny": ny, "cell": CELL, "x0": -PAD, "y0": -PAD, "zmin": zmin}

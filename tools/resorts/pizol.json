@@ -1,0 +1,21 @@
+{
+ "id": "pizol",
+ "name": "Pizol",
+ "region": "St. Gallen, Switzerland",
+ "tz": "Europe/Zurich",
+ "area_name": "Pizol Bad Ragaz",
+ "terrain_source": "swisstopo swissALTI3D 2 m LiDAR elevation model (© swisstopo)",
+ "dem": [
+  "swiss",
+  9.398,
+  46.969,
+  9.483,
+  47.038
+ ],
+ "osm_bbox": [
+  9.38,
+  46.96,
+  9.5,
+  47.04
+ ]
+}

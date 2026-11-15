@@ -1,0 +1,24 @@
+{
+ "id": "les-contamines",
+ "name": "Les Contamines",
+ "region": "Haute-Savoie, France",
+ "tz": "Europe/Paris",
+ "area_name": "Les Contamines",
+ "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
+ "dem": [
+  "ign",
+  6.628,
+  45.762,
+  6.746,
+  45.827
+ ],
+ "osm_bbox": [
+  6.63,
+  45.75,
+  6.77,
+  45.85
+ ],
+ "isolated_lifts": [
+  "Loyers"
+ ]
+}

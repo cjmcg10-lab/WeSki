@@ -1,0 +1,25 @@
+{
+ "id": "geto-kogen",
+ "name": "Geto Kogen",
+ "region": "Iwate, Japan",
+ "tz": "Asia/Tokyo",
+ "area_name": "Geto Kogen",
+ "terrain_source": "GSI Japan 10 m elevation model (Geospatial Information Authority of Japan)",
+ "dem": [
+  "gsi",
+  140.875,
+  39.222,
+  140.918,
+  39.255
+ ],
+ "osm_bbox": [
+  140.86,
+  39.2,
+  140.94,
+  39.27
+ ],
+ "rename": {
+  "No. 1 Pait LIft": "No. 1 Pair Lift"
+ },
+ "base_link": 300
+}

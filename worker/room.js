@@ -19,9 +19,13 @@ export function applyMessage(room, memberId, msg, now) {
   if (msg.t === 'hello') {
     const id = clean(msg.id, 40);
     if (!/^[A-Za-z0-9_-]{8,40}$/.test(id)) return { error: 'bad_id', message: 'Bad member id', close: true };
-    const name = clean(msg.name, 20);
-    if (!name) return { error: 'bad_name', message: 'Enter a display name', close: true };
     const existing = room.members[id];
+    // A display name is optional: without one you are "Skier 1", "Skier 2"…
+    let name = clean(msg.name, 20) || (existing && /^Skier \d+$/.test(existing.name) ? existing.name : '');
+    if (!name) {
+      const taken = new Set(Object.values(room.members).map((m) => m.name));
+      for (let n = 1; !name; n++) if (!taken.has(`Skier ${n}`)) name = `Skier ${n}`;
+    }
     if (!existing && Object.keys(room.members).length >= MAX_MEMBERS) {
       return { error: 'full', message: `This group is full (${MAX_MEMBERS} people)`, close: true, closeCode: 3 };
     }

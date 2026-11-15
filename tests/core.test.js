@@ -6,7 +6,7 @@ import { pointAlong, lineLength } from '../src/geo.js';
 import { newRoom, applyMessage, publicState, MAX_MEMBERS } from '../worker/room.js';
 
 const { resort, geo } = loadResort();
-const router = new Router(resort);
+const router = new Router(resort, geo);
 const poi = (name) => resort.pois.find((p) => p.name === name);
 const trail = (name) => resort.trails.find((t) => t.name === name);
 const lift = (name) => resort.lifts.find((l) => l.name === name);
@@ -145,6 +145,15 @@ describe('tracker', () => {
 
 describe('group room', () => {
   const hello = (i) => ({ t: 'hello', id: 'member-' + String(i).padStart(4, '0'), name: 'P' + i, avatar: 'girl-board', color: '#00aaff' });
+  it('makes the display name optional', () => {
+    const room = newRoom('ABCDEF', 0);
+    const a = applyMessage(room, null, { ...hello(1), name: '' }, 1).join, b = applyMessage(room, null, { ...hello(2), name: '  ' }, 1).join;
+    expect([room.members[a].name, room.members[b].name]).toEqual(['Skier 1', 'Skier 2']);
+    applyMessage(room, a, { ...hello(1), name: '' }, 2);            // reconnecting keeps the same label
+    expect(room.members[a].name).toBe('Skier 1');
+    applyMessage(room, a, { ...hello(1), name: 'Sam' }, 3);
+    expect(room.members[a].name).toBe('Sam');
+  });
   it('caps at 20 members, lets existing members rejoin', () => {
     const room = newRoom('ABCDEF', 0);
     for (let i = 0; i < MAX_MEMBERS; i++) expect(applyMessage(room, null, hello(i), 1).join).toBeTruthy();

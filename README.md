@@ -10,11 +10,12 @@ people move, run stats with playback, and full offline use.
 
 | Area | Details |
 | --- | --- |
-| Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Four Vermont resorts have built maps. |
-| Maps | 3D mountain from USGS 1 m LiDAR (14 m mesh), every mapped trail, lifts with moving chairs, gondola and tram cabins on real cable loops, buildings, places, plus ~10 km of coarse surrounding terrain. 2D view with the base at the bottom. |
+| Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Ten resorts in four countries have built maps. |
+| Maps | 3D mountain from national LiDAR elevation models (14 m mesh), every mapped trail, lifts with moving chairs, gondola and tram cabins on real cable loops, buildings, places, plus ~10 km of coarse surrounding terrain. 2D view with the base at the bottom. |
 | Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣) painted onto the snow surface. |
-| Groups | Up to 20 people join by 6-character code. Location sharing is opt-in, can be paused, and shows when each person last updated. |
-| Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links; avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
+| Groups | Up to 20 people join by 6-character code; a display name is optional. Location sharing is opt-in, can be paused, and shows when each person last updated. |
+| Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links, plus short climbs back up a trail and cut-acrosses to a neighbouring trail when that beats a lap (see Uphill tolerance); avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
+| Voice | Optional spoken turn-by-turn directions, called ahead of each turn according to your speed, with a touch-proof Pocket mode that keeps the screen (and so GPS and speech) alive. |
 | Weather | Summit and base conditions, ski-specific alerts, 12-hour strip and 7-day forecast (Open-Meteo). |
 | My tracks | Optional dotted breadcrumb trail on the map along everything you have skied; works with or without stats tracking (location-only tracks are never added to History). |
 | Appearance | Dark by default, light mode in More. |
@@ -23,14 +24,37 @@ people move, run stats with playback, and full offline use.
 
 ## Data sources (all free)
 
-- **Terrain:** USGS 3DEP 1 m DEM, project `VT_Statewide_A23` (public domain).
+- **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.
+  France: IGN RGE ALTI 1 m (Licence Ouverte). Japan: GSI 5 m LiDAR tiles where they exist, otherwise the
+  GSI 10 m model (Geto Kogen is 10 m). `tools/fetch_dem.py` downloads the non-US ones.
 - **Trails, lifts, buildings, places:** © OpenStreetMap contributors (ODbL).
 - **Surrounding terrain:** Mapzen/AWS Terrain Tiles. **Globe:** Natural Earth 1:50m and 1:10m, US Census state lines. **Weather:** Open-Meteo (CC BY 4.0).
 - **Slow zones and terrain parks:** read from Jay Peak's Winter 2025–26 trail map and terrain parks
   page, then attached to the matching OSM trails in `tools/build_data.py`.
 
 Closures are whatever the user (or their group) marks as confirmed closed; there is no live resort feed.
-This is not an official Jay Peak product.
+This is not an official product of any resort.
+
+## Uphill tolerance
+
+Trails are one-way downhill for routing, but a route may also go a short way back up a trail, back
+up a link, or straight across open ground to a neighbouring trail (`src/routing.js`). Each such move
+is scored in effort-time: real seconds times a multiplier.
+
+| | Low | Normal (default) | High |
+| --- | --- | --- | --- |
+| Flat to 3% uphill (2 m/s) | 1.5× | 1× | 1× |
+| 3–8% (1 m/s) | 4× | 2× | 1.5× |
+| 8–15% (0.4 m/s) | not offered | 3× | 2× |
+| 15–20% (0.3 m/s) | not offered | not offered | 3× |
+| Steepest side slope on a cut-across | 20° | 25° | 30° |
+| Total climb per route | 10 m | 25 m | 50 m |
+
+Climbing on a black counts 1.5×, on a double black 2× (never at Low); trails above your limit keep
+their usual heavy penalty. A cut-across is at most 70 m, is scaled by the side slope, and is dropped
+if the ground between strays more than 5 m from an even grade or falls away steeper than 25%. A
+step or two (2 m of climb) steeper than the cut-off is always allowed to reach a junction. The app
+knows terrain only, not trees, ropes or signs.
 
 ## Layout
 
@@ -44,20 +68,26 @@ tests/                unit tests (routing, tracker, group rules)
 
 ## Resorts
 
-Built maps: **Jay Peak, Stowe, Smugglers' Notch, Sugarbush** (all Vermont). Each resort is one folder
+Built maps: **Jay Peak, Stowe, Smugglers' Notch, Sugarbush** (Vermont), **Cannon Mountain** (New
+Hampshire), **Saddleback** (Maine), **Brundage Mountain** (Idaho), **Geto Kogen** (Japan), **Pizol**
+(Switzerland) and **Les Contamines** (France). Each resort is one folder
 under `public/data/<id>/` and is downloaded and cached on the phone the first time it is opened.
 History, saved tracks, closures and offline status are kept per resort.
 
-Slow zones and terrain parks are only shown for Jay Peak so far; the other three have not been
-checked against their trail maps yet.
+Slow zones and terrain parks are only shown for Jay Peak so far; the others have not been checked
+against their trail maps yet. Difficulty uses North American symbols everywhere, so a European blue
+shows as a green circle, a red as a blue square and a black as a black diamond.
 
 ### Adding a resort
 
 1. Write `tools/resorts/<id>.json`: `id`, `name`, `region`, `tz`, `area_name` (the name of the resort's
    `landuse=winter_sports` area in OpenStreetMap, used to keep neighbouring ski areas out), optional
-   `slow_zone_trails`, `parks`, `parks_between`, `two_way_lifts`, `skip_pois`, `zones_source`.
-2. Download an OSM extract covering it (`api.openstreetmap.org/api/0.6/map?bbox=...`) and the USGS 1 m
-   DEM tiles that cover it (The National Map).
+   `slow_zone_trails`, `parks`, `parks_between`, `two_way_lifts`, `skip_pois`, `zones_source`, `rename`
+   (name corrections), `base_link` (how far apart two lift bases may be and still be one base area),
+   `isolated_lifts` (a village tow that really is not connected), `building_range`.
+2. Download an OSM extract covering it (`api.openstreetmap.org/api/0.6/map?bbox=...`) and an elevation
+   model: USGS 1 m DEM tiles (The National Map) in the USA, `tools/fetch_dem.py` for Switzerland, France
+   and Japan. Any GeoTIFF in a metric projection works.
 3. Run:
    ```
    python3 tools/build_data.py tools/resorts/<id>.json <osm file> public/data/<id> <dem.tif> [...]
@@ -68,8 +98,8 @@ checked against their trail maps yet.
    ```
    `build_data.py` prints a connectivity report; fix the config (or OSM) if trails are unreachable.
 
-All resort data currently ships inside the Worker bundle (free limit 3 MB compressed; four resorts
-use about 2.2 MB). Adding many more means moving `public/data/` to static asset hosting.
+Resort data is uploaded as Cloudflare static assets by the GitHub deploy, so it is not bound by the
+3 MB Worker limit (the ten resorts are about 6 MB on disk).
 
 ## Develop
 
@@ -91,4 +121,5 @@ working branch. It uses `wrangler.assets.jsonc`, which uploads the app and map d
 static assets (so resort data is not bound by the 3 MB Worker limit) and leaves the Worker to serve
 `/api/*` only. It needs two repository secrets: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
 
-`npm run deploy` still works without GitHub; it embeds the files in the Worker instead.
+`npm run deploy` embeds the files in the Worker instead and only fits while the data stays under
+3 MB compressed, which it no longer does: deploy by pushing.

@@ -1,0 +1,14 @@
+{
+ "id": "brundage",
+ "name": "Brundage Mountain",
+ "region": "Idaho, USA",
+ "tz": "America/Boise",
+ "area_name": "Brundage Mountain",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -116.2,
+  44.98,
+  -116.11,
+  45.05
+ ]
+}
