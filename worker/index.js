@@ -30,6 +30,7 @@ export default {
       return env.GROUPS.get(env.GROUPS.idFromName(code)).fetch(request);
     }
     if (url.pathname.startsWith('/api/')) return json({ error: 'Not found' }, 404);
+    if (env.ASSETS) return env.ASSETS.fetch(request); // GitHub deploy: static assets
     return serveStatic(request, url);
   },
 };

@@ -83,3 +83,12 @@ npm run deploy         # build + wrangler deploy (needs a Cloudflare API token)
 Everything runs on Cloudflare's free tier: one Worker (app files are bundled into it) and one
 SQLite-backed Durable Object class. A group's shared locations are deleted when its creator closes
 it or after 12 hours without activity.
+
+## Deploying from GitHub
+
+`.github/workflows/deploy.yml` runs the tests, builds, and deploys on every push to `main` or the
+working branch. It uses `wrangler.assets.jsonc`, which uploads the app and map data as Cloudflare
+static assets (so resort data is not bound by the 3 MB Worker limit) and leaves the Worker to serve
+`/api/*` only. It needs two repository secrets: `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`.
+
+`npm run deploy` still works without GitHub; it embeds the files in the Worker instead.

@@ -13,8 +13,9 @@ const dist = 'dist', out = 'worker/static';
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });
 const files = [];
-const walk = (d) => { for (const f of readdirSync(d)) { const p = join(d, f); statSync(p).isDirectory() ? walk(p) : files.push(p); } };
-walk(dist);
+const walk = (d) => { for (const f of readdirSync(d)) { const p = join(d, f); if (statSync(p).isDirectory()) walk(p); else if (!f.startsWith('_')) files.push(p); } };
+// --none: the GitHub deploy uploads dist/ as static assets instead, so embed nothing
+if (!process.argv.includes('--none')) walk(dist);
 let imports = '', entries = '';
 files.sort().forEach((p, i) => {
   const url = '/' + relative(dist, p).replace(/\\/g, '/');
