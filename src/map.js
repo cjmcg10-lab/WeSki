@@ -311,19 +311,17 @@ export class SkiMap {
     const G = (this.trailGroup = new THREE.Group());
     const R = this.resort, closed = this.closed;
     const casing = [], shut = [];
-    const byStyle = {}, ex = this.explored;
+    const byStyle = {};
     for (const t of R.trails) {
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
-      const faint = ex && !ex.has(t.id);            // not skied yet (explored view only)
-      if (!t.glade && !faint) this.segs(t.pts, 2.7, casing);
-      const key = t.d + (t.glade ? 'g' : '') + (faint ? 'f' : '');
-      this.segs(t.pts, 3.2, (byStyle[key] ||= []));
+      if (!t.glade) this.segs(t.pts, 2.7, casing);
+      this.segs(t.pts, 3.2, (byStyle[t.d + (t.glade ? 'g' : '')] ||= []));
     }
-    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g' + (ex ? 'f' : '')] ||= []));
-    G.add(this.fatLine(casing, '#ffffff', ex ? 7 : 5.5, { order: 3 }));
+    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g'] ||= []));
+    G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
-      const glade = key.includes('g'), faint = key.endsWith('f');
-      G.add(this.fatLine(pos, COLORS.diff[+key[0]], (glade ? 2.6 : 3.2) * (ex && !faint ? 1.25 : 1), { order: 4, dash: glade ? [16, 11] : null, opacity: faint ? 0.3 : undefined }));
+      const glade = key.endsWith('g');
+      G.add(this.fatLine(pos, COLORS.diff[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
     }
     G.add(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
     this.scene.add(G);
@@ -350,9 +348,9 @@ export class SkiMap {
     const cable = [], symbol = [], towerMats = [], stationGeos = [];
     let chairCount = 0;
     for (const l of R.lifts) {
-      // The single red line is the map symbol for the lift, drawn on the snow under it.
-      this.segs(densify(l.pts, 12), 2.4, symbol);
-      if (l.kind === 'carpet') { this.liftPaths.push({ l, carpet: true, pts: [this.world(l.pts[0], l.pts[1], 3), this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3)], cum: [0, l.len], L: l.len }); continue; }
+      if (l.kind === 'carpet') {
+        const a = this.world(l.pts[0], l.pts[1], 3), b = this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3);
+        symbol.push(a.x, a.y, a.z, b.x, b.y, b.z); this.liftPaths.push({ l, carpet: true, pts: [this.world(l.pts[0], l.pts[1], 3), this.world(l.pts[l.pts.length - 2], l.pts[l.pts.length - 1], 3)], cum: [0, l.len], L: l.len }); continue; }
       const tram = l.kind === 'tram', n = l.pts.length / 2, th = tram ? 26 : 9.5, endH = tram ? 13 : 6.5;
       // r = half the spacing between the two cables (= bullwheel radius on a chairlift)
       const r = tram ? 5 : 2.4;
@@ -383,6 +381,9 @@ export class SkiMap {
         path.chairs = Math.max(4, Math.floor(path.loop / (l.name.includes('Express') ? 70 : 48)));
         chairCount += path.chairs;
       }
+      // The single red line that stands for the lift: it follows the cables, midway between
+      // the two of them and a little above, so it is always in view and sits on the real lift.
+      for (let i = 1; i < pts.length; i++) symbol.push(pts[i - 1].x, pts[i - 1].y + 1.6, pts[i - 1].z, pts[i].x, pts[i].y + 1.6, pts[i].z);
       const dir = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
       // towers stand on the ground under each support; their crossarm reaches both cables
       for (let i = 1; i < n - 1; i++) towerMats.push({ p: this.world(l.pts[i * 2], l.pts[i * 2 + 1], 0), yaw, h: th, arm: 2 * r + 0.8 });
@@ -567,14 +568,36 @@ export class SkiMap {
 
   setClosures(set) { this.closed = new Set(set); this.buildTrails(); this.overlayDirty = true; }
 
-  /** Explored view: `ids` = Set of trail ids already skied (others are drawn faint), or null to turn it off. */
-  setExplored(ids, names = null) {
-    this.exploredNames = names;
-    const next = ids ? [...ids].sort((a, b) => a - b).join() : null;
-    if (next === this.exploredKey) return;
-    this.exploredKey = next; this.explored = ids ? new Set(ids) : null;
-    this.buildTrails(); this.overlayDirty = true;
+  /**
+   * Breadcrumbs: a light dotted trail along everything skied. `lists` is an array of recorded
+   * point lists ([t, x, y, z, state, gap]) or null to hide it. Lift rides and stops are left out.
+   */
+  setBreadcrumbs(lists) {
+    const n = lists ? lists.reduce((k, l) => k + l.length, 0) : -1;
+    if (n === this.crumbCount) return;            // nothing new since the last draw
+    this.crumbCount = n;
+    if (this.crumbs) { this.scene.remove(this.crumbs); this.crumbs.geometry.dispose(); this.crumbs.material.dispose(); this.crumbs = null; }
+    if (!lists) return;
+    const pos = [];
+    for (const P of lists) {
+      let prev = null;
+      for (let i = 1; i < P.length; i++) {
+        const b = P[i];
+        if (b[4] !== 1 || b[5] || !this.geo.inBounds(b[1], b[2])) { prev = null; continue; }
+        if (!prev) { prev = this.world(P[i - 1][1], P[i - 1][2], 4.2); prev.lx = P[i - 1][1]; prev.ly = P[i - 1][2]; }
+        if (Math.hypot(b[1] - prev.lx, b[2] - prev.ly) < 7 && i < P.length - 1 && P[i + 1][4] === 1) continue; // thin out dense GPS points
+        const q = this.world(b[1], b[2], 4.2);
+        q.lx = b[1]; q.ly = b[2];
+        pos.push(prev.x, prev.y, prev.z, q.x, q.y, q.z);
+        prev = q;
+      }
+    }
+    if (!pos.length) return;
+    // small dots, narrower than a trail line and part see-through, so the trails stay readable underneath
+    this.crumbs = this.fatLine(pos, '#ff5aa8', 3, { order: 7, dash: [3, 8], opacity: 0.9 });
+    this.scene.add(this.crumbs);
   }
+
   setUnits(u) { this.units = u; }
 
   setMe(me) {
@@ -847,15 +870,17 @@ export class SkiMap {
     const farOut = is3 ? this.cam3.position.distanceTo(c.target) > 7500 : this.zoom2 < 0.12;
     if (!farOut || this.flight) this.animateLifts(this.t);
     // Avatars and markers are scaled with distance so they stay readable at mountain scale.
-    const scaleFor = (obj, k) => {
-      const s = is3 ? Math.max(2.2, this.cam3.position.distanceTo(obj.position) * k) : 14 / this.zoom2 / 3;
+    // They grow as you zoom out so they stay findable, up to a cap (about 45 m tall for a
+    // person) so that from far away they no longer swamp the map.
+    const scaleFor = (obj, k, max = 25) => {
+      const s = is3 ? Math.min(max, Math.max(2.2, this.cam3.position.distanceTo(obj.position) * k)) : 14 / this.zoom2 / 3;
       obj.scale.setScalar(s);
     };
     const dt = this.dt || 0.016;
     if (this.me) { this.meObj.visible = is3; this.glide(this.meObj, dt); scaleFor(this.meObj, 0.02); }
     for (const f of this.friends.values()) { f.obj.visible = is3; this.glide(f.obj, dt); scaleFor(f.obj, 0.02); }
-    if (this.pin) scaleFor(this.pinObj, 0.014);
-    if (this.meet) scaleFor(this.meetObj, 0.016);
+    if (this.pin) scaleFor(this.pinObj, 0.014, 22);
+    if (this.meet) scaleFor(this.meetObj, 0.016, 24);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
     this.renderer.render(this.scene, this.camera);
     // The label layer (lots of outlined text) is the most expensive 2D work, so it is only
@@ -983,8 +1008,7 @@ export class SkiMap {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        const done = this.explored && this.exploredNames?.has(z.t.name), dim = this.explored && !done;
-        label(`${done ? '✓ ' : ''}${sym[z.t.d]} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut || dim ? '#7b8490' : COLORS.diff[z.t.d], 10.5, done ? 800 : 600);
+        label(`${sym[z.t.d]} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut ? '#6b7280' : COLORS.diff[z.t.d], 10.5, 600);
       }
     }
   }

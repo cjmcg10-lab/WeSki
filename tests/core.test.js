@@ -182,18 +182,3 @@ describe('group room', () => {
   });
 });
 
-import { matchTrails, exploredIds, trailChecklist } from '../src/explored.js';
-describe('explored trails', () => {
-  it('marks only trails that were actually skied', () => {
-    const v = trail('Vermonter'), P = [];
-    let t = 0;
-    for (let d = 0; d < v.len; d += 9, t += 1000) { const [x, y] = pointAlong(v.pts, d); P.push([t, x + 4, y, 0, ST.SKI, 0]); }
-    const flyer = lift('Flyer Express Quad'); // a lift ride over other trails must not count
-    for (let d = 0; d < flyer.len; d += 5, t += 1000) { const [x, y] = pointAlong(flyer.pts, d); P.push([t, x, y, 0, ST.LIFT, 0]); }
-    const ids = exploredIds(resort, matchTrails(resort, P));
-    const done = trailChecklist(resort, ids).filter((x) => x.done).map((x) => x.name);
-    expect(done).toContain('Vermonter');
-    expect(done.length).toBeLessThanOrEqual(3); // Vermonter plus at most a junction neighbour
-    expect(trailChecklist(resort, new Set()).every((x) => !x.done)).toBe(true);
-  });
-});

@@ -7,10 +7,30 @@ import { GroupClient, createGroup } from './group.js';
 import { sessions, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
 import { RESORTS } from './resorts.js';
-import { matchTrails, exploredIds, trailChecklist } from './explored.js';
 import { Clouds } from './clouds.js';
 
 const $ = (s) => document.querySelector(s);
+
+/** Dark by default; light can be chosen in More. */
+function applyTheme(t) {
+  document.documentElement.dataset.theme = t;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', t === 'light' ? '#f5f7fa' : '#030b16');
+}
+applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme')) || 'dark'; } catch { return 'dark'; } })());
+
+/**
+ * Use the whole screen. An iPhone home-screen app with a see-through status bar reports a
+ * viewport that is one status bar shorter than the screen, which left an unused strip at
+ * the bottom; in that mode the real height is the screen's.
+ */
+function fitScreen() {
+  const portrait = window.innerHeight >= window.innerWidth;
+  const h = navigator.standalone === true && portrait ? Math.max(window.innerHeight, screen.height) : window.innerHeight;
+  document.documentElement.style.setProperty('--app-h', h + 'px');
+}
+fitScreen();
+window.addEventListener('resize', fitScreen);
+window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const STALE_S = 120;          // a friend's location older than this is "stale"
 const PALETTE = ['#ff3b30', '#ff9f0a', '#ffd60a', '#34c759', '#00c7be', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff2d92', '#8e6e53'];
@@ -21,7 +41,7 @@ const S = {
   resort: null, geo: null, router: null, map: null, loc: null,
   profile: prefs.get('profile', null) || { id: randomId(), name: '', avatar: 'boy-ski', color: PALETTE[5] },
   units: prefs.get('units', 'imperial'),
-  exOnMap: prefs.get('exOnMap', false), exScope: 'session',
+  crumbsOn: prefs.get('crumbsOn', false), crumbScope: 'session',
   maxDiff: prefs.get('maxDiff', 2),
   closures: new Set(prefs.get('closures', [])),
   testMode: prefs.get('testMode', false),
@@ -60,14 +80,29 @@ function toast(msg, ms = 3200) {
   clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.add('hidden'), ms);
 }
 
+/** Picture of a rider for the avatar picker and member lists (64x64). */
 function avatarSvg(type, color) {
   const [who, ride] = type.split('-');
-  const hair = who === 'girl' ? '<path d="M17 13c-3 2-3 7-2 10M27 13c3 2 3 7 2 10" stroke="#8a4b22" stroke-width="3" fill="none" stroke-linecap="round"/>' : '';
-  const gear = ride === 'board'
-    ? '<rect x="8" y="37" width="28" height="4.5" rx="2.2" fill="#15181f" transform="rotate(-8 22 39)"/>'
-    : '<path d="M9 40h13M22 42h13" stroke="#15181f" stroke-width="2.6" stroke-linecap="round"/><path d="M11 22 8 38M33 22l3 16" stroke="#59636e" stroke-width="1.4"/>';
-  const body = who === 'girl' ? `<path d="M22 17l-8 15h16z" fill="${color}"/>` : `<rect x="15.500" y="17" width="13" height="14" rx="3" fill="${color}"/>`;
-  return `<svg viewBox="0 0 44 44">${hair}<circle cx="22" cy="11" r="5.500" fill="#f2c49b"/><path d="M16.500 10a5.500 5.500 0 0 1 11 0z" fill="${color}" opacity=".75"/>${body}<path d="M19 31l-2 8M25 31l2 8" stroke="#2a3340" stroke-width="3" stroke-linecap="round"/>${gear}</svg>`;
+  const girl = who === 'girl', board = ride === 'board';
+  const dark = '#1b2430', skin = '#f2c49b', hair = '#8a4b22';
+  // pose: skier faces forward in a tuck with poles; boarder stands side-on, arms out for balance
+  const snow = `<ellipse cx="32" cy="${board ? 56 : 58}" rx="29" ry="5.500" fill="#eaf2f9"/><ellipse cx="32" cy="${board ? 57.500 : 59.500}" rx="20" ry="2.200" fill="#c9d8e6"/>`;
+  const gear = board
+    ? `<rect x="9" y="50" width="46" height="5.500" rx="2.750" fill="${dark}" transform="rotate(-7 32 53)"/><rect x="13" y="50.800" width="38" height="2.200" rx="1.100" fill="${color}" opacity=".85" transform="rotate(-7 32 53)"/><rect x="22" y="48.500" width="5" height="4" rx="1" fill="#59636e" transform="rotate(-7 32 53)"/><rect x="37" y="48.500" width="5" height="4" rx="1" fill="#59636e" transform="rotate(-7 32 53)"/>`
+    : `<rect x="18" y="52" width="5" height="10" rx="2.500" fill="${dark}" transform="rotate(8 20 57)"/><rect x="41" y="52" width="5" height="10" rx="2.500" fill="${dark}" transform="rotate(-8 44 57)"/><path d="M19 49l-3 9M45 49l3 9" stroke="${dark}" stroke-width="4.500" stroke-linecap="round"/>`;
+  const poles = board ? '' : `<path d="M13 27 9 55M51 27l4 28" stroke="#7a8794" stroke-width="1.600" stroke-linecap="round"/><circle cx="9" cy="54" r="2.300" fill="none" stroke="#7a8794" stroke-width="1.300"/><circle cx="55" cy="54" r="2.300" fill="none" stroke="#7a8794" stroke-width="1.300"/>`;
+  const legs = board
+    ? `<path d="M26 38l-3 11M38 38l3 10" stroke="${dark}" stroke-width="6.500" stroke-linecap="round"/><rect x="19" y="46" width="8" height="5" rx="2" fill="#39424e"/><rect x="38" y="45" width="8" height="5" rx="2" fill="#39424e"/>`
+    : `<path d="M27 38l-6 11M37 38l6 11" stroke="${dark}" stroke-width="6.500" stroke-linecap="round"/><rect x="16" y="46" width="8" height="5" rx="2" fill="#39424e"/><rect x="40" y="46" width="8" height="5" rx="2" fill="#39424e"/>`;
+  const torso = girl
+    ? `<path d="M24 22h16l4 18H20z" fill="${color}"/><path d="M22 34h20" stroke="#fff" stroke-opacity=".55" stroke-width="2"/>`
+    : `<rect x="22" y="21" width="20" height="19" rx="5" fill="${color}"/><path d="M32 22v17" stroke="#000" stroke-opacity=".22" stroke-width="1.500"/><rect x="24" y="31" width="6" height="5" rx="1.200" fill="#000" fill-opacity=".18"/>`;
+  const arms = board
+    ? `<path d="M23 25 11 31M41 25l12-3" stroke="${color}" stroke-width="5.500" stroke-linecap="round"/><circle cx="10" cy="31.500" r="3" fill="${dark}"/><circle cx="54" cy="21.500" r="3" fill="${dark}"/>`
+    : `<path d="M23 25l-9 5M41 25l9 5" stroke="${color}" stroke-width="5.500" stroke-linecap="round"/><circle cx="13.500" cy="29" r="3" fill="${dark}"/><circle cx="50.500" cy="29" r="3" fill="${dark}"/>`;
+  const braids = girl ? `<path d="M24.500 15c-4 3-4.500 9-3 14M39.500 15c4 3 4.500 9 3 14" stroke="${hair}" stroke-width="3.400" fill="none" stroke-linecap="round"/><circle cx="21.700" cy="29.500" r="2" fill="${color}"/><circle cx="42.300" cy="29.500" r="2" fill="${color}"/>` : '';
+  const head = `<circle cx="32" cy="13" r="7.500" fill="${skin}"/><path d="M23.800 12.500a8.200 8.200 0 0 1 16.400 0z" fill="${color}"/><path d="M23.800 12.500a8.200 8.200 0 0 1 16.400 0z" fill="#fff" fill-opacity=".35"/><rect x="24.500" y="10.800" width="15" height="5.200" rx="2.600" fill="${dark}"/><rect x="26" y="11.800" width="12" height="3.200" rx="1.600" fill="#6fd3ff"/><path d="M27.500 12.600h4" stroke="#fff" stroke-opacity=".8" stroke-width="1" stroke-linecap="round"/><path d="M29.500 18.300q2.500 1.600 5 0" stroke="#b9774f" stroke-width="1.100" fill="none" stroke-linecap="round"/>${girl ? '' : `<path d="M26 20.500h12" stroke="${dark}" stroke-width="2.200" stroke-linecap="round" opacity=".55"/>`}`;
+  return `<svg viewBox="0 0 64 64">${snow}${poles}${gear}${legs}${braids}${torso}${arms}${head}</svg>`;
 }
 
 // ---------- boot
@@ -187,18 +222,18 @@ async function skiHere(btn) {
   // screen; the 3D map starts high above the mountain in haze of exactly that colour and
   // keeps descending as the haze clears. No fade, no cut.
   const color = g.colorAt(r);
-  const landing = S.map.fly(1, color, 3.6);
+  const landing = S.map.fly(1, color, 2.3);
   S.map.setPaused(true);                        // hold the map's first frame while the globe is on top
   // Clouds: near the end of the dive you drop into a cloud layer; the globe hands over to the
   // mountain inside it, and you come out of the bottom of the clouds above the resort.
   const sky = (clouds ||= new Clouds($('#clouds')));
   sky.start(1);
-  const into = new Promise((res) => setTimeout(() => sky.to(1, 1.15).then(res), 1150));
-  await Promise.all([g.dive(2.3), into]);
+  const into = new Promise((res) => setTimeout(() => sky.to(1, 0.75).then(res), 700));
+  await Promise.all([g.dive(1.45), into]);
   S.map.setPaused(false);
   $('#start').classList.add('hidden');
   g.dispose();
-  sky.to(0, 1.9).then(() => sky.stop());
+  sky.to(0, 1.25).then(() => sky.stop());
   await landing;
   document.body.classList.remove('flying');
   renderChrome();
@@ -212,12 +247,12 @@ async function exitToGlobe() {
     await openStart(JAY);
     const sky = (clouds ||= new Clouds($('#clouds')));
     sky.start(-1);                              // climb up into the clouds, swap inside them, come out above the globe
-    const into = new Promise((res) => setTimeout(() => sky.to(1, 1.1).then(res), 1250));
-    await Promise.all([S.map.fly(-1, globe.colorAt(JAY), 2.4), into]);
+    const into = new Promise((res) => setTimeout(() => sky.to(1, 0.7).then(res), 800));
+    await Promise.all([S.map.fly(-1, globe.colorAt(JAY), 1.5), into]);
     $('#start').classList.remove('prep');
     S.map.setPaused(true);
-    sky.to(0, 1.6).then(() => sky.stop());
-    await globe.rise(2.8);
+    sky.to(0, 1.1).then(() => sky.stop());
+    await globe.rise(1.8);
     $('.start-top').classList.remove('hidden');
     $('#start-panel').classList.remove('hidden');
   } catch (e) {
@@ -246,7 +281,7 @@ async function leaveResort(save) {
     if (save) await endSession('Ski day saved.');
     else {
       const id = S.session.id;
-      S.session = null; S.tracker = null; S.exAcc = null; S.exIdx = 1;
+      S.session = null; S.tracker = null;
       releaseWake();
       try { await sessions.del(id); } catch { /* nothing stored yet */ }
       toast('Left without saving this session.');
@@ -331,7 +366,6 @@ function releaseWake() { if (!(S.tracker || (S.group && S.sharing))) { lock?.rel
 function startSession(kind) {
   if (S.tracker) { if (kind === 'group') { S.session.kind = 'group'; S.session.group = S.group?.code; } return; }
   S.tracker = new Tracker(S.geo, S.resort.lifts);
-  S.exAcc = new Map(); S.exIdx = 1;
   S.session = { id: 's' + Date.now(), kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
   ensureLocation();
   wakeLock();
@@ -347,16 +381,16 @@ async function autosave() {
 async function endSession(reason) {
   if (!S.session) return null;
   const s = S.session;
-  updateExplored(true);
-  s.explored = [...exploredIds(S.resort, S.exAcc || new Map())];
   s.stats = stripStats(S.tracker.stats);
   s.end = s.points.length ? s.points[s.points.length - 1][0] : Date.now();
   if (s.points.length) s.start = Math.min(s.start, s.points[0][0]);
   s.active = false;
-  S.session = null; S.tracker = null; S.exAcc = null; S.exIdx = 1;
+  S.session = null; S.tracker = null;
   releaseWake();
   const worth = s.points.length >= 5 || s.routes.length;
   try { if (worth) await sessions.put(s); else await sessions.del(s.id); } catch (e) { toast('Could not save this session on the phone.'); return null; }
+  S.historyLoaded = false;
+  if (S.crumbsOn) loadHistory();
   if (worth) toast(`${reason} Saved ${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} to History.`);
   renderChrome();
   return worth ? s : null;
@@ -377,7 +411,6 @@ async function recoverSession() {
       S.tracker = new Tracker(S.geo, S.resort.lifts);
       S.tracker.points = s.points;
       S.tracker.state = s.points.length ? s.points[s.points.length - 1][4] : 0;
-      S.exAcc = new Map(); S.exIdx = 1;
       S.session = s;
       ensureLocation(); wakeLock();
       toast('Resumed your tracking session.');
@@ -388,40 +421,22 @@ async function recoverSession() {
   }
 }
 
-// ---------- explored trails
-/** Fold newly recorded skiing into the current session's explored set (a little behind live, so run/lift labels have settled). */
-function updateExplored(final = false) {
-  if (!S.tracker) return;
-  const P = S.tracker.points;
-  let to = P.length;
-  if (!final) { const cut = (P.length ? P[P.length - 1][0] : 0) - 20000; while (to > 0 && P[to - 1][0] > cut) to--; }
-  S.exAcc ||= new Map();
-  if (to > (S.exIdx || 1)) { matchTrails(S.resort, P, S.exIdx || 1, to, S.exAcc); S.exIdx = to; }
-}
-
-/** Trail ids explored in the chosen scope: this session, or everything saved on this phone plus this session. */
-function exploredSet() {
-  const ids = S.exAcc ? exploredIds(S.resort, S.exAcc) : new Set();
-  if (S.exScope === 'all' || !S.tracker) for (const s of S.history || []) for (const id of s.explored || []) ids.add(id);
-  return ids;
-}
-
-function showExplored() {
+// ---------- my tracks (breadcrumbs)
+/** Draw a light dotted trail of where you have skied: this session, or every saved session too. */
+function showTracks() {
   if (!S.map) return;
-  if (!S.exOnMap) { S.map.setExplored(null); return; }
-  const ids = exploredSet();
-  S.map.setExplored(ids, new Set(trailChecklist(S.resort, ids).filter((t) => t.done).map((t) => t.name)));
+  if (!S.crumbsOn) { S.map.setBreadcrumbs(null); return; }
+  const lists = [];
+  if (S.tracker) lists.push(S.tracker.points);
+  if (S.crumbScope === 'all' || !S.tracker) for (const s of S.history || []) lists.push(s.points);
+  S.map.setBreadcrumbs(lists);
 }
 
-function exploredCard() {
-  const ids = exploredSet(), list = trailChecklist(S.resort, ids), done = list.filter((t) => t.done).length;
-  const all = S.exScope === 'all' || !S.tracker;
-  return `<div class="card"><h3>Trails explored</h3>
-    ${S.tracker ? `<div class="seg" style="margin-bottom:8px"><button data-act="ex-scope" data-v="session" class="${all ? '' : 'on'}">This session</button><button data-act="ex-scope" data-v="all" class="${all ? 'on' : ''}">All time</button></div>` : ''}
-    <div class="rowf"><div class="grow"><b>${done} of ${list.length} trails</b><div class="sub">${all ? 'Across every session saved on this phone' : 'Skied since you started tracking'}</div></div><span class="sub">On map</span><label class="switch"><input type="checkbox" id="f-explored" ${S.exOnMap ? 'checked' : ''} /><i></i></label></div>
-    <div class="explore-bar"><i style="width:${list.length ? (done / list.length) * 100 : 0}%"></i></div>
-    <p class="note">${S.exOnMap ? 'Map: trails you have skied are bold with a ✓; the rest are faded.' : 'Turn on “On map” to see skied trails bold and the rest faded.'}</p>
-    <div class="chips">${list.filter((t) => t.done).map((t) => `<span class="chip done"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)} ✓</span>`).join('')}${list.filter((t) => !t.done).map((t) => `<span class="chip"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)}</span>`).join('')}</div></div>`;
+function tracksCard() {
+  const all = S.crumbScope === 'all' || !S.tracker;
+  return `<div class="card"><h3>My tracks</h3>
+    <div class="rowf"><div class="grow"><b>Show where I've skied</b><div class="sub">A dotted pink trail on the map along the runs you have come down. Lift rides are left out.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
+    ${S.tracker ? `<div class="seg" style="margin-top:10px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This session</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">All saved sessions</button></div>` : '<p class="note">Showing every session saved on this phone. Start tracking to add to it live.</p>'}</div>`;
 }
 
 // ---------- group
@@ -638,9 +653,9 @@ function describeSpot(x, y) {
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
     bits.unshift(`<span class="d${best.t.d}">${DIFF_SYM[best.t.d]}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
-    if (best.t.slow) bits.push(`<span style="color:#128a4a">▽ Slow zone</span>`);
+    if (best.t.slow) bits.push(`<span class="zn-slow">▽ Slow zone</span>`);
     const park = S.resort.parks.find((p) => nearestOnLine(p.pts, x, y).d < 30);
-    if (park) bits.push(`<span style="color:#b85a00">⬣ ${esc(park.name)}</span>`);
+    if (park) bits.push(`<span class="zn-park">⬣ ${esc(park.name)}</span>`);
     if (S.closures.has('t' + best.t.id)) bits.push('Marked closed');
   }
   return bits.join(' · ');
@@ -814,12 +829,12 @@ function sheetTrack() {
     return ['Stats', `<div class="card"><p class="sub">Track speed, runs, distance and vertical. Lift rides are detected and kept separate, and GPS spikes are filtered out.</p>
       <button class="btn go" data-act="start-track">Start tracking</button>
       <p class="note">Joining a group starts a group session automatically. Everything is saved on this phone when you end.</p></div>
-      ${exploredCard()}
+      ${tracksCard()}
       ${S.gpsMsg ? `<p class="note">${esc(S.gpsMsg)}</p>` : ''}`];
   }
   const st = S.tracker.stats, s = S.session;
   return [s.kind === 'group' ? `Group session ${s.group || ''}` : 'Solo tracking', `<div id="live-stats">${statGrid(st, true)}</div>
-    ${exploredCard()}
+    ${tracksCard()}
     <p class="note">Started ${fmtClock(s.start)} · ${S.tracker.points.length} GPS points${st.rejected ? ` · ${st.rejected} bad fixes filtered` : ''}${S.me ? '' : ' · waiting for GPS'}</p>
     ${s.kind === 'group' && S.group ? '<p class="note">This session ends and saves when you leave or close the group.</p><button class="btn danger" data-act="leave-group">Leave group &amp; save</button>' : '<button class="btn danger" data-act="end-track">End &amp; save</button>'}`];
 }
@@ -838,9 +853,7 @@ function sheetHistory() {
 }
 async function loadHistory() {
   try { S.history = (await sessions.list()).filter((s) => !s.active); } catch { S.history = []; }
-  // sessions saved before this feature existed: work out their explored trails once
-  for (const s of S.history) if (!s.explored) { s.explored = [...exploredIds(S.resort, matchTrails(S.resort, s.points))]; sessions.put(s).catch(() => {}); }
-  showExplored();
+  showTracks();
   S.historyLoaded = true;
   if (S.sheet === 'history' || S.sheet === 'session') renderSheet();
 }
@@ -854,7 +867,6 @@ function sheetSession(id) {
     <button class="btn" data-act="replay" data-id="${s.id}" ${s.points.length < 2 ? 'disabled' : ''}>▶ Replay on map</button>
     ${statGrid(s.stats, false)}
     <div class="card"><h3>Runs</h3>${runs || '<p class="sub">No complete runs in this session.</p>'}</div>
-    <div class="card"><h3>Trails skied</h3>${(() => { const l = trailChecklist(S.resort, new Set(s.explored || [])).filter((t) => t.done); return l.length ? `<div class="chips">${l.map((t) => `<span class="chip done"><span class="d${t.d}">${DIFF_SYM[t.d]}</span> ${esc(t.name)}</span>`).join('')}</div>` : '<p class="sub">No mapped trails matched in this session.</p>'; })()}</div>
     ${routes ? `<div class="card"><h3>Routes</h3>${routes}</div>` : ''}
     <button class="btn alt" data-act="tab" data-tab="history">Back to history</button>
     <button class="btn danger" data-act="delete-session" data-id="${s.id}">Delete session</button>`];
@@ -870,6 +882,7 @@ function sheetMore() {
     <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
     <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire Jay Peak map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
+    <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
     <button class="btn alt" data-act="legend">Map legend</button>
@@ -912,7 +925,7 @@ function sheetLegend() {
       <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2"><svg viewBox="0 0 14 14"><path d="M1.500 2.500h11L7 12z" fill="none" stroke="#0b5c2c" stroke-width="1.6" stroke-linejoin="round"/></svg></div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
       <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846"><svg viewBox="0 0 14 14"><path d="M7 1l5.200 3v6L7 13l-5.200-3V4z" fill="#fff"/></svg></div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
       <p class="note">Zones verified against Jay Peak's Winter 2025–26 trail map. The Gully's position is approximate.</p></div>
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift; thin dark cables carry the chairs and tram cabins)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}</div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift, just above and between its two cables)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
 }
@@ -926,7 +939,7 @@ function sheetPlace(ev) {
   if (ev.type === 'friend') {
     const f = friends().find((m) => m.id === ev.id);
     if (!f) return ['Friend', '<p class="sub">No longer in the group.</p>', true];
-    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${avatarSvg(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'stale' : ''}" style="${f.stale ? 'color:#b25e00' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
+    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${avatarSvg(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
   }
   if (ev.type === 'meet') {
     const m = S.map.meet;
@@ -942,7 +955,7 @@ function sheetPlace(ev) {
 function sheetSteps() {
   const r = S.nav?.route;
   if (!r) return ['Directions', '<p class="sub">No route.</p>', true];
-  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card" style="background:#fdecea;color:#7a1c14"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.over ? ' · <b style="color:#b3261e">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails (downhill), lifts (uphill) and walking links only. Times are estimates.</p>`];
+  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails (downhill), lifts (uphill) and walking links only. Times are estimates.</p>`];
 }
 
 // ---------- weather
@@ -1088,7 +1101,7 @@ function onInput(e) {
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group && S.profile.name) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
-  else if (t.id === 'f-explored' && e.type === 'change') { S.exOnMap = t.checked; prefs.set('exOnMap', S.exOnMap); if (!S.historyLoaded) loadHistory(); showExplored(); renderSheet(); }
+  else if (t.id === 'f-crumbs' && e.type === 'change') { S.crumbsOn = t.checked; prefs.set('crumbsOn', S.crumbsOn); if (!S.historyLoaded) loadHistory(); showTracks(); renderSheet(); }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -1179,7 +1192,8 @@ async function onClick(e) {
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
     case 'steps': openSheet('steps'); break;
-    case 'ex-scope': S.exScope = d.v; showExplored(); renderSheet(); break;
+    case 'crumb-scope': S.crumbScope = d.v; if (!S.historyLoaded) loadHistory(); showTracks(); renderSheet(); break;
+    case 'theme': prefs.set('theme', d.v); applyTheme(d.v); renderSheet(); break;
     case 'meet': proposeMeet(); break;
     case 'meet-here': {
       const [lat, lon] = S.geo.toLatLon(S.pin.x, S.pin.y);
@@ -1226,7 +1240,7 @@ function tick() {
     if (S.nav?.target.type === 'friend' && ticks % 5 === 0) recalcNav(true);
   }
   if (S.session && ticks % 20 === 0) autosave();
-  if (S.tracker && ticks % 5 === 0) { updateExplored(); showExplored(); if (S.sheet === 'track') renderSheet(); }
+  if (S.tracker && S.crumbsOn && ticks % 4 === 0) showTracks();
   if (ticks % 5 === 0) renderChrome();
   if (S.sheet === 'track' && S.tracker) renderTrackLive();
 }

@@ -79,12 +79,13 @@ export function animateAvatar(g, t, dt, moving) {
   u.amt += ((moving ? 1 : 0) - u.amt) * Math.min(1, dt * 4);
   const a = u.amt;
   if (a < 0.002) { u.rig.rotation.set(0, 0, 0); u.rig.position.set(0, 0, 0); u.body.position.y = 0; return; }
-  const ph = t * (u.board ? 2.3 : 3.1) + u.phase, s = Math.sin(ph);
-  u.rig.rotation.y = s * (u.board ? 0.5 : 0.38) * a;          // steer into the turn
-  u.rig.rotation.z = -s * (u.board ? 0.2 : 0.34) * a;         // lean / edge angle
-  u.rig.rotation.x = u.board ? Math.sin(ph) * 0.12 * a : 0;
-  u.rig.position.x = Math.sin(ph - 0.7) * 0.55 * a;           // S-shaped track
-  u.body.position.y = -Math.abs(Math.cos(ph)) * 0.07 * a;     // flex through the turn
+  // Short, quick linked turns: a tight sway rather than big swings from side to side.
+  const ph = t * (u.board ? 2.9 : 3.8) + u.phase, s = Math.sin(ph);
+  u.rig.rotation.y = s * (u.board ? 0.24 : 0.18) * a;          // steer into the turn
+  u.rig.rotation.z = -s * (u.board ? 0.13 : 0.19) * a;         // lean / edge angle
+  u.rig.rotation.x = u.board ? Math.sin(ph) * 0.07 * a : 0;
+  u.rig.position.x = Math.sin(ph - 0.7) * 0.2 * a;            // narrow S-shaped track
+  u.body.position.y = -Math.abs(Math.cos(ph)) * 0.05 * a;     // flex through the turn
 }
 
 /** Ring drawn under an avatar (stale friends get a grey one). */

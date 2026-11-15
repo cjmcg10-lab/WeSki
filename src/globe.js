@@ -95,7 +95,7 @@ export class Globe {
   }
 
   /** Turn the globe so the resort faces the camera and zoom in. Resolves when it arrives. */
-  flyTo(rs, seconds = 2.2) {
+  flyTo(rs, seconds = 1.8) {
     this.spin = false; this.focused = rs;
     clearTimeout(this.resume);
     const a = this.aim(rs);
@@ -105,7 +105,8 @@ export class Globe {
     // lay the ring flat on the sphere: its face normal (+Z) points straight out from the surface
     this.ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.ring.position.clone().normalize());
     this.ring.visible = true;
-    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: 0.17 }, seconds);
+    // lift 0.065 puts the resort about midway between the title and the resort card
+    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: 0.065 }, seconds);
   }
 
   /** Back to the slow spin (after closing a resort card). */

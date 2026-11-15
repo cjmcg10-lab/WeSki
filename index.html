@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>WeSki</title>
   <meta name="description" content="Jay Peak in 3D: trails, lifts, friends, directions and ski stats. Works offline." />
-  <meta name="theme-color" content="#0b2239" />
+  <meta name="theme-color" content="#030b16" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -16,6 +16,7 @@
   <link rel="stylesheet" href="/src/styles.css" />
 </head>
 <body>
+<div id="app">
   <div id="map"></div>
 
   <div id="splash"><div class="splash-box"><img src="/icons/icon-192.png" alt="" width="84" height="84" /><h1>WeSki</h1><p id="splash-msg">Loading Jay Peak…</p></div></div>
@@ -57,6 +58,8 @@
     <button data-act="tab" data-tab="history"><svg viewBox="0 0 24 24"><path d="M5 5h14M5 12h14M5 19h9" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>History</button>
     <button data-act="tab" data-tab="more"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="2.2" fill="currentColor"/><circle cx="12" cy="12" r="2.2" fill="currentColor"/><circle cx="19" cy="12" r="2.2" fill="currentColor"/></svg>More</button>
   </nav>
+
+</div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
