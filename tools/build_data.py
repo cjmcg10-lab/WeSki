@@ -132,6 +132,21 @@ def main():
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
     # trains and funiculars only come from the resort config (extra_lifts), which gives them their track
     lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS and (w[2]["aerialway"] not in ("train", "funicular") or str(w[0]).startswith("x"))]
+    # Leave out what is not there to ski or ride this winter: abandoned, removed or unbuilt lifts and
+    # runs, runs closed to the public, and lifts that only run in summer.
+    def gone(t):
+        if any(t.get(k) == "yes" for k in ("abandoned", "disused", "removed", "razed", "demolished", "planned", "proposed",
+                                           "construction", "piste:abandoned", "aerialway:abandoned")):
+            return True
+        if t.get("access") == "no" or ("aerialway" in t and t.get("seasonal:winter") == "no"):
+            return True
+        return bool(re.search(r"stillgelegt|außer betrieb|ausser betrieb|dismess[oa]|d[ée]mont[ée]|abandoned|disused", t.get("name") or "", re.I))
+    dropped = [w[2].get("name") or f"way {w[0]}" for w in pistes + lifts if gone(w[2]) and w[0] not in cfg.get("keep_ways", [])]
+    if dropped:
+        print(f"left out {len(dropped)} abandoned, closed or summer-only lifts and runs:", ", ".join(dropped[:40]))
+    pistes = [w for w in pistes if not gone(w[2]) or w[0] in cfg.get("keep_ways", [])]
+    lifts = [w for w in lifts if not gone(w[2]) or w[0] in cfg.get("keep_ways", [])]
+
     # Keep only this resort: neighbouring ski areas often share a ridge (Stowe / Smugglers' Notch).
     # The resort's own boundary in OpenStreetMap (landuse=winter_sports) decides what belongs.
     area = None
@@ -258,6 +273,7 @@ def main():
 
     trails = []
     trail_ways = []   # parallel: osm node id lists (oriented)
+    loops, loop_ids = [], set()
     areas = []
     for wid, nd, t in pistes:
         pts = [loc(i) for i in nd]
@@ -269,6 +285,17 @@ def main():
             continue
         if not all(inside(p) for p in pts):
             continue
+        if nd[0] == nd[-1] and len(nd) >= 4:
+            # A closed way is the outline of an area (a glade, a bowl), not a line to ski along.
+            # Drawn as a line it would go round the edge and back up to where it started.
+            if not name:
+                continue
+            pts = centreline(pts[:-1], elev)
+            nd = [f"c{wid}_{k}" for k in range(len(pts))]
+            for i, p in zip(nd, pts):
+                nodes[i] = (p[0] + x0, p[1] + y0)
+            loops.append(name)
+            loop_ids.add(wid)
         if elev(*pts[-1]) > elev(*pts[0]) + 3:
             pts.reverse()
             nd = nd[::-1]
@@ -279,7 +306,7 @@ def main():
             "slow": name in SLOW_ZONE_TRAILS, "bridge": t.get("bridge") == "yes",
             "len": round(line.length), "top": round(elev(*pts[0])), "bot": round(elev(*pts[-1])),
             "pts": flat(densify(pts)),
-            "_line": line,
+            "_line": line, "_loop": wid in loop_ids,
         })
         trail_ways.append(nd)
 
@@ -404,7 +431,8 @@ def main():
     G = GraphBuilder(elev)
     gw = []   # graph ways: dict(kind, ref, line, osm_nodes, bridge)
     for T, nd in zip(trails, trail_ways):
-        gw.append({"k": "p", "ref": T["id"], "line": T["_line"], "nd": nd, "bridge": T["bridge"]})
+        # the middle of an outlined area stops short of the runs its edge touched: let it join from further away
+        gw.append({"k": "p", "ref": T["id"], "line": T["_line"], "nd": nd, "bridge": T["bridge"], "reach": 220 if T["_loop"] else 38})
     for L, nd in zip(lift_out, lift_ways):
         gw.append({"k": "l", "ref": L["id"], "line": L["_line"], "nd": nd, "bridge": True, "bi": L["both"]})
     bases = [Point(L["pts"][0], L["pts"][1]) for L in lift_out]
@@ -468,7 +496,7 @@ def main():
                 if o is w:
                     continue
                 d = o["line"].distance(Point(pt))
-                if d < 0.5 or d > 38:
+                if d < 0.5 or d > w["reach"]:
                     continue
                 oid = cut(o, pt)
                 if oid != nid:
@@ -607,6 +635,7 @@ def main():
 
     for T in trails + lift_out:
         del T["_line"]
+        T.pop("_loop", None)
     pois = [P for P in pois if P["n"] >= 0]
     for i, P in enumerate(pois):
         P["id"] = i
@@ -640,12 +669,30 @@ def main():
     }
     with open(f"{out_dir}/resort.json", "w") as f:
         json.dump(out, f, separators=(",", ":"))
+    if loops:
+        print("outlined areas drawn down the middle:", ", ".join(loops))
     print(f"trails {len(trails)} areas {len(areas)} lifts {len(lift_out)} buildings {len(buildings)} pois {len(pois)} "
           f"parks {len(parks)} nodes {len(G.pts)} edges {len(edges)} slow {sum(T['slow'] for T in trails)}")
 
 
 def flat(pts):
     return [round(v, 1) for p in pts for v in p]
+
+
+def centreline(ring, elev):
+    """The line down the middle of an outlined area, from its highest point to its lowest."""
+    z = [elev(*p) for p in ring]
+    hi, lo = z.index(max(z)), z.index(min(z))
+    n = len(ring)
+    one = [ring[(hi + k) % n] for k in range((lo - hi) % n + 1)]
+    two = [ring[(hi - k) % n] for k in range((hi - lo) % n + 1)]
+    a, b = LineString(one), LineString(two)
+    m = max(6, int(max(a.length, b.length) // 25))
+    mid = []
+    for k in range(m + 1):
+        pa, pb = a.interpolate(k / m, normalized=True), b.interpolate(k / m, normalized=True)
+        mid.append(((pa.x + pb.x) / 2, (pa.y + pb.y) / 2))
+    return mid
 
 
 class GraphBuilder:

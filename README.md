@@ -47,6 +47,20 @@ America; green, blue, red and black pistes plus yellow freeride routes in Europe
 drawn in slate because red is a piste colour. Each resort has a treeline, above which open ground is drawn as
 snow and rock instead of forest.
 
+What the build leaves out or redraws so the map matches the mountain:
+
+- Lifts and runs the map data marks as abandoned, disused, removed, planned, under construction or closed
+  to the public, and lifts that only run in summer. Add an OSM way id to `keep_ways` in the resort config to
+  keep one anyway.
+- A run mapped as an outline (many glades are) is drawn as one line down its middle, from its highest point to
+  its lowest, instead of a line round its edge. An outline with no name is left out.
+- A run with no rating in the map data takes the rating of the same run's other pieces, then of the runs a short
+  connector joins, then one from its slope. The app still says the rating is a guess.
+
+The LiDAR tiles are not kept. `python3 tools/dem_from_built.py public/data/<id> <out.tif>` writes a built
+resort's terrain back out as a GeoTIFF, so any resort can be rebuilt after a change to the build or its config
+without downloading them again (the result is identical as long as the resort's extent does not grow).
+
 ## Data sources (all free)
 
 - **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.

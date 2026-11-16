@@ -71,6 +71,28 @@ R["treeline"] = cfg.get("treeline") or next((v for k, v in TREELINE.items() if t
 R.pop("scheme", None)
 if SCHEME != "us":
     R["scheme"] = SCHEME
+# Runs with no rating in the map data. The build draws them blue; a better guess is the rating of
+# the same run's other pieces, then of the runs it joins (for a short connector), then its slope.
+rated = lambda T: bool(tags.get(T.get("osm"), {}).get("piste:difficulty"))
+by_name, at_node = {}, {}
+for T in R["trails"]:
+    if rated(T) and T["name"]:
+        by_name.setdefault(T["name"], []).append(T["d"])
+for e in R["graph"]["edges"]:
+    if e["k"] == "p" and rated(R["trails"][e["r"]]):
+        for n in (e["a"], e["b"]):
+            at_node.setdefault(n, []).append(R["trails"][e["r"]]["d"])
+touch = {}
+for e in R["graph"]["edges"]:
+    if e["k"] == "p":
+        touch.setdefault(e["r"], []).extend(at_node.get(e["a"], []) + at_node.get(e["b"], []))
+for T in R["trails"]:
+    if T.get("osm") in tags and not rated(T):
+        grade = (T["top"] - T["bot"]) / max(T["len"], 1)
+        slope = 0 if grade < 0.14 else 1 if grade < 0.28 else 2 if grade < 0.42 else 3
+        same, near = by_name.get(T["name"]), touch.get(T["id"])
+        T["d"] = max(set(same), key=same.count) if same else min(near) if near and T["len"] < 150 else slope
+
 count = {}
 for T in R["trails"]:
     t = tags.get(T.get("osm"), {})

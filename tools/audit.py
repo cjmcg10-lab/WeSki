@@ -45,13 +45,15 @@ def elev(x, y):
     return float(Hh[j, i] * (1 - u) * (1 - v) + Hh[j, i + 1] * u * (1 - v) + Hh[j + 1, i] * (1 - u) * v + Hh[j + 1, i + 1] * u * v)
 
 
-nodes, ways = {}, {}
+nodes, ways, boundary = {}, {}, None
 for _, el in ET.iterparse(osm_path):
     if el.tag == "node":
         nodes[el.get("id")] = (float(el.get("lon")), float(el.get("lat")))
         el.clear()
     elif el.tag == "way":
         t = {x.get("k"): x.get("v") for x in el.iter("tag")}
+        if t.get("landuse") == "winter_sports" and t.get("name") == cfg.get("area_name"):
+            boundary = [n.get("ref") for n in el.iter("nd")]
         if "piste:type" in t or "aerialway" in t:
             ways[int(el.get("id"))] = ([n.get("ref") for n in el.iter("nd")], t)
         el.clear()
@@ -83,6 +85,11 @@ for T in R["trails"]:
     w = ways.get(T.get("osm"))
     if not w:
         continue
+    if w[0][0] == w[0][-1]:
+        p = T["pts"]
+        if math.hypot(p[0] - p[-2], p[1] - p[-1]) < 2:
+            flag("loop", f"{T['name'] or 'unnamed'} (way {T['osm']}): an outlined area drawn as a run round its edge")
+        continue            # outlined areas are drawn down the middle, not along the mapped outline
     for n in w[0]:
         if n in nodes:
             drift.append(dist_to_line(T["pts"], *loc(*nodes[n])))
@@ -130,6 +137,11 @@ for L in R["lifts"]:
         flag("lift downhill", f"{L['name']}: top is {a - b:.0f} m below its base")
 
 # --- coverage: named things in the map data the build left out
+inside_resort = None
+if boundary and all(n in nodes for n in boundary):
+    from shapely.geometry import Point, Polygon
+    _poly = Polygon([nodes[n] for n in boundary]).buffer(0.0015)
+    inside_resort = lambda lon, lat: _poly.contains(Point(lon, lat))
 built_t = {T.get("osm") for T in R["trails"]}
 built_names = {T["name"] for T in R["trails"]} | {a["name"] for a in R.get("areas", [])}
 built_l = {L["name"] for L in R["lifts"]}
@@ -140,6 +152,8 @@ for wid, (nd, t) in ways.items():
     pts = [loc(*nodes[n]) for n in nd]
     if not all(0 <= x <= W and 0 <= y <= H for x, y in pts):
         continue
+    if inside_resort and sum(inside_resort(*nodes[n]) for n in nd) < 0.5 * len(nd):
+        continue            # belongs to a neighbour (or a private run outside the resort boundary)
     mx, my = pts[len(pts) // 2]
     near = float(np.min(np.hypot(net[:, 0] - mx, net[:, 1] - my)))
     name = t.get("name:en") or t.get("name") or t.get("piste:name")
