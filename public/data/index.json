@@ -12,8 +12,8 @@
   "base": 2913,
   "trails": 191,
   "lifts": 35,
-  "zones": false,
-  "bytes": 1522670
+  "zones": true,
+  "bytes": 1524066
  },
  {
   "id": "brundage",
@@ -29,7 +29,7 @@
   "trails": 77,
   "lifts": 6,
   "zones": false,
-  "bytes": 443519
+  "bytes": 443576
  },
  {
   "id": "cannon-mountain",
@@ -45,7 +45,7 @@
   "trails": 94,
   "lifts": 9,
   "zones": false,
-  "bytes": 434993
+  "bytes": 435160
  },
  {
   "id": "copper-mountain",
@@ -61,7 +61,7 @@
   "trails": 140,
   "lifts": 23,
   "zones": false,
-  "bytes": 937624
+  "bytes": 937948
  },
  {
   "id": "geto-kogen",
@@ -77,7 +77,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 173953
+  "bytes": 174021
  },
  {
   "id": "heavenly",
@@ -92,8 +92,8 @@
   "base": 1916,
   "trails": 128,
   "lifts": 24,
-  "zones": false,
-  "bytes": 1120451
+  "zones": true,
+  "bytes": 1121292
  },
  {
   "id": "jay-peak",
@@ -109,7 +109,7 @@
   "trails": 90,
   "lifts": 9,
   "zones": true,
-  "bytes": 460558
+  "bytes": 461027
  },
  {
   "id": "keystone",
@@ -124,8 +124,8 @@
   "base": 2829,
   "trails": 132,
   "lifts": 19,
-  "zones": false,
-  "bytes": 1044442
+  "zones": true,
+  "bytes": 1045131
  },
  {
   "id": "la-plagne",
@@ -140,8 +140,8 @@
   "base": 1211,
   "trails": 154,
   "lifts": 85,
-  "zones": false,
-  "bytes": 2756646
+  "zones": true,
+  "bytes": 2768950
  },
  {
   "id": "les-arcs",
@@ -156,8 +156,8 @@
   "base": 808,
   "trails": 135,
   "lifts": 78,
-  "zones": false,
-  "bytes": 2914429
+  "zones": true,
+  "bytes": 2927251
  },
  {
   "id": "les-contamines",
@@ -172,8 +172,8 @@
   "base": 1177,
   "trails": 46,
   "lifts": 27,
-  "zones": false,
-  "bytes": 1172656
+  "zones": true,
+  "bytes": 1182147
  },
  {
   "id": "mammoth",
@@ -189,7 +189,7 @@
   "trails": 158,
   "lifts": 28,
   "zones": false,
-  "bytes": 1043215
+  "bytes": 1043624
  },
  {
   "id": "park-city",
@@ -204,8 +204,8 @@
   "base": 2050,
   "trails": 343,
   "lifts": 41,
-  "zones": false,
-  "bytes": 2355704
+  "zones": true,
+  "bytes": 2356172
  },
  {
   "id": "pizol",
@@ -220,8 +220,8 @@
   "base": 536,
   "trails": 32,
   "lifts": 13,
-  "zones": false,
-  "bytes": 872717
+  "zones": true,
+  "bytes": 878690
  },
  {
   "id": "saalbach",
@@ -236,8 +236,8 @@
   "base": 813,
   "trails": 100,
   "lifts": 81,
-  "zones": false,
-  "bytes": 2535079
+  "zones": true,
+  "bytes": 2549958
  },
  {
   "id": "saddleback",
@@ -253,7 +253,7 @@
   "trails": 59,
   "lifts": 5,
   "zones": false,
-  "bytes": 388715
+  "bytes": 388726
  },
  {
   "id": "skiwelt",
@@ -268,8 +268,8 @@
   "base": 626,
   "trails": 159,
   "lifts": 76,
-  "zones": false,
-  "bytes": 2793525
+  "zones": true,
+  "bytes": 2798030
  },
  {
   "id": "smugglers-notch",
@@ -285,7 +285,7 @@
   "trails": 81,
   "lifts": 9,
   "zones": false,
-  "bytes": 499309
+  "bytes": 499366
  },
  {
   "id": "steamboat",
@@ -300,8 +300,8 @@
   "base": 2105,
   "trails": 181,
   "lifts": 23,
-  "zones": false,
-  "bytes": 1098109
+  "zones": true,
+  "bytes": 1101271
  },
  {
   "id": "stowe",
@@ -317,7 +317,7 @@
   "trails": 124,
   "lifts": 12,
   "zones": false,
-  "bytes": 757270
+  "bytes": 757327
  },
  {
   "id": "sugarbush",
@@ -333,7 +333,7 @@
   "trails": 131,
   "lifts": 18,
   "zones": false,
-  "bytes": 744015
+  "bytes": 744026
  },
  {
   "id": "tignes-val-disere",
@@ -348,8 +348,8 @@
   "base": 1559,
   "trails": 180,
   "lifts": 82,
-  "zones": false,
-  "bytes": 2820246
+  "zones": true,
+  "bytes": 2856636
  },
  {
   "id": "vail",
@@ -365,7 +365,7 @@
   "trails": 219,
   "lifts": 33,
   "zones": false,
-  "bytes": 1803800
+  "bytes": 1803890
  },
  {
   "id": "val-thorens",
@@ -380,8 +380,8 @@
   "base": 1822,
   "trails": 104,
   "lifts": 32,
-  "zones": false,
-  "bytes": 1564715
+  "zones": true,
+  "bytes": 1584873
  },
  {
   "id": "winter-park",
@@ -396,8 +396,8 @@
   "base": 2771,
   "trails": 167,
   "lifts": 25,
-  "zones": false,
-  "bytes": 1080637
+  "zones": true,
+  "bytes": 1083138
  },
  {
   "id": "zermatt",
@@ -412,7 +412,7 @@
   "base": 1558,
   "trails": 131,
   "lifts": 61,
-  "zones": false,
-  "bytes": 2557637
+  "zones": true,
+  "bytes": 2585222
  }
 ]

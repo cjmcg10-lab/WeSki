@@ -12,5 +12,20 @@
   39.53
  ],
  "building_range": 150,
- "poi_range": 120
+ "poi_range": 120,
+ "zones": {
+  "slow": [
+   "Middle 4 O'Clock",
+   "Lower 4 O'Clock",
+   "Lowest 4 O'Clock",
+   "Springmeier",
+   "Dyersville",
+   "Trygve's"
+  ],
+  "park": [
+   "Park Lane",
+   "Freeway Terrain Park & Pipe"
+  ]
+ },
+ "zones_source": "Breckenridge winter trail map (2022-23), Peaks 7 and 8"
 }

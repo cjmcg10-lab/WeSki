@@ -2,7 +2,7 @@ import { Geo, nearestOnLine } from './geo.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
 import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
-import { SkiMap, COLORS, fmtAge } from './map.js';
+import { SkiMap, COLORS, ZONES, fmtAge } from './map.js';
 import { Locator } from './location.js';
 import { GroupClient, createGroup } from './group.js';
 import { sessions, kv, prefs, persist } from './store.js';
@@ -824,15 +824,39 @@ function onMapTap(ev) {
   else openSheet('place', ev);
 }
 
+/** Legend card for the zones this resort actually has. */
+function zonesCard() {
+  const R = S.resort, have = {};
+  const add = (k, name) => { (have[k] ||= new Set()); if (name) have[k].add(name); };
+  for (const t of R.trails) { const z = t.z || (t.slow ? 'slow' : null); if (z) add(z, t.name); }
+  for (const p of R.parks) add('park', p.name);
+  for (const z of R.zones || []) add(z.kind, z.name);
+  const rows = Object.keys(ZONES).filter((k) => have[k]).map((k) => {
+    const Z = ZONES[k], names = [...have[k]].filter((n) => n !== Z.name), hatch = k === 'free' || k === 'extreme';
+    const bg = hatch ? `repeating-linear-gradient(135deg, rgb(${Z.rgb}) 0 5px, #f6fafd 5px 10px)` : `rgb(${Z.rgb})`;
+    const list = names.length ? `: ${names.slice(0, 8).map(esc).join(', ')}${names.length > 8 ? ` and ${names.length - 8} more` : ''}` : '';
+    return `<div class="legend-row"><div class="sw"><div class="band" style="background:${bg};color:${Z.ink}">${Z.sym}</div></div><span><b>${Z.name}</b> — ${Z.text}${k === 'free' || k === 'extreme' ? '' : list}</span></div>`;
+  });
+  const lit = R.trails.some((t) => t.lit) ? '<p class="note">☾ Tap a run to see whether it is lit for night skiing.</p>' : '';
+  const src = R.sources.zones ? `Zones come from: ${esc(R.sources.zones)}.${R.parks.some((p) => p.approx) ? ' Positions marked approximate on the map are estimates.' : ''} Slow and family zones are only shown where they have been checked against the resort’s own trail map.`
+    : `No zones are recorded for ${esc(S.place.name)} yet.`;
+  return `<div class="card"><h3>Zones (painted on the snow)</h3>${rows.join('')}${lit}<p class="note">${src} Signs and ropes on the mountain always win.</p></div>`;
+}
+
 function describeSpot(x, y) {
   let best = null;
   for (const t of S.resort.trails) { const n = nearestOnLine(t.pts, x, y); if (n.d < 45 && (!best || n.d < best.d)) best = { d: n.d, t }; }
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
     bits.unshift(`<span class="d${best.t.d}">${DIFF_SYM[best.t.d]}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
-    if (best.t.slow) bits.push(`<span class="zn-slow">▽ Slow zone</span>`);
+    const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;
+    const tz = best.t.z || (best.t.slow ? 'slow' : null);
+    if (tz) bits.push(tag(tz));
     const park = S.resort.parks.find((p) => nearestOnLine(p.pts, x, y).d < 30);
-    if (park) bits.push(`<span class="zn-park">⬣ ${esc(park.name)}</span>`);
+    if (park) bits.push(tag('park', park.name));
+    const zone = (S.resort.zones || []).find((p) => nearestOnLine(p.pts, x, y).d < 25);
+    if (zone) bits.push(tag(zone.kind, zone.name));
+    if (best.t.lit) bits.push('☾ Lit for night skiing');
     if (S.closures.has('t' + best.t.id)) bits.push('Marked closed');
   }
   return bits.join(' · ');
@@ -1078,7 +1102,7 @@ function sheetMore() {
 
     <button class="btn exit" data-act="change-resort">Choose a different resort</button>
     <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open WeSki from the icon for full screen and offline use.</p></div>
-    <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Slow zones and terrain parks: ${S.resort.sources.zones ? esc(S.resort.sources.zones) : 'not verified for this resort yet, so none are shown'}.</p><p class="note">Not an official ${esc(S.place.name)} product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
+    <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Zones: ${S.resort.sources.zones ? esc(S.resort.sources.zones) : 'none recorded for this resort yet'}.</p><p class="note">Not an official ${esc(S.place.name)} product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
 }
 
 function closedNames() {
@@ -1110,10 +1134,7 @@ function sheetLegend() {
       ${line(COLORS.diff[0], '<b class="d0">●</b>&nbsp; Easier (green circle)')}${line(COLORS.diff[1], '<b class="d1">■</b>&nbsp; More difficult (blue square)')}
       ${line(COLORS.diff[2], '<b class="d2">◆</b>&nbsp; Most difficult (black diamond)')}${line(COLORS.diff[3], '<b class="d3">◆◆</b>&nbsp; Extreme terrain')}
       ${line(COLORS.diff[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
-    <div class="card"><h3>Zones (painted on the snow)</h3>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:#96e8b2"><svg viewBox="0 0 14 14"><path d="M1.500 2.500h11L7 12z" fill="none" stroke="#0b5c2c" stroke-width="1.6" stroke-linejoin="round"/></svg></div></div><span><b>Slow zone</b> — snow tinted light green, ▽ symbol. Designated slow skiing and riding area.</span></div>
-      <div class="legend-row"><div class="sw"><div class="band" style="background:#ffa846"><svg viewBox="0 0 14 14"><path d="M7 1l5.200 3v6L7 13l-5.200-3V4z" fill="#fff"/></svg></div></div><span><b>Terrain park</b> — snow tinted orange, ⬣ symbol: ${[...new Set(S.resort.parks.map((p) => esc(p.name)))].join(', ')}.</span></div>
-      <p class="note">${S.resort.sources.zones ? `Zones verified against: ${esc(S.resort.sources.zones)}.${S.resort.parks.some((p) => p.approx) ? ' Positions marked approximate on the map are estimates.' : ''}` : `Slow zones and terrain parks have not been verified for ${esc(S.place.name)} yet, so none are shown.`}</p></div>
+    ${zonesCard()}
     <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift, just above and between its two cables)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];

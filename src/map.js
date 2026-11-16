@@ -20,6 +20,17 @@ export const COLORS = {
   closed: '#8d949e',
   me: '#0a84ff',
 };
+// Zones painted on the snow: tint, symbol, label colour, and what the zone means.
+export const ZONES = {
+  slow: { rgb: [255, 232, 120], sym: '▽', ink: '#8a6a00', name: 'Slow zone', text: 'Designated slow skiing and riding area.' },
+  family: { rgb: [255, 205, 150], sym: '☺', ink: '#9a5a14', name: 'Family zone', text: 'Family skiing area: gentle terrain, keep speeds down.' },
+  learn: { rgb: [150, 232, 178], sym: '◍', ink: '#0b6c34', name: 'Beginner / kids’ area', text: 'Learning area or children’s snow garden.' },
+  park: { rgb: [255, 168, 70], sym: '⬣', ink: '#b85a00', name: 'Terrain park', text: 'Jumps, rails, pipes, boardercross and fun slopes.' },
+  race: { rgb: [205, 170, 245], sym: '⚑', ink: '#6a2fb5', name: 'Race course', text: 'Race or timed training course; may be closed to the public.' },
+  sled: { rgb: [140, 215, 228], sym: '≋', ink: '#0d6c80', name: 'Sledding run', text: 'Toboggan or sledding run. Not a ski run.' },
+  extreme: { rgb: [250, 150, 150], sym: '✕', ink: '#a3122f', name: 'Extreme terrain', text: 'Extreme or hike-to terrain, striped red. Experts only.' },
+  free: { rgb: [168, 178, 190], sym: '≈', ink: '#4a5563', name: 'Freeride / ungroomed', text: 'Ungroomed freeride route or backcountry-style terrain, striped grey.' },
+};
 const POI_STYLE = {
   lodge: ['#14365f', 'L', 0], lift: ['#e03131', '↑', 1], food: ['#c7641a', 'F', 3], peak: ['#5d6875', '▲', 2],
   service: ['#59636e', '•', 4], parking: ['#3b6ea8', 'P', 4], shelter: ['#59636e', '•', 4], lifttop: ['#e03131', '', 9],
@@ -186,22 +197,30 @@ export class SkiMap {
     const rgb = (r, g, b) => { const c = new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace); return [c.r, c.g, c.b]; };
     const SNOW = rgb(246, 250, 253), GLADE = rgb(176, 205, 190), ROCK = rgb(124, 132, 141);
     const F_HIGH = rgb(150, 182, 176), F_MID = rgb(44, 104, 80), F_LOW = rgb(52, 122, 78);
-    const SLOW = rgb(150, 232, 178), PARK = rgb(255, 168, 70);
+    // zone tints, by code; later codes win where zones overlap
+    const ZONE = [null, rgb(...ZONES.free.rgb), rgb(...ZONES.extreme.rgb), rgb(...ZONES.sled.rgb), rgb(...ZONES.race.rgb),
+      rgb(...ZONES.learn.rgb), rgb(...ZONES.family.rgb), rgb(...ZONES.slow.rgb), rgb(...ZONES.park.rgb)];
+    const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
     // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
     const forest = (alt) => (alt > 1040 ? F_HIGH : alt > 860 ? F_MID : F_LOW);
-    // Zones are painted into the snow itself (1 = slow zone, 2 = terrain park) so nothing
-    // floats above the ground to hide trails, lift chairs or people.
+    // Zones are painted into the snow itself so nothing floats above the ground to hide
+    // trails, lift chairs or people.
     const zone = new Uint8Array(nx * ny);
     const paint = (pts, rad, v) => {
+      const r = Math.ceil(rad / cell), reach = Math.max(rad, cell * 0.75);
       for (let q = 0; q < pts.length; q += 2) {
-        const r = Math.ceil(rad / cell), ci = Math.round(pts[q] / cell), cj = Math.round(pts[q + 1] / cell);
+        const ci = Math.round(pts[q] / cell), cj = Math.round(pts[q + 1] / cell);
         for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
           for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++)
-            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= rad) zone[j * nx + i] = Math.max(zone[j * nx + i], v);
+            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= reach) zone[j * nx + i] = Math.max(zone[j * nx + i], v);
       }
     };
-    for (const t of this.resort.trails) if (t.slow) paint(t.pts, 26, 1);
-    for (const p of this.resort.parks) paint(p.pts, 17, 2);
+    for (const t of this.resort.trails) {
+      const z = t.z || (t.slow ? 'slow' : null);
+      if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 26, CODE[z]);
+    }
+    for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind]);
+    for (const p of this.resort.parks) paint(p.pts, 17, CODE.park);
     let k = 0;
     const put = (o, c) => {
       const i = o % nx, j = (o / nx) | 0;
@@ -212,8 +231,12 @@ export class SkiMap {
     const face = (a, b, c) => {
       const m = (mask[a] + mask[b] + mask[c]) / 3, alt = zmin + (h[a] + h[b] + h[c]) / 30;
       const zs = [h[a], h[b], h[c]], relief = (Math.max(...zs) - Math.min(...zs)) / 10 / cell;
-      const zn = Math.max(zone[a], zone[b], zone[c]), zc = zone[a] + zone[b] + zone[c];
-      const colr = zn === 2 && zc >= 4 ? PARK : zn >= 1 && zc >= 2 && m >= 0.5 ? SLOW : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
+      // a zone colours a face when at least two of its corners are in it; freeride and extreme
+      // terrain is striped (every other row of cells) so it reads as hatching, not a solid fill
+      const za = zone[a], zb = zone[b], zc = zone[c];
+      const zn = za === zb || za === zc ? za : zb === zc ? zb : 0;
+      const hatch = zn === 1 || zn === 2 ? (((a % nx) + ((a / nx) | 0)) & 1) === 0 : true;
+      const colr = zn && hatch && (m >= 0.5 || zn <= 3 || zn === 5 || zn === 8) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
       put(a, colr); put(b, colr); put(c, colr);
     };
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
@@ -367,10 +390,10 @@ export class SkiMap {
     for (const a of R.areas) if (a.name) this.trailLabels.push({ t: { name: a.name, d: a.d, id: -1, len: 400 }, p: this.world(a.pts[0], a.pts[1], 14) });
     this.parkLabels = [];
     const seen = new Set();
-    for (const p of R.parks) if (!seen.has(p.name)) {
-      seen.add(p.name);
+    for (const p of [...R.parks.map((q) => ({ ...q, kind: 'park' })), ...(R.zones || [])]) if (!seen.has(p.kind + p.name)) {
+      seen.add(p.kind + p.name);
       const i = Math.floor(p.pts.length / 4) * 2;
-      this.parkLabels.push({ name: p.name, p: this.world(p.pts[i], p.pts[i + 1], 14) });
+      this.parkLabels.push({ name: p.name, kind: p.kind, p: this.world(p.pts[i], p.pts[i + 1], 14) });
     }
   }
 
@@ -1242,7 +1265,7 @@ export class SkiMap {
       }
     }
     // zone + lift + trail names
-    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label('⬣ ' + z.name, s, '#b85a00', 11, 700); }
+    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label(ZONES[z.kind].sym + ' ' + z.name, s, ZONES[z.kind].ink, 11, 700); }
     if (near > 1.15) for (const z of this.liftLabels) {
       const s = this.project(z.p);
       if (s) label(z.l.name + (this.closed.has('l' + z.l.id) ? ' (closed)' : ''), s, this.closed.has('l' + z.l.id) ? '#6b7280' : '#b01d1d', 11, 700);

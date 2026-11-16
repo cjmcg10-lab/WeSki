@@ -12,5 +12,24 @@
   40.7
  ],
  "building_range": 150,
- "poi_range": 120
+ "poi_range": 120,
+ "zones": {
+  "slow": [
+   "Homerun",
+   "Claim Jumper",
+   "First Time",
+   "Turtle Trail",
+   "Chicane",
+   "Snow Dancer",
+   "Mellow Moose",
+   "Alley Cat",
+   "Willow Draw"
+  ],
+  "park": [
+   "3 Kings",
+   "Pick'n Shovel",
+   "Transitions"
+  ]
+ },
+ "zones_source": "Park City Mountain winter trail map (2025-26)"
 }

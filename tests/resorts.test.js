@@ -36,6 +36,15 @@ describe('every built resort', () => {
         }
       }
       expect(bad).toEqual([]);
+      // zones: only known kinds, with geometry inside the map
+      const kinds = ['slow', 'family', 'race', 'park', 'extreme', 'free'];
+      for (const t of resort.trails) if (t.z) expect(kinds).toContain(t.z);
+      for (const z of [...(resort.zones || []), ...resort.parks]) {
+        if (z.kind) expect(['learn', 'sled', 'race']).toContain(z.kind);
+        expect(z.name).toBeTruthy();
+        expect(z.pts.length).toBeGreaterThanOrEqual(4);
+        expect(geo.inBounds(z.pts[0], z.pts[1])).toBe(true);
+      }
       for (const e of resort.graph.edges) if (e.k === 'l' && !e.bi) expect(resort.graph.nodes[e.b][2]).toBeGreaterThan(resort.graph.nodes[e.a][2]);
     });
   }

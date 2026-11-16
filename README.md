@@ -23,6 +23,17 @@ people move, run stats with playback, and full offline use.
 | On a lift | Always-on lift detection (no stats or directions needed): about five seconds of steady movement up a lift line and you, your friends and replays are drawn seated in a chair (or cabin) on the cable. Directions asked for mid-ride start from the top of that lift. |
 | History | Sessions, runs and routes are stored on the phone (IndexedDB) and can be replayed on the map, offline. |
 
+## Zones
+
+Zones are tinted into the snow and listed in the legend, only where a resort has them:
+slow zone (yellow), family zone (peach), beginner / kids' area (light green), terrain park (orange),
+race course (purple), sledding run (teal), extreme terrain (red stripes) and freeride / ungroomed
+routes (grey stripes). Tapping the snow names the zone and says if the run is lit at night.
+Parks, kids' areas, sledding runs, race courses, extreme and freeride terrain come from
+OpenStreetMap piste tags. Slow and family zones are not in OpenStreetMap: they are only shown where
+the run names were read off the resort's own trail map and listed in the resort config (`zones`,
+`zones_source`). So far that is Jay Peak, Keystone, Park City and Breckenridge (Peaks 7 and 8).
+
 ## Data sources (all free)
 
 - **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.
@@ -105,6 +116,7 @@ shows as a green circle, a red as a blue square and a black as a black diamond.
    ```
    python3 tools/build_data.py tools/resorts/<id>.json <osm file> public/data/<id> <dem.tif> [...]
    python3 tools/build_extras.py public/data/<id>      # surrounding terrain
+   python3 tools/build_zones.py tools/resorts/<id>.json <osm file> public/data/<id>   # zones (re-runnable, no elevation model needed)
    python3 tools/build_index.py public/data            # resort list for the picker
    python3 tools/build_globe.py public/data            # globe outlines (detail box follows the resorts)
    npm test                                            # every lift end must route to every other

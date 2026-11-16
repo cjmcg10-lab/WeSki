@@ -9,5 +9,25 @@
  "area_name": "Keystone",
  "isolated_lifts": [
   "Tubing Hill"
- ]
+ ],
+ "zones": {
+  "family": [
+   "Schoolmarm"
+  ],
+  "slow": [
+   "Scout",
+   "Endeavor",
+   "Lower Prospector",
+   "Ina's Way",
+   "Acapulco Road"
+  ],
+  "park": [
+   "Easy Street",
+   "The Alley",
+   "Park Lane",
+   "Main Street",
+   "I-70"
+  ]
+ },
+ "zones_source": "Keystone Resort winter trail map (2024-25)"
 }
