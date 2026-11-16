@@ -1,0 +1,16 @@
+{
+ "id": "val-thorens",
+ "name": "Val Thorens",
+ "region": "Savoie, France",
+ "tz": "Europe/Paris",
+ "area_name": "Val Thorens",
+ "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
+ "osm_bbox": [
+  6.52,
+  45.25,
+  6.63,
+  45.34
+ ],
+ "building_range": 150,
+ "poi_range": 120
+}

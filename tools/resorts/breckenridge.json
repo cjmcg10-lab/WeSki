@@ -1,0 +1,16 @@
+{
+ "id": "breckenridge",
+ "name": "Breckenridge",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "area_name": "Breckenridge Resort",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -106.13,
+  39.44,
+  -106.03,
+  39.53
+ ],
+ "building_range": 150,
+ "poi_range": 120
+}

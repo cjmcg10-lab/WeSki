@@ -396,10 +396,15 @@ export class SkiMap {
       // closer to the ground than a carrier needs.
       const pts = [sup[0]];
       for (let i = 1; i < n; i++) {
-        const a = sup[i - 1], b = sup[i], span = a.distanceTo(b), sag = Math.min(K.sag[0], span * K.sag[1]), steps = Math.max(2, Math.min(tram ? 40 : 10, Math.round(span / (low ? 14 : 40))));
+        const a = sup[i - 1], b = sup[i], span = a.distanceTo(b), sag = Math.min(K.sag[0], span * K.sag[1]), steps = Math.max(2, Math.min(tram ? 160 : 12, Math.round(span / (low ? 10 : tram ? 15 : 10))));
         for (let k = 1; k <= steps; k++) { const f = k / steps, p = a.clone().lerp(b, f); p.y -= sag * 4 * f * (1 - f); pts.push(p); }
       }
-      for (const p of pts) p.y = Math.max(p.y, this.groundY(p.x, p.z) + K.clear);
+      // clearance is checked under both cables, not just the centre line: on a steep side slope
+      // or beside a cliff the uphill cable is the one that would cut into the rock
+      {
+        const d0 = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), sx = -d0.z * r, sz = d0.x * r;
+        for (const p of pts) p.y = Math.max(p.y, Math.max(this.groundY(p.x, p.z), this.groundY(p.x + sx, p.z + sz), this.groundY(p.x - sx, p.z - sz)) + K.clear);
+      }
       const cum = [0];
       for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
       const L = cum[cum.length - 1];
@@ -465,9 +470,10 @@ export class SkiMap {
     }
     this.chairs = this.carriers.chair; this.cabins = this.carriers.cabin;
     this.liftsMoved = false;
-    const tram = this.liftPaths.find((p) => p.tram);
-    this.tram = tram ? { path: tram, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] } : null;
-    if (this.tram) for (const c of this.tram.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
+    // aerial trams (cable cars): two cabins each, every tram in the resort
+    this.trams = this.liftPaths.filter((p) => p.tram).map((path) => ({ path, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] }));
+    for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
+    this.tram = this.trams[0] || null;
     this.liftLabels = this.liftPaths.map((p) => ({ l: p.l, p: this.pathPoint(p, p.L * 0.5, 0).pos.clone().add(new THREE.Vector3(0, 10, 0)) }));
   }
 
@@ -537,14 +543,14 @@ export class SkiMap {
     }
     for (const k in touched) this.carriers[k].instanceMatrix.needsUpdate = true;
     this.liftsMoved = true;
-    if (this.tram) {
+    for (const tram of this.trams) {
       // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
       // other descends; both wait in their stations, then swap directions.
-      const p = this.tram.path, running = !this.closed.has('l' + p.l.id);
+      const p = tram.path, running = !this.closed.has('l' + p.l.id);
       const ride = 75, dwell = 14, cyc = 2 * (ride + dwell), ph = running ? t % cyc : 0;
       const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
       const e = tri * tri * (3 - 2 * tri);      // eases out of and into the stations
-      this.tram.cabins.forEach((c, i) => {
+      tram.cabins.forEach((c, i) => {
         const { pos, yaw } = this.pathPoint(p, p.L * (i ? 1 - e : e), i ? -p.r : p.r);
         c.position.copy(pos); c.rotation.y = yaw;
       });

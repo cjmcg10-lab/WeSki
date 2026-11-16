@@ -1,0 +1,16 @@
+{
+ "id": "park-city",
+ "name": "Park City",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "area_name": "Park City Mountain Resort",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -111.62,
+  40.6,
+  -111.48,
+  40.7
+ ],
+ "building_range": 150,
+ "poi_range": 120
+}

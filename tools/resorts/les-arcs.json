@@ -1,0 +1,55 @@
+{
+ "id": "les-arcs",
+ "name": "Les Arcs",
+ "region": "Savoie, France",
+ "tz": "Europe/Paris",
+ "area_name": "Les Arcs / Peisey-Vallandry",
+ "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
+ "osm_bbox": [
+  6.72,
+  45.52,
+  6.9,
+  45.63
+ ],
+ "building_range": 150,
+ "poi_range": 120,
+ "two_way_lifts": [
+  "Vanoise Express 1",
+  "Vanoise Express 2",
+  "Lonzagne"
+ ],
+ "extra_lifts": [
+  {
+   "name": "Les Arcs' Express: Bourg-Saint-Maurice – Les Granges (funicular)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 3,
+   "pts": [
+    [
+     6.7742729,
+     45.6141808
+    ],
+    [
+     6.7833362,
+     45.6037539
+    ]
+   ]
+  },
+  {
+   "name": "Les Arcs' Express: Les Granges – Arc 1600 (funicular)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 4,
+   "pts": [
+    [
+     6.7833362,
+     45.6037539
+    ],
+    [
+     6.7950106,
+     45.5973501
+    ]
+   ]
+  }
+ ]
+}

@@ -7,7 +7,7 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['brundage', 'cannon-mountain', 'geto-kogen', 'jay-peak', 'les-contamines', 'pizol', 'saddleback', 'smugglers-notch', 'stowe', 'sugarbush']);
+    expect(index.map((r) => r.id).sort()).toEqual(['breckenridge', 'brundage', 'cannon-mountain', 'geto-kogen', 'jay-peak', 'la-plagne', 'les-arcs', 'les-contamines', 'mammoth', 'park-city', 'pizol', 'saddleback', 'smugglers-notch', 'stowe', 'sugarbush', 'vail', 'val-thorens', 'zermatt']);
   });
   for (const entry of index) {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
@@ -24,7 +24,17 @@ describe('every built resort', () => {
       const alone = new Set((resort.isolated || []).flatMap((i) => [`${resort.lifts[i].name} (base)`, `${resort.lifts[i].name} (top)`]));
       const ends = resort.pois.filter((p) => (p.kind === 'lift' || p.kind === 'lifttop') && !alone.has(p.name));
       const bad = [];
-      for (const a of ends) for (const b of ends) if (a !== b && !router.route({ node: a.n }, { node: b.n }, all).ok) bad.push(`${a.name} -> ${b.name}`);
+      // Small resorts: every pair. Big ones (hundreds of lift ends): every end to and from two
+      // hubs, which proves the same thing in a fraction of the time.
+      if (ends.length <= 40) {
+        for (const a of ends) for (const b of ends) if (a !== b && !router.route({ node: a.n }, { node: b.n }, all).ok) bad.push(`${a.name} -> ${b.name}`);
+      } else {
+        for (const hub of [ends[0], ends[ends.length >> 1]]) for (const e of ends) {
+          if (e === hub) continue;
+          if (!router.route({ node: hub.n }, { node: e.n }, all).ok) bad.push(`${hub.name} -> ${e.name}`);
+          if (!router.route({ node: e.n }, { node: hub.n }, all).ok) bad.push(`${e.name} -> ${hub.name}`);
+        }
+      }
       expect(bad).toEqual([]);
       for (const e of resort.graph.edges) if (e.k === 'l' && !e.bi) expect(resort.graph.nodes[e.b][2]).toBeGreaterThan(resort.graph.nodes[e.a][2]);
     });

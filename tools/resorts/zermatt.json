@@ -1,0 +1,129 @@
+{
+ "id": "zermatt",
+ "name": "Zermatt",
+ "region": "Valais, Switzerland",
+ "tz": "Europe/Zurich",
+ "area_name": "Zermatt - Breuil-Cervinia",
+ "terrain_source": "swisstopo swissALTI3D 2 m elevation model",
+ "osm_bbox": [
+  7.68,
+  45.93,
+  7.8,
+  46.03
+ ],
+ "building_range": 150,
+ "poi_range": 120,
+ "dem_only": true,
+ "extra_lifts": [
+  {
+   "name": "Gornergrat Bahn: Zermatt – Findelbach (train)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 6,
+   "pts": [
+    [
+     7.7486214,
+     46.0239354
+    ],
+    [
+     7.7488491,
+     46.0096193
+    ]
+   ]
+  },
+  {
+   "name": "Gornergrat Bahn: Findelbach – Riffelalp (train)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 6,
+   "pts": [
+    [
+     7.7488491,
+     46.0096193
+    ],
+    [
+     7.7541512,
+     46.0048694
+    ]
+   ]
+  },
+  {
+   "name": "Gornergrat Bahn: Riffelalp – Riffelberg (train)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 8,
+   "pts": [
+    [
+     7.7541512,
+     46.0048694
+    ],
+    [
+     7.7550827,
+     45.9929446
+    ]
+   ]
+  },
+  {
+   "name": "Gornergrat Bahn: Riffelberg – Rotenboden (train)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 6,
+   "pts": [
+    [
+     7.7550827,
+     45.9929446
+    ],
+    [
+     7.7652385,
+     45.9845136
+    ]
+   ]
+  },
+  {
+   "name": "Gornergrat Bahn: Rotenboden – Gornergrat (train)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 5,
+   "pts": [
+    [
+     7.7652385,
+     45.9845136
+    ],
+    [
+     7.7823065,
+     45.9833158
+    ]
+   ]
+  },
+  {
+   "name": "Sunnegga Express (funicular)",
+   "kind": "gondola",
+   "both": true,
+   "minutes": 4,
+   "pts": [
+    [
+     7.7531707,
+     46.0220822
+    ],
+    [
+     7.7700623,
+     46.0172947
+    ]
+   ]
+  }
+ ],
+ "links": [
+  [
+   "Trockener Steg - Matterhorn glacier paradise (top)",
+   "Matterhorn Glacier Ride II (top)"
+  ],
+  [
+   "Trockener Steg - Matterhorn glacier paradise (top)",
+   "Trockener Steg - Klein Matterhorn Glacier Ride (top)"
+  ],
+  [
+   "Breitboden - Rosenritz (top)",
+   "trail:Kelle"
+  ]
+ ]
+}

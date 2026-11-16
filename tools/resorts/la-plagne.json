@@ -1,0 +1,21 @@
+{
+ "id": "la-plagne",
+ "name": "La Plagne",
+ "region": "Savoie, France",
+ "tz": "Europe/Paris",
+ "area_name": "La Plagne",
+ "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
+ "osm_bbox": [
+  6.6,
+  45.46,
+  6.78,
+  45.6
+ ],
+ "building_range": 150,
+ "poi_range": 120,
+ "two_way_lifts": [
+  "Champagny",
+  "Vanoise Express 1",
+  "Vanoise Express 2"
+ ]
+}

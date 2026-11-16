@@ -1,0 +1,20 @@
+{
+ "id": "vail",
+ "name": "Vail",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "area_name": "Vail",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -106.46,
+  39.56,
+  -106.26,
+  39.66
+ ],
+ "building_range": 150,
+ "poi_range": 120,
+ "isolated_lifts": [
+  "Rip's Ride Carpet",
+  "Golden Peak"
+ ]
+}

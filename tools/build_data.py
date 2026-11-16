@@ -37,7 +37,9 @@ WALK_HIGHWAYS = {"footway", "steps", "pedestrian", "path", "service", "residenti
 
 def main():
     cfg = json.load(open(sys.argv[1]))
+    global CELL
     osm_path, out_dir, dems = sys.argv[2], sys.argv[3], sys.argv[4:]
+    CELL = float(cfg.get("cell", 14.0))
     SLOW_ZONE_TRAILS = set(cfg.get("slow_zone_trails", []))
     root = ET.parse(osm_path).getroot()
     srcs = [rasterio.open(p) for p in dems]
@@ -56,6 +58,21 @@ def main():
         tags = {t.get("k"): t.get("v") for t in w.findall("tag")}
         if all(i in nodes for i in nd) and len(nd) >= 2:
             ways.append((w.get("id"), nd, tags))
+
+    # Mountain railways and funiculars that work as ski lifts but are mapped as railways
+    # (Zermatt's Gornergrat Bahn): the config gives each one as a line of [lon, lat] points.
+    for k, x in enumerate(cfg.get("extra_lifts", [])):
+        ids = []
+        for j, (lon, lat) in enumerate(x["pts"]):
+            nid = f"x{k}_{j}"
+            nodes[nid] = tf.transform(lon, lat)
+            ids.append(nid)
+        tags = {"aerialway": x.get("kind", "gondola"), "name": x["name"]}
+        if x.get("both"):
+            tags["oneway"] = "no"
+        if x.get("minutes"):
+            tags["aerialway:duration"] = str(x["minutes"])
+        ways.append((f"x{k}", ids, tags))
 
     # English names where the map has them (Japan), plus per-resort corrections from the config
     RENAME = cfg.get("rename", {})
@@ -82,6 +99,23 @@ def main():
         pistes = [w for w in pistes if inside_area(w)]
         lifts = [w for w in lifts if inside_area(w)]
 
+    if cfg.get("dem_only"):
+        # a resort that runs over a border the elevation model stops at (Zermatt / Cervinia):
+        # keep only what the model covers
+        bands = [(src, src.read(1)) for src in srcs]
+
+        def covered(p):
+            for src, band in bands:
+                r, c = src.index(p[0], p[1])
+                if 0 <= r < band.shape[0] and 0 <= c < band.shape[1] and band[r, c] > -1000:
+                    return True
+            return False
+        m = cfg.get("dem_only_margin", 400)
+        ok = lambda w: all(covered(nodes[i]) and covered((nodes[i][0], nodes[i][1] - m)) and covered((nodes[i][0] - m, nodes[i][1])) and covered((nodes[i][0] + m, nodes[i][1])) and covered((nodes[i][0], nodes[i][1] + m)) for i in w[1])
+        pistes = [w for w in pistes if ok(w)]
+        lifts = [w for w in lifts if ok(w)]
+        del bands
+
     # ---- bounds (UTM) from pistes + lifts
     core = [w for w in pistes if w[2].get("area") != "yes"] + lifts   # backcountry freeride areas don't set the extent
     xs = [nodes[i][0] for w in core for i in w[1]]
@@ -90,12 +124,35 @@ def main():
     y0 = math.floor((min(ys) - MARGIN) / CELL) * CELL
     nx = int(math.ceil((max(xs) + MARGIN - x0) / CELL)) + 1
     ny = int(math.ceil((max(ys) + MARGIN - y0) / CELL)) + 1
+    if nx * ny > 320000 and not cfg.get("cell"):
+        # A very large resort: widen the grid spacing so the drawn mountain stays about as heavy
+        # for a phone as the biggest ordinary resort (roughly 300,000 grid points).
+        CELL = float(math.ceil(14.0 * math.sqrt(nx * ny / 300000)))
+        x0 = math.floor((min(xs) - MARGIN) / CELL) * CELL
+        y0 = math.floor((min(ys) - MARGIN) / CELL) * CELL
+        nx = int(math.ceil((max(xs) + MARGIN - x0) / CELL)) + 1
+        ny = int(math.ceil((max(ys) + MARGIN - y0) / CELL)) + 1
 
     # ---- terrain: average 1 m LiDAR cells into CELL-sized samples centred on grid nodes
     b = (x0 - CELL / 2, y0 - CELL / 2, x0 + (nx - 0.5) * CELL, y0 + (ny - 0.5) * CELL)
     arr, _ = merge(srcs, bounds=b, res=CELL, resampling=Resampling.average, nodata=-999999.0)
     h = arr[0][::-1, :].astype(np.float64)[:ny, :nx]   # row 0 = south
     assert h.shape == (ny, nx), (h.shape, ny, nx)
+    # a sliver along one edge of the grid (tile seams): copy the neighbouring cells outward
+    for _ in range(3):
+        bad = h <= -1000
+        if not bad.any() or bad.mean() > 0.005:
+            break
+        for sh, ax in ((1, 0), (-1, 0), (1, 1), (-1, 1)):
+            nb = np.roll(h, sh, axis=ax)
+            fill = (h <= -1000) & (nb > -1000)
+            h[fill] = nb[fill]
+    if cfg.get("dem_only") and not (h > -1000).all():
+        # beyond the border the national model stops: fill the rest of the rectangle from the
+        # coarse worldwide tiles (nothing skiable is kept there)
+        jj, ii = np.nonzero(h <= -1000)
+        h[jj, ii] = coarse_elev(x0 + ii * CELL, y0 + jj * CELL, CRS)
+        print(f"filled {len(jj)} cells ({len(jj) / h.size * 100:.1f}%) beyond the elevation model from coarse tiles")
     if not (h > -1000).all():
         jj, ii = np.nonzero(h <= -1000)
         raise SystemExit(f"DEM has holes inside the resort bounds: {len(jj)} cells ({len(jj) / h.size * 100:.2f}%), "
@@ -195,11 +252,11 @@ def main():
         speed = {"tram": 8.0, "gondola": 5.0, "chair": 2.4, "carpet": 0.8, "surface": 2.5}[kind]
         if "Express" in name:
             speed = 5.0
-        dur = float(t["aerialway:duration"]) * 60 if "aerialway:duration" in t else line.length / speed
+        dur = minutes(t["aerialway:duration"]) * 60 if minutes(t.get("aerialway:duration")) else line.length / speed
         towers = [flat([loc(i)])  for i in nd[1:-1] if node_tags.get(i, {}).get("aerialway") == "pylon"]
         lift_out.append({
-            "id": len(lift_out), "osm": int(wid), "name": name, "kind": kind,
-            "seats": int(t.get("aerialway:occupancy", 0) or 0), "len": round(line.length),
+            "id": len(lift_out), "osm": int(wid) if str(wid).isdigit() else 0, "name": name, "kind": kind,
+            "seats": int("".join(ch for ch in (t.get("aerialway:occupancy") or "0").split(";")[0] if ch.isdigit()) or 0), "len": round(line.length),
             "dur": round(dur), "bot": round(elev(*pts[0])), "top": round(elev(*pts[-1])),
             # can be ridden in either direction (a lift linking two base areas): tagged in OSM, or listed in the resort config
             "both": t.get("oneway") == "no" or name in cfg.get("two_way_lifts", []),
@@ -244,10 +301,13 @@ def main():
 
     # ---- POIs
     pois = []
+    poi_zone = unary_union([T["_line"] for T in trails] + [L["_line"] for L in lift_out]).buffer(cfg["poi_range"]) if cfg.get("poi_range") else None
 
     def add_poi(name, kind, p):
         if name in cfg.get("skip_pois", []) and kind != "peak":
             return   # generic resort markers that duplicate the lodge/summit labels
+        if poi_zone is not None and kind not in ("lift", "lifttop", "peak") and not poi_zone.contains(Point(p[0], p[1])):
+            return   # big resort towns: keep only the places beside the skiing
         if name and inside(p, 20):
             pois.append({"id": len(pois), "name": name, "kind": kind, "x": round(p[0], 1), "y": round(p[1], 1)})
 
@@ -402,10 +462,14 @@ def main():
                           "bi": w["k"] == "w" or bool(w.get("bi")), "pts": flat(pts)})
     # POIs join the network through a short walk
     all_lines = [(w, w["line"]) for w in gw if w["k"] != "l"]
+    # lift ends first: they are the lift's own graph nodes, and a marker mapped on the same
+    # spot must not take that node from them
+    for P in pois:
+        if P["kind"] in ("lift", "lifttop"):
+            P["n"] = G.node((P["x"], P["y"]))
     for P in pois:
         pt = (P["x"], P["y"])
         if P["kind"] in ("lift", "lifttop"):
-            P["n"] = G.node(pt)
             continue
         w, line = min(all_lines, key=lambda wl: wl[1].distance(Point(pt)))
         if line.distance(Point(pt)) > 160:
@@ -414,6 +478,18 @@ def main():
         pn = G.node(pt, merge=False)
         P["n"] = pn
         links.append((pn, cut(w, pt), "w", True))
+    # Hand-made joins the map lacks: a walk through a summit tunnel between two stations, or a
+    # short traverse from a lift top to a trail. Each is [lift end, lift end | "trail:Name"].
+    ends = {P["name"]: P for P in pois if P["kind"] in ("lift", "lifttop")}
+    for a_name, b_name in cfg.get("links", []):
+        A = ends[a_name]
+        if b_name.startswith("trail:"):
+            cands = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
+            assert cands, f"links: no trail named {b_name[6:]!r}"
+            w = min(cands, key=lambda o: o["line"].distance(Point(A["x"], A["y"])))
+            links.append((A["n"], cut(w, (A["x"], A["y"])), "x", False))
+        else:
+            links.append((A["n"], ends[b_name]["n"], "w", True))
     # (re)build edges once more now POI cuts exist
     edges = []
     for w in gw:
@@ -522,6 +598,40 @@ class GraphBuilder:
         self.pts.append((float(p[0]), float(p[1])))
         self.grid.setdefault(key, []).append(len(self.pts) - 1)
         return len(self.pts) - 1
+
+
+def coarse_elev(xs, ys, crs, Z=12):
+    """Elevation at projected points from the Mapzen/AWS Terrarium tiles (about 30 m)."""
+    import io
+    import urllib.request
+    from PIL import Image
+    lon, lat = Transformer.from_crs(crs, "EPSG:4326", always_xy=True).transform(xs, ys)
+    lon, lat = np.asarray(lon), np.asarray(lat)
+    n = 2 ** Z
+    px = (lon + 180) / 360 * n * 256
+    py = (1 - np.arcsinh(np.tan(np.radians(lat))) / math.pi) / 2 * n * 256
+    tx0, tx1, ty0, ty1 = int(px.min() // 256), int((px.max() + 1) // 256), int(py.min() // 256), int((py.max() + 1) // 256)
+    mosaic = np.zeros(((ty1 - ty0 + 1) * 256, (tx1 - tx0 + 1) * 256))
+    for ty in range(ty0, ty1 + 1):
+        for tx in range(tx0, tx1 + 1):
+            req = urllib.request.Request(f"https://elevation-tiles-prod.s3.amazonaws.com/terrarium/{Z}/{tx}/{ty}.png", headers={"User-Agent": "weski-build"})
+            im = np.asarray(Image.open(io.BytesIO(urllib.request.urlopen(req, timeout=60).read())).convert("RGB"), dtype=np.float64)
+            mosaic[(ty - ty0) * 256:(ty - ty0 + 1) * 256, (tx - tx0) * 256:(tx - tx0 + 1) * 256] = im[:, :, 0] * 256 + im[:, :, 1] + im[:, :, 2] / 256 - 32768
+    fx, fy = px - tx0 * 256 - 0.5, py - ty0 * 256 - 0.5
+    i, j = np.clip(fx.astype(int), 0, mosaic.shape[1] - 2), np.clip(fy.astype(int), 0, mosaic.shape[0] - 2)
+    u, v = fx - i, fy - j
+    return mosaic[j, i] * (1 - u) * (1 - v) + mosaic[j, i + 1] * u * (1 - v) + mosaic[j + 1, i] * (1 - u) * v + mosaic[j + 1, i + 1] * u * v
+
+
+def minutes(v):
+    """aerialway:duration is minutes, written 7, 7.5 or 8:30."""
+    try:
+        if v and ":" in v:
+            m, sec = v.split(":")[:2]
+            return float(m) + float(sec) / 60
+        return float(v) if v else 0
+    except ValueError:
+        return 0
 
 
 def report(G, edges, trails, lifts, pois):

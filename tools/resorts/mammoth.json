@@ -1,0 +1,16 @@
+{
+ "id": "mammoth",
+ "name": "Mammoth Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "area_name": "Mammoth Mountain",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -119.07,
+  37.6,
+  -118.95,
+  37.67
+ ],
+ "building_range": 150,
+ "poi_range": 120
+}

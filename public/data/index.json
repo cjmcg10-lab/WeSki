@@ -1,5 +1,21 @@
 [
  {
+  "id": "breckenridge",
+  "name": "Breckenridge",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.47273,
+  "lon": -106.10133,
+  "baseLat": 39.48541,
+  "baseLon": -106.04764,
+  "top": 3915,
+  "base": 2913,
+  "trails": 191,
+  "lifts": 35,
+  "zones": false,
+  "bytes": 1522620
+ },
+ {
   "id": "brundage",
   "name": "Brundage Mountain",
   "region": "Idaho, USA",
@@ -45,7 +61,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174076
+  "bytes": 174074
  },
  {
   "id": "jay-peak",
@@ -64,6 +80,38 @@
   "bytes": 460562
  },
  {
+  "id": "la-plagne",
+  "name": "La Plagne",
+  "region": "Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.4972,
+  "lon": 6.77269,
+  "baseLat": 45.55933,
+  "baseLon": 6.73759,
+  "top": 3056,
+  "base": 1211,
+  "trails": 154,
+  "lifts": 85,
+  "zones": false,
+  "bytes": 2757351
+ },
+ {
+  "id": "les-arcs",
+  "name": "Les Arcs",
+  "region": "Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.55166,
+  "lon": 6.84748,
+  "baseLat": 45.61418,
+  "baseLon": 6.77427,
+  "top": 3213,
+  "base": 808,
+  "trails": 135,
+  "lifts": 78,
+  "zones": false,
+  "bytes": 2907429
+ },
+ {
   "id": "les-contamines",
   "name": "Les Contamines",
   "region": "Haute-Savoie, France",
@@ -78,6 +126,38 @@
   "lifts": 27,
   "zones": false,
   "bytes": 1172693
+ },
+ {
+  "id": "mammoth",
+  "name": "Mammoth Mountain",
+  "region": "California, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 37.63065,
+  "lon": -119.03323,
+  "baseLat": 37.65003,
+  "baseLon": -118.98528,
+  "top": 3361,
+  "base": 2456,
+  "trails": 158,
+  "lifts": 28,
+  "zones": false,
+  "bytes": 1043201
+ },
+ {
+  "id": "park-city",
+  "name": "Park City",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 40.60995,
+  "lon": -111.55318,
+  "baseLat": 40.68788,
+  "baseLon": -111.5472,
+  "top": 3046,
+  "base": 2050,
+  "trails": 343,
+  "lifts": 41,
+  "zones": false,
+  "bytes": 2355697
  },
  {
   "id": "pizol",
@@ -158,5 +238,53 @@
   "lifts": 18,
   "zones": false,
   "bytes": 743968
+ },
+ {
+  "id": "vail",
+  "name": "Vail",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.57305,
+  "lon": -106.30792,
+  "baseLat": 39.63812,
+  "baseLon": -106.40166,
+  "top": 3526,
+  "base": 2454,
+  "trails": 219,
+  "lifts": 33,
+  "zones": false,
+  "bytes": 1803753
+ },
+ {
+  "id": "val-thorens",
+  "name": "Val Thorens",
+  "region": "Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.25559,
+  "lon": 6.59993,
+  "baseLat": 45.30293,
+  "baseLon": 6.5442,
+  "top": 3220,
+  "base": 1822,
+  "trails": 104,
+  "lifts": 32,
+  "zones": false,
+  "bytes": 1565404
+ },
+ {
+  "id": "zermatt",
+  "name": "Zermatt",
+  "region": "Valais, Switzerland",
+  "tz": "Europe/Zurich",
+  "lat": 45.93927,
+  "lon": 7.7295,
+  "baseLat": 46.02394,
+  "baseLon": 7.74862,
+  "top": 3826,
+  "base": 1605,
+  "trails": 65,
+  "lifts": 36,
+  "zones": false,
+  "bytes": 1686137
  }
 ]
