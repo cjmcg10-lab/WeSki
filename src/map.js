@@ -7,6 +7,7 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
+import { scheme, cls, runColor, runSym } from './rating.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
 
@@ -48,6 +49,9 @@ const QUALITY = [
 export class SkiMap {
   constructor(container, resort, geo, surroundH = null) {
     this.surroundH = surroundH;
+    // European and Japanese maps have red pistes, so their lifts are drawn in slate instead of red
+    const sc = scheme(resort);
+    COLORS.lift = sc.lift; COLORS.liftInk = sc.liftInk; POI_STYLE.lift[0] = sc.lift; POI_STYLE.lifttop[0] = sc.lift;
     this.el = container;
     this.resort = resort;
     this.geo = geo;
@@ -202,7 +206,9 @@ export class SkiMap {
       rgb(...ZONES.learn.rgb), rgb(...ZONES.family.rgb), rgb(...ZONES.slow.rgb), rgb(...ZONES.park.rgb)];
     const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
     // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
-    const forest = (alt) => (alt > 1040 ? F_HIGH : alt > 860 ? F_MID : F_LOW);
+    // Forest bands hang off the resort's treeline; above it the open mountain is snow and rock.
+    const tl = this.resort.treeline || 1300, ALPINE = rgb(226, 234, 240);
+    const forest = (alt) => (alt > tl + 60 ? ALPINE : alt > tl - 260 ? F_HIGH : alt > tl - 440 ? F_MID : F_LOW);
     // Zones are painted into the snow itself so nothing floats above the ground to hide
     // trails, lift chairs or people.
     const zone = new Uint8Array(nx * ny), offPiste = new Uint8Array(nx * ny);   // offPiste: may tint outside the groomed snow
@@ -236,7 +242,7 @@ export class SkiMap {
       const za = zone[a], zb = zone[b], zc = zone[c];
       const zn = za === zb || za === zc ? za : zb === zc ? zb : 0;
       const hatch = zn === 1 || zn === 2 ? (((a % nx) + ((a / nx) | 0)) & 1) === 0 : true;
-      const colr = zn && hatch && (m >= 0.5 || offPiste[a] || offPiste[b] || offPiste[c]) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
+      const colr = zn && hatch && (m >= 0.5 || offPiste[a] || offPiste[b] || offPiste[c]) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > (alt > tl + 60 ? 0.7 : 0.95) ? ROCK : m >= 0.2 ? (alt > tl + 60 ? SNOW : GLADE) : forest(alt);
       put(a, colr); put(b, colr); put(c, colr);
     };
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
@@ -274,7 +280,8 @@ export class SkiMap {
       const z = inn ? edgeZ - 2.5 : out === 0 ? edgeZ - 1 : edgeZ * (1 - w) + coarse * w;
       pos[o * 3] = x - geo.W / 2; pos[o * 3 + 1] = z - zmin; pos[o * 3 + 2] = -(y - geo.H / 2);
       // same forest bands as the detailed map so the border between the two doesn't show
-      if (z > 1040) c.copy(high); else if (z > 860) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (480 - z) / 250)));
+      const tl = this.resort.treeline || 1300;
+      if (z > tl + 60) c.setRGB(0.76, 0.81, 0.85); else if (z > tl - 260) c.copy(high); else if (z > tl - 440) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (tl - 820 - z) / 250)));
       col[o * 3] = c.r; col[o * 3 + 1] = c.g; col[o * 3 + 2] = c.b;
     }
     const idx = [];
@@ -303,7 +310,7 @@ export class SkiMap {
   }
 
   buildTrees() {
-    const { nx, ny, cell } = this.resort.grid, mask = this.snowMask;
+    const { nx, ny, cell, zmin } = this.resort.grid, mask = this.snowMask, h = this.geo.h, tl = this.resort.treeline || 1300;
     // only plant near the ski terrain (keeps the instance count phone-friendly)
     const q = 6, qx = Math.ceil(nx / q), qy = Math.ceil(ny / q), near = new Uint8Array(qx * qy);
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (mask[j * nx + i] > 0.3) {
@@ -315,6 +322,9 @@ export class SkiMap {
     const spots = [];
     for (let j = 1; j < ny - 1; j += 2) for (let i = 1; i < nx - 1; i += 2) {
       if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.15) continue;
+      // trees thin out over the last 150 m below the treeline and stop at it
+      const up = zmin + h[j * nx + i] / 10 - (tl - 150);
+      if (up > 0 && rnd() < up / 150) continue;
       if (rnd() < 0.3) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
     }
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
@@ -326,7 +336,7 @@ export class SkiMap {
       m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3));
       mesh.setMatrixAt(i, m);
       const alt = p.y + this.resort.grid.zmin;
-      c.copy(dark).lerp(light, r).lerp(frost, alt > 1000 ? Math.min(0.75, (alt - 1000) / 200) : 0);
+      c.copy(dark).lerp(light, r).lerp(frost, alt > tl - 300 ? Math.min(0.75, (alt - (tl - 300)) / 200) : 0);
       mesh.setColorAt(i, c);
     });
     this.trees = mesh; this.treeTotal = spots.length;
@@ -370,13 +380,13 @@ export class SkiMap {
     for (const t of R.trails) {
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
       if (!t.glade) this.segs(t.pts, 2.7, casing);
-      this.segs(t.pts, 3.2, (byStyle[t.d + (t.glade ? 'g' : '')] ||= []));
+      this.segs(t.pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
     }
-    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[a.d + 'g'] ||= []));
+    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[cls(R, a) + 'g'] ||= []));
     G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
       const glade = key.endsWith('g');
-      G.add(this.fatLine(pos, COLORS.diff[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
+      G.add(this.fatLine(pos, scheme(R).colors[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
     }
     G.add(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
     this.scene.add(G);
@@ -1021,6 +1031,9 @@ export class SkiMap {
     if (this.paused) return;
     const busy = now - (this.lastInput || 0) < 900 || !!this.flight;
     if (!busy && now - (this.lastFrame || 0) < 31) { this.wasBusy = false; return; }
+    // While touched, draw at most maxFps times a second (60 unless the user asked for more):
+    // a 120 Hz screen otherwise doubles the work, and the heat that makes iOS slow the app down.
+    if (busy && now - (this.lastFrame || 0) < 1000 / (this.maxFps || 60) - 3) return;
     if (busy && this.wasBusy && !this.flight) this.measure(now - this.lastFrame, now);
     this.wasBusy = busy;
     this.lastFrame = now;
@@ -1079,15 +1092,31 @@ export class SkiMap {
     P.sum += gap; P.n++;
     if (P.n < 40) return;
     const avg = P.sum / P.n; P.sum = 0; P.n = 0;
-    this.perf = { fps: Math.round(1000 / avg), q: this.q || 0 };
     const q = this.q || 0;
-    if (this.autoQuality === false) return;
+    if (this.limited && avg < 24) this.limited = false;
+    this.perf = { fps: Math.round(1000 / avg), q, limited: !!this.limited };
+    if (this.autoQuality === false || this.limited) return;
+    // Did the last step down buy anything? If frames are no faster, the phone itself is holding
+    // the app back (heat, battery saving): lower quality cannot help, so give the quality back
+    // and leave it alone until the frame rate recovers.
+    if (this.dropFrom) {
+      const { avg: before, q: q0 } = this.dropFrom;
+      this.dropFrom = null;
+      if (avg > before * 0.88) {
+        this.limited = true; this.setQuality(q0); this.holdUntil = now + 6000;
+        this.perf = { fps: Math.round(1000 / avg), q: this.q, limited: true };
+        return;
+      }
+    }
     if (avg > 24 && q < QUALITY.length - 1) {
       // dropping straight after a raise means the raise was too much: wait longer before retrying
       if (now - (this.raisedAt || -1e9) < 8000) this.raiseWait = Math.min(600000, (this.raiseWait || 20000) * 3);
+      this.dropFrom = { avg, q: this.qBeforeDrops ?? q };
+      this.qBeforeDrops = this.dropFrom.q;
       this.setQuality(q + 1); this.holdUntil = now + (this.raiseWait || 20000);
-    } else if (avg < 17.6 && q > 0 && now > (this.holdUntil || 0)) {
-      this.setQuality(q - 1); this.raisedAt = now; this.holdUntil = now + 6000;
+    } else {
+      this.qBeforeDrops = null;
+      if (avg < 17.6 && q > 0 && now > (this.holdUntil || 0)) { this.setQuality(q - 1); this.raisedAt = now; this.holdUntil = now + 6000; }
     }
   }
 
@@ -1268,7 +1297,7 @@ export class SkiMap {
     if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label(ZONES[z.kind].sym + ' ' + z.name, s, ZONES[z.kind].ink, 11, 700); }
     if (near > 1.15) for (const z of this.liftLabels) {
       const s = this.project(z.p);
-      if (s) label(z.l.name + (this.closed.has('l' + z.l.id) ? ' (closed)' : ''), s, this.closed.has('l' + z.l.id) ? '#6b7280' : '#b01d1d', 11, 700);
+      if (s) label(z.l.name + (this.closed.has('l' + z.l.id) ? ' (closed)' : ''), s, this.closed.has('l' + z.l.id) ? '#6b7280' : COLORS.liftInk, 11, 700);
     }
     if (near > 1.7) {
       const sym = ['●', '■', '◆', '◆◆'];
@@ -1277,7 +1306,7 @@ export class SkiMap {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        label(`${sym[z.t.d]} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut ? '#6b7280' : COLORS.diff[z.t.d], 10.5, 600);
+        label(`${runSym(this.resort, z.t)} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
       }
     }
   }

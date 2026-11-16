@@ -60,6 +60,17 @@ for k, names in named.items():
     assert not names - known, f"zones.{k}: no run named {sorted(names - known)}"
 
 tags = {wid: t for wid, _, t in ways}
+# How ratings are shown: North America by symbol, Europe and Japan by piste colour (see src/rating.js).
+tz = R.get("tz", "")
+SCHEME = cfg.get("scheme") or ("eu" if tz.startswith("Europe/") else "jp" if tz.startswith("Asia/") else "us")
+EU_CLASS = {"novice": 0, "easy": 1, "intermediate": 2, "advanced": 3, "expert": 4, "extreme": 4, "freeride": 4}
+JP_CLASS = {"novice": 0, "easy": 0, "intermediate": 2, "advanced": 3, "expert": 3, "extreme": 3, "freeride": 4}
+# Treeline (metres): above it the map shows open snow and rock instead of forest.
+TREELINE = {"Europe/": 2200, "America/Denver": 3500, "America/Los_Angeles": 3000, "America/Boise": 2700, "America/New_York": 1300, "Asia/": 1500}
+R["treeline"] = cfg.get("treeline") or next((v for k, v in TREELINE.items() if tz.startswith(k)), 1300)
+R.pop("scheme", None)
+if SCHEME != "us":
+    R["scheme"] = SCHEME
 count = {}
 for T in R["trails"]:
     t = tags.get(T.get("osm"), {})
@@ -73,6 +84,13 @@ for T in R["trails"]:
         z = "extreme"
     if not z and (t.get("piste:difficulty") == "freeride" or t.get("piste:grooming") == "backcountry"):
         z = "free"
+    T.pop("c", None)
+    T.pop("u", None)
+    if T.get("osm") in tags and not t.get("piste:difficulty"):
+        T["u"] = True           # no rating in the map data: the level shown is a guess
+        count["unrated"] = count.get("unrated", 0) + 1
+    if SCHEME != "us":
+        T["c"] = (JP_CLASS if SCHEME == "jp" else EU_CLASS).get(t.get("piste:difficulty"), [1, 2, 3, 4][T["d"]])
     T.pop("z", None)
     T.pop("lit", None)
     if z:
@@ -162,7 +180,7 @@ for wid, nd, t in ways:
 
 R["parks"], R["zones"] = parks, zones
 src = [cfg["zones_source"]] if cfg.get("zones_source") else []
-if count:
+if any(k not in ("unrated",) for k in count):
     src.append("OpenStreetMap piste tags")
 R["sources"].pop("zones", None)
 if src:

@@ -4,6 +4,7 @@ import { Guide, Speaker } from './voice.js';
 import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
 import { SkiMap, COLORS, ZONES, fmtAge } from './map.js';
 import { Locator } from './location.js';
+import { scheme, cls, runColor, runSym, runCss, levelName, classesUsed } from './rating.js';
 import { GroupClient, createGroup } from './group.js';
 import { sessions, kv, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
@@ -50,6 +51,7 @@ const S = {
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
   showFps: prefs.get('showFps', false),
+  fps120: prefs.get('fps120', false),
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
   group: null,              // {code, client, state, status}
@@ -156,6 +158,7 @@ function initMap(id) {
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
     S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
+    S.map.maxFps = S.fps120 ? 120 : 60;
     if (q0) S.map.setQuality(q0);
     fpsReadout();
     S.map.setUnits(S.units);
@@ -406,7 +409,7 @@ function fpsReadout() {
   clearInterval(fpsReadout.timer);
   if (!S.showFps) { el?.remove(); return; }
   if (!el) { el = document.createElement('div'); el.id = 'fps'; el.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:30;font:600 12px/1 ui-monospace,monospace;color:#fff;background:rgba(10,20,30,.72);padding:5px 7px;border-radius:8px;pointer-events:none'; document.body.appendChild(el); }
-  const tick = () => { const p = S.map?.perf; el.textContent = p ? `${p.fps} fps · Q${p.q}` : 'move the map…'; };
+  const tick = () => { const p = S.map?.perf; el.textContent = p ? `${p.fps} fps · Q${p.q}${p.limited ? ' · slowed by phone' : ''}` : 'move the map…'; };
   tick(); fpsReadout.timer = setInterval(tick, 500);
 }
 
@@ -784,8 +787,8 @@ function setPocket(on) {
 /** Warning text when a route has to use trails above the skier's chosen maximum. */
 function overWarning(r) {
   if (!r.over.length) return null;
-  const names = [...new Set(r.over.map((s) => `${s.name} (${DIFF_NAMES[s.d]})`))];
-  const dist = fmtDist(r.over.reduce((n, s) => n + s.dist, 0)), lim = DIFF_NAMES[S.maxDiff];
+  const names = [...new Set(r.over.map((s) => `${s.name} (${levelName(S.resort, s.d)})`))];
+  const dist = fmtDist(r.over.reduce((n, s) => n + s.dist, 0)), lim = levelName(S.resort, S.maxDiff);
   const later = r.over.filter((s, i) => !(r.overNow && s === r.steps[0]));
   if (r.overNow && !later.length) return { title: `You're on a trail above your ${lim} limit`, text: `This route gets you off ${names.join(', ')} the quickest way (${dist}), then stays within your limit.` };
   if (r.overNow) return { title: `Above your ${lim} limit`, text: `You're on a harder trail now, and there is no other way from here: ${dist} on ${names.join(', ')}. Take it slow or ask patrol for help.` };
@@ -848,7 +851,8 @@ function describeSpot(x, y) {
   for (const t of S.resort.trails) { const n = nearestOnLine(t.pts, x, y); if (n.d < 45 && (!best || n.d < best.d)) best = { d: n.d, t }; }
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
-    bits.unshift(`<span class="d${best.t.d}">${DIFF_SYM[best.t.d]}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
+    bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
+    if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
     const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;
     const tz = best.t.z || (best.t.slow ? 'slow' : null);
     if (tz) bits.push(tag(tz));
@@ -902,8 +906,8 @@ function renderChrome() {
 }
 
 function stepIcon(s) {
-  const bg = s.kind === 'ski' ? COLORS.diff[s.d] : s.kind === 'lift' ? COLORS.lift : s.kind === 'up' || s.kind === 'cross' ? '#b3620a' : '#59636e';
-  return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? DIFF_SYM[s.d][0] : s.kind === 'lift' ? '↑' : s.kind === 'up' ? '⇡' : s.kind === 'cross' ? '⇢' : 'W'}</span>`;
+  const bg = s.kind === 'ski' ? runColor(S.resort, s) : s.kind === 'lift' ? COLORS.lift : s.kind === 'up' || s.kind === 'cross' ? '#b3620a' : '#59636e';
+  return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? runSym(S.resort, s)[0] : s.kind === 'lift' ? '↑' : s.kind === 'up' ? '⇡' : s.kind === 'cross' ? '⇢' : 'W'}</span>`;
 }
 function stepText(s, lower) {
   const how = s.grade <= 0 ? 'Skate back' : s.grade === 1 ? 'Climb back' : 'Sidestep back up';
@@ -1089,14 +1093,14 @@ function routeRow(r, id, i) {
 function sheetMore() {
   const off = prefs.get(pkey('offline'), null);
   return ['More', `
-    <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="d${i}">${DIFF_SYM[i]}</span> ${n}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
+    <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="${runCss(S.resort, { d: i })}">${runSym(S.resort, { d: i })}</span> ${levelName(S.resort, i)}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
     <div class="card"><h3>Uphill tolerance</h3><div class="seg">${Object.entries(TOLERANCE).filter(([k]) => k !== 'none').map(([k, t]) => `<button data-act="uphill" data-v="${k}" class="${S.uphill === k ? 'on' : ''}">${t.label}</button>`).join('')}</div><p class="note">${{ low: 'Low: only an easy skate or a step or two up; otherwise directions take the downhill way round.', normal: 'Normal: accepts a short moderate climb or a cut-across to the next trail when it saves a lot of time.', high: 'High: accepts a real sidestep or short boot-pack to avoid a lap.' }[S.uphill]} Steeper ground, harder trails and steep side slopes all count against a climb.</p></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Spoken directions</b><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed. The screen must stay on: use Pocket mode while riding.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire ${esc(S.place.name)} map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
-    <div class="card"><div class="rowf"><div class="grow"><b>Show frame rate</b><div class="sub">A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best – Q3 lightest). The app lowers quality by itself when the phone can’t keep up.</div></div><label class="switch"><input type="checkbox" id="f-fps" ${S.showFps ? 'checked' : ''} /><i></i></label></div></div>
+    <div class="card"><div class="rowf"><div class="grow"><b>Show frame rate</b><div class="sub">A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best – Q3 lightest). The app lowers quality by itself when the phone can’t keep up. “Slowed by phone” means the phone is holding the app back (usually heat), which lower quality cannot fix.</div></div><label class="switch"><input type="checkbox" id="f-fps" ${S.showFps ? 'checked' : ''} /><i></i></label></div><div class="rowf"><div class="grow"><b>120 fps motion</b><div class="sub">Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.</div></div><label class="switch"><input type="checkbox" id="f-fps120" ${S.fps120 ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
     <button class="btn alt" data-act="legend">Map legend</button>
 
@@ -1114,13 +1118,13 @@ function closedNames() {
 function sheetClosures() {
   const q = (S.closureQ || '').toLowerCase();
   const names = new Map();
-  for (const t of S.resort.trails) if (t.name) { const e = names.get(t.name) || { d: t.d, ids: [] }; e.ids.push('t' + t.id); names.set(t.name, e); }
+  for (const t of S.resort.trails) if (t.name) { const e = names.get(t.name) || { d: t.d, c: t.c, ids: [] }; e.ids.push('t' + t.id); names.set(t.name, e); }
   const row = (name, ids, badge) => {
     const on = ids.every((i) => S.closures.has(i));
     return `<div class="list-item"><div class="grow t" style="font-weight:600">${badge} ${esc(name)}</div><span class="sub">${on ? 'Closed' : 'Open'}</span><label class="switch"><input type="checkbox" data-closure="${ids.join(',')}" ${on ? 'checked' : ''} /><i></i></label></div>`;
   };
   const lifts = S.resort.lifts.filter((l) => l.name.toLowerCase().includes(q)).map((l) => row(l.name, ['l' + l.id], `<span style="color:${COLORS.lift}">↑</span>`)).join('');
-  const trails = [...names.entries()].filter(([n]) => n.toLowerCase().includes(q)).sort((a, b) => a[0].localeCompare(b[0])).map(([n, e]) => row(n, e.ids, `<span class="d${e.d}">${DIFF_SYM[e.d]}</span>`)).join('');
+  const trails = [...names.entries()].filter(([n]) => n.toLowerCase().includes(q)).sort((a, b) => a[0].localeCompare(b[0])).map(([n, e]) => row(n, e.ids, `<span class="${runCss(S.resort, e)}">${runSym(S.resort, e)}</span>`)).join('');
   return ['Confirmed closures', `<input class="field" id="f-closure-q" placeholder="Search lifts and trails" value="${esc(S.closureQ || '')}" autocomplete="off" />
     <p class="note">Switch on anything you have confirmed is closed (lift board, patrol, rope). ${S.group ? 'Shared with your group.' : ''}</p>
     <div class="card" id="closure-list"><h3>Lifts</h3>${lifts || '<p class="sub">None</p>'}<h3 style="margin-top:14px">Trails</h3>${trails || '<p class="sub">None</p>'}</div>
@@ -1131,11 +1135,10 @@ function sheetLegend() {
   const line = (c, label, dash) => `<div class="legend-row"><div class="sw"><div class="ln" style="background:${dash ? `repeating-linear-gradient(90deg, ${c} 0 9px, transparent 9px 15px)` : c}"></div></div>${label}</div>`;
   const ic = (c, ch, label) => `<div class="legend-row"><div class="sw"><div class="ic" style="background:${c}">${ch}</div></div>${label}</div>`;
   return ['Legend', `<div class="card"><h3>Trail difficulty</h3>
-      ${line(COLORS.diff[0], '<b class="d0">●</b>&nbsp; Easier (green circle)')}${line(COLORS.diff[1], '<b class="d1">■</b>&nbsp; More difficult (blue square)')}
-      ${line(COLORS.diff[2], '<b class="d2">◆</b>&nbsp; Most difficult (black diamond)')}${line(COLORS.diff[3], '<b class="d3">◆◆</b>&nbsp; Extreme terrain')}
-      ${line(COLORS.diff[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
+      ${(() => { const sc = scheme(S.resort); return classesUsed(S.resort).map((c) => line(sc.colors[c], `<b class="${sc.css[c]}">${sc.syms[c]}</b>&nbsp; ${sc.legend[c]}`)).join(''); })()}
+      ${line(scheme(S.resort).colors[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
     ${zonesCard()}
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, 'Lift (one red line per lift, just above and between its two cables)')}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${scheme(S.resort).liftWord} line per lift, just above and between its two cables)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
 }
@@ -1165,7 +1168,7 @@ function sheetPlace(ev) {
 function sheetSteps() {
   const r = S.nav?.route;
   if (!r) return ['Directions', '<p class="sub">No route.</p>', true];
-  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${DIFF_NAMES[S.maxDiff]}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.climb >= 1 ? ` · ${fmtVert(s.climb)} climb` : ''}${s.grade >= 0 ? ` · ${GRADE_NAMES[s.grade]}` : s.kind === 'cross' ? ' · level or downhill' : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails, lifts and walking links, plus short climbs and cut-acrosses allowed by your uphill tolerance (${TOLERANCE[S.uphill].label}, set in More). A cut-across is judged from the terrain only: the app cannot see trees, ropes or signs, so look before you go. Times are estimates.</p>`];
+  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${levelName(S.resort, S.maxDiff)}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.climb >= 1 ? ` · ${fmtVert(s.climb)} climb` : ''}${s.grade >= 0 ? ` · ${GRADE_NAMES[s.grade]}` : s.kind === 'cross' ? ' · level or downhill' : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails, lifts and walking links, plus short climbs and cut-acrosses allowed by your uphill tolerance (${TOLERANCE[S.uphill].label}, set in More). A cut-across is judged from the terrain only: the app cannot see trees, ropes or signs, so look before you go. Times are estimates.</p>`];
 }
 
 // ---------- weather
@@ -1320,6 +1323,7 @@ function onInput(e) {
   }
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
+  else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);

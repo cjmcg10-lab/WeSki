@@ -129,6 +129,7 @@ label.lbl { display: block; font-size: 13px; font-weight: 600; color: var(--mute
 .seg { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; background: var(--chip); border-radius: 11px; padding: 3px; gap: 3px; }
 .seg button { padding: 8px 4px; border-radius: 9px; font-weight: 600; font-size: 13px; }
 .seg button.on { background: var(--seg-on); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.r0 { color: #1fa750; } .r1 { color: #2b7de9; } .r2 { color: #e0262d; } .r3 { color: var(--d2); } .r4 { color: #d99a00; }
 .d0 { color: #1fa750; } .d1 { color: #2b7de9; } .d2 { color: var(--d2); } .d3 { color: #a3122f; }
 
 .legend-row { display: flex; align-items: center; gap: 12px; padding: 6px 0; font-size: 14px; }

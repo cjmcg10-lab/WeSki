@@ -34,6 +34,19 @@ OpenStreetMap piste tags. Slow and family zones are not in OpenStreetMap: they a
 the run names were read off the resort's own trail map and listed in the resort config (`zones`,
 `zones_source`). So far that is Jay Peak, Keystone, Park City and Breckenridge (Peaks 7 and 8).
 
+## Checking accuracy
+
+`python3 tools/audit.py tools/resorts/<id>.json <osm file> public/data/<id> --list` re-derives a built
+resort from its sources and lists what looks wrong: how far the drawn runs and lifts sit from a fresh
+projection of the map data (0.1 m at worst on every built resort), runs that climb or lifts that descend on
+the terrain model, runs with no rating in the map data (the app says so when you tap them), ratings that
+disagree with the slope, named runs and lifts the build left out, overlapping duplicates and dead ends.
+
+Ratings follow local convention (`src/rating.js`): green circle / blue square / black diamond in North
+America; green, blue, red and black pistes plus yellow freeride routes in Europe and Japan, where lifts are
+drawn in slate because red is a piste colour. Each resort has a treeline, above which open ground is drawn as
+snow and rock instead of forest.
+
 ## Data sources (all free)
 
 - **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.

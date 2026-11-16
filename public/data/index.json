@@ -45,7 +45,7 @@
   "trails": 94,
   "lifts": 9,
   "zones": false,
-  "bytes": 435160
+  "bytes": 435196
  },
  {
   "id": "copper-mountain",
@@ -77,7 +77,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174021
+  "bytes": 174134
  },
  {
   "id": "heavenly",
@@ -93,7 +93,7 @@
   "trails": 128,
   "lifts": 24,
   "zones": true,
-  "bytes": 1121292
+  "bytes": 1121337
  },
  {
   "id": "jay-peak",
@@ -141,7 +141,7 @@
   "trails": 154,
   "lifts": 85,
   "zones": true,
-  "bytes": 2768950
+  "bytes": 2771523
  },
  {
   "id": "les-arcs",
@@ -157,7 +157,7 @@
   "trails": 135,
   "lifts": 78,
   "zones": true,
-  "bytes": 2927251
+  "bytes": 2931687
  },
  {
   "id": "les-contamines",
@@ -173,7 +173,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1182147
+  "bytes": 1182803
  },
  {
   "id": "mammoth",
@@ -189,7 +189,7 @@
   "trails": 158,
   "lifts": 28,
   "zones": false,
-  "bytes": 1043624
+  "bytes": 1043813
  },
  {
   "id": "park-city",
@@ -205,7 +205,7 @@
   "trails": 343,
   "lifts": 41,
   "zones": true,
-  "bytes": 2356172
+  "bytes": 2356541
  },
  {
   "id": "pizol",
@@ -221,7 +221,7 @@
   "trails": 32,
   "lifts": 13,
   "zones": true,
-  "bytes": 878690
+  "bytes": 879322
  },
  {
   "id": "saalbach",
@@ -237,7 +237,7 @@
   "trails": 100,
   "lifts": 81,
   "zones": true,
-  "bytes": 2549958
+  "bytes": 2552936
  },
  {
   "id": "saddleback",
@@ -269,7 +269,7 @@
   "trails": 159,
   "lifts": 76,
   "zones": true,
-  "bytes": 2798030
+  "bytes": 2800624
  },
  {
   "id": "smugglers-notch",
@@ -301,7 +301,7 @@
   "trails": 181,
   "lifts": 23,
   "zones": true,
-  "bytes": 1101271
+  "bytes": 1101325
  },
  {
   "id": "stowe",
@@ -317,7 +317,7 @@
   "trails": 124,
   "lifts": 12,
   "zones": false,
-  "bytes": 757327
+  "bytes": 757399
  },
  {
   "id": "sugarbush",
@@ -349,7 +349,7 @@
   "trails": 180,
   "lifts": 82,
   "zones": true,
-  "bytes": 2856636
+  "bytes": 2859392
  },
  {
   "id": "vail",
@@ -381,7 +381,7 @@
   "trails": 104,
   "lifts": 32,
   "zones": true,
-  "bytes": 1584873
+  "bytes": 1586612
  },
  {
   "id": "winter-park",
@@ -397,7 +397,7 @@
   "trails": 167,
   "lifts": 25,
   "zones": true,
-  "bytes": 1083138
+  "bytes": 1083156
  },
  {
   "id": "zermatt",
@@ -413,6 +413,6 @@
   "trails": 131,
   "lifts": 61,
   "zones": true,
-  "bytes": 2585222
+  "bytes": 2587426
  }
 ]
