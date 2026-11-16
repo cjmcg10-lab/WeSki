@@ -14,6 +14,7 @@ usage: build_data.py <resort.json config> <osm.xml> <out_dir> <dem.tif> [<dem.ti
 """
 import json
 import math
+import re
 import sys
 import xml.etree.ElementTree as ET
 from collections import defaultdict
@@ -340,8 +341,9 @@ def main():
             pts.reverse()
         levels = t.get("building:levels")
         bt = t.get("building")
-        if levels:
-            ht = float(levels) * 3.3
+        nums = re.findall(r"\d+(?:\.\d+)?", levels or "")
+        if nums:
+            ht = max(float(n) for n in nums) * 3.3
         elif bt == "hotel" or t.get("tourism") == "hotel":
             ht = 15
         elif bt == "apartments":
@@ -538,6 +540,13 @@ def main():
     # short traverse from a lift top to a trail. Each is [lift end, lift end | "trail:Name"].
     ends = {P["name"]: P for P in pois if P["kind"] in ("lift", "lifttop")}
     for a_name, b_name in cfg.get("links", []):
+        if a_name.startswith("trail:"):      # the end of a run that stops short of a lift base
+            B = ends[b_name]
+            cands = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == a_name[6:]]
+            assert cands, f"links: no trail named {a_name[6:]!r}"
+            w = min(cands, key=lambda o: o["line"].distance(Point(B["x"], B["y"])))
+            links.append((cut(w, (B["x"], B["y"])), B["n"], "x", False))
+            continue
         A = ends[a_name]
         if b_name.startswith("trail:"):
             cands = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
@@ -607,11 +616,13 @@ def main():
     lo = min(main, key=lambda L: L["bot"])
     ll = lambda x, y: [round(v, 5) for v in reversed(inv.transform(x + x0, y + y0))]
     top_el = max(max(T["top"] for T in trails), hi["top"])
+    tt = max(trails, key=lambda T: T["top"])     # hike-to terrain can start above the highest lift
+    summit_xy = (tt["pts"][0], tt["pts"][1]) if tt["top"] > hi["top"] else (hi["pts"][-2], hi["pts"][-1])
     out = {
         "id": cfg["id"], "name": cfg["name"], "region": cfg["region"], "tz": cfg["tz"],
         "summary": {
             "top": top_el, "base": lo["bot"], "trails": len({T["name"] for T in trails if T["name"]}), "lifts": len(lift_out),
-            "summit": ll(hi["pts"][-2], hi["pts"][-1]), "baseAt": ll(lo["pts"][0], lo["pts"][1]),
+            "summit": ll(*summit_xy), "baseAt": ll(lo["pts"][0], lo["pts"][1]),
         },
         "sources": {
             "terrain": cfg.get("terrain_source", "USGS 3DEP 1 m LiDAR DEM (public domain)"),

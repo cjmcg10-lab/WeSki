@@ -27,7 +27,8 @@ people move, run stats with playback, and full offline use.
 
 - **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.
   France: IGN RGE ALTI 1 m (Licence Ouverte). Japan: GSI 5 m LiDAR tiles where they exist, otherwise the
-  GSI 10 m model (Geto Kogen is 10 m). `tools/fetch_dem.py` downloads the non-US ones.
+  GSI 10 m model (Geto Kogen is 10 m). Austria: BEV ALS DTM 1 m (CC BY 4.0), read straight from the
+  national cloud-optimised tiles (`fetch_dem.py cog`). `tools/fetch_dem.py` downloads the non-US ones.
 - **Trails, lifts, buildings, places:** © OpenStreetMap contributors (ODbL).
 - **Surrounding terrain:** Mapzen/AWS Terrain Tiles. **Globe:** Natural Earth 1:50m and 1:10m, US Census state lines. **Weather:** Open-Meteo (CC BY 4.0).
 - **Slow zones and terrain parks:** read from Jay Peak's Winter 2025–26 trail map and terrain parks
@@ -69,10 +70,12 @@ tests/                unit tests (routing, tracker, group rules)
 
 ## Resorts
 
-Built maps (18): **Jay Peak, Stowe, Smugglers' Notch, Sugarbush** (Vermont), **Cannon Mountain** (New
-Hampshire), **Saddleback** (Maine), **Brundage Mountain** (Idaho), **Vail, Breckenridge** (Colorado),
-**Park City** (Utah), **Mammoth Mountain** (California), **Geto Kogen** (Japan), **Pizol, Zermatt**
-(Switzerland), **Les Contamines, La Plagne, Les Arcs** and **Val Thorens** (France). Zermatt covers the whole
+Built maps (26): **Jay Peak, Stowe, Smugglers' Notch, Sugarbush** (Vermont), **Cannon Mountain** (New
+Hampshire), **Saddleback** (Maine), **Brundage Mountain** (Idaho), **Vail, Breckenridge, Keystone, Copper
+Mountain, Steamboat, Winter Park** (Colorado), **Park City** (Utah), **Mammoth Mountain** (California),
+**Heavenly** (California / Nevada), **Geto Kogen** (Japan), **Pizol, Zermatt** (Switzerland), **Les Contamines,
+La Plagne, Les Arcs, Val Thorens, Tignes – Val d'Isère** (France), **SkiWelt** and **Saalbach Hinterglemm
+Leogang Fieberbrunn** (Austria). Zermatt covers the whole
 Zermatt – Cervinia area (Swiss 2 m model plus the Italian 10 m TINITALY model, INGV, CC BY 4.0).
 Its Gornergrat railway and Sunnegga funicular, and the Les Arcs funicular, follow their real
 track from the map data and are drawn as railways (bed, rails, sleepers, tunnels, trains). Very large resorts use a
@@ -94,7 +97,7 @@ shows as a green circle, a red as a blue square and a black as a black diamond.
    (keep only places this close to the skiing, for resort towns), `dem_only` (drop what the
    elevation model does not cover), `extra_lifts` (railways and funiculars used as lifts: station `[lon, lat]` points,
    `kind` train/funicular and `rail: true` to follow the mapped track), `links` (hand-made joins: a summit tunnel between stations, a lift top to
-   a trail), `cell` (terrain grid spacing; chosen automatically for very large resorts).
+   a trail, or `"trail:Name"` first for a run that stops short of a lift base), `cell` (terrain grid spacing; chosen automatically for very large resorts).
 2. Download an OSM extract covering it (`api.openstreetmap.org/api/0.6/map?bbox=...`) and an elevation
    model: USGS 1 m DEM tiles (The National Map) in the USA, `tools/fetch_dem.py` for Switzerland, France
    and Japan. Any GeoTIFF in a metric projection works.

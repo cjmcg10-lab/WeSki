@@ -1,0 +1,16 @@
+{
+ "id": "heavenly",
+ "name": "Heavenly",
+ "region": "California / Nevada, USA",
+ "tz": "America/Los_Angeles",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "building_range": 150,
+ "poi_range": 120,
+ "two_way_lifts": [
+  "Heavenly Gondola"
+ ],
+ "isolated_lifts": [
+  "Tubing Hill",
+  "Pioneer"
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "id": "tignes-val-disere",
+ "name": "Tignes – Val d'Isère",
+ "region": "Savoie, France",
+ "tz": "Europe/Paris",
+ "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
+ "building_range": 150,
+ "poi_range": 120,
+ "isolated_lifts": [
+  "Snowtubing"
+ ],
+ "links": [
+  [
+   "trail:Descente",
+   "Rosolin I (base)"
+  ]
+ ]
+}

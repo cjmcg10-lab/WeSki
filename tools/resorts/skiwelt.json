@@ -1,0 +1,10 @@
+{
+ "id": "skiwelt",
+ "name": "SkiWelt",
+ "region": "Tyrol, Austria",
+ "tz": "Europe/Vienna",
+ "terrain_source": "BEV Austria ALS DTM 1 m (CC BY 4.0)",
+ "building_range": 150,
+ "poi_range": 120,
+ "area_name": "SkiWelt Wilder Kaiser Brixental"
+}

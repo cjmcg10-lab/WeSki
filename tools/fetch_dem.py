@@ -5,6 +5,10 @@
   ign    IGN France RGE ALTI, 1 m LiDAR / photogrammetry (EPSG:2154)  data.geopf.fr
   gsi    GSI Japan 5 m LiDAR DEM tiles, 10 m where 5 m is missing     cyberjapandata.gsi.go.jp
          (written in the local UTM zone)
+  cog    any cloud-optimised GeoTIFF read over HTTP, reprojected to the EPSG code given:
+           Austria  BEV ALS DTM 1 m (CC BY 4.0)   data.bev.gv.at/download/ALS/DTM/<date>/ALS_DTM_CRS3035RES50000mN<N>E<E>.tif
+           Canada   NRCan HRDEM 1 m (OGL-Canada)  canelevation-dem.s3.ca-central-1.amazonaws.com/hrdem-lidar/<project>-1m-dtm.tif
+         usage: fetch_dem.py cog <out.tif> <west> <south> <east> <north> <epsg> <url> [<url> ...]
 
 usage: fetch_dem.py <swiss|ign|gsi> <out.tif> <west> <south> <east> <north>   (degrees; pad ~700 m around the resort)
 """
@@ -45,6 +49,34 @@ def write(path, arr, transform, crs):
                        crs=crs, transform=transform, nodata=NODATA, compress="deflate", tiled=True) as dst:
         dst.write(arr.astype("float32"), 1)
     print(f"{path}: {arr.shape[1]}x{arr.shape[0]}, z {arr[arr > -9000].min():.0f}..{arr.max():.0f}, holes {(arr < -9000).mean() * 100:.2f}%")
+
+
+def cog(out, w, s, e, n, epsg, urls, res=2.0):
+    """Window of one or more remote COGs, warped to a metric projection at `res` metres."""
+    import os
+    from rasterio.vrt import WarpedVRT
+    from rasterio.windows import from_bounds
+    os.environ.setdefault("CURL_CA_BUNDLE", os.environ.get("SSL_CERT_FILE", "/etc/ssl/certs/ca-certificates.crt"))
+    os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
+    os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "4")
+    crs = f"EPSG:{epsg}"
+    tf = Transformer.from_crs("EPSG:4326", crs, always_xy=True)
+    xs, ys = zip(*[tf.transform(lon, lat) for lon in (w, e) for lat in (s, n)])
+    x0, x1, y0, y1 = math.floor(min(xs) / res) * res, math.ceil(max(xs) / res) * res, math.floor(min(ys) / res) * res, math.ceil(max(ys) / res) * res
+    W, H = int((x1 - x0) / res), int((y1 - y0) / res)
+    arr = np.full((H, W), NODATA, dtype="float32")
+    tr = from_origin(x0, y1, res, res)
+    for url in urls:
+        with rasterio.open("/vsicurl/" + url) as src:
+            with WarpedVRT(src, crs=crs, transform=tr, width=W, height=H, resampling=Resampling.bilinear, nodata=NODATA) as vrt:
+                step = 1024   # read in strips so one failed range request does not lose everything
+                for r0 in range(0, H, step):
+                    part = vrt.read(1, window=((r0, min(H, r0 + step)), (0, W)))
+                    dst = arr[r0:r0 + part.shape[0]]
+                    m = (dst < -9000) & (part > -9000) & (part < 9000)
+                    dst[m] = part[m]
+        print(f"  {url.rsplit('/', 1)[-1]}: holes now {(arr < -9000).mean() * 100:.2f}%", flush=True)
+    write(out, arr, tr, crs)
 
 
 def swiss(out, w, s, e, n):
@@ -143,4 +175,7 @@ def gsi(out, w, s, e, n):
 
 
 if __name__ == "__main__":
-    {"swiss": swiss, "ign": ign, "gsi": gsi}[sys.argv[1]](sys.argv[2], *map(float, sys.argv[3:7]))
+    if sys.argv[1] == "cog":
+        cog(sys.argv[2], *map(float, sys.argv[3:7]), int(sys.argv[7]), sys.argv[8:])
+    else:
+        {"swiss": swiss, "ign": ign, "gsi": gsi}[sys.argv[1]](sys.argv[2], *map(float, sys.argv[3:7]))

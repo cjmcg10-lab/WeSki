@@ -13,7 +13,7 @@
   "trails": 191,
   "lifts": 35,
   "zones": false,
-  "bytes": 1522620
+  "bytes": 1522670
  },
  {
   "id": "brundage",
@@ -29,7 +29,7 @@
   "trails": 77,
   "lifts": 6,
   "zones": false,
-  "bytes": 443523
+  "bytes": 443519
  },
  {
   "id": "cannon-mountain",
@@ -45,7 +45,23 @@
   "trails": 94,
   "lifts": 9,
   "zones": false,
-  "bytes": 434967
+  "bytes": 434993
+ },
+ {
+  "id": "copper-mountain",
+  "name": "Copper Mountain",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.45626,
+  "lon": -106.17124,
+  "baseLat": 39.49888,
+  "baseLon": -106.1462,
+  "top": 3762,
+  "base": 2959,
+  "trails": 140,
+  "lifts": 23,
+  "zones": false,
+  "bytes": 937624
  },
  {
   "id": "geto-kogen",
@@ -61,7 +77,23 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174074
+  "bytes": 173953
+ },
+ {
+  "id": "heavenly",
+  "name": "Heavenly",
+  "region": "California / Nevada, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 38.91738,
+  "lon": -119.90242,
+  "baseLat": 38.95681,
+  "baseLon": -119.94268,
+  "top": 3050,
+  "base": 1916,
+  "trails": 128,
+  "lifts": 24,
+  "zones": false,
+  "bytes": 1120451
  },
  {
   "id": "jay-peak",
@@ -77,7 +109,23 @@
   "trails": 90,
   "lifts": 9,
   "zones": true,
-  "bytes": 460562
+  "bytes": 460558
+ },
+ {
+  "id": "keystone",
+  "name": "Keystone",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.57607,
+  "lon": -105.90827,
+  "baseLat": 39.60453,
+  "baseLon": -105.95653,
+  "top": 3803,
+  "base": 2829,
+  "trails": 132,
+  "lifts": 19,
+  "zones": false,
+  "bytes": 1044442
  },
  {
   "id": "la-plagne",
@@ -93,7 +141,7 @@
   "trails": 154,
   "lifts": 85,
   "zones": false,
-  "bytes": 2757351
+  "bytes": 2756646
  },
  {
   "id": "les-arcs",
@@ -109,7 +157,7 @@
   "trails": 135,
   "lifts": 78,
   "zones": false,
-  "bytes": 2915963
+  "bytes": 2914429
  },
  {
   "id": "les-contamines",
@@ -125,7 +173,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": false,
-  "bytes": 1172693
+  "bytes": 1172656
  },
  {
   "id": "mammoth",
@@ -141,7 +189,7 @@
   "trails": 158,
   "lifts": 28,
   "zones": false,
-  "bytes": 1043201
+  "bytes": 1043215
  },
  {
   "id": "park-city",
@@ -157,7 +205,7 @@
   "trails": 343,
   "lifts": 41,
   "zones": false,
-  "bytes": 2355697
+  "bytes": 2355704
  },
  {
   "id": "pizol",
@@ -173,7 +221,23 @@
   "trails": 32,
   "lifts": 13,
   "zones": false,
-  "bytes": 872853
+  "bytes": 872717
+ },
+ {
+  "id": "saalbach",
+  "name": "Saalbach Hinterglemm",
+  "region": "Salzburg, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 47.36481,
+  "lon": 12.62246,
+  "baseLat": 47.43955,
+  "baseLon": 12.7331,
+  "top": 2089,
+  "base": 813,
+  "trails": 100,
+  "lifts": 81,
+  "zones": false,
+  "bytes": 2535079
  },
  {
   "id": "saddleback",
@@ -189,7 +253,23 @@
   "trails": 59,
   "lifts": 5,
   "zones": false,
-  "bytes": 388704
+  "bytes": 388715
+ },
+ {
+  "id": "skiwelt",
+  "name": "SkiWelt",
+  "region": "Tyrol, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 47.46533,
+  "lon": 12.2041,
+  "baseLat": 47.44688,
+  "baseLon": 12.16252,
+  "top": 1825,
+  "base": 626,
+  "trails": 159,
+  "lifts": 76,
+  "zones": false,
+  "bytes": 2793525
  },
  {
   "id": "smugglers-notch",
@@ -205,7 +285,23 @@
   "trails": 81,
   "lifts": 9,
   "zones": false,
-  "bytes": 499295
+  "bytes": 499309
+ },
+ {
+  "id": "steamboat",
+  "name": "Steamboat",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 40.45511,
+  "lon": -106.74414,
+  "baseLat": 40.45707,
+  "baseLon": -106.80336,
+  "top": 3219,
+  "base": 2105,
+  "trails": 181,
+  "lifts": 23,
+  "zones": false,
+  "bytes": 1098109
  },
  {
   "id": "stowe",
@@ -221,7 +317,7 @@
   "trails": 124,
   "lifts": 12,
   "zones": false,
-  "bytes": 757274
+  "bytes": 757270
  },
  {
   "id": "sugarbush",
@@ -237,7 +333,23 @@
   "trails": 131,
   "lifts": 18,
   "zones": false,
-  "bytes": 743968
+  "bytes": 744015
+ },
+ {
+  "id": "tignes-val-disere",
+  "name": "Tignes \u2013 Val d'Is\u00e8re",
+  "region": "Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.41358,
+  "lon": 6.87456,
+  "baseLat": 45.50624,
+  "baseLon": 6.92114,
+  "top": 3454,
+  "base": 1559,
+  "trails": 180,
+  "lifts": 82,
+  "zones": false,
+  "bytes": 2820246
  },
  {
   "id": "vail",
@@ -253,7 +365,7 @@
   "trails": 219,
   "lifts": 33,
   "zones": false,
-  "bytes": 1803753
+  "bytes": 1803800
  },
  {
   "id": "val-thorens",
@@ -269,7 +381,23 @@
   "trails": 104,
   "lifts": 32,
   "zones": false,
-  "bytes": 1565404
+  "bytes": 1564715
+ },
+ {
+  "id": "winter-park",
+  "name": "Winter Park",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.84429,
+  "lon": -105.78189,
+  "baseLat": 39.88591,
+  "baseLon": -105.76308,
+  "top": 3658,
+  "base": 2771,
+  "trails": 167,
+  "lifts": 25,
+  "zones": false,
+  "bytes": 1080637
  },
  {
   "id": "zermatt",
@@ -285,6 +413,6 @@
   "trails": 131,
   "lifts": 61,
   "zones": false,
-  "bytes": 2557856
+  "bytes": 2557637
  }
 ]

@@ -7,7 +7,7 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['breckenridge', 'brundage', 'cannon-mountain', 'geto-kogen', 'jay-peak', 'la-plagne', 'les-arcs', 'les-contamines', 'mammoth', 'park-city', 'pizol', 'saddleback', 'smugglers-notch', 'stowe', 'sugarbush', 'vail', 'val-thorens', 'zermatt']);
+    expect(index.map((r) => r.id).sort()).toEqual(['breckenridge', 'brundage', 'cannon-mountain', 'copper-mountain', 'geto-kogen', 'heavenly', 'jay-peak', 'keystone', 'la-plagne', 'les-arcs', 'les-contamines', 'mammoth', 'park-city', 'pizol', 'saalbach', 'saddleback', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'sugarbush', 'tignes-val-disere', 'vail', 'val-thorens', 'winter-park', 'zermatt']);
   });
   for (const entry of index) {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
