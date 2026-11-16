@@ -20,8 +20,8 @@
  ],
  "extra_lifts": [
   {
-   "name": "Les Arcs' Express: Bourg-Saint-Maurice – Les Granges (funicular)",
-   "kind": "gondola",
+   "name": "Les Arcs' Express: Bourg-Saint-Maurice – Les Granges",
+   "kind": "funicular",
    "both": true,
    "minutes": 3,
    "pts": [
@@ -33,11 +33,12 @@
      6.7833362,
      45.6037539
     ]
-   ]
+   ],
+   "rail": true
   },
   {
-   "name": "Les Arcs' Express: Les Granges – Arc 1600 (funicular)",
-   "kind": "gondola",
+   "name": "Les Arcs' Express: Les Granges – Arc 1600",
+   "kind": "funicular",
    "both": true,
    "minutes": 4,
    "pts": [
@@ -49,7 +50,8 @@
      6.7950106,
      45.5973501
     ]
-   ]
+   ],
+   "rail": true
   }
  ]
 }

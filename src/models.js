@@ -107,6 +107,33 @@ export function makeRide(kind, avatar, color) {
     g.userData = { ride: kind };
     return g;
   }
+  if (kind === 'train' || kind === 'funicular') {
+    // a single rail car in the rider's colour
+    const c = new THREE.Color(color), geo = mergeGeometries([
+      part(box(1.9, 0.35, 4.6), 0x2a2f38, 0, 0.25, 0),
+      part(box(2.1, 1.0, 4.8), c, 0, 0.95, 0),
+      part(box(2.0, 0.8, 4.6), 0x1d2530, 0, 1.8, 0),
+      part(box(2.2, 0.22, 5.0), 0xe9edf2, 0, 2.3, 0),
+    ]);
+    g.add(new THREE.Mesh(geo, vcMat()));
+    g.userData = { ride: kind };
+    return g;
+  }
+  if (kind.startsWith('tow-')) {
+    // standing on the snow, towed: a T-bar or platter pole runs from behind the hips up to the
+    // cable; on a rope tow the hands hold the rope itself
+    const av = makeAvatar(avatar, color);
+    av.userData.rig = null;
+    g.add(av);
+    const style = kind.slice(4);
+    if (style === 'rope') g.add(new THREE.Mesh(part(box(0.06, 0.06, 3.2), 0x8a6b3d, 0.35, 1.05, 0.6), vcMat()));
+    else g.add(new THREE.Mesh(mergeGeometries([
+      part(box(0.07, 3.2, 0.07), 0x3a3f4a, 0, 2.3, -0.75, -0.45),
+      part(style === 'platter' ? new THREE.CylinderGeometry(0.22, 0.22, 0.06, 10) : box(0.9, 0.1, 0.1), 0xd8dde6, 0, 0.9, -0.1, style === 'platter' ? Math.PI / 2 : 0),
+    ]), vcMat()));
+    g.userData = { ride: kind };
+    return g;
+  }
   const chair = new THREE.Mesh(chairGeometry(2), vcMat());
   chair.position.y = 3.4;                       // seat at y = 0, hanger rising above
   const av = makeAvatar(avatar, color), u = av.userData;
@@ -125,6 +152,43 @@ export function tbarGeometry() {
   return mergeGeometries([
     part(box(0.08, 2.6, 0.08), 0x3a3f4a, 0, -1.3, 0),
     part(box(0.9, 0.1, 0.1), 0xd8dde6, 0, -2.6, 0),
+  ]);
+}
+
+/** Platter (button) lift hanger: a single pole with a disc. */
+export function platterGeometry() {
+  return mergeGeometries([
+    part(box(0.07, 2.6, 0.07), 0x3a3f4a, 0, -1.3, 0),
+    part(new THREE.CylinderGeometry(0.2, 0.2, 0.06, 10), 0xd8dde6, 0, -2.6, 0, Math.PI / 2),
+  ]);
+}
+
+/** Rope tow: a short handle hanging from the rope. */
+export function ropeHandleGeometry() {
+  return mergeGeometries([
+    part(box(0.05, 0.9, 0.05), 0x8a6b3d, 0, -0.45, 0),
+    part(box(0.45, 0.07, 0.07), 0xd8dde6, 0, -0.9, 0),
+  ]);
+}
+
+/** A mountain train (two cars) or a funicular car; origin on the rails at its middle, facing +z. */
+export function trainGeometry(kind) {
+  const car = (z, len, body) => [
+    part(box(2.2, 0.5, len - 1), 0x2a2f38, 0, 0.45, z),
+    part(box(2.7, 1.3, len), body, 0, 1.35, z),
+    part(box(2.6, 0.9, len - 0.6), 0x1d2530, 0, 2.4, z),
+    part(box(2.8, 0.3, len + 0.2), 0xe9edf2, 0, 3.0, z),
+  ];
+  return mergeGeometries(kind === 'funicular' ? car(0, 16, 0x1f6fb5) : [...car(-8.3, 16, 0xb5341f), ...car(8.3, 16, 0xb5341f)]);
+}
+
+/** Tunnel mouth: a dark arch the track disappears into (origin on the track, opening towards +z). */
+export function portalGeometry() {
+  return mergeGeometries([
+    part(box(0.8, 5, 1.2), 0x6d6a66, -2.6, 2.5, 0),
+    part(box(0.8, 5, 1.2), 0x6d6a66, 2.6, 2.5, 0),
+    part(box(6, 0.9, 1.2), 0x6d6a66, 0, 5.2, 0),
+    part(box(4.4, 4.8, 0.3), 0x14171c, 0, 2.4, -0.4),
   ]);
 }
 

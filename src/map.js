@@ -378,7 +378,8 @@ export class SkiMap {
     const R = this.resort;
     this.liftPaths = [];
     const cable = [], symbol = [], towerMats = [], stationGeos = [];
-    const count = { chair: 0, cabin: 0, bar: 0, pad: 0 };
+    const count = { chair: 0, cabin: 0, bar: 0, platter: 0, rope: 0, pad: 0 };
+    const rail = { bed: [], rails: [], dark: [], white: [], tunnel: [], sleepers: [], portals: [], paths: [] };
     // per lift type: tower height, station height, half cable spacing, longest span between
     // supports, least clearance over the ground, how far apart the carriers are, red-line lift
     const SPEC = {
@@ -389,7 +390,10 @@ export class SkiMap {
       carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 6, red: 2.5 },
     };
     for (const l of R.lifts) {
-      const K = SPEC[l.kind] || SPEC.chair, tram = l.kind === 'tram', low = l.kind === 'surface' || l.kind === 'carpet', r = K.r;
+      if (l.kind === 'train' || l.kind === 'funicular') { this.liftPaths.push(this.buildRail(l, rail)); continue; }
+      const K0 = SPEC[l.kind] || SPEC.chair;
+      // T-bars, platters (button lifts) and rope tows each get their own hanger
+      const K = l.kind === 'surface' && l.style && l.style !== 'tbar' ? { ...K0, carrier: l.style, gap: l.style === 'rope' ? 14 : 22 } : K0, tram = l.kind === 'tram', low = l.kind === 'surface' || l.kind === 'carpet', r = K.r;
       // Supports: the mapped towers, plus extra ones wherever the map leaves a span too long
       // to clear the ground (many lifts are mapped as just a bottom and a top).
       const xy = [];
@@ -471,7 +475,7 @@ export class SkiMap {
     for (const g of stationGeos) this.scene.add(new THREE.Mesh(g, M.vcMat()));
     // one instanced mesh per kind of carrier, whatever the number of lifts
     this.carriers = {};
-    for (const [k, geo] of [['chair', M.chairGeometry(4)], ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['pad', M.padGeometry()]]) {
+    for (const [k, geo] of [['chair', M.chairGeometry(4)], ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) {
       const mesh = new THREE.InstancedMesh(geo, M.vcMat(), Math.max(1, count[k]));
       mesh.frustumCulled = false;
       mesh.visible = count[k] > 0;
@@ -484,7 +488,84 @@ export class SkiMap {
     this.trams = this.liftPaths.filter((p) => p.tram).map((path) => ({ path, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] }));
     for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
     this.tram = this.trams[0] || null;
+    // railways: ballast bed, rails and sleepers on the ground, the classic black-and-white
+    // railway line as the map symbol, faint dashes over tunnels, and a train on each stretch
+    if (rail.paths.length) {
+      const bg = new THREE.BufferGeometry();
+      bg.setAttribute('position', new THREE.Float32BufferAttribute(rail.bed, 3));
+      bg.computeVertexNormals();
+      this.scene.add(new THREE.Mesh(bg, new THREE.MeshLambertMaterial({ color: '#7d766c', side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 })));
+      this.scene.add(this.fatLine(rail.rails, '#2a2e35', 1.1, { order: 6 }));
+      this.scene.add(this.fatLine(rail.dark, '#1c2026', 3.6, { order: 8 }));
+      this.scene.add(this.fatLine(rail.white, '#ffffff', 1.7, { order: 9 }));
+      this.scene.add(this.fatLine(rail.tunnel, '#2b313b', 2.2, { order: 7, opacity: 0.5 }));
+      const sl = new THREE.InstancedMesh(new THREE.BoxGeometry(2.7, 0.18, 0.5), new THREE.MeshLambertMaterial({ color: '#4d3d2f' }), Math.max(1, rail.sleepers.length));
+      const mt = new THREE.Matrix4();
+      rail.sleepers.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y + 0.1, t.p.z); sl.setMatrixAt(i, mt); });
+      sl.count = rail.sleepers.length; sl.frustumCulled = false;
+      this.scene.add(sl);
+      for (const t of rail.portals) { const m = new THREE.Mesh(M.portalGeometry(), M.vcMat()); m.position.copy(t.p); m.rotation.y = t.yaw; this.scene.add(m); }
+    }
+    this.railCars = rail.paths.map((path) => { const mesh = new THREE.Mesh(M.trainGeometry(path.l.kind), M.vcMat()); this.scene.add(mesh); return { path, mesh }; });
     this.liftLabels = this.liftPaths.map((p) => ({ l: p.l, p: this.pathPoint(p, p.L * 0.5, 0).pos.clone().add(new THREE.Vector3(0, 10, 0)) }));
+  }
+
+  /**
+   * A railway or funicular used as a lift. It lies on the ground along its real track; the
+   * stretches in `l.tunnel` run straight underground between their portals.
+   */
+  buildRail(l, A) {
+    const xy = [];
+    for (let i = 0; i + 1 < l.pts.length; i += 2) {
+      if (i) {
+        const ax = l.pts[i - 2], ay = l.pts[i - 1], d = Math.hypot(l.pts[i] - ax, l.pts[i + 1] - ay), k = Math.ceil(d / 8);
+        for (let j = 1; j < k; j++) xy.push([ax + ((l.pts[i] - ax) * j) / k, ay + ((l.pts[i + 1] - ay) * j) / k]);
+      }
+      xy.push([l.pts[i], l.pts[i + 1]]);
+    }
+    const n = xy.length, d2 = [0];
+    for (let i = 1; i < n; i++) d2.push(d2[i - 1] + Math.hypot(xy[i][0] - xy[i - 1][0], xy[i][1] - xy[i - 1][1]));
+    const tun = (l.tunnel || []).filter(([a, b]) => b - a > 12);
+    const under = (d) => tun.some(([a, b]) => d > a && d < b);
+    const pts = xy.map(([x, y]) => this.world(x, y, 0.45));
+    const spans = [];
+    for (const [a, b] of tun) {
+      let ia = 0, ib = n - 1;
+      while (ia < n - 1 && d2[ia] < a - 0.5) ia++;
+      while (ib > 0 && d2[ib] > b + 0.5) ib--;
+      for (let i = ia + 1; i < ib; i++) pts[i].y = pts[ia].y + ((pts[ib].y - pts[ia].y) * (d2[i] - d2[ia])) / (d2[ib] - d2[ia] || 1);
+      spans.push([ia, ib]);
+    }
+    const cum = [0];
+    for (let i = 1; i < n; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
+    const L = cum[n - 1];
+    const path = { l, rail: true, tram: false, pts, cum, L, r: 0, loop: 0, chairs: 0, first: 0, carrier: null, tunnels: spans.map(([ia, ib]) => [cum[ia], cum[ib]]), xy };
+    path.mid = this.pathPoint(path, L / 2, 0).pos;
+    let nextSleeper = 2;
+    for (let i = 1; i < n; i++) {
+      const a = pts[i - 1], b = pts[i], mid = (d2[i - 1] + d2[i]) / 2, dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1, nx = -dz / len, nz = dx / len;
+      const stripe = Math.floor(mid / 18) % 2 === 0;
+      if (under(mid)) {
+        // only a hint of the line on the surface above the tunnel
+        if (stripe) { const p = this.world(xy[i - 1][0], xy[i - 1][1], 1.5), q = this.world(xy[i][0], xy[i][1], 1.5); A.tunnel.push(p.x, p.y, p.z, q.x, q.y, q.z); }
+        continue;
+      }
+      const w = 1.8;
+      A.bed.push(a.x + nx * w, a.y, a.z + nz * w, a.x - nx * w, a.y, a.z - nz * w, b.x + nx * w, b.y, b.z + nz * w,
+        b.x + nx * w, b.y, b.z + nz * w, a.x - nx * w, a.y, a.z - nz * w, b.x - nx * w, b.y, b.z - nz * w);
+      for (const sd of [0.75, -0.75]) A.rails.push(a.x + nx * sd, a.y + 0.3, a.z + nz * sd, b.x + nx * sd, b.y + 0.3, b.z + nz * sd);
+      A.dark.push(a.x, a.y + 1.4, a.z, b.x, b.y + 1.4, b.z);
+      if (stripe) A.white.push(a.x, a.y + 1.45, a.z, b.x, b.y + 1.45, b.z);
+      while (nextSleeper < d2[i]) {
+        if (nextSleeper >= d2[i - 1]) { const f = (nextSleeper - d2[i - 1]) / (d2[i] - d2[i - 1] || 1); A.sleepers.push({ p: a.clone().lerp(b, f), yaw: Math.atan2(dx, dz) }); }
+        nextSleeper += 6;
+      }
+    }
+    for (const [ia, ib] of spans) for (const [i, j] of [[ia, Math.min(n - 1, ia + 1)], [ib, Math.max(0, ib - 1)]]) {
+      A.portals.push({ p: pts[i].clone(), yaw: Math.atan2(pts[j].x - pts[i].x, pts[j].z - pts[i].z) });
+    }
+    A.paths.push(path);
+    return path;
   }
 
   /** Distance along a lift path of the point on it nearest (in plan) to a world position. */
@@ -533,7 +614,7 @@ export class SkiMap {
 
   animateLifts(t) {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), big = new THREE.Vector3(1.6, 1.6, 1.6), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
-    const SPEED = { chair: 2.4, cabin: 5, bar: 2.5, pad: 0.8 };
+    const SPEED = { chair: 2.4, cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
     // Lifts far from the camera are too small to see moving: only the ones in view range are
     // advanced each frame (all of them once, so every carrier starts in the right place).
     const cam = this.camera.position, all = !this.liftsMoved, is3 = this.mode === '3d';
@@ -553,6 +634,17 @@ export class SkiMap {
     }
     for (const k in touched) this.carriers[k].instanceMatrix.needsUpdate = true;
     this.liftsMoved = true;
+    // trains and funicular cars shuttle between their two stations, waiting at each end
+    for (const car of this.railCars || []) {
+      const p = car.path, running = !this.closed.has('l' + p.l.id);
+      const ride = Math.max(25, p.L / (p.l.kind === 'funicular' ? 16 : 12)), dwell = 10, cyc = 2 * (ride + dwell), ph = running ? (t + p.l.id * 7) % cyc : 0;
+      const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
+      const d = p.L * tri * tri * (3 - 2 * tri);
+      const a = this.pathPoint(p, Math.max(0, d - 6), 0).pos, b = this.pathPoint(p, Math.min(p.L, d + 6), 0).pos;
+      car.mesh.position.copy(a).lerp(b, 0.5);
+      car.mesh.lookAt(b);
+      car.mesh.visible = !p.tunnels.some(([u, v]) => d > u + 8 && d < v - 8);
+    }
     for (const tram of this.trams) {
       // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
       // other descends; both wait in their stations, then swap directions.
@@ -618,11 +710,15 @@ export class SkiMap {
   liftSpot(lift) {
     const path = this.liftPaths.find((p) => p.l.id === lift.id);
     if (!path) return null;
-    const q = this.pathPoint(path, path.L * Math.min(1, Math.max(0, lift.frac)), path.carpet ? 0 : lift.down ? -path.r : path.r);
-    const ride = path.carpet ? '' : path.carrier === 'chair' ? 'chair' : 'cabin';
+    const kind = path.l.kind, low = kind === 'surface' || kind === 'carpet';
+    const q = this.pathPoint(path, path.L * Math.min(1, Math.max(0, lift.frac)), path.rail || kind === 'carpet' ? 0 : lift.down ? -path.r : path.r);
+    // chair: seated in a chair; gondola / cable car: a cabin; train / funicular: a rail car;
+    // T-bar, platter, rope tow: standing on the snow holding on; carpet: just standing
+    const ride = path.rail ? kind : kind === 'surface' ? 'tow-' + (path.l.style || 'tbar') : kind === 'carpet' ? '' : path.carrier === 'chair' ? 'chair' : 'cabin';
     const ground = this.groundY(q.pos.x, q.pos.z);
-    // seat height: where the chair on that cable would hang, never below the snow
-    q.pos.y = ride ? Math.max(ground + 1.2, q.pos.y - (ride === 'chair' ? 5.4 : 6)) : ground + 0.4;
+    if (path.rail) q.pos.y = Math.max(q.pos.y, ground + 0.45) + 0.5;      // in a tunnel: shown on the surface above
+    else if (low) q.pos.y = ground + 0.4;
+    else q.pos.y = Math.max(ground + 1.2, q.pos.y - (ride === 'chair' ? 5.4 : 6));   // where the chair or cabin hangs
     if (lift.down) q.yaw += Math.PI;
     return { ride, pos: q.pos, yaw: q.yaw };
   }

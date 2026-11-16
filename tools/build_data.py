@@ -30,7 +30,10 @@ CELL = 14.0          # terrain grid spacing, metres
 MARGIN = 450.0       # margin around the resort features, metres
 
 LIFT_KINDS = {"cable_car": "tram", "gondola": "gondola", "chair_lift": "chair", "mixed_lift": "chair", "magic_carpet": "carpet",
-              "t-bar": "surface", "j-bar": "surface", "platter": "surface", "drag_lift": "surface", "rope_tow": "surface"}
+              "t-bar": "surface", "j-bar": "surface", "platter": "surface", "drag_lift": "surface", "rope_tow": "surface",
+              "train": "train", "funicular": "funicular"}   # the last two come from extra_lifts in the resort config
+# what a surface lift's carriers (and the rider) look like
+SURFACE_STYLE = {"t-bar": "tbar", "j-bar": "tbar", "platter": "platter", "drag_lift": "platter", "rope_tow": "rope"}
 DIFF = {"novice": 0, "easy": 0, "intermediate": 1, "advanced": 2, "expert": 3, "extreme": 3, "freeride": 3}
 WALK_HIGHWAYS = {"footway", "steps", "pedestrian", "path", "service", "residential", "unclassified", "living_street"}
 
@@ -61,13 +64,53 @@ def main():
 
     # Mountain railways and funiculars that work as ski lifts but are mapped as railways
     # (Zermatt's Gornergrat Bahn): the config gives each one as a line of [lon, lat] points.
+    rail_adj = None
     for k, x in enumerate(cfg.get("extra_lifts", [])):
-        ids = []
-        for j, (lon, lat) in enumerate(x["pts"]):
-            nid = f"x{k}_{j}"
-            nodes[nid] = tf.transform(lon, lat)
-            ids.append(nid)
-        tags = {"aerialway": x.get("kind", "gondola"), "name": x["name"]}
+        ids, tunnels = [], set()
+        ends = [tf.transform(lon, lat) for lon, lat in x["pts"]]
+        if x.get("rail"):
+            # follow the real track: shortest way along the mapped railway between the two stations
+            if rail_adj is None:
+                rail_adj = {}
+                for _, nd, t in ways:
+                    if t.get("railway") in ("rail", "narrow_gauge", "funicular", "light_rail"):
+                        tun = t.get("tunnel") == "yes"
+                        for a_, b_ in zip(nd, nd[1:]):
+                            d = math.dist(nodes[a_], nodes[b_])
+                            rail_adj.setdefault(a_, []).append((b_, d, tun))
+                            rail_adj.setdefault(b_, []).append((a_, d, tun))
+            near = lambda p: min(rail_adj, key=lambda i: math.dist(nodes[i], p))
+            src, dst = near(ends[0]), near(ends[-1])
+            assert math.dist(nodes[src], ends[0]) < 150 and math.dist(nodes[dst], ends[-1]) < 150, f"extra_lifts {x['name']}: no railway near the station"
+            import heapq
+            best, prev, heap = {src: 0.0}, {}, [(0.0, src)]
+            while heap:
+                d, u = heapq.heappop(heap)
+                if u == dst:
+                    break
+                if d > best.get(u, 1e18):
+                    continue
+                for v, w, tun in rail_adj[u]:
+                    if d + w < best.get(v, 1e18):
+                        best[v] = d + w
+                        prev[v] = (u, tun)
+                        heapq.heappush(heap, (d + w, v))
+            assert dst in prev or dst == src, f"extra_lifts {x['name']}: the railway is not joined up between the stations"
+            u = dst
+            ids = [u]
+            while u != src:
+                v, tun = prev[u]
+                if tun:
+                    tunnels.add(frozenset((u, v)))
+                ids.append(v)
+                u = v
+            ids.reverse()
+        else:
+            for j, pt in enumerate(ends):
+                nid = f"x{k}_{j}"
+                nodes[nid] = pt
+                ids.append(nid)
+        tags = {"aerialway": x.get("kind", "gondola"), "name": x["name"], "_tunnels": tunnels}
         if x.get("both"):
             tags["oneway"] = "no"
         if x.get("minutes"):
@@ -86,7 +129,8 @@ def main():
             t["name"] = RENAME.get(n, n)
 
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
-    lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS]
+    # trains and funiculars only come from the resort config (extra_lifts), which gives them their track
+    lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS and (w[2]["aerialway"] not in ("train", "funicular") or str(w[0]).startswith("x"))]
     # Keep only this resort: neighbouring ski areas often share a ridge (Stowe / Smugglers' Notch).
     # The resort's own boundary in OpenStreetMap (landuse=winter_sports) decides what belongs.
     area = None
@@ -97,7 +141,7 @@ def main():
         assert area is not None, f"no winter_sports area named {cfg['area_name']!r} in the OSM extract"
         inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
         pistes = [w for w in pistes if inside_area(w)]
-        lifts = [w for w in lifts if inside_area(w)]
+        lifts = [w for w in lifts if str(w[0]).startswith("x") or inside_area(w)]
 
     if cfg.get("dem_only"):
         # a resort that runs over a border the elevation model stops at (Zermatt / Cervinia):
@@ -249,7 +293,17 @@ def main():
         line = LineString(pts)
         kind = LIFT_KINDS[t["aerialway"]]
         name = t.get("name") or {"carpet": "Magic carpet", "surface": "Surface lift"}.get(kind, "Lift")
-        speed = {"tram": 8.0, "gondola": 5.0, "chair": 2.4, "carpet": 0.8, "surface": 2.5}[kind]
+        speed = {"tram": 8.0, "gondola": 5.0, "chair": 2.4, "carpet": 0.8, "surface": 2.5, "train": 6.0, "funicular": 8.0}[kind]
+        # stretches of a railway that run underground, as [from, to] distances along the line
+        tunnel, acc = [], 0.0
+        for a_, b_ in zip(nd, nd[1:]):
+            d = math.dist(loc(a_), loc(b_))
+            if frozenset((a_, b_)) in t.get("_tunnels", ()):
+                if tunnel and abs(tunnel[-1][1] - acc) < 0.3:
+                    tunnel[-1][1] = round(acc + d, 1)
+                else:
+                    tunnel.append([round(acc, 1), round(acc + d, 1)])
+            acc += d
         if "Express" in name:
             speed = 5.0
         dur = minutes(t["aerialway:duration"]) * 60 if minutes(t.get("aerialway:duration")) else line.length / speed
@@ -261,6 +315,8 @@ def main():
             # can be ridden in either direction (a lift linking two base areas): tagged in OSM, or listed in the resort config
             "both": t.get("oneway") == "no" or name in cfg.get("two_way_lifts", []),
             "pts": flat(pts), "towers": [p for tw in towers for p in tw],
+            **({"style": SURFACE_STYLE[t["aerialway"]]} if t["aerialway"] in SURFACE_STYLE else {}),
+            **({"tunnel": tunnel} if tunnel else {}),
             "_line": line,
         })
         lift_ways.append(nd)

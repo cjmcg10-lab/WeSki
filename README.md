@@ -72,9 +72,10 @@ tests/                unit tests (routing, tracker, group rules)
 Built maps (18): **Jay Peak, Stowe, Smugglers' Notch, Sugarbush** (Vermont), **Cannon Mountain** (New
 Hampshire), **Saddleback** (Maine), **Brundage Mountain** (Idaho), **Vail, Breckenridge** (Colorado),
 **Park City** (Utah), **Mammoth Mountain** (California), **Geto Kogen** (Japan), **Pizol, Zermatt**
-(Switzerland), **Les Contamines, La Plagne, Les Arcs** and **Val Thorens** (France). Zermatt is the
-Swiss side only (the Swiss elevation model stops at the Italian border); its Gornergrat railway and
-Sunnegga funicular, and the Les Arcs funicular, are drawn as gondolas. Very large resorts use a
+(Switzerland), **Les Contamines, La Plagne, Les Arcs** and **Val Thorens** (France). Zermatt covers the whole
+Zermatt – Cervinia area (Swiss 2 m model plus the Italian 10 m TINITALY model, INGV, CC BY 4.0).
+Its Gornergrat railway and Sunnegga funicular, and the Les Arcs funicular, follow their real
+track from the map data and are drawn as railways (bed, rails, sleepers, tunnels, trains). Very large resorts use a
 wider terrain grid (16-23 m instead of 14 m) so they stay as light to draw as the others. Each resort is one folder
 under `public/data/<id>/` and is downloaded and cached on the phone the first time it is opened.
 History, saved tracks, closures and offline status are kept per resort.
@@ -91,8 +92,8 @@ shows as a green circle, a red as a blue square and a black as a black diamond.
    (name corrections), `base_link` (how far apart two lift bases may be and still be one base area),
    `isolated_lifts` (a village tow that really is not connected), `building_range`, `poi_range`
    (keep only places this close to the skiing, for resort towns), `dem_only` (drop what the
-   elevation model does not cover), `extra_lifts` (railways and funiculars used as lifts, as
-   `[lon, lat]` lines), `links` (hand-made joins: a summit tunnel between stations, a lift top to
+   elevation model does not cover), `extra_lifts` (railways and funiculars used as lifts: station `[lon, lat]` points,
+   `kind` train/funicular and `rail: true` to follow the mapped track), `links` (hand-made joins: a summit tunnel between stations, a lift top to
    a trail), `cell` (terrain grid spacing; chosen automatically for very large resorts).
 2. Download an OSM extract covering it (`api.openstreetmap.org/api/0.6/map?bbox=...`) and an elevation
    model: USGS 1 m DEM tiles (The National Map) in the USA, `tools/fetch_dem.py` for Switzerland, France

@@ -109,7 +109,7 @@
   "trails": 135,
   "lifts": 78,
   "zones": false,
-  "bytes": 2907429
+  "bytes": 2915963
  },
  {
   "id": "les-contamines",
@@ -273,18 +273,18 @@
  },
  {
   "id": "zermatt",
-  "name": "Zermatt",
-  "region": "Valais, Switzerland",
+  "name": "Zermatt \u2013 Cervinia",
+  "region": "Valais, Switzerland / Aosta Valley, Italy",
   "tz": "Europe/Zurich",
-  "lat": 45.93927,
-  "lon": 7.7295,
-  "baseLat": 46.02394,
-  "baseLon": 7.74862,
-  "top": 3826,
-  "base": 1605,
-  "trails": 65,
-  "lifts": 36,
+  "lat": 45.93842,
+  "lon": 7.7292,
+  "baseLat": 45.88823,
+  "baseLon": 7.62399,
+  "top": 3851,
+  "base": 1558,
+  "trails": 131,
+  "lifts": 61,
   "zones": false,
-  "bytes": 1686137
+  "bytes": 2557856
  }
 ]
