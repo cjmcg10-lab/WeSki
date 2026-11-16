@@ -49,6 +49,7 @@ const S = {
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
+  showFps: prefs.get('showFps', false),
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
   group: null,              // {code, client, state, status}
@@ -153,7 +154,10 @@ function initMap(id) {
     S.router = new Router(resort, S.geo);
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
+    const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
     S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
+    if (q0) S.map.setQuality(q0);
+    fpsReadout();
     S.map.setUnits(S.units);
     S.map.setClosures(S.closures);
     S.map.onTap(onMapTap);
@@ -394,6 +398,16 @@ function onFix(fix) {
   if (S.nav) recalcNav();
   renderChrome();
   if (S.tab === 'track' && S.sheet === 'track') renderTrackLive();
+}
+
+/** Optional frames-per-second readout (More > Show frame rate). */
+function fpsReadout() {
+  let el = document.getElementById('fps');
+  clearInterval(fpsReadout.timer);
+  if (!S.showFps) { el?.remove(); return; }
+  if (!el) { el = document.createElement('div'); el.id = 'fps'; el.style.cssText = 'position:fixed;left:12px;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:30;font:600 12px/1 ui-monospace,monospace;color:#fff;background:rgba(10,20,30,.72);padding:5px 7px;border-radius:8px;pointer-events:none'; document.body.appendChild(el); }
+  const tick = () => { const p = S.map?.perf; el.textContent = p ? `${p.fps} fps · Q${p.q}` : 'move the map…'; };
+  tick(); fpsReadout.timer = setInterval(tick, 500);
 }
 
 function ensureLocation() {
@@ -1058,6 +1072,7 @@ function sheetMore() {
     <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire ${esc(S.place.name)} map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
     <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
+    <div class="card"><div class="rowf"><div class="grow"><b>Show frame rate</b><div class="sub">A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best – Q3 lightest). The app lowers quality by itself when the phone can’t keep up.</div></div><label class="switch"><input type="checkbox" id="f-fps" ${S.showFps ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
     <button class="btn alt" data-act="legend">Map legend</button>
 
@@ -1283,6 +1298,7 @@ function onInput(e) {
     showTracks(); renderSheet(); renderChrome();
   }
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
+  else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
   else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);

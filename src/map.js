@@ -25,6 +25,15 @@ const POI_STYLE = {
   service: ['#59636e', '•', 4], parking: ['#3b6ea8', 'P', 4], shelter: ['#59636e', '•', 4], lifttop: ['#e03131', '', 9],
 };
 
+// Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the
+// camera lifts are still animated (metres).
+const QUALITY = [
+  { pr: 2, trees: 1, lifts: 4500 },
+  { pr: 1.5, trees: 0.75, lifts: 3500 },
+  { pr: 1.25, trees: 0.5, lifts: 2500 },
+  { pr: 1, trees: 0.3, lifts: 1600 },
+];
+
 export class SkiMap {
   constructor(container, resort, geo, surroundH = null) {
     this.surroundH = surroundH;
@@ -285,6 +294,7 @@ export class SkiMap {
       if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.15) continue;
       if (rnd() < 0.3) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
     }
+    for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
@@ -296,7 +306,7 @@ export class SkiMap {
       c.copy(dark).lerp(light, r).lerp(frost, alt > 1000 ? Math.min(0.75, (alt - 1000) / 200) : 0);
       mesh.setColorAt(i, c);
     });
-    this.trees = mesh;
+    this.trees = mesh; this.treeTotal = spots.length;
     this.scene.add(mesh);
   }
 
@@ -530,7 +540,7 @@ export class SkiMap {
     const touched = {};
     for (const p of this.liftPaths) {
       if (!p.chairs) continue;
-      if (!all && is3 && p.mid.distanceTo(cam) > 4500 + p.L / 2) continue;
+      if (!all && is3 && p.mid.distanceTo(cam) > QUALITY[this.q || 0].lifts + p.L / 2) continue;
       const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k];
       const speed = (k === 'chair' && p.l.name.includes('Express') ? 5 : SPEED[k]) * 2; // real line speed x2 so the motion reads at map scale
       const gap = p.loop / p.chairs;
@@ -873,8 +883,10 @@ export class SkiMap {
   // ---------- frame
   resize() {
     const w = (this.w = this.el.clientWidth || 1), h = (this.h = this.el.clientHeight || 1);
-    this.renderer.setSize(w, h);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // the 3D picture may be drawn a little less sharp when the phone is struggling; text stays crisp
+    this.renderer.setPixelRatio(Math.min(dpr, QUALITY[this.q || 0].pr));
+    this.renderer.setSize(w, h);
     this.overlayKey = '';
     this.overlay.width = w * dpr; this.overlay.height = h * dpr;
     this.overlay.style.width = w + 'px'; this.overlay.style.height = h + 'px';
@@ -889,7 +901,9 @@ export class SkiMap {
     const now = performance.now();
     if (this.paused) return;
     const busy = now - (this.lastInput || 0) < 900 || !!this.flight;
-    if (!busy && now - (this.lastFrame || 0) < 31) return;
+    if (!busy && now - (this.lastFrame || 0) < 31) { this.wasBusy = false; return; }
+    if (busy && this.wasBusy && !this.flight) this.measure(now - this.lastFrame, now);
+    this.wasBusy = busy;
     this.lastFrame = now;
     this.dt = Math.min(0.1, this.clock.getDelta());
     this.t += this.dt;
@@ -933,6 +947,36 @@ export class SkiMap {
     fog.near = 7000 * k;
     fog.far = k >= 1 ? 21000 : Math.max(fog.near + 1, Math.exp(lf) * (1 - mix) + 21000 * mix);
     this.overlay.style.opacity = String(Math.min(1, Math.max(0, (k - 0.75) / 0.25)));
+  }
+
+  /**
+   * Automatic quality. While the map is being moved it should run at full frame rate; if the
+   * phone cannot keep up, the costly extras are turned down a step (sharpness on dense screens,
+   * tree count, how far away lifts are animated), and turned back up when there is room.
+   */
+  measure(gap, now) {
+    const P = (this.perfAcc ||= { sum: 0, n: 0 });
+    if (gap > 250) return;                    // a hiccup (tab switch, GC), not the frame rate
+    P.sum += gap; P.n++;
+    if (P.n < 40) return;
+    const avg = P.sum / P.n; P.sum = 0; P.n = 0;
+    this.perf = { fps: Math.round(1000 / avg), q: this.q || 0 };
+    const q = this.q || 0;
+    if (this.autoQuality === false) return;
+    if (avg > 24 && q < QUALITY.length - 1) {
+      // dropping straight after a raise means the raise was too much: wait longer before retrying
+      if (now - (this.raisedAt || -1e9) < 8000) this.raiseWait = Math.min(600000, (this.raiseWait || 20000) * 3);
+      this.setQuality(q + 1); this.holdUntil = now + (this.raiseWait || 20000);
+    } else if (avg < 17.6 && q > 0 && now > (this.holdUntil || 0)) {
+      this.setQuality(q - 1); this.raisedAt = now; this.holdUntil = now + 6000;
+    }
+  }
+
+  setQuality(q) {
+    this.q = Math.max(0, Math.min(QUALITY.length - 1, q));
+    if (this.trees) this.trees.count = Math.max(1, Math.floor(this.treeTotal * QUALITY[this.q].trees));
+    if (this.perf) this.perf.q = this.q;
+    this.resize();
   }
 
   /** Stop drawing while the start screen covers the map. */
@@ -985,12 +1029,15 @@ export class SkiMap {
     if (this.pin) scaleFor(this.pinObj, 0.014, 22);
     if (this.meet) scaleFor(this.meetObj, 0.016, 24);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
-    this.renderer.render(this.scene, this.camera);
     // The label layer (lots of outlined text) is the most expensive 2D work, so it is only
     // redrawn when the view or the things on it changed, and at most ~4x a second otherwise.
     const cam = this.camera, e = cam.matrixWorld.elements, now = performance.now();
     const key = `${this.mode}|${e[12].toFixed(1)}|${e[13].toFixed(1)}|${e[14].toFixed(1)}|${e[0].toFixed(4)}|${e[5].toFixed(4)}|${e[10].toFixed(4)}|${this.zoom2.toFixed(4)}|${this.w}x${this.h}`;
     const people = this.me || this.friends.size || this.play;
+    // Nothing is moving when the view is still, no lift is being animated and nobody is on the
+    // map: the picture is then only refreshed twice a second (saves battery and heat).
+    const still = !this.flight && farOut && !people && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
+    if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
     if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
       this.drawOverlay();
