@@ -269,7 +269,8 @@ export class Router {
   }
 
   /**
-   * Route between two places. Each place is {x,y} (snapped to the network) or {node}.
+   * Route between two places. Each place is {x,y} (snapped to the network), {node}, or for
+   * the start {lift, frac, down} when the person is riding a lift.
    * opts: {maxDiff, closed, tol: 'low'|'normal'|'high'}
    * Returns {ok:true, time, dist, pts, steps, vertDown, vertUp, climb, over, overNow} or {ok:false, reason}.
    *   climb:   metres gained under your own power (lifts excluded)
@@ -297,7 +298,9 @@ export class Router {
     const N = this.nodes.length, T = TOLERANCE[opts.tol] || TOLERANCE.normal;
     const dist = new Float64Array(N).fill(Infinity), climb = new Float64Array(N);
     const prev = new Array(N).fill(null); // {from, e, rev} or {start:[edgeIdx, a0, a1], hop}
-    const sFrom = from.node == null ? this._snaps(from.x, from.y, NEAR_START) : null;
+    // Riding a lift: the route starts where it lets you off (falls back to your position if the lift is unknown).
+    const ride = from.lift != null ? this.edges.findIndex((e) => e.k === 'l' && e.r === from.lift) : -1;
+    const sFrom = ride >= 0 || from.node != null ? null : this._snaps(from.x, from.y, NEAR_START);
     const sTo = to.node == null ? this._snaps(to.x, to.y, NEAR_START) : null;
     if (sFrom && !sFrom.length) return { ok: false, reason: 'from_off_network' };
     if (sTo && !sTo.length) return { ok: false, reason: 'to_off_network' };
@@ -316,6 +319,10 @@ export class Router {
         if (f) seed(e.b, hop.c + f.c, hop.up + f.up, { start: [s.e, s.along, e.len], hop });
         if (b) seed(e.a, hop.c + b.c, hop.up + b.up, { start: [s.e, s.along, 0], hop });
       });
+    } else if (ride >= 0) {
+      const e = this.edges[ride], at = e.len * Math.min(1, Math.max(0, from.frac ?? 0)), down = !!from.down && e.bi;
+      const left = this.resort.lifts[e.r].dur * ((down ? at : e.len - at) / e.len);
+      seed(down ? e.a : e.b, left, 0, { start: [ride, at, down ? 0 : e.len, true], hop: { pts: null } });
     } else seed(from.node, 0, 0, null);
 
     const done = new Uint8Array(N);
@@ -390,7 +397,7 @@ export class Router {
         push('cross', null, -1, -1, h.len, h, h.pts);
         continue;
       }
-      const [ei, a0, a1] = part;
+      const [ei, a0, a1, riding] = part;
       const e = this.edges[ei], rev = a1 < a0;
       const total = lineLength(e.pts) || 1;
       const k = total / (e.len || total); // edge len vs geometric length
@@ -403,7 +410,8 @@ export class Router {
       at = Math.max(0, pts.length - 2);
       add(seg);
       dist += len;
-      const m = this.leg(e, rev, len, opts) || { t: len / LINK_SPEED, up: 0, band: -1 };
+      let m = this.leg(e, rev, len, opts) || { t: len / LINK_SPEED, up: 0, band: -1 };
+      if (riding) m = { ...m, t: m.t - LIFT_WAIT };   // already on it: no queue
       time += m.t; climb += m.up;
       const last = steps[steps.length - 1];
       if (e.k === 'v') push('cross', null, -1, -1, len, m, seg);

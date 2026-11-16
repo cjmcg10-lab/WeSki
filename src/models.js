@@ -88,6 +88,51 @@ export function animateAvatar(g, t, dt, moving) {
   u.body.position.y = -Math.abs(Math.cos(ph)) * 0.05 * a;     // flex through the turn
 }
 
+/**
+ * Someone riding a lift: their own chair with them sitting on it (or, on a gondola or tram,
+ * a cabin in their colour). The origin is at seat height so it can be scaled like an avatar.
+ * kind: 'chair' | 'cabin'
+ */
+export function makeRide(kind, avatar, color) {
+  const g = new THREE.Group();
+  if (kind === 'cabin') {
+    const c = new THREE.Color(color), geo = mergeGeometries([
+      part(box(0.14, 1.5, 0.14), 0x3a3f4a, 0, 3.0, 0),
+      part(box(2.0, 0.2, 2.3), 0xe9edf2, 0, 2.1, 0),
+      part(box(1.9, 1.0, 2.2), 0x1d2530, 0, 1.5, 0),
+      part(box(2.0, 0.95, 2.3), c, 0, 0.55, 0),
+      part(box(1.6, 0.2, 1.9), 0x2a2f38, 0, 0, 0),
+    ]);
+    g.add(new THREE.Mesh(geo, vcMat()));
+    g.userData = { ride: kind };
+    return g;
+  }
+  const chair = new THREE.Mesh(chairGeometry(2), vcMat());
+  chair.position.y = 3.4;                       // seat at y = 0, hanger rising above
+  const av = makeAvatar(avatar, color), u = av.userData;
+  // sitting: leaning back against the backrest, skis or board hanging out in front
+  if (u.board) u.body.rotation.y = 0.5;
+  av.rotation.x = -0.32;
+  av.position.set(0, -0.3, 0.12);
+  u.rig = null;                                  // no riding animation while seated
+  g.add(chair, av);
+  g.userData = { ride: kind };
+  return g;
+}
+
+/** T-bar / platter hanger on a surface lift: hangs from the cable at y=0. */
+export function tbarGeometry() {
+  return mergeGeometries([
+    part(box(0.08, 2.6, 0.08), 0x3a3f4a, 0, -1.3, 0),
+    part(box(0.9, 0.1, 0.1), 0xd8dde6, 0, -2.6, 0),
+  ]);
+}
+
+/** One section of a magic-carpet belt, lying on the ground. */
+export function padGeometry() {
+  return part(box(0.9, 0.08, 1.6), 0x4a515c, 0, 0.05, 0);
+}
+
 /** Ring drawn under an avatar (stale friends get a grey one). */
 export function makeRing(color) {
   const m = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.15, 20), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthWrite: false }));

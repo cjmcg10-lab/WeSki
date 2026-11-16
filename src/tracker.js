@@ -1,5 +1,5 @@
 // GPS run tracking: spike filtering, ski / lift / idle classification, stats.
-import { nearestOnLine } from './geo.js';
+import { nearestOnLine, lineLength } from './geo.js';
 
 export const ST = { IDLE: 0, SKI: 1, LIFT: 2 };
 const MAX_ACC = 60;        // ignore fixes with worse horizontal accuracy (m)
@@ -9,6 +9,62 @@ const GAP_S = 30;          // a pause in fixes longer than this is not counted a
 const WINDOW_S = 14;       // classification window
 const CONFIRM_S = 6;       // a new state must persist this long before it is applied
 const MIN_RUN_VERT = 15, MIN_RUN_DIST = 100, MIN_LIFT_VERT = 8;
+
+/**
+ * Works out whether someone is riding a lift, from positions alone, so it runs all the
+ * time (with or without stats tracking or directions).
+ *  - Getting on: several seconds of steady progress up a lift line, staying close to it.
+ *    Skiing down underneath a lift never counts (wrong direction), except on two-way lifts.
+ *  - Staying on: once riding you stay "on the lift" until you reach the far station, leave
+ *    the line, or head back down it - so a stopped lift, or ground that dips under the
+ *    chair, does not end the ride.
+ */
+const SENSE_NEAR = 35, SENSE_LEAVE = 45, SENSE_MIN_S = 5, SENSE_WINDOW_S = 10, SENSE_MAX_SPEED = 13;
+export class LiftSense {
+  /** @param lifts resort.lifts  @param geo optional terrain, used to ignore traverses that drop */
+  constructor(lifts, geo = null) {
+    this.lifts = lifts.map((l) => ({ pts: l.pts, len: lineLength(l.pts) || 1, both: !!l.both }));
+    this.geo = geo;
+    this.buf = [];      // recent [t, x, y]
+    this.on = null;     // {id, frac, down, along, best}
+  }
+
+  /** Feed one position; returns {id, frac (0 bottom .. 1 top), down} while riding, else null. */
+  update(x, y, t) {
+    const buf = this.buf, last = buf[buf.length - 1];
+    if (last && t - last[0] > 120000) { buf.length = 0; this.on = null; }
+    buf.push([t, x, y]);
+    while (buf.length > 1 && t - buf[0][0] > SENSE_WINDOW_S * 1000) buf.shift();
+    if (this.on) {
+      const o = this.on, l = this.lifts[o.id], n = nearestOnLine(l.pts, x, y);
+      const ahead = o.down ? o.best - n.along : n.along - o.best;
+      if (ahead > 0) o.best = n.along;
+      const arrived = o.down ? n.along < 12 : n.along > l.len - 12;
+      if (n.d > SENSE_LEAVE || arrived || ahead < -30) { this.on = null; buf.length = 0; return null; }
+      o.along = n.along; o.frac = n.along / l.len;
+      return o;
+    }
+    const a = buf[0], dt = (t - a[0]) / 1000;
+    if (dt < SENSE_MIN_S) return null;
+    // net movement over the window, not the wiggly point-to-point path: on a slow chair GPS
+    // wobble is as big as the real movement between fixes
+    const path = Math.hypot(x - a[1], y - a[2]);
+    if (path < 10 || path / dt > SENSE_MAX_SPEED) return null;
+    for (let id = 0; id < this.lifts.length; id++) {
+      const l = this.lifts[id], nb = nearestOnLine(l.pts, x, y);
+      if (nb.d > SENSE_NEAR || nb.along > l.len - 12) continue;
+      const na = nearestOnLine(l.pts, a[1], a[2]);
+      if (na.d > SENSE_NEAR) continue;
+      const prog = nb.along - na.along;
+      if (Math.abs(prog) < Math.max(10, 0.7 * path) || (prog < 0 && !l.both)) continue;
+      // a trail that runs beside a lift for a moment goes downhill; a lift does not
+      if (this.geo && !l.both && this.geo.elev(x, y) < this.geo.elev(a[1], a[2]) - 4) continue;
+      this.on = { id, frac: nb.along / l.len, down: prog < 0, along: nb.along, best: nb.along };
+      return this.on;
+    }
+    return null;
+  }
+}
 
 export class Tracker {
   /** @param geo Geo  @param lifts resort.lifts (for lift-line proximity) */
@@ -21,6 +77,8 @@ export class Tracker {
     this.state = ST.IDLE;
     this.cand = null;      // {state, since, idx}
     this.speed = 0;        // current smoothed speed, m/s
+    this.sense = new LiftSense(lifts, geo);
+    this.riding = null;    // {id, frac, down} while on a lift
   }
 
   /** Add a fix {lat, lon, acc, alt, t}. Returns {ok, reason}. */
@@ -43,6 +101,7 @@ export class Tracker {
       if (spike || dt > GAP_S) gap = 1;
     }
     this.spikeRun = 0;
+    this.riding = this.sense.update(x, y, fix.t);
     P.push([fix.t, x, y, z, this.state, gap]);
     this._classify();
     this.speed = gap ? 0 : this._speedAt(P.length - 1);
@@ -65,7 +124,8 @@ export class Tracker {
     if (dt < 5) return;
     const hs = path / dt, vz = (now[3] - P[j][3]) / dt;
     let c;
-    if (hs < 0.6) c = ST.IDLE;
+    if (this.riding) c = ST.LIFT;            // includes a lift that has stopped with you on it
+    else if (hs < 0.6) c = ST.IDLE;
     else if (vz > 0.25 || this._ridingLift(P[j], now, path)) c = ST.LIFT;
     else if ((vz < -0.15 && hs > 1.2) || hs > 2.5) c = ST.SKI;
     else c = this.state === ST.SKI && hs > 1.2 ? ST.SKI : ST.IDLE;

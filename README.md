@@ -11,7 +11,7 @@ people move, run stats with playback, and full offline use.
 | Area | Details |
 | --- | --- |
 | Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Ten resorts in four countries have built maps. |
-| Maps | 3D mountain from national LiDAR elevation models (14 m mesh), every mapped trail, lifts with moving chairs, gondola and tram cabins on real cable loops, buildings, places, plus ~10 km of coarse surrounding terrain. 2D view with the base at the bottom. |
+| Maps | 3D mountain from national LiDAR elevation models (14 m mesh), every mapped trail, every lift animated on a real cable loop held clear of the snow (chairs, gondola cabins, tram cabins, T-bars, carpet sections), buildings, places, plus ~10 km of coarse surrounding terrain. 2D view with the base at the bottom. |
 | Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣) painted onto the snow surface. |
 | Groups | Up to 20 people join by 6-character code; a display name is optional. Location sharing is opt-in, can be paused, and shows when each person last updated. |
 | Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links, plus short climbs back up a trail and cut-acrosses to a neighbouring trail when that beats a lap (see Uphill tolerance); avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
@@ -20,6 +20,7 @@ people move, run stats with playback, and full offline use.
 | My tracks | Optional dotted breadcrumb trail on the map along everything you have skied; works with or without stats tracking (location-only tracks are never added to History). |
 | Appearance | Dark by default, light mode in More. |
 | Stats | Current / average / top speed, runs, distance, vertical. Lift rides counted separately; GPS spikes filtered. |
+| On a lift | Always-on lift detection (no stats or directions needed): about five seconds of steady movement up a lift line and you, your friends and replays are drawn seated in a chair (or cabin) on the cable. Directions asked for mid-ride start from the top of that lift. |
 | History | Sessions, runs and routes are stored on the phone (IndexedDB) and can be replayed on the map, offline. |
 
 ## Data sources (all free)

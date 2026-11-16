@@ -1,7 +1,7 @@
 import { Geo, nearestOnLine } from './geo.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
-import { Tracker, computeStats, smoothSpeed, ST } from './tracker.js';
+import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
 import { SkiMap, COLORS, fmtAge } from './map.js';
 import { Locator } from './location.js';
 import { GroupClient, createGroup } from './group.js';
@@ -157,6 +157,7 @@ function initMap(id) {
     S.map.setUnits(S.units);
     S.map.setClosures(S.closures);
     S.map.onTap(onMapTap);
+    S.sense = new LiftSense(resort.lifts, S.geo); S.lift = null;
     S.loc = new Locator(S.geo, onFix, (m) => { S.gpsMsg = m; renderChrome(); if (m.startsWith('Location is blocked')) toast(m, 7000); });
     if (S.testMode) S.loc.setSim(true);
     $('#brand-resort').textContent = pl.name;
@@ -375,14 +376,18 @@ function onFix(fix) {
   S.me = { x, y, lat: fix.lat, lon: fix.lon, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y), speed };
   S.gpsMsg = '';
   if (S.tracker) S.tracker.add(fix); else if (S.crumbRec) S.crumbRec.add(fix);
-  const riding = speed > 1.2 && !(S.tracker && S.tracker.state === ST.LIFT);
-  S.map.setMe(S.me.inBounds ? { x, y, heading, avatar: S.profile.avatar, color: S.profile.color, moving: riding } : null);
+  // Lift riding is worked out from every fix, whether or not stats or directions are on.
+  const was = S.lift?.id;
+  S.lift = S.me.inBounds && !(fix.acc > 60) ? S.sense.update(x, y, fix.t) : null;
+  if (S.lift?.id !== was && S.nav) S.nav.lastCalc = 0;   // getting on or off a lift changes the route at once
+  const riding = speed > 1.2 && !S.lift;
+  S.map.setMe(S.me.inBounds ? { x, y, heading, avatar: S.profile.avatar, color: S.profile.color, moving: riding, lift: S.lift } : null);
   if (S.group && S.sharing) {
     const now = Date.now(), last = S.lastSent;
     const moved = last ? Math.hypot(x - last.x, y - last.y) : Infinity;
     if (!last || now - last.t > (moved > 4 ? 4000 : 20000)) {
       S.lastSent = { x, y, t: now };
-      S.group.client.sendPos({ lat: fix.lat, lon: fix.lon, acc: fix.acc, spd: Math.min(60, speed), hdg: heading == null ? null : (heading * 180) / Math.PI, st: ['idle', 'ski', 'lift'][S.tracker ? S.tracker.state : 0] });
+      S.group.client.sendPos({ lat: fix.lat, lon: fix.lon, acc: fix.acc, spd: Math.min(60, speed), hdg: heading == null ? null : (heading * 180) / Math.PI, st: S.lift ? 'lift' : S.tracker ? ['idle', 'ski', 'lift'][S.tracker.state] : speed > 2.5 ? 'ski' : 'idle' });
     }
   }
   if (S.followMe && S.me.inBounds) { S.map.focus(x, y, 700); S.followMe = false; }
@@ -526,8 +531,11 @@ function tracksCard() {
   const saved = (S.tracksSaved || []).length + (S.history || []).length;
   return `<div class="card"><h3>My tracks</h3>
     <div class="rowf"><div class="grow"><b>Show where I've skied</b><div class="sub">A dotted pink trail on the map along the runs you come down. Lift rides are left out.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
+    <div class="seg" style="margin-top:10px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This outing</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">Everything saved${saved ? ` (${saved})` : ''}</button></div>
+    <p class="note">${all
+    ? `<b>Everything saved</b> draws every run you have ever recorded at ${esc(S.place.name)} on this phone: all past days in History plus any saved location-only tracks.`
+    : '<b>This outing</b> draws only the runs since you turned this on (or started tracking) today, so the map shows just the current day out.'}</p>
     <p class="note">${S.crumbsOn ? (S.tracker ? 'Recording along with your stats.' : `Recording your location only — no speed or run stats, and nothing is added to History.${S.me ? '' : ' Waiting for GPS.'}`) : 'Works with or without stats tracking. Needs the app open with the screen on.'}</p>
-    <div class="seg" style="margin-top:8px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This outing</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">Everything saved${saved ? ` (${saved})` : ''}</button></div>
     ${(S.tracksSaved || []).length ? '<button class="btn alt" data-act="clear-tracks" style="margin-bottom:0">Clear saved location-only tracks</button>' : ''}</div>`;
 }
 
@@ -591,6 +599,16 @@ function setSharing(on) {
 }
 
 /** Group members other than me, with local coordinates and how old their location is. */
+/** The lift someone reported as riding is on, from their position: {id, frac, down} or null. */
+function liftAt(x, y) {
+  let best = null;
+  for (const l of S.resort.lifts) {
+    const n = nearestOnLine(l.pts, x, y);
+    if (n.d < 45 && (!best || n.d < best.d)) best = { d: n.d, id: l.id, frac: n.along / (l.len || 1), down: false };
+  }
+  return best;
+}
+
 function friends() {
   const g = S.group;
   if (!g?.state) return [];
@@ -603,6 +621,7 @@ function friends() {
       f.has = true;
       f.inBounds = S.geo.inBounds(f.x, f.y);
       f.heading = m.pos.hdg == null ? null : (m.pos.hdg * Math.PI) / 180;
+      f.lift = m.pos.st === 'lift' ? liftAt(f.x, f.y) : null;
       f.stale = f.age > STALE_S || !m.sharing;
       f.moving = !f.stale && f.age < 30 && m.pos.spd > 1.2 && m.pos.st !== 'lift';
     }
@@ -673,7 +692,8 @@ function recalcNav(force = false) {
     else if (!S.me) nav.problem = { title: 'Waiting for your location…', text: S.gpsMsg || 'Allow location access so directions can start from where you are.' };
     else {
       if (f && f.stale) nav.warn = { title: `${f.name}'s location is stale`, text: `${f.paused ? 'They paused sharing. ' : ''}Last update ${fmtAge(f.age)} — this route goes to where they were.`, meet: true };
-      const r = S.router.route({ x: S.me.x, y: S.me.y }, dest.place, routeOpts());
+      // on a lift, directions start from where it lets you off
+      const r = S.router.route(S.lift ? { lift: S.lift.id, frac: S.lift.frac, down: S.lift.down, x: S.me.x, y: S.me.y } : { x: S.me.x, y: S.me.y }, dest.place, routeOpts());
       if (r.ok) {
         // A reroute is a new list of steps, not just the old list getting shorter as you ski it.
         const sig = (rt) => rt.steps.map((s) => `${s.kind}:${s.name}`).join('|');
@@ -807,8 +827,8 @@ function describeSpot(x, y) {
 // ---------- chrome (pills, nav banner, tabs)
 function renderChrome() {
   const gp = $('#gps-pill');
-  if (S.testMode) { gp.textContent = S.me ? 'Test location' : 'Test mode: tap map'; gp.className = 'pill warn'; }
-  else if (S.me && Date.now() - S.me.t < 20000) { gp.textContent = S.tracker ? ['● Tracking', '● Skiing', '● On lift'][S.tracker.state] : `GPS ±${Math.round(S.me.acc)} m`; gp.className = 'pill ok'; }
+  if (S.testMode) { gp.textContent = S.me ? (S.lift ? '● On lift' : 'Test location') : 'Test mode: tap map'; gp.className = 'pill warn'; }
+  else if (S.me && Date.now() - S.me.t < 20000) { gp.textContent = S.lift ? '● On lift' : S.tracker ? ['● Tracking', '● Skiing', '● On lift'][S.tracker.state] : `GPS ±${Math.round(S.me.acc)} m`; gp.className = 'pill ok'; }
   else if (S.loc?.active) { gp.textContent = 'Finding GPS…'; gp.className = 'pill warn'; }
   else { gp.textContent = 'GPS off'; gp.className = 'pill'; }
   const g = $('#group-pill');
@@ -1205,7 +1225,7 @@ function playFrame(now) {
   const hd = Math.hypot(b[1] - a[1], b[2] - a[2]) > 0.5 ? Math.atan2(b[1] - a[1], b[2] - a[2]) : P.hd;
   P.hd = hd;
   // Same avatar and riding animation as live tracking: carving while skiing, still on lifts and stops.
-  S.map.setPlayhead(S.geo.inBounds(x, y) ? { x, y, heading: hd, avatar: S.profile.avatar, color: S.profile.color, moving: P.playing && b[4] === ST.SKI && sp > 1.2, snap: P.seeking || P.jump } : null);
+  S.map.setPlayhead(S.geo.inBounds(x, y) ? { x, y, heading: hd, avatar: S.profile.avatar, color: S.profile.color, moving: P.playing && b[4] === ST.SKI && sp > 1.2, lift: b[4] === ST.LIFT ? liftAt(x, y) : null, snap: P.seeking || P.jump } : null);
   P.jump = false;
   if (!P.seeking) $('#pl-seek').value = String(Math.round(((P.t - t0) / (t1 - t0 || 1)) * 1000));
   const st = b[4];
