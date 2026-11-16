@@ -23,13 +23,13 @@ export const COLORS = {
 // Zones painted on the snow: tint, symbol, label colour, and what the zone means.
 export const ZONES = {
   slow: { rgb: [255, 232, 120], sym: '▽', ink: '#8a6a00', name: 'Slow zone', text: 'Designated slow skiing and riding area.' },
-  family: { rgb: [255, 205, 150], sym: '☺', ink: '#9a5a14', name: 'Family zone', text: 'Family skiing area: gentle terrain, keep speeds down.' },
+  family: { rgb: [120, 190, 255], sym: '☺', ink: '#1d5fa8', name: 'Family zone', text: 'Family skiing area: gentle terrain, keep speeds down.' },
   learn: { rgb: [150, 232, 178], sym: '◍', ink: '#0b6c34', name: 'Beginner / kids’ area', text: 'Learning area or children’s snow garden.' },
   park: { rgb: [255, 168, 70], sym: '⬣', ink: '#b85a00', name: 'Terrain park', text: 'Jumps, rails, pipes, boardercross and fun slopes.' },
   race: { rgb: [205, 170, 245], sym: '⚑', ink: '#6a2fb5', name: 'Race course', text: 'Race or timed training course; may be closed to the public.' },
   sled: { rgb: [140, 215, 228], sym: '≋', ink: '#0d6c80', name: 'Sledding run', text: 'Toboggan or sledding run. Not a ski run.' },
-  extreme: { rgb: [250, 150, 150], sym: '✕', ink: '#a3122f', name: 'Extreme terrain', text: 'Extreme or hike-to terrain, striped red. Experts only.' },
-  free: { rgb: [168, 178, 190], sym: '≈', ink: '#4a5563', name: 'Freeride / ungroomed', text: 'Ungroomed freeride route or backcountry-style terrain, striped grey.' },
+  extreme: { rgb: [250, 150, 150], sym: '✕', ink: '#a3122f', name: 'Extreme terrain', text: 'Extreme or hike-to terrain, red check pattern. Experts only.' },
+  free: { rgb: [168, 178, 190], sym: '≈', ink: '#4a5563', name: 'Freeride / ungroomed', text: 'Ungroomed freeride route or backcountry-style terrain, grey check pattern.' },
 };
 const POI_STYLE = {
   lodge: ['#14365f', 'L', 0], lift: ['#e03131', '↑', 1], food: ['#c7641a', 'F', 3], peak: ['#5d6875', '▲', 2],
@@ -205,22 +205,22 @@ export class SkiMap {
     const forest = (alt) => (alt > 1040 ? F_HIGH : alt > 860 ? F_MID : F_LOW);
     // Zones are painted into the snow itself so nothing floats above the ground to hide
     // trails, lift chairs or people.
-    const zone = new Uint8Array(nx * ny);
-    const paint = (pts, rad, v) => {
+    const zone = new Uint8Array(nx * ny), offPiste = new Uint8Array(nx * ny);   // offPiste: may tint outside the groomed snow
+    const paint = (pts, rad, v, off = 0) => {
       const r = Math.ceil(rad / cell), reach = Math.max(rad, cell * 0.75);
       for (let q = 0; q < pts.length; q += 2) {
         const ci = Math.round(pts[q] / cell), cj = Math.round(pts[q + 1] / cell);
         for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
           for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++)
-            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= reach) zone[j * nx + i] = Math.max(zone[j * nx + i], v);
+            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= reach && v >= zone[j * nx + i]) { zone[j * nx + i] = v; offPiste[j * nx + i] = off; }
       }
     };
     for (const t of this.resort.trails) {
       const z = t.z || (t.slow ? 'slow' : null);
-      if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 26, CODE[z]);
+      if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 30, CODE[z], z === 'free' || z === 'extreme' ? 1 : 0);
     }
-    for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind]);
-    for (const p of this.resort.parks) paint(p.pts, 17, CODE.park);
+    for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind], 1);
+    for (const p of this.resort.parks) paint(p.pts, 17, CODE.park, p.trail >= 0 ? 0 : 1);
     let k = 0;
     const put = (o, c) => {
       const i = o % nx, j = (o / nx) | 0;
@@ -236,7 +236,7 @@ export class SkiMap {
       const za = zone[a], zb = zone[b], zc = zone[c];
       const zn = za === zb || za === zc ? za : zb === zc ? zb : 0;
       const hatch = zn === 1 || zn === 2 ? (((a % nx) + ((a / nx) | 0)) & 1) === 0 : true;
-      const colr = zn && hatch && (m >= 0.5 || zn <= 3 || zn === 5 || zn === 8) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
+      const colr = zn && hatch && (m >= 0.5 || offPiste[a] || offPiste[b] || offPiste[c]) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > 0.95 ? ROCK : m >= 0.2 ? GLADE : forest(alt);
       put(a, colr); put(b, colr); put(c, colr);
     };
     for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {

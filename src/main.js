@@ -834,7 +834,7 @@ function zonesCard() {
   const rows = Object.keys(ZONES).filter((k) => have[k]).map((k) => {
     const Z = ZONES[k], names = [...have[k]].filter((n) => n !== Z.name), hatch = k === 'free' || k === 'extreme';
     const bg = hatch ? `repeating-linear-gradient(135deg, rgb(${Z.rgb}) 0 5px, #f6fafd 5px 10px)` : `rgb(${Z.rgb})`;
-    const list = names.length ? `: ${names.slice(0, 8).map(esc).join(', ')}${names.length > 8 ? ` and ${names.length - 8} more` : ''}` : '';
+    const list = names.length ? ` Here: ${names.slice(0, 8).map(esc).join(', ')}${names.length > 8 ? ` and ${names.length - 8} more` : ''}.` : '';
     return `<div class="legend-row"><div class="sw"><div class="band" style="background:${bg};color:${Z.ink}">${Z.sym}</div></div><span><b>${Z.name}</b> — ${Z.text}${k === 'free' || k === 'extreme' ? '' : list}</span></div>`;
   });
   const lit = R.trails.some((t) => t.lit) ? '<p class="note">☾ Tap a run to see whether it is lit for night skiing.</p>' : '';

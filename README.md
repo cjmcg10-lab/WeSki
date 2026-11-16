@@ -26,9 +26,9 @@ people move, run stats with playback, and full offline use.
 ## Zones
 
 Zones are tinted into the snow and listed in the legend, only where a resort has them:
-slow zone (yellow), family zone (peach), beginner / kids' area (light green), terrain park (orange),
-race course (purple), sledding run (teal), extreme terrain (red stripes) and freeride / ungroomed
-routes (grey stripes). Tapping the snow names the zone and says if the run is lit at night.
+slow zone (yellow), family zone (blue), beginner / kids' area (light green), terrain park (orange),
+race course (purple), sledding run (teal), extreme terrain (red check pattern) and freeride / ungroomed
+routes (grey check pattern). Tapping the snow names the zone and says if the run is lit at night.
 Parks, kids' areas, sledding runs, race courses, extreme and freeride terrain come from
 OpenStreetMap piste tags. Slow and family zones are not in OpenStreetMap: they are only shown where
 the run names were read off the resort's own trail map and listed in the resort config (`zones`,
