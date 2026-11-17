@@ -436,15 +436,19 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 .wx-head { grid-template-columns: 82px 1fr 58px 64px; gap: 6px; }
 
 /* ---------- start screen, 2026-11 look */
-#start { background: radial-gradient(120% 70% at 50% 30%, #0f3058 0%, #071a2e 55%, #030b16 100%); }
-.start-sky { position: absolute; top: 0; left: 0; width: 100%; height: calc(var(--sat) + 250px); z-index: 1; pointer-events: none;
-  -webkit-mask-image: linear-gradient(#000 74%, transparent); mask-image: linear-gradient(#000 74%, transparent); transition: opacity .9s, transform 1.6s cubic-bezier(.3, .7, .2, 1); }
+#start { background: linear-gradient(#011c34 0%, #021a31 45%, #030f1f 100%); }
+/* The scenic backdrop sits behind the globe; the logo and title sit above both. */
+.start-sky { position: absolute; top: 0; left: 0; width: 100%; height: calc(var(--sat) + 51.2vw); z-index: 0; pointer-events: none;
+  background: #00182f url(/start-bg.jpg) center bottom / 100% auto no-repeat;
+  -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); transition: opacity .9s; }
+#start #globe { z-index: 1; }
+@media (min-width: 700px) { .start-sky { height: calc(var(--sat) + 360px); background-size: cover; } }
+.start-top { z-index: 3; }
 .start-top { padding: calc(var(--sat) + 22px) 0 0; background: none; transition: opacity .9s; }
 .start-logo { display: flex; align-items: center; justify-content: center; gap: 10px; }
 .start-logo img { width: 52px; height: 52px; border-radius: 13px; box-shadow: 0 4px 16px rgba(0, 0, 0, .5); }
 .start-top h1 { font-size: 34px; letter-spacing: -.6px; }
 .start-top p { background: none; box-shadow: none; padding: 0; margin: 6px 0 0; font-size: 16.5px; font-weight: 500; color: #e8f0f8; text-shadow: 0 2px 8px rgba(0, 0, 0, .7); }
-#start.focus .start-sky { transform: translateY(-34px); }
 #start.fade .start-sky, #start.fade .start-top { opacity: 0; }
 #start-panel { height: auto; max-height: calc(var(--app-h) * .54); top: auto; padding: 22px 14px calc(var(--sab) + 12px); gap: 0;
   background: linear-gradient(180deg, rgba(22, 44, 68, .96), rgba(9, 24, 40, .98)); border: 1px solid var(--edge2); border-bottom: 0; border-radius: 26px 26px 0 0; }
@@ -493,5 +497,4 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 .modal-box .err { color: var(--danger-ink); font-weight: 600; min-height: 1.3em; margin: 4px 0; font-size: 14px; }
 .modal-box { background: linear-gradient(180deg, #17304a, #0c1d30); border: 1px solid var(--edge2); }
 :root[data-theme="light"] .modal-box { background: #fff; }
-.start-sky { height: calc(var(--sat) + 230px); }
 .mrow .soon-tag { font-style: normal; font-size: 12.5px; font-weight: 600; color: #ffb35c; margin-top: 1px; }

@@ -95,11 +95,11 @@ export class Globe {
     const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // At rest the globe is a small ball high on the screen, under the mountain backdrop and above
-    // the resort list: about 24% of the screen height (58% of the width at most), centred 34% down.
+    // At rest the globe sits in front of the mountain backdrop, between the title and the resort
+    // list: about 27% of the screen height (62% of the width at most), centred 30% down.
     const vis = 2 * Math.tan(THREE.MathUtils.degToRad(19));
-    const home = Math.max(2 / (vis * 0.24), 2 / (vis * (w / h) * 0.58));
-    const homeLift = (0.16 * vis * home) / (home - 1);
+    const home = Math.max(2 / (vis * 0.27), 2 / (vis * (w / h) * 0.62));
+    const homeLift = (0.2 * vis * home) / (home - 1);
     if (this.dist === this.home) { this.dist = home; this.lift = homeLift; }
     this.home = home; this.homeLift = homeLift;
     this.camera.updateProjectionMatrix();
