@@ -10,7 +10,7 @@ people move, run stats with playback, and full offline use.
 
 | Area | Details |
 | --- | --- |
-| Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Ten resorts in four countries have built maps. |
+| Start | Spinning globe with a resort picker (search or scroll); picking a resort zooms the globe down to the ground and continues, without a cut or fade, into the 3D map; “Choose a different resort” (More) reverses it, with a save / don't-save choice. Twenty-six resorts in six countries have built maps. |
 | Maps | 3D mountain from national LiDAR elevation models (14 m mesh), every mapped trail, every lift animated on a real cable loop held clear of the snow (chairs, gondola cabins, tram cabins, T-bars, carpet sections), buildings, places, plus ~10 km of coarse surrounding terrain. 2D view with the base at the bottom. |
 | Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣) painted onto the snow surface. |
 | Groups | Up to 20 people join by 6-character code; a display name is optional. Location sharing is opt-in, can be paused, and shows when each person last updated. |
@@ -156,7 +156,7 @@ shows as a green circle, a red as a blue square and a black as a black diamond.
    `build_data.py` prints a connectivity report; fix the config (or OSM) if trails are unreachable.
 
 Resort data is uploaded as Cloudflare static assets by the GitHub deploy, so it is not bound by the
-3 MB Worker limit (the eighteen resorts are about 22 MB on disk).
+3 MB Worker limit (the resorts are tens of MB on disk).
 
 ## Develop
 

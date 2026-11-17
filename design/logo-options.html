@@ -1,0 +1,130 @@
+<title>Group Ski Logo Options</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
+<style>
+/* Layout: two short rows. Three that keep the original idea, three that add a hint of directions. Each shown large with a phone-size check. */
+:root {
+  --bg: #f3f6fa; --panel: #ffffff; --fg: #10263b; --muted: #55697d; --line: #d5dee8; --accent: #1f74e0;
+  --display: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #0b1826; --panel: #12263a; --fg: #e9f1f8; --muted: #9db1c4; --line: #24405a; --accent: #6fb0ff; color-scheme: dark } }
+:root[data-theme="dark"] { --bg: #0b1826; --panel: #12263a; --fg: #e9f1f8; --muted: #9db1c4; --line: #24405a; --accent: #6fb0ff; color-scheme: dark }
+body { background: var(--bg); color: var(--fg); font: 15px/1.55 var(--body); }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 34px; }
+h1 { font: 700 30px/1.15 var(--display); margin: 0; text-wrap: balance; }
+h2 { font: 700 20px/1.2 var(--display); margin: 0; }
+h3 { font: 700 16px/1.25 var(--display); margin: 0; }
+p { margin: 0; max-width: 65ch; color: var(--muted); }
+.label { font: 600 11px/1 var(--body); letter-spacing: .09em; text-transform: uppercase; color: var(--muted); }
+header, .family { display: flex; flex-direction: column; gap: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.show { display: flex; align-items: flex-end; gap: 12px; }
+.show .big { width: 196px; height: 196px; flex: none; max-width: 100%; }
+.small { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.small svg { width: 46px; height: 46px; }
+.small span { font-size: 11px; color: var(--muted); line-height: 1.2; }
+.card p { font-size: 13.5px; line-height: 1.5; }
+.note { border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <clipPath id="sq"><rect width="240" height="240" rx="54"/></clipPath>
+    <filter id="b2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2"/></filter>
+    <filter id="b5" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="b12" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="12"/></filter>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f5fd0"/><stop offset=".55" stop-color="#4aa3f2"/><stop offset="1" stop-color="#cfeaff"/></linearGradient>
+    <linearGradient id="lit" x1="0" y1="0" x2=".6" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dce9f8"/></linearGradient>
+    <linearGradient id="shade" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#6f97cf"/><stop offset="1" stop-color="#b9d2ef"/></linearGradient>
+    <linearGradient id="shade2" x1="0" y1="0" x2=".3" y2="1"><stop offset="0" stop-color="#8fb0dc"/><stop offset="1" stop-color="#cbdef3"/></linearGradient>
+    <linearGradient id="rock" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5a7096"/><stop offset="1" stop-color="#2f4162"/></linearGradient>
+    <linearGradient id="fore" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#cfe0f5"/></linearGradient>
+    <linearGradient id="pineL" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2f7a5f"/><stop offset=".5" stop-color="#1c5444"/><stop offset="1" stop-color="#103a30"/></linearGradient>
+
+    <g id="pine"><ellipse cx="6" cy="29" rx="15" ry="3.500" fill="#7f9cc4" opacity=".45"/><rect x="-2" y="20" width="4" height="9" fill="#4a3324"/><polygon points="0,-36 -8,-16 -4,-16 -12,0 -6,0 -15,20 15,20 6,0 12,0 4,-16 8,-16" fill="url(#pineL)"/><path d="M0 -36L-6 -21M-3 -15L-9 -3M-5 1L-11 15" stroke="#ffffff" stroke-width="2.600" stroke-linecap="round" opacity=".85"/></g>
+
+    <!-- the mountain: a far range, a lower peak behind on the left, the main peak on the right, lit from the left -->
+    <g id="mtn">
+      <polygon points="-10,176 20,150 44,160 70,138 96,158 130,134 170,160 204,140 250,168 250,200 -10,200" fill="#a8cdf3" opacity=".7"/>
+      <path d="M-14 182L24 146L40 132L58 118L70 104L84 86L92 77L100 88L112 104L126 124L150 160L166 182Z" fill="url(#lit)"/>
+      <path d="M92 77L100 88L112 104L126 124L150 160L166 182L120 182L108 152L113 130L100 112L105 96Z" fill="url(#shade2)"/>
+      <path d="M40 184L84 140L104 112L122 92L136 66L146 50L152 41L160 52L172 72L186 96L206 126L228 156L252 184Z" fill="url(#lit)"/>
+      <path d="M152 41L160 52L172 72L186 96L206 126L228 156L252 184L186 184L171 152L177 124L161 102L167 80L155 62Z" fill="url(#shade)"/>
+      <g fill="#9dbbe3" opacity=".55"><path d="M138 70L128 96L134 94L126 116Z"/><path d="M116 104L100 132L108 130L98 150Z"/><path d="M80 96L66 120L74 118Z"/><path d="M148 104L142 130L150 126L146 150Z"/></g>
+      <g fill="url(#rock)"><path d="M152 41L146 52L150 51L149 60L155 62L158 54Z"/><path d="M160 66L156 78L163 82L166 74Z"/><path d="M168 96L163 106L172 112L176 102Z"/><path d="M130 82L124 92L131 96L135 88Z"/><path d="M92 77L87 86L91 85L92 93L98 96L99 88Z"/><path d="M106 110L102 118L109 122L112 114Z"/><path d="M190 128L185 138L194 144L198 134Z"/><path d="M62 124L57 132L64 136L68 128Z"/><path d="M210 152L206 160L214 164L217 156Z" opacity=".8"/></g>
+      <path d="M84 140L104 112L122 92L136 66L146 50L152 41" fill="none" stroke="#ffffff" stroke-width="1.600" stroke-linejoin="round" opacity=".9"/>
+    </g>
+    <g id="foreground">
+      <path d="M-10 178C50 158 190 166 250 186V250H-10Z" fill="url(#fore)"/>
+      <ellipse cx="190" cy="214" rx="70" ry="12" fill="#a9c4e8" opacity=".5" filter="url(#b5)"/><ellipse cx="40" cy="226" rx="50" ry="9" fill="#a9c4e8" opacity=".45" filter="url(#b5)"/>
+    </g>
+    <g id="clouds" fill="#ffffff"><g filter="url(#b2)" opacity=".95"><ellipse cx="46" cy="50" rx="26" ry="8"/><ellipse cx="64" cy="43" rx="17" ry="8"/><ellipse cx="30" cy="45" rx="12" ry="6"/></g><g filter="url(#b2)" opacity=".8"><ellipse cx="212" cy="74" rx="20" ry="6"/><ellipse cx="200" cy="70" rx="11" ry="5"/></g></g>
+
+    <path id="tA" d="M138 86C118 116 152 138 120 164C94 186 132 200 100 220"/>
+    <path id="tB" d="M146 90C154 122 110 140 134 166C154 188 104 202 132 224"/>
+    <path id="tC" d="M154 94C176 126 126 146 152 170C176 190 136 206 164 220"/>
+
+    <!-- a small skier with a puff of snow behind -->
+    <g id="skier"><ellipse cx="7" cy="-2" rx="9" ry="5" fill="#ffffff" opacity=".9" filter="url(#b2)"/><path d="M-7 5L8 2" stroke="#1b2a44" stroke-width="2" stroke-linecap="round"/><path d="M0 -7L-2 1L1 4" fill="none" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="1" cy="-11" r="3.400" fill="#1b2a44"/></g>
+    <g id="pin"><ellipse cx="0" cy="1" rx="7" ry="2.500" fill="#33507f" opacity=".4"/><path d="M0 0C-9 -12 -13 -17 -13 -25A13 13 0 1 1 13 -25C13 -17 9 -12 0 0Z"/><circle cx="0" cy="-25" r="5.200" fill="#ffffff"/></g>
+    <g id="grooves" fill="none" stroke-linecap="round"><g stroke="#8fb0de" stroke-width="5.200" opacity=".95"><use href="#tA"/><use href="#tB"/><use href="#tC"/></g><g stroke="#ffffff" stroke-width="1.700" transform="translate(-1.300 -.8)"><use href="#tA"/><use href="#tB"/><use href="#tC"/></g></g>
+    <g id="scene"><rect width="240" height="240" fill="url(#sky)"/><circle cx="34" cy="26" r="60" fill="#ffffff" opacity=".35" filter="url(#b12)"/><use href="#clouds"/><use href="#mtn"/><use href="#foreground"/></g>
+    <g id="trees"><use href="#pine" transform="translate(22 200) scale(1.1)"/><use href="#pine" transform="translate(48 214) scale(.85)"/><use href="#pine" transform="translate(222 204)"/><use href="#pine" transform="translate(202 220) scale(.75)"/></g>
+  </defs>
+
+  <symbol id="O1" viewBox="0 0 240 240"><g clip-path="url(#sq)"><use href="#scene"/><use href="#trees"/><use href="#grooves"/>
+    <use href="#skier" transform="translate(100 220)" stroke="#ff4d5e"/><use href="#skier" transform="translate(132 224)" stroke="#ffb400"/><use href="#skier" transform="translate(164 220)" stroke="#12a594"/></g></symbol>
+
+  <symbol id="O2" viewBox="0 0 240 240"><g clip-path="url(#sq)"><g transform="translate(-74 -50) scale(1.42)"><use href="#scene"/><use href="#grooves"/>
+    <use href="#skier" transform="translate(100 200) scale(.8)" stroke="#ff4d5e"/><use href="#skier" transform="translate(134 204) scale(.8)" stroke="#ffb400"/><use href="#skier" transform="translate(160 198) scale(.8)" stroke="#12a594"/></g></g></symbol>
+
+  <symbol id="O3" viewBox="0 0 240 240"><g clip-path="url(#sq)"><use href="#scene"/><use href="#trees"/>
+    <g fill="none" stroke-linecap="round" stroke-width="5.200"><use href="#tA" stroke="#ff4d5e"/><use href="#tB" stroke="#ffb400"/><use href="#tC" stroke="#12a594"/></g>
+    <g fill="none" stroke-linecap="round" stroke="#ffffff" stroke-width="1.500" opacity=".7" transform="translate(-1.300 -.8)"><use href="#tA"/><use href="#tB"/><use href="#tC"/></g>
+    <use href="#skier" transform="translate(100 220)" stroke="#ff4d5e"/><use href="#skier" transform="translate(132 224)" stroke="#ffb400"/><use href="#skier" transform="translate(164 220)" stroke="#12a594"/></g></symbol>
+
+  <symbol id="D1" viewBox="0 0 240 240"><g clip-path="url(#sq)"><use href="#scene"/><use href="#trees"/>
+    <g fill="none" stroke-linecap="round"><g stroke="#8fb0de" stroke-width="4.200" opacity=".8"><use href="#tA"/><use href="#tC"/></g>
+    <path d="M146 90C154 122 110 140 134 166C150 184 118 196 124 212" stroke="#ffffff" stroke-width="10"/><path d="M146 90C154 122 110 140 134 166C150 184 118 196 124 212" stroke="#1f74e0" stroke-width="6"/></g>
+    <circle cx="146" cy="90" r="13" fill="#1f74e0" opacity=".25"/><circle cx="146" cy="90" r="8" fill="#ffffff"/><circle cx="146" cy="90" r="5.500" fill="#1f74e0"/>
+    <use href="#pin" transform="translate(124 214) scale(1.15)" fill="#ff6a2b"/></g></symbol>
+
+  <symbol id="D2" viewBox="0 0 240 240"><g clip-path="url(#sq)"><use href="#scene"/><use href="#trees"/>
+    <g fill="none" stroke-linecap="round"><path d="M138 86C118 116 152 138 132 160C124 170 128 180 130 190" stroke="#ff4d5e" stroke-width="5.500"/><path d="M146 90C154 122 110 140 132 162C136 170 132 180 130 190" stroke="#1f74e0" stroke-width="5.500"/><path d="M154 94C176 126 126 146 136 164C138 172 132 182 130 190" stroke="#12a594" stroke-width="5.500"/>
+    <path d="M130 190C128 200 132 208 130 216" stroke="#ffffff" stroke-width="9"/><path d="M130 190C128 200 132 208 130 216" stroke="#10263b" stroke-width="5" stroke-dasharray="1 9"/></g>
+    <use href="#pin" transform="translate(130 222) scale(1.2)" fill="#ff6a2b"/></g></symbol>
+
+  <symbol id="D3" viewBox="0 0 240 240"><g clip-path="url(#sq)"><use href="#scene"/><use href="#trees"/><use href="#grooves"/>
+    <g fill="none" stroke-linecap="round"><path d="M146 90C154 122 110 140 134 166C154 188 104 202 132 224" stroke="#ffffff" stroke-width="9"/><path d="M146 90C154 122 110 140 134 166C154 188 104 202 132 224" stroke="#1f74e0" stroke-width="5" stroke-dasharray="11 8"/></g>
+    <use href="#skier" transform="translate(100 220)" stroke="#ff4d5e"/><use href="#skier" transform="translate(164 220)" stroke="#12a594"/>
+    <circle cx="132" cy="224" r="13" fill="#1f74e0" opacity=".25"/><circle cx="132" cy="224" r="8.500" fill="#ffffff"/><circle cx="132" cy="224" r="6" fill="#1f74e0"/></g></symbol>
+</svg>
+
+<div class="wrap">
+  <header>
+    <span class="label">Ski With Me · icon concepts, round four</span>
+    <h1>Bluebird, drawn more realistically</h1>
+    <p>The twin peaks now have lit and shadowed faces, exposed rock, a far range, soft clouds and snow-dusted pines. Three versions keep the original idea; three add a hint of directions with one extra element each.</p>
+  </header>
+  <section class="family">
+    <span class="label">Row one</span><h2>The original idea</h2>
+    <p>Three friends' tracks crossing on the way down.</p>
+    <div class="grid">
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Realistic twin peaks with three ski tracks and three small skiers"><use href="#O1"/></svg><div class="small"><svg aria-hidden="true"><use href="#O1"/></svg><span>phone size</span></div></div><div><h3>1. Tracks in the snow</h3><p>The tracks are grooves in the snow, as they look from a chairlift. Three small skiers in different jackets finish the lines.</p></div></article>
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Close view of the main peak with three ski tracks and skiers"><use href="#O2"/></svg><div class="small"><svg aria-hidden="true"><use href="#O2"/></svg><span>phone size</span></div></div><div><h3>2. Closer in</h3><p>Cropped tight on the main peak, so the tracks and skiers are larger. It reads better at phone size and loses some of the scenery.</p></div></article>
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Realistic twin peaks with three coloured ski tracks"><use href="#O3"/></svg><div class="small"><svg aria-hidden="true"><use href="#O3"/></svg><span>phone size</span></div></div><div><h3>3. One colour each</h3><p>Each friend's track takes the colour of their jacket. A little less natural, but it says three separate people more clearly.</p></div></article>
+    </div>
+  </section>
+  <section class="family">
+    <span class="label">Row two</span><h2>With a hint of directions</h2>
+    <p>One blue route line or one pin, borrowed from how the app draws directions.</p>
+    <div class="grid">
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Twin peaks with a blue route line from a location dot to an orange pin"><use href="#D1"/></svg><div class="small"><svg aria-hidden="true"><use href="#D1"/></svg><span>phone size</span></div></div><div><h3>4. Route to a friend</h3><p>A blue route runs from your dot on the mountain down to a pin: directions to a friend. The other two tracks stay faint behind it.</p></div></article>
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Twin peaks with three coloured tracks joining and leading to a pin"><use href="#D2"/></svg><div class="small"><svg aria-hidden="true"><use href="#D2"/></svg><span>phone size</span></div></div><div><h3>5. Meet here</h3><p>Three coloured tracks join into one and lead to a meeting pin. It shows the group coming together.</p></div></article>
+      <article class="card"><div class="show"><svg class="big" role="img" aria-label="Twin peaks with three tracks, the middle one a dashed blue route to a location dot"><use href="#D3"/></svg><div class="small"><svg aria-hidden="true"><use href="#D3"/></svg><span>phone size</span></div></div><div><h3>6. Your line</h3><p>The same three tracks as the original, with the middle one marked as your route and ending at your location dot. This is the lightest touch of the three.</p></div></article>
+    </div>
+  </section>
+  <p class="note">These are still vector drawings, which is as realistic as a drawing gets without commissioning an illustrator or a 3D render. If you want it to look like a photograph or a painted illustration, the chosen composition here becomes the brief for that.</p>
+</div>
