@@ -4,3 +4,4 @@ dist
 .dev.vars
 *.tif
 worker/static
+__pycache__/

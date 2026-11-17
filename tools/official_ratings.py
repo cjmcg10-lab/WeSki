@@ -42,6 +42,12 @@ def loose(name):
     return re.sub(r"s$", "", "".join(toks).replace("saint", "st"))
 
 
+def qual(name):
+    """Upper / Lower / Middle / Top / Bottom part named in a run name, '' when none."""
+    t = [w for w in re.split(r"[^a-z]+", (name or "").lower()) if w in ("upper", "lower", "middle", "top", "bottom")]
+    return " ".join(sorted(t))
+
+
 def lookup(off):
     """Returns f(map run name) -> (level, is blue-black) or None, from an official list."""
     bb = set(off.get("blue_black", []))
@@ -50,11 +56,21 @@ def lookup(off):
     for n, d in off["runs"].items():
         groups.setdefault(loose(n), set()).add((d, n in bb))
 
+    quals = {}
+    for n in off["runs"]:
+        quals.setdefault(loose(n), set()).add(qual(n))
+
     def f(name):
         if key(name) in exact:
             return exact[key(name)]
         g = groups.get(loose(name))
-        return next(iter(g)) if g and len(g) == 1 else None      # only when every variant agrees
+        if not g or len(g) != 1:                                  # only when every variant agrees
+            return None
+        # "Lower X" alone on the resort's list must not rate a map run called "X" or "Upper X": the
+        # upper part is often harder. A list entry with no Upper/Lower covers every part of the run,
+        # and so do several parts that all have the same rating.
+        q, mine = quals[loose(name)], qual(name)
+        return next(iter(g)) if mine in q or "" in q or (mine == "" and len(q) > 1) else None
     return f
 
 
