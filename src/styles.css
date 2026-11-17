@@ -436,13 +436,11 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 .wx-head { grid-template-columns: 82px 1fr 58px 64px; gap: 6px; }
 
 /* ---------- start screen, 2026-11 look */
-#start { background: linear-gradient(#011c34 0%, #021a31 45%, #030f1f 100%); }
-/* The scenic backdrop sits behind the globe; the logo and title sit above both. */
-.start-sky { position: absolute; top: 0; left: 0; width: 100%; height: calc(var(--sat) + 51.2vw); z-index: 0; pointer-events: none;
-  background: #00182f url(/start-bg.svg) center bottom / 100% auto no-repeat;
-  -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); transition: opacity .9s; }
+#start { background: #001530; }
+/* The owner's backdrop picture fills the whole start screen; the globe, title and list sit on top. */
+.start-sky { position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  background: #001530 url(/start-bg.webp) center 30% / cover no-repeat; transition: opacity .9s; }
 #start #globe { z-index: 1; }
-@media (min-width: 700px) { .start-sky { height: calc(var(--sat) + 360px); background-size: cover; } }
 .start-top { z-index: 3; }
 .start-top { padding: calc(var(--sat) + 22px) 0 0; background: none; transition: opacity .9s; }
 .start-logo { display: flex; align-items: center; justify-content: center; gap: 10px; }
