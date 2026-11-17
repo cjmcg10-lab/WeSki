@@ -65,7 +65,9 @@ session needs that the README does not: the rules, the state of the work, and wh
   file it as one word or three before drafting the final form.
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
 - **Price:** free map everywhere; $24.99 a year, $5.99 a week, $39.99 group plan.
-- **Logo:** not final. See "Logo work" below.
+- **Logo:** chosen by the owner on 2026-11-17: three peaks with three people (teal, white, orange dots) and an S-shaped
+  run on dark navy. Their own image, saved as `design/logo.png`; the app icons in `public/icons/` are made from it
+  (the maskable one is the same image shrunk to 74% on the navy background). The earlier concepts in "Logo work" are history.
 - Launch plan document: https://claude.ai/artifact/7KCV26BCapRGtPWq5hfSFE
 - Logo concepts page: https://claude.ai/artifact/R58WwJVZZNDCQLJAUZ2oLS
 
@@ -148,7 +150,7 @@ a fix in OpenStreetMap.
   seen from behind with a mountain view (A1 to A4) and off-angle twin peaks with three skiers' crossing tracks (B1 to
   B4); the owner picked "Bluebird" (taken to mean the twin peaks; the chairlift version shared the name, so confirm).
   Round 4 (current file) is six more realistic twin-peak versions: 1 Tracks in the snow, 2 Closer in, 3 One colour
-  each, 4 Route to a friend, 5 Meet here, 6 Your line. Awaiting the owner's pick.
+  each, 4 Route to a friend, 5 Meet here, 6 Your line. The owner then supplied their own logo instead (see Decisions).
 - Limits to be honest about: these are vector drawings. A photographic or painted look needs an illustrator; the chosen
   composition becomes the brief. Check every version at phone size (about 46 px) before showing it.
 - After the pick: export the app icons (192, 512, maskable, Apple touch icon), update `public/` and the manifest.
@@ -181,7 +183,7 @@ repository name, the `weski-build` User-Agent, the cloud environment name `weski
 (`weski:` settings, the `weski` database, the `weski-map` cache), which users never see. The old Worker `weski` still
 exists in the owner's Cloudflare account at the old address, frozen at the last version before the rename, with its own
 separate group rooms. The owner can delete it in the Cloudflare dashboard, or a session can turn it into a redirect if
-asked. Icons still show the old artwork until the logo is chosen.
+asked. The icons show the owner's logo.
 
 ## Map data: things learned the hard way
 
@@ -220,7 +222,7 @@ keys go in through the credential form, never chat.
 ## What is next
 
 1. Rating check for the remaining 20 resorts (above), in order of popularity.
-2. (Done) Rename to SkiWithMe. Remaining: new icons once the logo is chosen; the old `weski` Worker.
+2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
    (Open-Meteo's free tier is non-commercial), "report a map mistake" button, add-to-home-screen guide,
