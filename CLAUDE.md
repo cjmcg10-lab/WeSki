@@ -181,6 +181,19 @@ a fix in OpenStreetMap.
   - Main risk: a "merely descriptive" refusal. Planned answer: the phrase is an invitation, not a description of
     software. Fallback: the Supplemental Register. Until filing, the owner can use the TM symbol.
 
+## Screen design (2026-11-17)
+
+The owner sent 15 phone mock-ups and the screens were restyled to match: header with the logo and resort name, a
+mountain button top right (hidden while a status pill shows), a resort-and-weather bar above the tabs (opens weather),
+dark navy panels with low-poly peaks in each title (the SVG is in `index.html`), outlined cards, teal for the main
+button and selected choices. Styles are the "2026-11 look" block at the end of `src/styles.css`. Screens in
+`src/main.js`: Group (mock-up 3: profile, then Create and Join cards; mock-up 2 had Join/Create tabs instead), Stats
+"Your ski day", History "Your ski days" (the welcome screen with its own Start tracking button shows only when there is
+no saved day at that mountain: the owner's rule), More (menu) with two sub-screens, Route preferences and Appearance &
+advanced (the test mode is now "Simulated location" there, with an orange Simulation badge in the header), Map legend,
+Mountain weather (Summit/Base and Today/7 days switches, "More conditions" folds). Not yet confirmed with the owner:
+which Group mock-up they prefer, and putting test mode under Appearance & advanced rather than at the top of More.
+
 ## Rename (done 2026-11-17)
 
 The name SkiWithMe is in the app screens, manifest, README, package and both wrangler configs. The Cloudflare Worker is

@@ -171,6 +171,7 @@ function initMap(id) {
     prefs.set('lastResort', id);
     try { S.tracksSaved = (await kv.get(pkey('tracks'))) || []; } catch { S.tracksSaved = []; }
     renderChrome();
+    S.wx = null; refreshWeather(false).catch(() => {});
     await recoverSession();
     if (S.crumbsOn) { startCrumbs(); loadHistory(); }
     if (!ticking) { ticking = true; setInterval(tick, 1000); }
@@ -547,13 +548,11 @@ function tracksCard() {
   const all = S.crumbScope === 'all';
   const saved = (S.tracksSaved || []).length + (S.history || []).length;
   return `<div class="card"><h3>My tracks</h3>
-    <div class="rowf"><div class="grow"><b>Show where I've skied</b><div class="sub">A dotted pink trail on the map along the runs you come down. Lift rides are left out.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
-    <div class="seg" style="margin-top:10px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">This outing</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">Everything saved${saved ? ` (${saved})` : ''}</button></div>
-    <p class="note">${all
-    ? `<b>Everything saved</b> draws every run you have ever recorded at ${esc(S.place.name)} on this phone: all past days in History plus any saved location-only tracks.`
-    : '<b>This outing</b> draws only the runs since you turned this on (or started tracking) today, so the map shows just the current day out.'}</p>
-    <p class="note">${S.crumbsOn ? (S.tracker ? 'Recording along with your stats.' : `Recording your location only — no speed or run stats, and nothing is added to History.${S.me ? '' : ' Waiting for GPS.'}`) : 'Works with or without stats tracking. Needs the app open with the screen on.'}</p>
-    ${(S.tracksSaved || []).length ? '<button class="btn alt" data-act="clear-tracks" style="margin-bottom:0">Clear saved location-only tracks</button>' : ''}</div>`;
+    <div class="rowf"><div class="grow"><h4 style="margin:0 0 3px">Show where I've skied</h4><div class="sub">A dotted pink trail on the map along the runs you come down.</div></div><label class="switch"><input type="checkbox" id="f-crumbs" ${S.crumbsOn ? 'checked' : ''} /><i></i></label></div>
+    <div class="seg" style="margin-top:12px"><button data-act="crumb-scope" data-v="session" class="${all ? '' : 'on'}">Today</button><button data-act="crumb-scope" data-v="all" class="${all ? 'on' : ''}">All saved${saved ? ` (${saved})` : ''}</button></div>
+    <p class="note" style="font-size:14px">Tracks show downhill runs, excluding lifts.${S.crumbsOn ? (S.tracker ? ' Recording along with your stats.' : ` Recording your location only: no stats, and nothing is added to History.${S.me ? '' : ' Waiting for GPS.'}`) : ''}</p>
+    <div class="rowf" style="gap:10px;font-weight:600;font-size:14.5px">${ICON.info}<span>Keep the app open and screen on while tracking.</span></div>
+    ${(S.tracksSaved || []).length ? '<button class="btn alt" data-act="clear-tracks" style="margin:12px 0 0">Clear saved location-only tracks</button>' : ''}</div>`;
 }
 
 // ---------- group
@@ -869,16 +868,24 @@ function describeSpot(x, y) {
 // ---------- chrome (pills, nav banner, tabs)
 function renderChrome() {
   const gp = $('#gps-pill');
-  if (S.testMode) { gp.textContent = S.me ? (S.lift ? '● On lift' : 'Test location') : 'Test mode: tap map'; gp.className = 'pill warn'; }
+  if (S.testMode) { gp.innerHTML = ICON.sim + (S.me ? (S.lift ? 'On lift' : 'Simulation') : 'Simulation: tap map'); gp.className = 'pill sim'; }
   else if (S.me && Date.now() - S.me.t < 20000) { gp.textContent = S.lift ? '● On lift' : S.tracker ? ['● Tracking', '● Skiing', '● On lift'][S.tracker.state] : `GPS ±${Math.round(S.me.acc)} m`; gp.className = 'pill ok'; }
   else if (S.loc?.active) { gp.textContent = 'Finding GPS…'; gp.className = 'pill warn'; }
-  else { gp.textContent = 'GPS off'; gp.className = 'pill'; }
+  else { gp.textContent = 'GPS off'; gp.className = 'pill hidden'; }
   const g = $('#group-pill');
   if (S.group) {
     const n = S.group.state?.members.length || 1;
     g.textContent = `${S.group.code} · ${n}${S.group.status === 'online' ? '' : ' · offline'}${S.sharing ? ' · sharing' : ''}`;
     g.className = 'pill' + (S.sharing && S.group.status === 'online' ? ' live' : '');
   } else g.className = 'pill hidden';
+  // the mountain button shows when no status needs the space
+  $('#resort-btn').classList.toggle('hidden', !gp.classList.contains('hidden') || !!S.group);
+  $('#resort-btn-name').textContent = S.place?.name || '';
+  $('#infobar').classList.toggle('hidden', !S.place);
+  $('#info-name').textContent = S.place?.name || '';
+  const cur = S.wx?.data?.summit?.current;
+  $('#info-wx').textContent = cur ? `${emo(describeCode(cur.weather_code)[1])} ${fmtTemp(cur.temperature_2m)}${tUnit()}` : '';
+  document.body.classList.toggle('navigating', !!S.nav && !S.player);
   $('#mode-btn').textContent = S.map?.mode === '3d' ? '2D' : '3D';
   document.querySelectorAll('#tabs button').forEach((b) => b.classList.toggle('on', b.dataset.tab === S.tab));
 
@@ -921,7 +928,8 @@ function stepText(s, lower) {
 // ---------- sheets
 function openSheet(name, arg) {
   S.sheet = name; S.sheetArg = arg;
-  if (['group', 'track', 'history', 'more'].includes(name)) S.tab = name;
+  const tab = { group: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
+  if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
   renderChrome();
@@ -934,10 +942,11 @@ function closeSheet() {
 
 function renderSheet() {
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = $('#sheet-title').textContent === title;
   $('#sheet-title').textContent = title;
+  $('#sheet-title').classList.toggle('long', title.length > 19);
   // don't clobber a text field the person is typing in
   const a = document.activeElement;
   if (same && a && body.contains(a) && a.tagName === 'INPUT' && a.type !== 'checkbox') return;
@@ -948,21 +957,40 @@ function renderSheet() {
   if (same) body.scrollTop = keep;
 }
 
-function profileForm() {
+// ---------- small line icons used in the panels
+const ICON = {
+  route: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.500"/><circle cx="18" cy="5" r="2.500"/><path d="M8.500 19H15a3.500 3.500 0 0 0 0-7H9a3.500 3.500 0 0 1 0-7h6.500"/></svg>',
+  map: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6.500 9 4l6 2.500L21 4v13.500L15 20l-6-2.500L3 20z"/><path d="M9 4v13.500M15 6.500V20"/></svg>',
+  gear: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.200"/><path d="M12 2.500v3M12 18.500v3M2.500 12h3M18.500 12h3M5.300 5.300l2.100 2.100M16.600 16.600l2.100 2.100M5.300 18.700l2.100-2.100M16.600 7.400l2.100-2.100"/></svg>',
+  mtn: '<svg viewBox="0 0 32 20" width="40" height="25" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round" style="vertical-align:-6px;margin-right:12px"><path d="M1 19 11 6l5 6 4-4 11 11z"/><path d="M8 10l3 2 2-2"/></svg>',
+  share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M8 10H6a1.500 1.500 0 0 0-1.500 1.500v8A1.500 1.500 0 0 0 6 21h12a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18 10h-2"/></svg>',
+  layers: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.700" stroke-linejoin="round"><path d="M12 3 2.500 8 12 13l9.500-5z"/><path d="M2.500 12 12 17l9.500-5"/><path d="M2.500 16 12 21l9.500-5"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.700" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.500 4.500 5.500v6c0 4.500 3.200 8.200 7.500 10 4.300-1.800 7.500-5.500 7.500-10v-6z"/><path d="M12 8.500v7M8.500 12h7"/></svg>',
+  mic: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2.500" width="6" height="12" rx="3"/><path d="M5.500 11a6.500 6.500 0 0 0 13 0M12 17.500V21M8.500 21h7"/></svg>',
+  ban: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.200"><circle cx="12" cy="12" r="9"/><path d="M5.700 5.700l12.600 12.600"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.800" style="flex:none"><rect x="7" y="2.500" width="10" height="19" rx="2.500"/><path d="M11 18.500h2"/></svg>',
+  info: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.800" style="flex:none"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v6M12 7.500v.01" stroke-linecap="round" stroke-width="2.200"/></svg>',
+  refresh: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M20 11a8 8 0 0 0-14.500-4.500L4 8M4 4v4h4M4 13a8 8 0 0 0 14.500 4.500L20 16M20 20v-4h-4"/></svg>',
+  sim: '<svg viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8z" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linejoin="round"/></svg>',
+};
+const FIRST_DAY = `<svg viewBox="0 0 210 120" aria-hidden="true"><path d="M18 108 70 58 92 74 122 30 150 62 168 50 196 108z" fill="#8fb0cc"/><path d="M122 30 150 62 140 108H96z" fill="#5f84a8"/><path d="M70 58 92 74 80 108H18z" fill="#6f93b5"/><path d="M122 30 131 41 123 39 117 45 112 41z" fill="#f4f8fb"/><path d="M70 58 77 65 70 64 65 67z" fill="#eaf1f7"/><path d="M168 50 175 58 168 57 163 60z" fill="#eaf1f7"/><path d="M122 31V12" stroke="#d9e4ee" stroke-width="2"/><path d="M123 12h16l-4 5 4 5h-16z" fill="#3ee6c4"/><path d="M121 46c-14 8 10 16-4 26s-28 10-12 26" stroke="#fff" stroke-width="4.500" fill="none" stroke-linecap="round"/><path d="M30 108l6-16 6 16zM168 108l6-18 6 18zM186 108l5-13 5 13z" fill="#1f8a6a"/><path d="M8 108h194" stroke="#9fb7cc" stroke-width="2"/></svg>`;
+
+function profileFields() {
   const p = S.profile;
-  return `<div class="card"><h3>You</h3>
-    <label class="lbl">Display name (optional)</label><input class="field" id="f-name" maxlength="20" placeholder="Optional" value="${esc(p.name)}" autocomplete="off" />
+  return `<label class="lbl">Display name</label><input class="field" id="f-name" maxlength="20" placeholder="Optional" value="${esc(p.name)}" autocomplete="off" />
     <label class="lbl">Avatar</label><div class="avatars">${AVATARS.map(([k, n]) => `<button data-act="avatar" data-v="${k}" class="${p.avatar === k ? 'on' : ''}">${avatarSvg(k, p.color)}${n}</button>`).join('')}</div>
-    <label class="lbl">Color</label><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>
-  </div>`;
+    <label class="lbl">Color</label><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>`;
+}
+function profileForm() {
+  return `<div class="card"><h3>Your profile</h3>${profileFields()}</div>`;
 }
 
 function sheetGroup() {
   const g = S.group;
   if (!g) {
-    return ['Group', `${profileForm()}
-      <div class="card"><h3>Start a private group</h3><p class="sub">Up to 20 people. Share the code with friends; nobody can see a location until that person turns sharing on.</p><button class="btn" data-act="create-group">Create group</button></div>
-      <div class="card"><h3>Join with a code</h3><input class="field code" id="f-code" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" /><button class="btn alt" data-act="join-group">Join group</button></div>`];
+    return ['Group', `<div class="plain"><div class="sec-title">Profile <small>(optional)</small></div>${profileFields()}</div>
+      <div class="card"><h4>Create a private group</h4><p class="sub">Up to 20 people. Share the code with friends; nobody can see a location until that person turns sharing on.</p><button class="btn" data-act="create-group">Create Group</button><p class="note" style="text-align:center;margin-bottom:0">Only share your location when you choose.</p></div>
+      <div class="card"><h4>Join with a code</h4><input class="field code" id="f-code" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" /><button class="btn outline" data-act="join-group" style="margin-bottom:2px">Join Group</button></div>`];
   }
   const st = g.state, mine = st?.members.find((m) => m.id === S.profile.id);
   const owner = st?.owner === S.profile.id;
@@ -1020,46 +1048,53 @@ function refreshGroupSheet() {
   }
 }
 
+function trackChip() {
+  if (!S.tracker) return '<div class="status-chip"><i></i>Not tracking</div>';
+  return `<div class="status-chip on"><i></i>${S.me ? ['Tracking', 'Skiing', 'On lift'][S.tracker.stats.state] : 'Tracking · finding GPS'}</div>`;
+}
+const box = (label, val, unit = '') => `<div class="box"><span>${label}</span><b>${val}${unit ? `<small>${unit}</small>` : ''}</b></div>`;
+
 function statGrid(st, live) {
   const d = distParts(st.skiDist), v = vertParts(st.vert);
-  return `<div class="stats">
-    ${live ? `<div class="stat hero"><b>${fmtSpeed(st.speed)}<small>${speedUnit()}</small></b><span>Current speed</span> <span class="state-chip ${['', 'ski', 'lift'][st.state]}">${['Stopped', 'Skiing', 'On lift'][st.state]}</span></div>` : ''}
-    <div class="stat"><b>${fmtSpeed(st.avgSpeed)}<small>${speedUnit()}</small></b><span>Avg ski speed</span></div>
-    <div class="stat"><b>${fmtSpeed(st.topSpeed)}<small>${speedUnit()}</small></b><span>Top speed</span></div>
-    <div class="stat"><b>${st.runCount}</b><span>Runs</span></div>
-    <div class="stat"><b>${d[0]}<small>${d[1]}</small></b><span>Ski distance</span></div>
-    <div class="stat"><b>${v[0]}<small>${v[1]}</small></b><span>Vertical</span></div>
-    <div class="stat"><b>${fmtDur(st.skiTime).replace(' min', 'm')}</b><span>Ski time</span></div>
-  </div>
+  return `<div class="boxes b4">${box('Runs', st.runCount)}${box('Vertical', v[0], v[1])}${box('Distance', d[0], d[1])}${live ? box('Speed', fmtSpeed(st.speed), speedUnit()) : box('Top speed', fmtSpeed(st.topSpeed), speedUnit())}</div>
+  <div class="boxes b3">${box('Avg ski speed', fmtSpeed(st.avgSpeed), speedUnit())}${live ? box('Top speed', fmtSpeed(st.topSpeed), speedUnit()) : box('Lift rides', st.liftCount)}${box('Ski time', fmtDur(st.skiTime).replace(' min', 'm'))}</div>
   <div class="card"><h3>Lifts (not counted in ski stats)</h3><div class="liftbox"><span><b>${st.liftCount}</b> rides</span><span><b>${fmtVert(st.liftVert)}</b> up</span><span><b>${fmtDist(st.liftDist)}</b></span><span><b>${fmtDur(st.liftTime)}</b></span></div></div>`;
 }
 
 function sheetTrack() {
   if (!S.tracker) {
-    return ['Stats', `<div class="card"><p class="sub">Track speed, runs, distance and vertical. Lift rides are detected and kept separate, and GPS spikes are filtered out.</p>
-      <button class="btn go" data-act="start-track">Start tracking</button>
-      <p class="note">Joining a group starts a group session automatically. Everything is saved on this phone when you end.</p></div>
+    return ['Your ski day', `${trackChip()}
+      <div class="boxes b4">${['Runs', 'Vertical', 'Distance', 'Speed'].map((l) => box(l, '—')).join('')}</div>
+      <button class="btn" data-act="start-track">Start tracking</button>
       ${tracksCard()}
-      ${S.gpsMsg ? `<p class="note">${esc(S.gpsMsg)}</p>` : ''}`];
+      ${S.gpsMsg ? `<p class="note">${esc(S.gpsMsg)}</p>` : ''}
+      <p class="foot">Saved on this phone.</p>`];
   }
   const st = S.tracker.stats, s = S.session;
-  return [s.kind === 'group' ? `Group session ${s.group || ''}` : 'Solo tracking', `<div id="live-stats">${statGrid(st, true)}</div>
+  return [s.kind === 'group' ? `Group ski day ${s.group || ''}` : 'Your ski day', `<div id="live-stats">${trackChip()}${statGrid(st, true)}</div>
     ${tracksCard()}
-    <p class="note">Started ${fmtClock(s.start)} · ${S.tracker.points.length} GPS points${st.rejected ? ` · ${st.rejected} bad fixes filtered` : ''}${S.me ? '' : ' · waiting for GPS'}</p>
+    <p class="note">Started ${fmtClock(s.start)} · ${S.tracker.points.length} GPS points${st.rejected ? ` · ${st.rejected} bad fixes filtered` : ''}</p>
     ${s.kind === 'group' && S.group ? '<p class="note">This session ends and saves when you leave or close the group.</p><button class="btn danger" data-act="leave-group">Leave group &amp; save</button>' : '<button class="btn danger" data-act="end-track">End &amp; save</button>'}`];
 }
 function renderTrackLive() {
   const el = $('#live-stats');
-  if (el && S.tracker) el.innerHTML = statGrid(S.tracker.stats, true);
+  if (el && S.tracker) el.innerHTML = trackChip() + statGrid(S.tracker.stats, true);
 }
 
 function sheetHistory() {
   const list = S.history || [];
-  if (!S.historyLoaded) { loadHistory(); return ['History', '<p class="sub">Loading…</p>']; }
+  if (!S.historyLoaded) { loadHistory(); return ['Your ski days', '<p class="sub">Loading…</p>']; }
   const loose = prefs.get(pkey('routes'), []);
   const looseHtml = loose.length ? `<div class="card"><h3>Recent directions</h3>${loose.slice().reverse().map((r, k) => routeRow(r, 'loose', loose.length - 1 - k)).join('')}</div>` : '';
-  if (!list.length) return [`History · ${S.place.name}`, looseHtml + (S.historyElsewhere ? `<p class="note">${S.historyElsewhere} saved session${S.historyElsewhere > 1 ? 's' : ''} at other resorts — open that resort to see ${S.historyElsewhere > 1 ? 'them' : 'it'}.</p>` : '') + '<div class="card"><p class="sub">No saved sessions here yet. End a tracking session or leave a group and your runs, routes and stats appear here — stored on this phone and available offline.</p></div>'];
-  return [`History · ${S.place.name}`, `<div class="card">${list.map((s) => `<button class="list-item" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}</div>${looseHtml}<p class="note">Stored on this phone only. Works offline.${S.historyElsewhere ? ` ${S.historyElsewhere} more session${S.historyElsewhere > 1 ? 's' : ''} at other resorts — open that resort to see ${S.historyElsewhere > 1 ? 'them' : 'it'}.` : ''}</p>`];
+  const elsewhere = S.historyElsewhere ? `<p class="note">${S.historyElsewhere} saved day${S.historyElsewhere > 1 ? 's' : ''} at other resorts: open that resort to see ${S.historyElsewhere > 1 ? 'them' : 'it'}.</p>` : '';
+  // The welcome screen, with its own Start tracking button, only shows before the first saved day at this mountain.
+  if (!list.length) {
+    return ['Your ski days', `<div class="empty">${FIRST_DAY}<h3>Your first ski day<br>starts here</h3><p>Finish a tracking session to save your runs and replay them.</p>
+      ${S.tracker ? '<button class="btn" data-act="tab" data-tab="track">Tracking now: see live stats</button>' : '<button class="btn" data-act="hist-start">Start tracking</button>'}
+      <p class="foot">Saved on this phone • Available offline</p></div>${looseHtml}${elsewhere}`];
+  }
+  return ['Your ski days', `${list.map((s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}
+    ${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
 }
 async function loadHistory() {
   // History, replay and tracks are per mountain: a recording only makes sense on the map it was made on.
@@ -1091,22 +1126,49 @@ function routeRow(r, id, i) {
 }
 
 function sheetMore() {
-  const off = prefs.get(pkey('offline'), null);
+  const off = prefs.get(pkey('offline'), null), n = closedNames();
+  const src = S.resort.sources;
   return ['More', `
-    <div class="card"><h3>My hardest trail</h3><div class="seg">${DIFF_NAMES.map((n, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="${runCss(S.resort, { d: i })}">${runSym(S.resort, { d: i })}</span> ${levelName(S.resort, i)}</button>`).join('')}</div><p class="note">Directions keep you on trails up to this level. If you're already on something harder, or there is no other way, you still get a route — with a warning — that leaves the harder terrain as soon as possible.</p></div>
-    <div class="card"><h3>Uphill tolerance</h3><div class="seg">${Object.entries(TOLERANCE).filter(([k]) => k !== 'none').map(([k, t]) => `<button data-act="uphill" data-v="${k}" class="${S.uphill === k ? 'on' : ''}">${t.label}</button>`).join('')}</div><p class="note">${{ low: 'Low: only an easy skate or a step or two up; otherwise directions take the downhill way round.', normal: 'Normal: accepts a short moderate climb or a cut-across to the next trail when it saves a lot of time.', high: 'High: accepts a real sidestep or short boot-pack to avoid a lap.' }[S.uphill]} Steeper ground, harder trails and steep side slopes all count against a climb.</p></div>
-    <div class="card"><div class="rowf"><div class="grow"><b>Spoken directions</b><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed. The screen must stay on: use Pocket mode while riding.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div></div>
-    <div class="card"><h3>Closures</h3><div class="rowf"><div class="grow sub">${S.closures.size ? `${closedNames().length} marked closed: ${esc(closedNames().slice(0, 4).join(', '))}${closedNames().length > 4 ? '…' : ''}` : 'Mark lifts or trails you have confirmed are closed. Directions avoid them.'}</div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
-    <div class="card"><h3>Offline map</h3><div id="offline-box">${off ? `<p class="ok-text">✓ Whole resort saved on this phone (${(off.bytes / 1048576).toFixed(1)} MB, ${fmtDate(off.at)})</p>` : '<p class="sub">Download the entire ${esc(S.place.name)} map — 3D terrain, trails, lifts, buildings and the app itself — so it opens with no signal.</p>'}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
-    <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${document.documentElement.dataset.theme === 'light' ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${document.documentElement.dataset.theme === 'light' ? 'on' : ''}">Light</button></div></div>
-    <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
-    <div class="card"><div class="rowf"><div class="grow"><b>Show frame rate</b><div class="sub">A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best – Q3 lightest). The app lowers quality by itself when the phone can’t keep up. “Slowed by phone” means the phone is holding the app back (usually heat), which lower quality cannot fix.</div></div><label class="switch"><input type="checkbox" id="f-fps" ${S.showFps ? 'checked' : ''} /><i></i></label></div><div class="rowf"><div class="grow"><b>120 fps motion</b><div class="sub">Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.</div></div><label class="switch"><input type="checkbox" id="f-fps120" ${S.fps120 ? 'checked' : ''} /><i></i></label></div></div>
-    <div class="card"><div class="rowf"><div class="grow"><b>Test mode (simulate my location)</b><div class="sub">Try sharing and rerouting away from the mountain: tap the map, then “Put me here”.</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div></div>
-    <button class="btn alt" data-act="legend">Map legend</button>
+    <div class="card"><button class="row-link" data-act="open-sheet" data-s="routeprefs">${ICON.route}<div class="grow">Route preferences<small>Hardest trail: ${esc(levelName(S.resort, S.maxDiff))} · Uphill: ${esc(TOLERANCE[S.uphill].label)}</small></div><span class="chev">›</span></button></div>
+    <div class="card"><div class="rowf"><div class="grow"><h4>Spoken directions</h4><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div>
+      <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep screen on for directions • Use Pocket mode while riding.</span></div></div>
+    <div class="card"><div class="rowf"><div class="grow"><h4>Closures</h4><div class="sub">${n.length ? `${n.length} marked closed: ${esc(n.slice(0, 4).join(', '))}${n.length > 4 ? '…' : ''}` : 'Avoid trails and lifts you mark closed.'}</div></div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
+    <div class="card"><h4>Offline map</h4><div id="offline-box">${off ? `<p class="ok-text" style="font-size:17px;margin:4px 0 2px">✓ ${esc(S.place.name)} saved</p><p class="sub" style="margin:0 0 4px 22px">${(off.bytes / 1048576).toFixed(1)} MB • ${fmtDate(off.at)}</p>` : `<p class="sub">Download the whole ${esc(S.place.name)} map (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal.</p>`}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
+    <div class="card"><button class="row-link" data-act="legend">${ICON.map}<div class="grow">Map legend</div><span class="chev">›</span></button></div>
+    <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
+    <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
+    <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
+    <div class="card"><h4>Map credits</h4><div class="icon-row">${ICON.layers}<div class="txt">Terrain: ${esc(src.terrain)}.<br>Trails, lifts, buildings, places: ${esc(src.map)}.${src.zones ? `<br>Zones: ${esc(src.zones)}.` : ''}</div></div></div>
+    <div class="card"><div class="icon-row">${ICON.shield}<div class="txt">Not an official ${esc(S.place.name)} product. Closures are user-marked, not a live resort feed. Follow mountain signs, ropes and ski patrol.</div></div></div>`];
+}
 
-    <button class="btn exit" data-act="change-resort">Choose a different resort</button>
-    <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open SkiWithMe from the icon for full screen and offline use.</p></div>
-    <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Zones: ${S.resort.sources.zones ? esc(S.resort.sources.zones) : 'none recorded for this resort yet'}.</p><p class="note">Not an official ${esc(S.place.name)} product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
+const UPHILL_TEXT = { low: 'Only an easy skate or a step or two up; otherwise directions take the downhill way round.', normal: 'Allows short climbs when they save time.', high: 'Accepts a real sidestep or short boot-pack to avoid a lap.' };
+function sheetRoutePrefs() {
+  return ['Route preferences', `
+    <div class="card"><h3>Hardest trail</h3><div class="seg">${DIFF_NAMES.map((x, i) => `<button data-act="max-diff" data-v="${i}" class="${S.maxDiff === i ? 'on' : ''}"><span class="${runCss(S.resort, { d: i })}">${runSym(S.resort, { d: i })}</span> ${levelName(S.resort, i)}</button>`).join('')}</div>
+      <p class="note" style="font-size:14.5px">Prefer routes within this level. Harder terrain may be unavoidable; warnings appear.</p></div>
+    <div class="card"><h3>Uphill tolerance</h3><div class="seg">${Object.entries(TOLERANCE).filter(([k]) => k !== 'none').map(([k, t]) => `<button data-act="uphill" data-v="${k}" class="${S.uphill === k ? 'on' : ''}">${t.label}</button>`).join('')}</div>
+      <p class="note" style="font-size:14.5px">${UPHILL_TEXT[S.uphill]}</p></div>
+    <div class="card"><div class="rowf" style="gap:14px">${ICON.mic}<div class="grow"><h4 style="margin:0">Spoken directions</h4></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div></div>
+    <div class="card"><div class="rowf" style="gap:14px">${ICON.ban}<div class="grow"><h4 style="margin:0">Closures</h4><div class="sub">Manage marked closures.</div></div><button class="btn sm" data-act="open-closures">Edit</button></div></div>
+    <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
+}
+
+function sheetAdvanced() {
+  const L = (k, text) => `<button class="learn ${S.learn?.[k] ? 'open' : ''}" data-act="learn" data-k="${k}">Learn more<i>›</i></button>${S.learn?.[k] ? `<p class="learn-text">${text}</p>` : ''}`;
+  const light = document.documentElement.dataset.theme === 'light';
+  return ['Appearance & advanced', `
+    <div class="card"><h3>Appearance</h3><div class="seg"><button data-act="theme" data-v="dark" class="${light ? '' : 'on'}">Dark</button><button data-act="theme" data-v="light" class="${light ? 'on' : ''}">Light</button></div></div>
+    <div class="card"><h3>Units</h3><div class="seg"><button data-act="units" data-v="imperial" class="${imp() ? 'on' : ''}">mph · ft</button><button data-act="units" data-v="metric" class="${imp() ? '' : 'on'}">km/h · m</button></div></div>
+    <div class="card"><h3>Advanced</h3>
+      <div class="rowf"><div class="grow"><h4>Show frame rate</h4><div class="sub">Show frames per second while you move the map.</div></div><label class="switch"><input type="checkbox" id="f-fps" ${S.showFps ? 'checked' : ''} /><i></i></label></div>
+      ${L('fps', 'A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best to Q3 lightest). The app lowers quality by itself when the phone can’t keep up. “Slowed by phone” means the phone is holding the app back (usually heat), which lower quality cannot fix.')}
+      <div class="divide"></div>
+      <div class="rowf"><div class="grow"><h4>120 fps motion</h4><div class="sub">Use up to 120 fps (if supported) for smoother motion.</div></div><label class="switch"><input type="checkbox" id="f-fps120" ${S.fps120 ? 'checked' : ''} /><i></i></label></div>
+      ${L('fps120', 'Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.')}</div>
+    <div class="card"><div class="rowf"><div class="grow"><h4>Simulated location</h4>${S.testMode ? `<span class="pill sim" style="margin:2px 0 6px">${ICON.sim}Simulated location</span>` : ''}<div class="sub">${S.testMode ? 'Tap the map to place your simulated position.' : 'Try sharing and rerouting away from the mountain.'}</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div>
+      ${L('sim', 'Tap the map, then “Put me here”. Sharing, directions and tracking then use that spot instead of GPS. Turn this off to go back to real GPS.')}</div>
+    <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
 }
 
 function closedNames() {
@@ -1132,15 +1194,17 @@ function sheetClosures() {
 }
 
 function sheetLegend() {
-  const line = (c, label, dash) => `<div class="legend-row"><div class="sw"><div class="ln" style="background:${dash ? `repeating-linear-gradient(90deg, ${c} 0 9px, transparent 9px 15px)` : c}"></div></div>${label}</div>`;
-  const ic = (c, ch, label) => `<div class="legend-row"><div class="sw"><div class="ic" style="background:${c}">${ch}</div></div>${label}</div>`;
-  return ['Legend', `<div class="card"><h3>Trail difficulty</h3>
-      ${(() => { const sc = scheme(S.resort); return classesUsed(S.resort).map((c) => line(sc.colors[c], `<b class="${sc.css[c]}">${sc.syms[c]}</b>&nbsp; ${sc.legend[c]}`)).join(''); })()}
-      ${line(scheme(S.resort).colors[1], 'Dashed = glade: an ungroomed run through the trees', true)}${line(COLORS.closed, 'Marked closed', true)}</div>
+  const sc = scheme(S.resort);
+  const line = (c, label, dash, sym) => `<div class="legend-row"><div class="sw"><div class="ln" style="background:${dash ? `repeating-linear-gradient(90deg, ${c} 0 10px, #10202f 10px 16px)` : c}"></div></div>${sym != null ? `<span class="sym">${sym}</span>` : ''}<span>${label}</span></div>`;
+  const ic = (c, ch, label) => `<div class="legend-row"><div class="sw"><div class="ic" style="background:${c}">${ch}</div></div><span>${label}</span></div>`;
+  return ['Map legend', `<div class="card"><h3>Trail difficulty</h3>
+      ${classesUsed(S.resort).map((c) => line(sc.colors[c], sc.legend[c], false, `<b class="${sc.css[c]}">${sc.syms[c]}</b>`)).join('')}
+      ${line(sc.colors[1], 'Glades (dashed trail)', true)}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
     ${zonesCard()}
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${scheme(S.resort).liftWord} line per lift, just above and between its two cables)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replayed run (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div>My tracks: dotted trail of where you have skied (Stats tab)</div></div>
-    <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Base lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
-      ${ic(PALETTE[5], 'A', 'Friend — avatar in 3D, colored circle with name in 2D (grey = stale location)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>`];
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift, just above and between its two cables)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
+    <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
+      ${ic(PALETTE[5], 'A', 'Friend (grey = location out of date)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>
+    <p class="foot">Follow mountain signs and ropes.</p>`];
 }
 
 function sheetPlace(ev) {
@@ -1186,41 +1250,58 @@ async function refreshWeather(force) {
   if (S.sheet === 'weather') renderSheet();
   try { S.wx = { data: await loadWeather(S.place, force) }; } catch (e) { S.wx = { error: navigator.onLine === false ? 'You are offline and no forecast is saved on this phone yet.' : 'The weather service did not answer. Try again in a moment.' }; }
   if (S.sheet === 'weather') renderSheet();
+  renderChrome();
 }
 
+const EMO = { '☀': '☀️', '⛅': '⛅', '☁': '☁️', '☂': '☔', '❄': '❄️', '⚡': '⚡' };
+const emo = (g) => EMO[g] || g;
+const tUnit = () => (imp() ? 'F' : 'C');
+const unitSplit = (txt) => { const [a, u] = txt.split(' '); return `${a}${u ? `<small>${u}</small>` : ''}`; };
+
 function sheetWeather() {
+  const T = 'Mountain weather';
   const wx = S.wx || {};
-  if (wx.error) return [`Ski weather · ${S.place.name}`, `<div class="card"><p class="sub">${esc(wx.error)}</p><button class="btn alt" data-act="wx-refresh">Try again</button></div>`];
-  if (!wx.data) return [`Ski weather · ${S.place.name}`, '<div class="card"><p class="sub">Loading the forecast…</p></div>'];
-  const { summit: s, base: b, at, stale } = wx.data, c = s.current, d = s.daily, h = s.hourly, hi = hourIndex(s);
+  if (wx.error) return [T, `<div class="card"><p class="sub">${esc(wx.error)}</p><button class="btn alt" data-act="wx-refresh">Try again</button></div>`];
+  if (!wx.data) return [T, '<div class="card"><p class="sub">Loading the forecast…</p></div>'];
+  const { summit, base, at, stale } = wx.data;
+  const atBase = S.wxSite === 'base', week = S.wxView === 'week';
+  const s = atBase ? base : summit, other = atBase ? summit : base, where = atBase ? 'base' : 'summit';
+  const c = s.current, d = s.daily, h = s.hourly, hi = hourIndex(s);
   const [label, glyph] = describeCode(c.weather_code);
   const day = (i) => ({ snow: d.snowfall_sum[i] || 0, rain: d.rain_sum[i] || 0, gust: d.wind_gusts_10m_max[i] || 0, feelsMin: d.apparent_temperature_min[i], tMax: d.temperature_2m_max[i], tMin: d.temperature_2m_min[i] });
   const vis = h.visibility?.[hi], frz = h.freezing_level_height?.[hi];
   const next24 = h.snowfall.slice(hi, hi + 24).reduce((n, v) => n + (v || 0), 0);
-  const notes = (i, cur) => skiNotes(day(i), cur, fmtSnow).map(([k, t]) => `<div class="wx-note ${k}">${esc(t)}</div>`).join('');
-  const cell = (v, l) => `<div class="stat"><b>${v}</b><span>${l}</span></div>`;
+  const cbox = (v, l) => `<div class="box cap"><b>${v}</b><span>${l}</span></div>`;
+  const segs = `<div class="seg solid"><button data-act="wx-site" data-v="summit" class="${atBase ? '' : 'on'}">Summit</button><button data-act="wx-site" data-v="base" class="${atBase ? 'on' : ''}">Base</button></div>
+    <div class="seg solid" style="margin-top:8px"><button data-act="wx-view" data-v="today" class="${week ? '' : 'on'}">Today</button><button data-act="wx-view" data-v="week" class="${week ? 'on' : ''}">7 days</button></div>`;
+  const foot = `<div class="wx-foot"><div class="grow"><b>${stale ? 'Saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''}</b>Summit ${fmtVert(S.place.top)} / Base ${fmtVert(S.place.base)}<br><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather by Open-Meteo</a></div><button class="btn" data-act="wx-refresh">${ICON.refresh} Refresh</button></div>`;
+  if (week) {
+    const rows = d.time.map((t, i) => {
+      const n = skiNotes(day(i), null, fmtSnow)[0];
+      return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${emo(describeCode(d.weather_code[i])[1])}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''} · ${d.precipitation_probability_max[i] ?? 0}% precip · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
+    }).join('');
+    return [T, `${segs}<div class="card"><h3>7-day ski forecast (${where})</h3><div class="wx-head"><span>Day</span><span>Low / High</span><span>Snow</span><span>Gust</span></div>${rows}</div>${foot}`];
+  }
   const hours = h.time.slice(hi, hi + 12).map((t, k) => {
     const i = hi + k;
-    return `<div class="wx-hour"><span>${k === 0 ? 'Now' : hourLabel(t)}</span><i>${describeCode(h.weather_code[i])[1]}</i><b>${fmtTemp(h.temperature_2m[i])}</b><small>${h.snowfall[i] > 0.05 ? '❄ ' + fmtSnow(h.snowfall[i]) : (h.precipitation_probability[i] ?? 0) + '%'}</small><small>${fmtWind(h.wind_gusts_10m[i])} ${speedUnit()}</small></div>`;
+    return `<div class="wx-hour"><span>${k === 0 ? 'Now' : hourLabel(t)}</span><i>${emo(describeCode(h.weather_code[i])[1])}</i><b>${fmtTemp(h.temperature_2m[i])}</b><small>${h.snowfall[i] > 0.05 ? '❄ ' + fmtSnow(h.snowfall[i]) : (h.precipitation_probability[i] ?? 0) + '%'}</small><small>${fmtWind(h.wind_gusts_10m[i])} ${speedUnit()}</small></div>`;
   }).join('');
-  const today = `
-    <div class="wx-hero"><div class="g">${glyph}</div><div><div class="t">${fmtTemp(c.temperature_2m)}<small> summit</small></div><div class="l">${label} · feels like ${fmtTemp(c.apparent_temperature)}</div><div class="l">Base ${fmtTemp(b.current.temperature_2m)} · today ${fmtTemp(d.temperature_2m_min[0])} to ${fmtTemp(d.temperature_2m_max[0])}</div></div></div>
-    ${notes(0, { vis })}
-    <div class="stats" style="margin-top:10px">
-      ${cell(fmtSnow(d.snowfall_sum[0] || 0), 'New snow today')}${cell(fmtSnow(next24), 'Next 24 h')}${cell(c.snow_depth != null ? fmtSnow(c.snow_depth * 100) : '–', 'Snow depth')}
-      ${cell(`${fmtWind(c.wind_speed_10m)}<small>${speedUnit()}</small>`, `Wind ${compass(c.wind_direction_10m)}`)}${cell(`${fmtWind(c.wind_gusts_10m)}<small>${speedUnit()}</small>`, 'Gusts')}${cell(`${fmtWind(d.wind_gusts_10m_max[0])}<small>${speedUnit()}</small>`, 'Peak gust today')}
-      ${cell(vis != null ? (imp() ? `${(vis / 1609.34).toFixed(vis < 1609 ? 1 : 0)}<small>mi</small>` : `${(vis / 1000).toFixed(vis < 1000 ? 1 : 0)}<small>km</small>`) : '–', 'Visibility')}${cell(frz != null ? fmtVert(frz).replace(' ', '<small>') + '</small>' : '–', 'Freezing level')}${cell(`${d.precipitation_probability_max[0] ?? 0}<small>%</small>`, 'Precip chance')}
+  const notes = skiNotes(day(0), { vis }, fmtSnow).map(([k, t]) => `<div class="wx-note ${k}">${esc(t)}</div>`).join('');
+  const open = S.wxMore !== false;
+  return [T, `${segs}
+    <div class="wx-hero"><div class="g">${emo(glyph)}</div><div><div class="t">${fmtTemp(c.temperature_2m)}${tUnit()}</div><div class="l">${label} · Feels like ${fmtTemp(c.apparent_temperature)}${tUnit()}</div><div class="l">${atBase ? 'Summit' : 'Base'} ${fmtTemp(other.current.temperature_2m)}${tUnit()} · today ${fmtTemp(d.temperature_2m_min[0])} to ${fmtTemp(d.temperature_2m_max[0])}</div></div></div>
+    ${notes}
+    <div class="boxes b3">
+      ${cbox(unitSplit(fmtSnow(d.snowfall_sum[0] || 0)), 'New snow')}${cbox(unitSplit(fmtSnow(next24)), 'Next 24 h')}${cbox(c.snow_depth != null ? unitSplit(fmtSnow(c.snow_depth * 100)) : '–', 'Snow depth')}
+      ${cbox(`${fmtWind(c.wind_speed_10m)}<small>${speedUnit()}</small>`, `Wind ${compass(c.wind_direction_10m)}`)}${cbox(`${fmtWind(c.wind_gusts_10m)}<small>${speedUnit()}</small>`, 'Gusts')}${cbox(`${fmtWind(d.wind_gusts_10m_max[0])}<small>${speedUnit()}</small>`, 'Peak gust today')}
     </div>
-    <div class="card"><h3>Next 12 hours at the summit · temp, snow or precip chance, gusts</h3><div class="wx-hours">${hours}</div></div>
-    <p class="note">Sunrise ${hourLabelFull(d.sunrise[0])} · sunset ${hourLabelFull(d.sunset[0])} · cloud cover ${c.cloud_cover}%</p>`;
-  const week = S.wxWeek ? `<div class="card"><h3>7-day ski forecast (summit)</h3>${d.time.map((t, i) => {
-    const n = skiNotes(day(i), null, fmtSnow)[0];
-    return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${describeCode(d.weather_code[i])[1]}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''} · ${d.precipitation_probability_max[i] ?? 0}% precip · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
-  }).join('')}<p class="note">Columns: low / high, new snow, peak gust.</p></div>` : '';
-  return [`Ski weather · ${S.place.name}`, `${today}
-    <button class="btn ${S.wxWeek ? 'alt' : ''}" data-act="wx-week">${S.wxWeek ? 'Hide 7-day forecast' : 'Show 7-day forecast'}</button>${week}
-    <p class="note">${stale ? 'Could not refresh — showing the forecast saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''} · Summit ${fmtVert(S.place.top)}, base ${fmtVert(S.place.base)} · <a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather data by Open-Meteo.com</a></p>
-    <button class="btn alt" data-act="wx-refresh">Refresh</button>`];
+    <div class="wx-more ${open ? 'open' : ''}"><button data-act="wx-more">More conditions<i>⌄</i></button>${open ? `<div class="cols">
+      <div><b>${vis != null ? (imp() ? `${(vis / 1609.34).toFixed(vis < 1609 ? 1 : 0)}<small>mi</small>` : `${(vis / 1000).toFixed(vis < 1000 ? 1 : 0)}<small>km</small>`) : '–'}</b><span>Visibility</span></div>
+      <div><b>${frz != null ? unitSplit(fmtVert(frz)) : '–'}</b><span>Freezing level</span></div>
+      <div><b>${d.precipitation_probability_max[0] ?? 0}<small>%</small></b><span>Precip chance</span></div></div>` : ''}</div>
+    <div class="card"><h3>Next 12 hours at the ${where} · temp, snow or precip chance, gusts</h3><div class="wx-hours">${hours}</div></div>
+    <p class="wx-sun">Sunrise ${hourLabelFull(d.sunrise[0])} · Sunset ${hourLabelFull(d.sunset[0])} · Cloud cover ${c.cloud_cover}%</p>
+    ${foot}`];
 }
 const hourLabelFull = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}:${iso.slice(14, 16)} ${h < 12 ? 'am' : 'pm'}`; };
 
@@ -1328,8 +1409,8 @@ function onInput(e) {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
     if (!S.testMode) { S.me = null; S.map.setMe(null); if (S.tracker || S.sharing) S.loc.start(); }
-    toast(S.testMode ? 'Test mode on: tap the map, then “Put me here”.' : 'Test mode off: using real GPS.');
-    renderChrome();
+    toast(S.testMode ? 'Simulated location on: tap the map, then “Put me here”.' : 'Simulated location off: using real GPS.');
+    renderChrome(); renderSheet();
   } else if (t.id === 'f-closure-q') {
     S.closureQ = t.value;
     const tmp = document.createElement('div'); tmp.innerHTML = sheetClosures()[1];
@@ -1361,7 +1442,12 @@ async function onClick(e) {
     case 'mode': S.map.setMode(S.map.mode === '3d' ? '2d' : '3d'); renderChrome(); break;
     case 'legend': openSheet('legend'); break;
     case 'weather': if (S.sheet === 'weather') closeSheet(); else { openSheet('weather'); refreshWeather(false); } break;
-    case 'wx-week': S.wxWeek = !S.wxWeek; renderSheet(); break;
+    case 'wx-site': S.wxSite = d.v; renderSheet(); break;
+    case 'wx-view': S.wxView = d.v; $('#sheet-body').scrollTop = 0; renderSheet(); break;
+    case 'wx-more': S.wxMore = S.wxMore === false; renderSheet(); break;
+    case 'open-sheet': openSheet(d.s); $('#sheet-body').scrollTop = 0; break;
+    case 'learn': S.learn = { ...S.learn, [d.k]: !S.learn?.[d.k] }; renderSheet(); break;
+    case 'hist-start': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (simulated location).' : 'Tracking started: finding GPS…'); openSheet('track'); break;
     case 'wx-refresh': refreshWeather(true); break;
     case 'pick-resort': pickResort(d.id); break;
     case 'ski-here': skiHere(b); break;
