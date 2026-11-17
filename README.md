@@ -64,7 +64,7 @@ without downloading them again (the result is identical as long as the resort's 
 Ratings are checked against each resort's own published list where one can be read:
 `python3 tools/official_ratings.py check <id>` compares the map with `tools/official/<id>.json`, and the
 zones step applies that file on every build, so the resort's rating wins over the map data. Checked so far:
-Steamboat, Winter Park, Mammoth and Sugarbush. `CLAUDE.md` lists the rest and how to do them.
+Steamboat, Winter Park, Mammoth, Sugarbush, Saddleback and Cannon. `CLAUDE.md` lists the rest and how to do them.
 
 ## Data sources (all free)
 
@@ -126,9 +126,9 @@ wider terrain grid (16-23 m instead of 14 m) so they stay as light to draw as th
 under `public/data/<id>/` and is downloaded and cached on the phone the first time it is opened.
 History, saved tracks, closures and offline status are kept per resort.
 
-Slow zones and terrain parks are only shown for Jay Peak so far; the others have not been checked
-against their trail maps yet. Difficulty uses North American symbols everywhere, so a European blue
-shows as a green circle, a red as a blue square and a black as a black diamond.
+Slow and family zones are only shown where they were read off the resort's trail map (see Zones).
+Difficulty follows local convention (see Checking accuracy): symbols in North America, piste colours in
+Europe and Japan.
 
 ### Adding a resort
 
