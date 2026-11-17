@@ -12,5 +12,11 @@
  "isolated_lifts": [
   "Tubing Hill",
   "Pioneer"
- ]
+ ],
+ "rename": {
+  "Boundry Chutes": "Boundary Chutes",
+  "Promised Land": "Promise Land",
+  "Ramarah's": "Ramarrah",
+  "Stateline": "Stateline Chute"
+ }
 }

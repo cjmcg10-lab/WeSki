@@ -64,7 +64,7 @@ without downloading them again (the result is identical as long as the resort's 
 Ratings are checked against each resort's own published list where one can be read:
 `python3 tools/official_ratings.py check <id>` compares the map with `tools/official/<id>.json`, and the
 zones step applies that file on every build, so the resort's rating wins over the map data. Checked so far:
-Steamboat, Winter Park, Mammoth, Sugarbush, Saddleback and Cannon. `CLAUDE.md` lists the rest and how to do them.
+Steamboat, Winter Park, Mammoth, Sugarbush, Saddleback, Cannon, Breckenridge, Park City, Keystone, Smugglers' Notch and Heavenly. `CLAUDE.md` lists the rest and how to do them.
 
 ## Data sources (all free)
 
