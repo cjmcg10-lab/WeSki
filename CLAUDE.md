@@ -215,7 +215,12 @@ asked. The icons show the owner's logo.
 ## Paid web app: the plan in short
 
 The full plan is in the launch plan document. In order: one-page website; sign-in by email link; checkout
-through a seller-of-record service (handles sales tax; recommended over raw Stripe for a solo owner) or Stripe; paywall
+through a seller-of-record service (handles sales tax; the owner chose this over raw Stripe on 2026-11-17). Checked live
+on 2026-11-17: Lemon Squeezy closed new sign-ups on 2026-11-16 and shuts down 2027-03-31 (moving to Stripe Managed
+Payments: 3.5% on top of Stripe's 2.9% + 30¢, plus Billing and +1.5% international cards, Checkout or Payment Links only).
+Paddle: 5% + 50¢ all-in, no monthly fee, monthly payouts (minimum $100), asks for bespoke pricing under $10, reviews the
+website and business before going live. Recommended Paddle. The owner was also advised to form one LLC first and open the
+payment account and file the trademark in its name; paywall
 (the map stays free; which features sit behind the plan is set out in the launch plan document, confirm with the owner); manage-plan screen; safety notice
 shown before first use (the app is a guide, not a substitute for resort signs and ski patrol); terms and privacy
 policy (location data is the sensitive part: say what is stored, for how long, who sees it); credits for OpenStreetMap
