@@ -10,5 +10,23 @@
   44.91,
   -70.47,
   44.98
- ]
+ ],
+ "rename": {
+  "Bee Wee Pass": "Bea Wee Pass",
+  "Candlestick": "Candlestick Maker",
+  "Col. Bates": "Colonel Bates",
+  "Dark Wizard": "Dark Wizard Glades",
+  "Frostbbite": "Frostbite",
+  "Garrison Glades": "Happy Garrison Glades",
+  "Ghat": "Gnat",
+  "Intimiador": "Intimidator Glades",
+  "Little Inky": "Little Inky Boy",
+  "Nightmare": "Nightmare Glades",
+  "Peachy`s Peril": "Peachy's Peril",
+  "Rooster`s": "Rooster's Regret",
+  "Squirrel": "Squirrel's Tail",
+  "Thrombosis": "Thrombosis Glades",
+  "Wheeler": "Wheeler Slope",
+  "Wooly Bugger": "Woolly Bugger Glades"
+ }
 }

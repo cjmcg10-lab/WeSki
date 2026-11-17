@@ -63,27 +63,41 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-17:
+Status on 2026-11-17 (6 of 26 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
 | Steamboat, Winter Park, Mammoth, Sugarbush | resort feed, `official_ratings.py fetch mtnpowder <resortId> <id>` (6, 5, 60, 70) |
+| Saddleback | trail map PDF, which has a typed "Trails & Designations" list (`pdftotext` reads it) |
+| Cannon | trail map image, labels read by hand from enlarged crops (green, blue or black lettering) |
 
-Not yet checked (22): Vail, Breckenridge, Keystone, Park City, Heavenly, Stowe (their sites refuse automated
-clients, and the page a fetch agent can read has no trail list: read the official trail map PDF instead and
-write the json by hand), Copper, Jay Peak, Smugglers' Notch, Cannon, Saddleback, Brundage, and all ten
-European and Japanese resorts (European sites usually publish a piste list with colours).
+Not yet checked (20), with what was learned about each source:
+
+- Copper: the trail report page is filled in by script. The official maps download fine through a web-fetch agent:
+  `cms.coppercolorado.com/sites/default/files/2026-11/FY27_Maps_Web_MainTrailMap.pdf`, `.../2024-10/FY25_Copper_Bowl.pdf`,
+  `.../2024-10/FY25_Spaulding.pdf`. Run names are drawn artwork, not text: render and read crops.
+- Jay Peak: the trail map PDF is over the fetch agent's 10 MB limit; its host must be added to the environment's
+  allowed hosts to download it with curl (`jaypeakresort.com/sites/default/files/2026-02/JPR_TrailMap_Winter_2025%2B2026_ToPRINT.pdf`).
+- Brundage: map images are at `brundage.com/winter-maps/` (front side image is over 10 MB; same remedy).
+- Smugglers' Notch: smuggs.com refuses the fetch agent (HTTP 402). Ask the owner to save the trail map PDF into the repository.
+- Vail, Breckenridge, Keystone, Park City, Heavenly, Stowe: their sites refuse automated clients, and the page a fetch
+  agent can read has no trail list. Read the official trail map PDF, or ask the owner to save it into the repository.
+- The ten European and Japanese resorts: not tried yet. European sites usually publish a piste list with colours.
+
+When one map run covers an upper and a lower part with different official ratings, the checker leaves it alone unless
+the official json names the whole run. Give the whole run the harder rating (see the note in `cannon-mountain.json`).
+Misspelled run names from OpenStreetMap are corrected with a `rename` entry in the resort config (see `saddleback.json`).
 
 How the trail-map route works: have a web-fetch agent download the official PDF (10 MB limit), render pages with
 `pdftoppm -r 250`, crop with PIL, read the crops, and type the run names and ratings into the json.
 
-Known gaps after the four checks: Mammoth and Winter Park each have about 25 to 40 official runs the map
+Known gaps after the checks: Mammoth and Winter Park each have about 25 to 40 official runs the map
 lacks or names differently (see the `check` output). Each needs a `rename` entry in the resort config or
 a fix in OpenStreetMap.
 
 ## What is next
 
-1. Rating check for the remaining 22 resorts (above), in order of popularity.
+1. Rating check for the remaining 20 resorts (above), in order of popularity.
 2. Rename to Ski With Me everywhere.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
