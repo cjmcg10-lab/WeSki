@@ -139,6 +139,25 @@ for T in R["trails"]:
         same, near = by_name.get(T["name"]), touch.get(T["id"])
         T["d"] = max(set(same), key=same.count) if same else min(near) if near and T["len"] < 150 else slope
 
+# The resort's own published ratings win over the map data (tools/official_ratings.py).
+import os
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import official_ratings
+official = official_ratings.load(R["id"])
+official_n = 0
+for T in R["trails"]:
+    T.pop("bb", None)
+    T.pop("ok", None)
+if official:
+    find = official_ratings.lookup(official)
+    for T in R["trails"]:
+        hit = find(T["name"]) if T["name"] else None
+        if hit:
+            T["d"], T["ok"] = hit[0], True          # ok: rating confirmed against the resort's list
+            if hit[1]:
+                T["bb"] = True                      # blue-black: harder than a blue, not a black
+            official_n += 1
+
 count = {}
 for T in R["trails"]:
     t = tags.get(T.get("osm"), {})
@@ -154,7 +173,7 @@ for T in R["trails"]:
         z = "free"
     T.pop("c", None)
     T.pop("u", None)
-    if T.get("osm") in tags and not t.get("piste:difficulty"):
+    if T.get("osm") in tags and not t.get("piste:difficulty") and not T.get("ok"):
         T["u"] = True           # no rating in the map data: the level shown is a guess
         count["unrated"] = count.get("unrated", 0) + 1
     if SCHEME != "us":
@@ -254,6 +273,10 @@ R["parks"], R["zones"] = parks, zones
 src = [cfg["zones_source"]] if cfg.get("zones_source") else []
 if any(k not in ("unrated", "loose ends trimmed") for k in count):
     src.append("OpenStreetMap piste tags")
+R["sources"].pop("ratings", None)
+if official:
+    R["sources"]["ratings"] = f"{official['source']}, {official['fetched']}: {official_n} runs checked"
+    count["official ratings"] = official_n
 R["sources"].pop("zones", None)
 if src:
     R["sources"]["zones"] = "; ".join(src)

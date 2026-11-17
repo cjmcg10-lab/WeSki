@@ -61,6 +61,11 @@ The LiDAR tiles are not kept. `python3 tools/dem_from_built.py public/data/<id> 
 resort's terrain back out as a GeoTIFF, so any resort can be rebuilt after a change to the build or its config
 without downloading them again (the result is identical as long as the resort's extent does not grow).
 
+Ratings are checked against each resort's own published list where one can be read:
+`python3 tools/official_ratings.py check <id>` compares the map with `tools/official/<id>.json`, and the
+zones step applies that file on every build, so the resort's rating wins over the map data. Checked so far:
+Steamboat, Winter Park, Mammoth and Sugarbush. `CLAUDE.md` lists the rest and how to do them.
+
 ## Data sources (all free)
 
 - **Terrain:** USA: USGS 3DEP 1 m LiDAR DEM (public domain). Switzerland: swisstopo swissALTI3D 2 m.

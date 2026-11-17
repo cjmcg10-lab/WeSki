@@ -189,7 +189,7 @@
   "trails": 158,
   "lifts": 28,
   "zones": false,
-  "bytes": 1043229
+  "bytes": 1044723
  },
  {
   "id": "park-city",
@@ -301,7 +301,7 @@
   "trails": 181,
   "lifts": 23,
   "zones": true,
-  "bytes": 1101252
+  "bytes": 1103331
  },
  {
   "id": "stowe",
@@ -333,7 +333,7 @@
   "trails": 131,
   "lifts": 18,
   "zones": false,
-  "bytes": 743500
+  "bytes": 744786
  },
  {
   "id": "tignes-val-disere",
@@ -397,7 +397,7 @@
   "trails": 167,
   "lifts": 25,
   "zones": true,
-  "bytes": 1078190
+  "bytes": 1080057
  },
  {
   "id": "zermatt",

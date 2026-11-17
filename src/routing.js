@@ -198,6 +198,7 @@ export class Router {
    */
   level(r) {
     const t = this.resort.trails[r];
+    if (t.bb) return t.d + 0.5;                 // blue-black: above a blue skier's limit, below a black
     return t.u ? Math.min(3, t.d + 1) : t.d;
   }
 
