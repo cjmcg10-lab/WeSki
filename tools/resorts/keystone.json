@@ -29,5 +29,9 @@
    "I-70"
   ]
  },
- "zones_source": "Keystone Resort winter trail map (2024-25)"
+ "zones_source": "Keystone Resort winter trail map (2024-25)",
+ "rename": {
+  "Wichita": "Witchita",
+  "Jacques St. James": "St. James"
+ }
 }
