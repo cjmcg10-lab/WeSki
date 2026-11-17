@@ -1,3 +1,5 @@
+import '@fontsource-variable/montserrat';
+import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
@@ -197,6 +199,7 @@ function hideSplash() {
 
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
+  setTimeout(maybeInstallGuide, 1800);
   // Straight to the map when rejoining a group (you're mid-ski-day) or when asked to skip.
   const saved = prefs.get('group', null), q = new URLSearchParams(location.search);
   if (saved || q.has('skip')) {
@@ -528,6 +531,48 @@ document.addEventListener('change', onInput);
 document.addEventListener('visibilitychange', () => { if (!S.map) return; if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
 window.addEventListener('pagehide', () => { autosave(); if (S.crumbRec) saveTracks(true); });
 boot();
+
+// ---------- first run: how to put the app on the home screen
+let installEvt = null;   // Android Chrome offers its own install prompt, which we can trigger from a button
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); installEvt = e; if (S.installOs) renderInstall(); });
+const standalone = () => navigator.standalone === true || matchMedia('(display-mode: standalone)').matches;
+function maybeInstallGuide() {
+  if (standalone() || prefs.get('installSeen', false)) return;
+  if (!$('#modal').classList.contains('hidden')) { setTimeout(maybeInstallGuide, 4000); return; }
+  prefs.set('installSeen', true);
+  S.installOs = /android/i.test(navigator.userAgent) ? 'android' : 'apple';
+  renderInstall();
+  $('#modal').classList.remove('hidden');
+}
+const STEP = (n, html) => `<li><span class="n">${n}</span><span>${html}</span></li>`;
+const SHARE_ICO = '<svg class="inl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M8 10H6a1.500 1.500 0 0 0-1.500 1.500v8A1.500 1.500 0 0 0 6 21h12a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18 10h-2"/></svg>';
+const DOTS_ICO = '<svg class="inl" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>';
+function renderInstall() {
+  const os = S.installOs;
+  const steps = os === 'apple'
+    ? STEP(1, `Open this page in <b>Safari</b>.`) + STEP(2, `Tap the <b>Share</b> button ${SHARE_ICO} at the bottom of the screen (on iPad, at the top).`) + STEP(3, 'Scroll down and tap <b>Add to Home Screen</b>.') + STEP(4, 'Tap <b>Add</b>. Open SkiWithMe from its new icon.')
+    : STEP(1, `Open this page in <b>Chrome</b>.`) + STEP(2, `Tap the menu ${DOTS_ICO} at the top right.`) + STEP(3, 'Tap <b>Add to Home screen</b> (or <b>Install app</b>).') + STEP(4, 'Tap <b>Install</b>. Open SkiWithMe from its new icon.');
+  $('#modal').innerHTML = `<div class="modal-box install"><button class="x" data-act="modal-cancel" aria-label="Close">✕</button>
+    <img src="/icons/icon-192.png" alt="" width="64" height="64" /><h2>Add SkiWithMe to your home screen</h2>
+    <p>It then opens full screen like an app, keeps working with no signal, and is one tap away on the lift.</p>
+    <div class="seg"><button data-act="install-os" data-v="apple" class="${os === 'apple' ? 'on' : ''}">iPhone</button><button data-act="install-os" data-v="android" class="${os === 'android' ? 'on' : ''}">Android</button></div>
+    <ol class="steps">${steps}</ol>
+    ${os === 'android' && installEvt ? '<button class="btn" data-act="install-now">Install now</button>' : ''}
+    <button class="btn alt" data-act="modal-cancel">Maybe later</button></div>`;
+}
+
+/** Shown when tracking starts (unless switched off): the screen has to stay on, pocket mode helps. */
+function trackNotice() {
+  if (prefs.get('trackNoteOff', false)) return;
+  $('#modal').innerHTML = `<div class="modal-box"><button class="x" data-act="modal-cancel" aria-label="Close">✕</button>
+    <h2>Keep SkiWithMe open</h2>
+    <p>Tracking only runs while the app is open on screen. If the phone locks or you switch apps, tracking pauses until you come back.</p>
+    <p>To save battery, turn on <b>Pocket mode</b>: the screen goes dark and ignores touches in your pocket, while tracking, GPS and spoken directions keep going. Press and hold to unlock.</p>
+    <label class="check"><input type="checkbox" id="f-tracknote" /> Don't show this again</label>
+    <button class="btn" data-act="track-pocket">Turn on pocket mode</button>
+    <button class="btn alt" data-act="modal-cancel">Got it</button></div>`;
+  $('#modal').classList.remove('hidden');
+}
 
 // ---------- location
 function onFix(fix) {
@@ -1623,6 +1668,7 @@ function onInput(e) {
     else stopCrumbs();
     showTracks(); renderSheet(); renderChrome();
   }
+  else if (t.id === 'f-tracknote' && e.type === 'change') prefs.set('trackNoteOff', t.checked);
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
@@ -1668,7 +1714,7 @@ async function onClick(e) {
     case 'wx-more': S.wxMore = S.wxMore === false; renderSheet(); break;
     case 'open-sheet': openSheet(d.s); $('#sheet-body').scrollTop = 0; break;
     case 'learn': S.learn = { ...S.learn, [d.k]: !S.learn?.[d.k] }; renderSheet(); break;
-    case 'hist-start': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (simulated location).' : 'Tracking started: finding GPS…'); openSheet('track'); break;
+    case 'hist-start': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (simulated location).' : 'Tracking started: finding GPS…'); openSheet('track'); trackNotice(); break;
     case 'wx-refresh': refreshWeather(true); break;
     case 'pick-resort': pickResort(d.id); break;
     case 'ski-here': skiHere(b); break;
@@ -1683,6 +1729,9 @@ async function onClick(e) {
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
+    case 'install-os': S.installOs = d.v; renderInstall(); break;
+    case 'install-now': installEvt?.prompt(); installEvt = null; $('#modal').classList.add('hidden'); break;
+    case 'track-pocket': $('#modal').classList.add('hidden'); closeSheet(); setPocket(true); break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();
@@ -1734,7 +1783,7 @@ async function onClick(e) {
     case 'remove-pin': S.pin = null; S.map.setPin(null); if (S.nav?.target.type === 'pin') endNav(); closeSheet(); break;
     case 'sim-here': S.loc.simTeleport(S.pin.x, S.pin.y); S.pin = null; S.map.setPin(null); closeSheet(); toast('Test location set.'); break;
     case 'sim-go': if (S.nav?.route) { S.loc.simFollow(S.nav.route.pts, 9); toast('Simulating movement along the route…'); } break;
-    case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); break;
+    case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); trackNotice(); break;
     case 'end-track': if (confirm('End tracking and save this session?')) { const s = await endSession('Tracking ended.'); S.historyLoaded = false; if (s) { await loadHistory(); openSheet('session', s.id); } else { toast('Nothing recorded yet, so nothing was saved.'); renderSheet(); } } break;
     case 'open-session': openSheet('session', d.id); break;
     case 'delete-session': if (confirm('Delete this session from this phone?')) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;

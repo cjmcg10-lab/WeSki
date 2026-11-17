@@ -533,3 +533,26 @@ body.flying #infobar, body.flying #searchbtn { opacity: 0; pointer-events: none;
 #sheet .search { margin: 2px 0 4px; }
 #sheet-body { min-height: 0; }
 #sheet { overflow: hidden; }
+
+/* pop-ups: install guide and tracking notice */
+.modal-box { position: relative; }
+.modal-box .x { top: 12px; right: 12px; }
+.modal-box h2 { padding-right: 40px; }
+.modal-box.install { text-align: left; max-height: calc(var(--app-h) - 40px); overflow-y: auto; }
+.modal-box.install img { border-radius: 15px; display: block; margin: 0 0 10px; }
+.modal-box .seg { margin: 12px 0 6px; }
+.steps { list-style: none; margin: 10px 0 12px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.steps li { display: flex; gap: 12px; align-items: flex-start; font-size: 15.5px; line-height: 1.35; }
+.steps .n { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 14px; background: var(--teal); color: var(--teal-ink); }
+.inl { width: 19px; height: 19px; vertical-align: -4px; color: var(--teal); }
+.modal-box .check { display: flex; align-items: center; gap: 10px; margin: 6px 0 12px; font-size: 15px; color: var(--ink); }
+.modal-box .check input { width: 20px; height: 20px; accent-color: var(--teal); }
+.modal-box .btn + .btn { margin-top: 8px; }
+
+/* type: Montserrat for headings, Nunito Sans for everything else (both bundled, so they work offline) */
+:root { --font-body: "Nunito Sans Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif; --font-head: "Montserrat Variable", "Nunito Sans Variable", -apple-system, system-ui, sans-serif; }
+html, body, button, input, select, textarea { font-family: var(--font-body); }
+h1, h2, h3, h4, .sheet-head h2, .start-top h1, #start-panel h2, #resort-card h2, .mrow b, .srow b, .elev b, .splash-box h1, .modal-box h2, #infobar .nm, #infobar .wx, .box b, .facts b { font-family: var(--font-head); }
+.sheet-head h2, #start-panel h2 { letter-spacing: -.6px; }
+#resort-card .ski-here { color: #04121c; font-family: var(--font-head); font-weight: 800; }
+.mrow i, .srow i, .chev, .resort-btn i, #resort-card .back, .learn i { font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif; }

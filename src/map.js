@@ -1213,13 +1213,13 @@ export class SkiMap {
     // "closeness": 1 = whole mountain in view, larger = zoomed in
     const near = is3 ? 5000 / this.cam3.position.distanceTo(this.controls.target) : this.zoom2 / 0.09;
     const text = (s, x, y, fill, size = 11, weight = 600, align = 'center') => {
-      ctx.font = `${weight} ${size}px -apple-system, system-ui, sans-serif`;
+      ctx.font = `${weight} ${size}px "Nunito Sans Variable", -apple-system, system-ui, sans-serif`;
       ctx.textAlign = align; ctx.textBaseline = 'middle';
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineJoin = 'round';
       ctx.strokeText(s, x, y); ctx.fillStyle = fill; ctx.fillText(s, x, y);
     };
     const label = (s, p, fill, size, weight) => {
-      ctx.font = `${weight || 600} ${size}px -apple-system, system-ui, sans-serif`;
+      ctx.font = `${weight || 600} ${size}px "Nunito Sans Variable", -apple-system, system-ui, sans-serif`;
       const tw = ctx.measureText(s).width;
       if (!free(p.x - tw / 2 - 3, p.y - size / 2 - 2, tw + 6, size + 4)) return false;
       text(s, p.x, p.y, fill, size, weight);
@@ -1249,12 +1249,12 @@ export class SkiMap {
       else {
         ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, 7); ctx.fillStyle = col; ctx.fill();
         ctx.lineWidth = 3; ctx.strokeStyle = d.me ? COLORS.me : '#fff'; if (d.stale) ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
-        ctx.font = '700 12px -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
+        ctx.font = '700 12px "Nunito Sans Variable", -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
         ctx.fillText((d.name || '?').slice(0, 1).toUpperCase(), p.x, p.y + 0.5);
         ly = p.y + 24;
       }
       const tag = d.me ? 'You' : d.name + (d.paused ? ' · paused' : d.stale ? ` · ${fmtAge(d.age)}` : '');
-      ctx.font = '700 12px -apple-system, system-ui, sans-serif';
+      ctx.font = '700 12px "Nunito Sans Variable", -apple-system, system-ui, sans-serif';
       const tw = ctx.measureText(tag).width + 14;
       ctx.fillStyle = col; roundRect(ctx, p.x - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tag, p.x, ly + 0.5);
@@ -1284,11 +1284,11 @@ export class SkiMap {
       if (!s || s.x < -20 || s.x > w + 20 || s.y < 30 || s.y > h) continue;
       if (!free(s.x - 9, s.y - 9, 18, 18)) continue;
       ctx.beginPath(); ctx.arc(s.x, s.y, 8.5, 0, 7); ctx.fillStyle = st[0]; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#fff'; ctx.stroke();
-      ctx.font = '700 10px -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(st[1], s.x, s.y + 0.5);
+      ctx.font = '700 10px "Nunito Sans Variable", -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(st[1], s.x, s.y + 0.5);
       this.hits.push({ x: s.x, y: s.y, r: 20, ev: { type: 'poi', id: p.id } });
       if (near > 1.6 || st[2] === 0) {
         const name = p.name.replace(' (base)', '');
-        ctx.font = '600 10.5px -apple-system, system-ui, sans-serif';
+        ctx.font = '600 10.5px "Nunito Sans Variable", -apple-system, system-ui, sans-serif';
         const tw = ctx.measureText(name).width;
         if (free(s.x - tw / 2 - 2, s.y + 10, tw + 4, 13)) text(name, s.x, s.y + 16.5, '#1c2733', 10.5, 600);
       }
