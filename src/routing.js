@@ -178,7 +178,7 @@ export class Router {
         linked.add(id);
         const prof = this._profile(x, y, this.nodes[o][0], this.nodes[o][1]);
         if (!this._crossEffort(prof, false, T) && !this._crossEffort(prof, true, T)) continue;
-        const d = Math.max(...[...refs, ...trailOf.get(o)].map((r) => this.resort.trails[r].d));
+        const d = Math.max(...[...refs, ...trailOf.get(o)].map((r) => this.level(r)));
         this.edges.push({ a: n, b: o, k: 'v', r: -1, d, len: prof.len, bi: true, prof, pts: [x, y, this.nodes[o][0], this.nodes[o][1]] });
       }
     }
@@ -191,9 +191,19 @@ export class Router {
     return null;
   }
 
+  /**
+   * The level a trail counts as against the skier's limit. A run with no rating in the map data
+   * (its drawn level is a guess) counts one level harder, so a guess never sends anyone down
+   * something above their limit.
+   */
+  level(r) {
+    const t = this.resort.trails[r];
+    return t.u ? Math.min(3, t.d + 1) : t.d;
+  }
+
   /** Is this edge a trail harder than the skier's chosen maximum? */
   over(e, opts) {
-    return e.k === 'p' && this.resort.trails[e.r].d > (opts.maxDiff ?? 3);
+    return e.k === 'p' && this.level(e.r) > (opts.maxDiff ?? 3);
   }
 
   /**
@@ -225,7 +235,7 @@ export class Router {
       return effort(len, ((za - zb) * len) / (e.len || 1), T);
     }
     // a trail
-    const d = this.resort.trails[e.r].d, levels = d - (opts.maxDiff ?? 3);
+    const d = this.resort.trails[e.r].d, levels = this.level(e.r) - (opts.maxDiff ?? 3);
     // Each extra level above the limit costs far more, so a blue is taken before a black.
     const pen = levels > 0 ? OVER_PENALTY * 4 ** (levels - 1) : 1;
     if (!rev) { const t = len / SKI_SPEED[d]; return { t, c: t * pen, up: 0, band: -1 }; }
@@ -427,7 +437,7 @@ export class Router {
     const tidy = steps.filter((s) => ((s.kind === 'ski' || s.kind === 'lift') && s.dist >= 3) || s.dist >= 15 || s.climb >= 2 || steps.length === 1);
     const list = tidy.length ? tidy : steps, max = opts.maxDiff ?? 3;
     list.forEach((s, i) => {
-      s.over = (s.kind === 'ski' || s.kind === 'up') && s.d > max;
+      s.over = (s.kind === 'ski' || s.kind === 'up') && (s.ref >= 0 ? this.level(s.ref) : s.d) > max;
       // a cut-across is described by the trail (or lift) it brings you to
       if (s.kind === 'cross') s.to = list.slice(i + 1).find((n) => n.name)?.name || null;
       s.turn = i ? turnAt(pts, s.i0) : 0;   // degrees, + = right, - = left

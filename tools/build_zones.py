@@ -71,6 +71,52 @@ R["treeline"] = cfg.get("treeline") or next((v for k, v in TREELINE.items() if t
 R.pop("scheme", None)
 if SCHEME != "us":
     R["scheme"] = SCHEME
+# A run mapped a little past its last junction (or starting a little above its first) leaves a
+# short loose end that joins nothing: it draws as a run sticking out past where it connects.
+# Trim those ends back to the junction.
+def trim_ends(limit=45.0):
+    N, E = R["graph"]["nodes"], R["graph"]["edges"]
+    deg, by = {}, {}
+    for e in E:
+        deg[e["a"]] = deg.get(e["a"], 0) + 1
+        deg[e["b"]] = deg.get(e["b"], 0) + 1
+        if e["k"] == "p":
+            by.setdefault(e["r"], []).append(e)
+    pinned = {P_["n"] for P_ in R.get("pois", []) if "n" in P_}
+    drop, n = set(), 0
+    for r, es in by.items():
+        T = R["trails"][r]
+        for top in (False, True):
+            es_ = [e for e in es if id(e) not in drop]
+            if len(es_) < 2:
+                break
+            e = es_[0] if top else es_[-1]
+            end = e["a"] if top else e["b"]
+            if deg.get(end) != 1 or e["len"] >= limit or end in pinned:
+                continue
+            pts = [(T["pts"][i], T["pts"][i + 1]) for i in range(0, len(T["pts"]), 2)]
+            if top:
+                pts.reverse()
+            left = e["len"]
+            while len(pts) > 2 and left > 0:
+                d = math.dist(pts[-1], pts[-2])
+                if d > left:
+                    k = left / d
+                    pts[-1] = (pts[-1][0] + (pts[-2][0] - pts[-1][0]) * k, pts[-1][1] + (pts[-2][1] - pts[-1][1]) * k)
+                    break
+                left -= d
+                pts.pop()
+            if top:
+                pts.reverse()
+            T["pts"] = flat(pts)
+            T["len"] = max(1, round(T["len"] - e["len"]))
+            T["top" if top else "bot"] = round(N[e["b"] if top else e["a"]][2])
+            drop.add(id(e))
+            n += 1
+    R["graph"]["edges"] = [e for e in E if id(e) not in drop]
+    return n
+
+
 # Runs with no rating in the map data. The build draws them blue; a better guess is the rating of
 # the same run's other pieces, then of the runs it joins (for a short connector), then its slope.
 rated = lambda T: bool(tags.get(T.get("osm"), {}).get("piste:difficulty"))
@@ -160,6 +206,10 @@ def dense(pts, step=12.0):
     return o
 
 
+trimmed = trim_ends()
+if trimmed:
+    count["loose ends trimmed"] = trimmed
+
 KIND = {"snow_park": "park", "playground": "learn", "sled": "sled"}
 DEFAULT = {"park": "Terrain park", "learn": "Kids' area", "sled": "Sledding run", "race": "Race course"}
 parks = [p for p in R.get("parks", []) if p.get("note") != "OpenStreetMap"]
@@ -202,7 +252,7 @@ for wid, nd, t in ways:
 
 R["parks"], R["zones"] = parks, zones
 src = [cfg["zones_source"]] if cfg.get("zones_source") else []
-if any(k not in ("unrated",) for k in count):
+if any(k not in ("unrated", "loose ends trimmed") for k in count):
     src.append("OpenStreetMap piste tags")
 R["sources"].pop("zones", None)
 if src:
