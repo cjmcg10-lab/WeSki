@@ -60,6 +60,7 @@ const S = {
   nav: null,                // {target, route, problem, lastCalc}
   pin: null,
   tab: 'map', sheet: null,
+  favs: new Set(prefs.get('favorites', [])), favOnly: false, nearMe: null,
   player: null,
 };
 prefs.set('profile', S.profile);
@@ -223,6 +224,8 @@ async function openStart(from = null) {
   const el = $('#start');
   const [{ Globe }, meta, bin] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json()), fetchOk('/data/globe.bin').then((r) => r.arrayBuffer()), loadPlaces()]);
   el.classList.toggle('prep', !!from);          // laid out but invisible until the map has flown out
+  el.classList.toggle('fade', !!from);
+  el.classList.remove('focus');
   el.classList.remove('hidden');
   $('#resort-card').classList.add('hidden');
   $('#start-panel').classList.toggle('hidden', !!from);
@@ -234,11 +237,54 @@ async function openStart(from = null) {
 }
 
 function renderResortList(q) {
-  q = q.trim().toLowerCase();
-  const list = PLACES.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
+  q = (q ?? $('#f-resort').value).trim().toLowerCase();
+  let list = PLACES.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
+  if (S.favOnly) list = list.filter((r) => S.favs.has(r.id));
+  const near = S.nearMe;
+  const dist = (r) => (near ? kmBetween(near.lat, near.lon, r.lat, r.lon) : 0);
+  // nearest first with "Use my location"; otherwise favourites, then ready maps, in the usual order
+  list = list.map((r, i) => ({ r, i, d: dist(r) })).sort((a, b) => (near ? a.d - b.d : (S.favs.has(b.r.id) - S.favs.has(a.r.id)) || (b.r.available - a.r.available) || a.i - b.i));
+  const last = prefs.get('lastResort', null);
+  const away = (km) => (imp() ? `${Math.round(km / 1.609).toLocaleString()} mi` : `${Math.round(km).toLocaleString()} km`);
+  $('#near-btn').classList.toggle('on', !!near);
+  $('#fav-btn').classList.toggle('on', !!S.favOnly);
   $('#resort-list').innerHTML = list.length
-    ? list.map((r) => `<button class="resort-row" data-act="pick-resort" data-id="${r.id}"><span class="dotc ${r.available ? 'on' : ''}"></span><span class="grow"><b>${esc(r.name)}</b><small>${esc(r.region)}</small></span><span class="tag ${r.available ? 'avail' : ''}">${r.available ? 'Ready' : 'Coming soon'}</span></button>`).join('')
-    : '<p class="start-empty">No resort matches that search yet.</p>';
+    ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbSvg(r)}<span class="grow"><b>${esc(r.name)}${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}</b><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
+    : `<p class="start-empty">${S.favOnly && !S.favs.size ? 'No favorites yet. Open a mountain and tap its star to add it here.' : 'No mountain matches that search yet.'}</p>`;
+}
+
+/** Great-circle distance in km. */
+function kmBetween(lat1, lon1, lat2, lon2) {
+  const r = Math.PI / 180, a = Math.sin(((lat2 - lat1) * r) / 2) ** 2 + Math.cos(lat1 * r) * Math.cos(lat2 * r) * Math.sin(((lon2 - lon1) * r) / 2) ** 2;
+  return 12742 * Math.asin(Math.sqrt(a));
+}
+
+/** A small painted mountain for each resort (the same picture every time for the same resort). */
+function thumbSvg(r) {
+  let h = 0;
+  for (const c of r.id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  const rnd = () => ((h = (h * 1103515245 + 12345) >>> 0) / 4294967296);
+  const px = 38 + rnd() * 30, py = 10 + rnd() * 8, lx = 10 + rnd() * 20, ly = 26 + rnd() * 8, rx = 84 + rnd() * 16, ry = 22 + rnd() * 10;
+  const k = 'g' + r.id.replace(/[^a-z0-9]/g, '');
+  const trees = Array.from({ length: 9 }, (_, i) => { const x = i * 12.5 + rnd() * 6, t = 40 + rnd() * 6; return `M${x.toFixed(1)} 56 ${(x + 3.5).toFixed(1)} ${t.toFixed(1)} ${(x + 7).toFixed(1)} 56z`; }).join('');
+  return `<svg class="thumb" viewBox="0 0 104 56" aria-hidden="true"><defs><linearGradient id="${k}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3f8fd6"/><stop offset="1" stop-color="#a8d4f5"/></linearGradient><clipPath id="c${k}"><rect width="104" height="56" rx="9"/></clipPath></defs><g clip-path="url(#c${k})">
+    <rect width="104" height="56" fill="url(#${k})"/>
+    <path d="M-4 56 ${lx} ${ly} ${lx + 18} 40 ${px} ${py} ${rx} ${ry} 110 46V56z" fill="#c9daea"/>
+    <path d="M${px} ${py} ${rx} ${ry} 110 46V56H${px + 6}z" fill="#8fadc9"/>
+    <path d="M${px} ${py} ${px + 7} ${py + 9} ${px + 2} ${py + 8} ${px - 2} ${py + 13} ${px - 6} ${py + 8}z" fill="#fff"/>
+    <path d="M${px - 2} ${py + 14} C${px - 14} ${py + 24} ${px + 10} ${py + 30} ${px - 8} 50" stroke="#fff" stroke-width="2.200" fill="none" opacity=".9"/>
+    <path d="${trees}" fill="#1d4a3a"/><path d="M0 52h104v4H0z" fill="#eef5fb"/></g></svg>`;
+}
+
+const STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 3.200l2.700 5.600 6.100.8-4.500 4.200 1.100 6.100L12 17l-5.400 2.900 1.100-6.100L3.200 9.600l6.100-.8z"/></svg>';
+function resortCard(r) {
+  const fav = S.favs.has(r.id);
+  return `<button class="back" data-act="resort-back">‹ All mountains</button>
+    <div class="head">${thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
+    ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
+      <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>`
+    : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
+    <button class="btn outline join-btn" data-act="start-join">Join Group</button>`;
 }
 
 async function pickResort(id) {
@@ -246,26 +292,103 @@ async function pickResort(id) {
   if (!r || !globe) return;
   $('#f-resort').blur();
   $('#start-panel').classList.add('hidden');
-  await globe.flyTo(r);
+  $('#start').classList.add('focus');
   const card = $('#resort-card');
-  card.innerHTML = `<h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p>
-    ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
-      <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski here</button>`
-    : '<p class="soon">The 3D map for this resort has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
-    <button class="back" data-act="resort-back">‹ All resorts</button>`;
+  card.innerHTML = resortCard(r);
   card.classList.remove('hidden');
+  card.dataset.id = r.id;
   // build the mountain while the card is on screen, then hold it still until it is needed
   if (r.available) initMap(r.id).then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
+  await globe.flyTo(r);
 }
 
-async function skiHere(btn) {
-  btn.disabled = true; btn.textContent = 'Loading the mountain…';
-  const r = placeById(btn.dataset.id);
-  try { await initMap(r.id); } catch (e) { btn.disabled = false; btn.textContent = 'Ski here'; bootFailed(e); return; }
+function toggleFav(id) {
+  if (S.favs.has(id)) S.favs.delete(id); else S.favs.add(id);
+  prefs.set('favorites', [...S.favs]);
+  const card = $('#resort-card');
+  if (!card.classList.contains('hidden') && card.dataset.id === id) card.innerHTML = resortCard(placeById(id));
+  renderResortList();
+}
+
+/** "Use my location": sort the list by distance from here (asks for location once). */
+function nearMe() {
+  if (S.nearMe) { S.nearMe = null; renderResortList(); return; }
+  if (!navigator.geolocation) { toast('This browser cannot share its location.'); return; }
+  $('#near-btn').classList.add('on');
+  toast('Finding your location…', 2500);
+  navigator.geolocation.getCurrentPosition(
+    (p) => { S.nearMe = { lat: p.coords.latitude, lon: p.coords.longitude }; S.favOnly = false; renderResortList(); toast('Nearest mountains first.'); },
+    (e) => { $('#near-btn').classList.remove('on'); toast(e.code === 1 ? 'Location is blocked. Allow it for this site in Settings to sort by distance.' : 'Could not find your location. Try again outside or near a window.', 5000); },
+    { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 },
+  );
+}
+
+/** Joined from inside a mountain, but the group is on another one: offer to go there. */
+function offerGroupMountain(code, r) {
+  const m = $('#modal');
+  m.innerHTML = `<div class="modal-box"><h2>Your group is at ${esc(r.name)}</h2><p>Group ${esc(code)} is skiing at ${esc(r.name)}, not ${esc(S.place.name)}. Go there to see everyone on the right map?</p>
+    <button class="btn" data-act="go-group-mtn" data-code="${esc(code)}" data-id="${r.id}">Go to ${esc(r.name)}</button><button class="btn alt" data-act="modal-cancel">Stay here</button></div>`;
+  m.classList.remove('hidden');
+}
+async function goGroupMountain(code, id) {
+  $('#modal').classList.add('hidden');
+  await leaveResort(true);                       // saves the day so far, leaves the group here, back to the globe
+  if (globe) await travelToGroup(code, placeById(id));
+}
+
+// ---------- join a group from the start screen: the code says which mountain, so go straight there
+function startJoinAsk() {
+  const m = $('#modal');
+  m.innerHTML = `<div class="modal-box"><h2>Join a group</h2><p>Enter the code your friend shared. You'll go straight to the mountain the group is on.</p>
+    <input class="field code" id="f-join" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" />
+    <p class="err" id="join-err"></p>
+    <button class="btn" data-act="start-join-go">Join Group</button><button class="btn alt" data-act="modal-cancel">Cancel</button></div>`;
+  m.classList.remove('hidden');
+  setTimeout(() => $('#f-join')?.focus(), 50);
+}
+
+async function startJoinGo(btn) {
+  const code = ($('#f-join').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  const err = (t) => { $('#join-err').textContent = t; btn.disabled = false; btn.textContent = 'Join Group'; };
+  if (!/^[A-Z2-9]{6}$/.test(code)) return err('A group code is 6 letters and numbers.');
+  btn.disabled = true; btn.textContent = 'Finding the group…';
+  let info;
+  try {
+    const res = await fetch(`/api/groups/${code}`, { cache: 'no-store' });
+    if (res.status === 404) return err('No group with that code. Check it with your friend.');
+    if (!res.ok) throw new Error();
+    info = await res.json();
+  } catch { return err(navigator.onLine === false ? 'You are offline. Joining a group needs a connection.' : 'Could not reach the group. Try again in a moment.'); }
+  let r = info.resort ? placeById(info.resort) : null;
+  if (!r && info.near) r = PLACES.filter((p) => p.available).map((p) => ({ p, d: kmBetween(info.near.lat, info.near.lon, p.lat, p.lon) })).sort((a, b) => a.d - b.d).find((x) => x.d < 60)?.p;
+  if (!r) return err('This group has not picked a mountain yet. Ask your friend to open the group on their mountain.');
+  if (!r.available) return err(`This group is at ${r.name}, whose map is not ready yet.`);
+  $('#modal').classList.add('hidden');
+  await travelToGroup(code, r);
+}
+
+/** From the globe: fly to the group's mountain and join it there. */
+async function travelToGroup(code, r) {
+  $('#start-panel').classList.add('hidden');
+  $('#start').classList.add('focus');
+  const card = $('#resort-card');
+  card.innerHTML = `<p class="soon" style="text-align:center;margin:10px 0 14px">Joining group <b>${code}</b> at <b>${esc(r.name)}</b>…</p>`;
+  card.classList.remove('hidden'); card.dataset.id = r.id;
+  initMap(r.id).catch(() => {});
+  await globe.flyTo(r, 1.4);
+  await goSki(r.id, null, code);
+}
+
+const skiHere = (btn) => goSki(btn.dataset.id, btn);
+/** Dive from the globe into a mountain; with `joinCode`, join that group once there. */
+async function goSki(id, btn, joinCode = null) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Loading the mountain…'; }
+  const r = placeById(id);
+  try { await initMap(r.id); } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Ski Here'; } bootFailed(e); return; }
   const g = globe;
   globe = null;
   $('#resort-card').classList.add('hidden');
-  $('.start-top').classList.add('hidden');
+  $('#start').classList.add('fade');           // the mountain backdrop and title fade as the dive starts
   document.body.classList.add('flying');
   // One continuous zoom: the globe dives until the land colour under the resort fills the
   // screen; the 3D map starts high above the mountain in haze of exactly that colour and
@@ -286,6 +409,7 @@ async function skiHere(btn) {
   await landing;
   document.body.classList.remove('flying');
   renderChrome();
+  if (joinCode) { await joinGroup(joinCode); openSheet('group'); }
 }
 
 /** Leave the mountain: climb away into the haze, then pull back from the ground to the spinning globe. */
@@ -303,6 +427,7 @@ async function exitToGlobe() {
     sky.to(0, 1.1).then(() => sky.stop());
     await globe.rise(1.8);
     $('.start-top').classList.remove('hidden');
+    $('#start').classList.remove('fade');
     $('#start-panel').classList.remove('hidden');
   } catch (e) {
     // no globe available (e.g. first run offline): stay on the mountain
@@ -566,6 +691,7 @@ async function joinGroup(code, sharing = false, silent = false) {
     state: (st) => {
       const first = !g.state;
       g.state = st; g.skew = g.client.skew || 0;
+      if (first && st.resort && st.resort !== S.place.id && placeById(st.resort)?.available) offerGroupMountain(g.code, placeById(st.resort));
       if (first) {
         startSession('group');
         if (S.closures.size && !st.closures.length) g.client.setClosures([...S.closures]);
@@ -586,7 +712,7 @@ async function joinGroup(code, sharing = false, silent = false) {
       renderChrome();
       if (S.sheet === 'group') renderSheet();
     },
-  });
+  }, S.place.id);
   g.client.sharing = sharing;
   prefs.set('group', { code, sharing, resort: S.place.id });
   if (sharing) { ensureLocation(); wakeLock(); }
@@ -1451,7 +1577,13 @@ async function onClick(e) {
     case 'wx-refresh': refreshWeather(true); break;
     case 'pick-resort': pickResort(d.id); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); globe?.release(); break;
+    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); break;
+    case 'fav': toggleFav(d.id); break;
+    case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) S.nearMe = null; renderResortList(); break;
+    case 'near-me': nearMe(); break;
+    case 'start-join': startJoinAsk(); break;
+    case 'start-join-go': startJoinGo(b); break;
+    case 'go-group-mtn': goGroupMountain(d.code, d.id); break;
     case 'change-resort': askLeaveResort(); break;
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;

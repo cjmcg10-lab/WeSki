@@ -2,7 +2,7 @@
 // One Durable Object per group code relays opt-in GPS positions between up to 20 members.
 import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
-import { applyMessage, publicState, newRoom, IDLE_MS } from './room.js';
+import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/;
@@ -21,6 +21,13 @@ export default {
         if (await stub.create(code)) return json({ code });
       }
       return json({ error: 'Could not create a group, try again' }, 503);
+    }
+    const info = url.pathname.match(/^\/api\/groups\/([A-Za-z0-9]{6})$/);
+    if (info && request.method === 'GET') {
+      const code = info[1].toUpperCase();
+      if (!CODE_RE.test(code)) return json({ error: 'No group with that code' }, 404);
+      const out = await env.GROUPS.get(env.GROUPS.idFromName(code)).info();
+      return out ? json(out) : json({ error: 'No group with that code' }, 404);
     }
     const m = url.pathname.match(/^\/api\/groups\/([A-Za-z0-9]{6})\/ws$/);
     if (m) {
@@ -75,6 +82,12 @@ export class GroupRoom extends DurableObject {
     this.room = newRoom(code, Date.now());
     await this.save();
     return true;
+  }
+
+  /** The mountain this group is on (see roomInfo), or null when there is no such group. */
+  async info() {
+    const room = await this.load();
+    return room ? roomInfo(room) : null;
   }
 
   async fetch(request) {

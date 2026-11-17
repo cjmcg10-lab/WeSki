@@ -7,8 +7,9 @@ export async function createGroup() {
 
 export class GroupClient {
   /** handlers: {state(s), status('connecting'|'online'|'offline'), error(msg, code), ended(reason)} */
-  constructor(code, profile, handlers) {
+  constructor(code, profile, handlers, resort = null) {
     this.code = code.toUpperCase();
+    this.resort = resort; // the mountain this phone is on, recorded by the server if the group has none yet
     this.profile = profile;
     this.h = handlers;
     this.ws = null;
@@ -31,7 +32,7 @@ export class GroupClient {
     this.ws = ws;
     ws.onopen = () => {
       this.retry = 0;
-      this.send({ t: 'hello', ...this.profile });
+      this.send({ t: 'hello', ...this.profile, resort: this.resort });
       // Restore our sharing choice after a reconnect, and re-send the latest fix.
       if (this.sharing) {
         this.send({ t: 'share', on: true });

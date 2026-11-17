@@ -20,7 +20,7 @@ const ll = (lat, lon, r = 1) => {
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
 };
 
-const HOME_LIFT = 0.115, CARD_DIST = 1.75, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
+const CARD_DIST = 1.6, CARD_LIFT = 0.13, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
 
 export class Globe {
   constructor(container, meta, bin, resorts) {
@@ -30,7 +30,7 @@ export class Globe {
     container.appendChild(r.domElement);
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.01, 50);
-    this.home = 3.9; this.dist = 3.9; this.lift = HOME_LIFT; this.unlit = 0;
+    this.home = 3.9; this.dist = 3.9; this.homeLift = 0.115; this.lift = this.homeLift; this.unlit = 0;
     const hemi = (this.hemi = new THREE.HemisphereLight('#ffffff', '#20304a', 1.5));
     this.scene.add(hemi);
     const sun = (this.sun = new THREE.DirectionalLight('#ffffff', 1.6));
@@ -71,7 +71,7 @@ export class Globe {
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
     this.pins = [];
     for (const rs of resorts) {
-      const pin = new THREE.Mesh(new THREE.SphereGeometry(rs.available ? 0.012 : 0.007, 10, 8), new THREE.MeshBasicMaterial({ color: rs.available ? '#34e37a' : '#ffd166' }));
+      const pin = new THREE.Mesh(new THREE.SphereGeometry(rs.available ? 0.012 : 0.007, 10, 8), new THREE.MeshBasicMaterial({ color: rs.available ? '#3ee6c4' : '#ff9f2e' }));
       pin.position.copy(ll(rs.lat, rs.lon, 1.004));
       g.add(pin);
       this.pins.push({ rs, pin });
@@ -95,10 +95,13 @@ export class Globe {
     const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // far enough back that the whole globe fits the screen width on a tall phone
-    const home = Math.max(3.9, 1.16 / (Math.tan(THREE.MathUtils.degToRad(19)) * (w / h)));
-    if (this.dist === this.home) this.dist = home;
-    this.home = home;
+    // At rest the globe is a small ball high on the screen, under the mountain backdrop and above
+    // the resort list: about 24% of the screen height (58% of the width at most), centred 34% down.
+    const vis = 2 * Math.tan(THREE.MathUtils.degToRad(19));
+    const home = Math.max(2 / (vis * 0.24), 2 / (vis * (w / h) * 0.58));
+    const homeLift = (0.16 * vis * home) / (home - 1);
+    if (this.dist === this.home) { this.dist = home; this.lift = homeLift; }
+    this.home = home; this.homeLift = homeLift;
     this.camera.updateProjectionMatrix();
   }
 
@@ -141,14 +144,14 @@ export class Globe {
     // lay the ring flat on the sphere: its face normal (+Z) points straight out from the surface
     this.ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.ring.position.clone().normalize());
     this.ring.visible = true;
-    // lift 0.065 puts the resort about midway between the title and the resort card
-    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: 0.065 }, seconds);
+    // CARD_LIFT puts the resort about a third of the way down, above the resort card
+    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: CARD_LIFT }, seconds);
   }
 
   /** Back to the slow spin (after closing a resort card). */
   release() {
     this.focused = null; this.ring.visible = false;
-    this.go({ d: this.home, l: HOME_LIFT }, 1.4).then(() => { this.spin = true; });
+    this.go({ d: this.home, l: this.homeLift }, 1.4).then(() => { this.spin = true; });
   }
 
   /**
@@ -171,7 +174,7 @@ export class Globe {
 
   rise(seconds = 2.6) {
     // pull straight back from the resort (no drift), then let the globe resume its spin
-    return this.go({ d: this.home, l: HOME_LIFT, u: 0 }, seconds, { zoom: true, ease: 'out' }).then(() => { this.spin = true; });
+    return this.go({ d: this.home, l: this.homeLift, u: 0 }, seconds, { zoom: true, ease: 'out' }).then(() => { this.spin = true; });
   }
 
   /** The exact on-screen colour of the globe at a resort once fully zoomed in (bilinear texel mix). */
@@ -214,7 +217,7 @@ export class Globe {
     this.sun.intensity = 1.6 * (1 - this.unlit);
     if (this.ring.visible) { const s = 1 + 0.35 * Math.sin(this.t * 3); this.ring.scale.setScalar(s * Math.max(0.5, this.dist - 0.9)); this.ring.material.opacity = 0.9 - 0.3 * Math.sin(this.t * 3); }
     // resort dots shrink away before the camera reaches them
-    const ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.max(0.35, (this.dist - 0.95) / 2.4);
+    const ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.min(2.6, Math.max(0.35, (this.dist - 0.95) / 2.4));
     for (const p of this.pins) { p.pin.visible = ps > 0.001; p.pin.scale.setScalar(ps || 0.001); }
     const d = this.dist;
     this.camera.near = Math.max(0.00002, (d - 1) * 0.4);

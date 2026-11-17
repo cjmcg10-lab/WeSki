@@ -3,7 +3,7 @@ import { loadResort } from './helpers.js';
 import { Router, suggestMeetingPoint } from '../src/routing.js';
 import { Tracker, ST } from '../src/tracker.js';
 import { pointAlong, lineLength } from '../src/geo.js';
-import { newRoom, applyMessage, publicState, MAX_MEMBERS } from '../worker/room.js';
+import { newRoom, applyMessage, publicState, roomInfo, MAX_MEMBERS } from '../worker/room.js';
 
 const { resort, geo } = loadResort();
 const router = new Router(resort, geo);
@@ -153,6 +153,18 @@ describe('group room', () => {
     expect(room.members[a].name).toBe('Skier 1');
     applyMessage(room, a, { ...hello(1), name: 'Sam' }, 3);
     expect(room.members[a].name).toBe('Sam');
+  });
+  it('remembers the mountain the group was started on', () => {
+    const room = newRoom('ABCDEF', 0);
+    applyMessage(room, null, { ...hello(1), resort: 'cannon-mountain' }, 1);
+    applyMessage(room, null, { ...hello(2), resort: 'jay-peak' }, 2);            // a later member cannot move it
+    expect(roomInfo(room)).toMatchObject({ resort: 'cannon-mountain', members: 2, near: null });
+    expect(publicState(room, new Set(), 3).resort).toBe('cannon-mountain');
+    const old = newRoom('GHJKLM', 0);                                            // a group from before this was recorded
+    const id = applyMessage(old, null, { ...hello(3), resort: 'Bad Id!' }, 1).join;
+    applyMessage(old, id, { t: 'share', on: true }, 2);
+    applyMessage(old, id, { t: 'pos', lat: 44.16, lon: -71.7 }, 3);
+    expect(roomInfo(old)).toMatchObject({ resort: null, near: { lat: 44.16, lon: -71.7 } });
   });
   it('caps at 20 members, lets existing members rejoin', () => {
     const room = newRoom('ABCDEF', 0);

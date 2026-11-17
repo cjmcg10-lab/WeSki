@@ -7,7 +7,7 @@ const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f<>]/g, '').trim()
 const num = (v, lo, hi) => (typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null);
 
 export function newRoom(code, now) {
-  return { code, created: now, touched: now, owner: null, members: {}, meet: null, closures: [] };
+  return { code, created: now, touched: now, owner: null, resort: null, members: {}, meet: null, closures: [] };
 }
 
 /**
@@ -39,6 +39,9 @@ export function applyMessage(room, memberId, msg, now) {
       joined: existing ? existing.joined : now,
     };
     if (!room.owner) room.owner = id;
+    // The group's mountain: set by the first member to arrive (the creator), so a code alone tells a
+    // new member's phone which map to open.
+    if (!room.resort && typeof msg.resort === 'string' && /^[a-z0-9-]{2,40}$/.test(msg.resort)) room.resort = msg.resort;
     room.touched = now;
     return { changed: true, join: id };
   }
@@ -100,6 +103,7 @@ export function publicState(room, onlineIds, now) {
   return {
     code: room.code,
     owner: room.owner,
+    resort: room.resort || null,
     now,
     max: MAX_MEMBERS,
     meet: room.meet,
@@ -109,4 +113,13 @@ export function publicState(room, onlineIds, now) {
       sharing: m.sharing, online: onlineIds.has(m.id), pos: m.pos,
     })),
   };
+}
+
+/**
+ * What a phone may learn before joining, from the code alone: the group's mountain, and for
+ * older groups with no mountain recorded, the newest shared position so the phone can find it.
+ */
+export function roomInfo(room) {
+  const last = Object.values(room.members).map((m) => m.pos).filter(Boolean).sort((a, b) => b.at - a.at)[0];
+  return { code: room.code, resort: room.resort || null, members: Object.keys(room.members).length, near: room.resort || !last ? null : { lat: last.lat, lon: last.lon } };
 }

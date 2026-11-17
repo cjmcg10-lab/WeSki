@@ -194,6 +194,16 @@ advanced (the test mode is now "Simulated location" there, with an orange Simula
 Mountain weather (Summit/Base and Today/7 days switches, "More conditions" folds). Not yet confirmed with the owner:
 which Group mock-up they prefer, and putting test mode under Appearance & advanced rather than at the top of More.
 
+Start screen (owner's mock-up, 2026-11-17): logo and "Your mountain. Your crew." over a low-poly mountain backdrop
+(`.start-sky` in `index.html`, drawn in front of the globe and kept while zoomed to a resort; it fades when the dive into
+the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
+Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted
+thumbnail per resort (`thumbSvg`, generated, not photos), a preview card with a Favorite star, Ski Here and Join Group.
+Join Group from the start screen asks for the code, looks up the group's mountain (`GET /api/groups/<code>`, served by
+`roomInfo` in `worker/room.js`) and flies straight there, then joins. A group records its mountain from the first
+member's hello (the creator); older groups fall back to the newest shared position. Joining from inside a mountain when
+the group is elsewhere offers to go there.
+
 ## Rename (done 2026-11-17)
 
 The name SkiWithMe is in the app screens, manifest, README, package and both wrangler configs. The Cloudflare Worker is
