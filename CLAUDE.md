@@ -24,8 +24,10 @@ session needs that the README does not: the rules, the state of the work, and wh
   workflow needs the owner's go-ahead: ask them once, in plain words ("May I make this session's branch deploy to the
   live site?"), then edit that one line. Start the new branch from the tip of `claude/ecstatic-hamilton-2gsp2q`, which
   holds all the work (`main` may be behind).
-- **Confirm a deploy** by fetching a changed file from the live site with the `weski-build` User-Agent, for example
-  `https://skiwithme.cjmcg10.workers.dev/data/<id>/resort.json`, and looking for the change. It takes two to four minutes.
+- **Confirm a deploy** by checking the GitHub Actions "Deploy" run succeeded, then having a `web-fetch` agent read a
+  changed file from the live site, for example `https://skiwithme.cjmcg10.workers.dev/data/<id>/resort.json`. The new
+  address is not on the environment's allowed hosts, so curl from the container is refused until
+  `skiwithme.cjmcg10.workers.dev` is added (the owner approves a prompt). A deploy takes one to four minutes.
 - **The cloud environment is called `weski`.** Its network only reaches listed hosts. Already allowed: the terrain and
   map sources the pipeline uses, `mtnpowder.com`, and the six Epic resort sites (which refuse automated clients anyway).
   A blocked host shows as a proxy refusal: request the exact host through the environment tools (the owner approves a
