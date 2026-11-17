@@ -121,8 +121,10 @@ function avatarSvg(type, color) {
 // ---------- resorts
 let PLACES = [];            // every resort in the picker; the ones with `available` have a built map
 const fetchOk = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r; });
+let PHOTOS = {};          // resort id -> {artist, lic, title} for the real photo in /photos (credited on the card)
 async function loadPlaces() {
   if (PLACES.length) return;
+  fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; if (!$('#start').classList.contains('hidden')) renderResortList(); }).catch(() => {});
   const built = await fetchOk('/data/index.json').then((r) => r.json());
   const have = new Set(built.map((r) => r.id));
   PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id))];
@@ -282,7 +284,7 @@ function renderResortList(q) {
   $('#near-btn').classList.toggle('on', !!near);
   $('#fav-btn').classList.toggle('on', !!S.favOnly);
   $('#resort-list').innerHTML = list.length
-    ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbSvg(r)}<span class="grow"><span class="nm"><b>${esc(r.name)}</b>${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}${r.id === last ? '<span class="lastv">Last visited</span>' : ''}</span><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
+    ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbPic(r)}<span class="grow"><span class="nm"><b>${esc(r.name)}</b>${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}${r.id === last ? '<span class="lastv">Last visited</span>' : ''}</span><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
     : `<p class="start-empty">${S.favOnly && !S.favs.size ? 'No favorites yet. Open a mountain and tap its star to add it here.' : 'No mountain matches that search yet.'}</p>`;
   if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
 }
@@ -310,11 +312,21 @@ function thumbSvg(r) {
     <path d="${trees}" fill="#1d4a3a"/><path d="M0 52h104v4H0z" fill="#eef5fb"/></g></svg>`;
 }
 
+/** The real photo of a mountain when we have one (freely licensed, credited), else the painted one. */
+function thumbPic(r) {
+  return PHOTOS[r.id] ? `<img class="thumb photo" src="/photos/${r.id}-s.jpg" alt="" loading="lazy" />` : thumbSvg(r);
+}
+function photoCredit(id) {
+  const c = PHOTOS[id];
+  return c ? `Photo: ${esc(c.artist || 'Wikimedia Commons')} · ${esc(c.lic)} · Wikimedia Commons` : '';
+}
+
 const STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 3.200l2.700 5.600 6.100.8-4.500 4.200 1.100 6.100L12 17l-5.400 2.900 1.100-6.100L3.200 9.600l6.100-.8z"/></svg>';
 function resortCard(r) {
   const fav = S.favs.has(r.id);
-  return `<button class="back" data-act="resort-back">‹ All mountains</button>
-    <div class="head">${thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
+  const photo = PHOTOS[r.id] ? `<div class="photo-big"><img src="/photos/${r.id}.jpg" alt="${esc(r.name)}" /><small>${photoCredit(r.id)}</small></div>` : '';
+  return `<button class="back" data-act="resort-back">‹ All mountains</button>${photo}
+    <div class="head">${photo ? '' : thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
       <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>`
     : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
@@ -333,7 +345,9 @@ async function pickResort(id) {
   card.dataset.id = r.id;
   // build the mountain while the card is on screen, then hold it still until it is needed
   if (r.available) initMap(r.id).then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
-  await globe.flyTo(r);
+  // aim the mountain at the middle of the space left above the card (the card is taller with a photo)
+  const h = $('#start').clientHeight, f = Math.max(0.17, (card.getBoundingClientRect().top - $('#start').getBoundingClientRect().top) / h / 2);
+  await globe.flyTo(r, 1.8, 0.13 * (0.5 - f) / 0.19);
 }
 
 function toggleFav(id) {
