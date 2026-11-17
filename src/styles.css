@@ -496,3 +496,40 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 .modal-box { background: linear-gradient(180deg, #17304a, #0c1d30); border: 1px solid var(--edge2); }
 :root[data-theme="light"] .modal-box { background: #fff; }
 .mrow .soon-tag { font-style: normal; font-size: 12.5px; font-weight: 600; color: #ffb35c; margin-top: 1px; }
+
+/* ---------- 2026-11 round 2: panels that pull down, last visited */
+#start-panel, #sheet { transition: transform .3s cubic-bezier(.2, .8, .2, 1); touch-action: pan-x; }
+#start-panel.dragging, #sheet.dragging { transition: none; }
+#start-panel.mini { transform: translateY(var(--mini, 0px)); }
+#start-panel.mini #resort-list, #start-panel.mini .join-btn { pointer-events: none; }
+#start-panel .grab, #sheet .grab { width: 54px; height: 6px; top: 9px; }
+#sheet-body, #resort-list { touch-action: pan-y; }
+.mrow .nm { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.mrow .nm b { min-width: 0; flex: 0 1 auto; }
+.mrow .lastv { flex: none; font-size: 12.5px; font-weight: 500; color: #9fb2c6; white-space: nowrap; }
+.start-top { padding-top: calc(var(--sat) + 18px); }
+.start-top p { margin-top: 4px; }
+
+/* map screen: elevation top left; search button and mountain/weather bar along the bottom */
+#topbar .elev { pointer-events: auto; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.05; color: #fff; padding: 4px 2px; text-align: left; }
+#topbar .elev span { font-size: 12px; font-weight: 600; letter-spacing: 1.2px; text-transform: uppercase; color: #9fc2e2; }
+#topbar .elev b { font-size: 27px; font-weight: 800; letter-spacing: -.5px; text-shadow: 0 2px 10px rgba(0, 0, 0, .45); }
+#topbar .elev.off b { font-size: 21px; color: #ffb35c; letter-spacing: .4px; }
+#searchbtn { position: absolute; left: 12px; bottom: calc(var(--tabs) + 10px); z-index: 4; width: 60px; height: 60px; border-radius: 18px; display: grid; place-items: center; color: #eef4fa;
+  background: linear-gradient(180deg, rgba(30, 58, 86, .92), rgba(12, 30, 48, .94)); border: 1px solid var(--edge2);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, .4); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+#infobar { left: 82px; }
+#infobar .wx { padding-left: 12px; }
+body.playing #searchbtn, body.navigating #searchbtn { display: none; }
+#infobar, #searchbtn { transition: opacity .45s; }
+body.flying #infobar, body.flying #searchbtn { opacity: 0; pointer-events: none; }
+#fabs button[data-act="pocket"] { --fab-bg: #142e48; }
+.srow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px; margin-top: 8px; border-radius: 14px; border: 1px solid var(--edge2); background: var(--card); }
+.srow .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.srow b { font-size: 16.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .srow small { color: var(--muted); font-size: 13.5px; }
+.srow i { font-style: normal; font-size: 22px; opacity: .7; }
+.sbadge { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 17px; background: rgba(255, 255, 255, .07); }
+.sbadge.poi { color: #9fd3ff; }
+#sheet .search { margin: 2px 0 4px; }
+#sheet-body { min-height: 0; }
+#sheet { overflow: hidden; }

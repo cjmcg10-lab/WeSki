@@ -10,6 +10,7 @@ import { sessions, kv, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
 import { COMING_SOON } from './resorts.js';
 import { Clouds } from './clouds.js';
+import { dragPanel } from './drag.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -168,7 +169,6 @@ function initMap(id) {
     S.sense = new LiftSense(resort.lifts, S.geo); S.lift = null;
     S.loc = new Locator(S.geo, onFix, (m) => { S.gpsMsg = m; renderChrome(); if (m.startsWith('Location is blocked')) toast(m, 7000); });
     if (S.testMode) S.loc.setSim(true);
-    $('#brand-resort').textContent = pl.name;
     prefs.set('lastResort', id);
     try { S.tracksSaved = (await kv.get(pkey('tracks'))) || []; } catch { S.tracksSaved = []; }
     renderChrome();
@@ -228,12 +228,38 @@ async function openStart(from = null) {
   el.classList.remove('focus');
   el.classList.remove('hidden');
   $('#resort-card').classList.add('hidden');
-  $('#start-panel').classList.toggle('hidden', !!from);
-  $('.start-top').classList.toggle('hidden', !!from);
+  $('#start-panel').classList.remove('hidden', 'mini');
+  $('.start-top').classList.remove('hidden');
   $('#f-resort').value = '';
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
+  layoutGlobe(false);                           // measured with the list in place, so the globe lands in the right spot
+  $('#start-panel').classList.toggle('hidden', !!from);
+  $('.start-top').classList.toggle('hidden', !!from);
   if (from) globe.surface(from);
+}
+
+/** Size the resting globe to the space between the title and the mountain list. */
+function layoutGlobe(animate = true) {
+  if (!globe) return;
+  const box = $('#start').getBoundingClientRect(), top = $('.start-top').getBoundingClientRect().bottom - box.top + 14;
+  const p = $('#start-panel');
+  let bottom = box.height;
+  if (!p.classList.contains('hidden')) bottom = box.height - p.offsetHeight + (p.classList.contains('mini') ? miniShift() : 0);
+  globe.setFrame(top, bottom - 14, animate);
+}
+/** How far the mountain list slides down when shrunk: only its grab bar and title stay on screen. */
+function miniShift() {
+  const p = $('#start-panel'), h = p.querySelector('h2');
+  return Math.max(0, p.offsetHeight - (h.offsetTop + h.offsetHeight + 16));
+}
+function setStartMini(on) {
+  const p = $('#start-panel');
+  if (p.classList.contains('mini') === on) return;
+  p.style.setProperty('--mini', miniShift() + 'px');
+  p.classList.toggle('mini', on);
+  if (on) $('#f-resort').blur();
+  layoutGlobe(true);
 }
 
 function renderResortList(q) {
@@ -243,14 +269,17 @@ function renderResortList(q) {
   const near = S.nearMe;
   const dist = (r) => (near ? kmBetween(near.lat, near.lon, r.lat, r.lon) : 0);
   // nearest first with "Use my location"; otherwise favourites, then ready maps, in the usual order
-  list = list.map((r, i) => ({ r, i, d: dist(r) })).sort((a, b) => (near ? a.d - b.d : (S.favs.has(b.r.id) - S.favs.has(a.r.id)) || (b.r.available - a.r.available) || a.i - b.i));
   const last = prefs.get('lastResort', null);
+  // the last mountain visited always comes first; then nearest first with "Use my location",
+  // otherwise favourites, then ready maps, in the usual order
+  list = list.map((r, i) => ({ r, i, d: dist(r) })).sort((a, b) => ((b.r.id === last) - (a.r.id === last)) || (near ? a.d - b.d : (S.favs.has(b.r.id) - S.favs.has(a.r.id)) || (b.r.available - a.r.available) || a.i - b.i));
   const away = (km) => (imp() ? `${Math.round(km / 1.609).toLocaleString()} mi` : `${Math.round(km).toLocaleString()} km`);
   $('#near-btn').classList.toggle('on', !!near);
   $('#fav-btn').classList.toggle('on', !!S.favOnly);
   $('#resort-list').innerHTML = list.length
-    ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbSvg(r)}<span class="grow"><b>${esc(r.name)}${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}</b><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
+    ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbSvg(r)}<span class="grow"><span class="nm"><b>${esc(r.name)}</b>${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}${r.id === last ? '<span class="lastv">Last visited</span>' : ''}</span><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
     : `<p class="start-empty">${S.favOnly && !S.favs.size ? 'No favorites yet. Open a mountain and tap its star to add it here.' : 'No mountain matches that search yet.'}</p>`;
+  if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
 }
 
 /** Great-circle distance in km. */
@@ -428,7 +457,7 @@ async function exitToGlobe() {
     await globe.rise(1.8);
     $('.start-top').classList.remove('hidden');
     $('#start').classList.remove('fade');
-    $('#start-panel').classList.remove('hidden');
+    $('#start-panel').classList.remove('hidden', 'mini');
   } catch (e) {
     // no globe available (e.g. first run offline): stay on the mountain
     console.warn(e);
@@ -488,6 +517,12 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
 }
 persist();
 document.addEventListener('click', onClick);
+// Pull panels down by their grab bar: the mountain list shrinks (the globe grows into the space),
+// every other panel closes.
+dragPanel($('#start-panel'), { zone: 70, offset: () => ($('#start-panel').classList.contains('mini') ? miniShift() : 0),
+  onDown: () => setStartMini(true), onUp: () => setStartMini(false), onTap: () => { if ($('#start-panel').classList.contains('mini')) setStartMini(false); } });
+dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
+window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
 document.addEventListener('change', onInput);
 document.addEventListener('visibilitychange', () => { if (!S.map) return; if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
@@ -506,7 +541,7 @@ function onFix(fix) {
   let speed = S.me?.speed || 0;
   if (S.me && fix.t > S.me.t) speed = speed * 0.4 + (Math.hypot(x - S.me.x, y - S.me.y) / ((fix.t - S.me.t) / 1000)) * 0.6;
   if (speed > 45) speed = 0;
-  S.me = { x, y, lat: fix.lat, lon: fix.lon, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y), speed };
+  S.me = { x, y, lat: fix.lat, lon: fix.lon, alt: fix.alt, heading, acc: fix.acc, t: fix.t, inBounds: S.geo.inBounds(x, y), speed };
   S.gpsMsg = '';
   if (S.tracker) S.tracker.add(fix); else if (S.crumbRec) S.crumbRec.add(fix);
   // Lift riding is worked out from every fix, whether or not stats or directions are on.
@@ -810,7 +845,7 @@ function endNav() {
 function navDest() {
   const t = S.nav.target;
   if (t.type === 'poi') { const p = S.resort.pois[t.id]; return { place: { node: p.n }, name: p.name, x: p.x, y: p.y }; }
-  if (t.type === 'pin') return S.pin ? { place: { x: S.pin.x, y: S.pin.y }, name: 'Dropped pin', x: S.pin.x, y: S.pin.y } : null;
+  if (t.type === 'pin') return S.pin ? { place: { x: S.pin.x, y: S.pin.y }, name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y } : null;
   if (t.type === 'meet') { const m = S.map.meet; return m ? { place: { x: m.x, y: m.y }, name: m.name || 'Meeting point', x: m.x, y: m.y } : null; }
   const f = friends().find((m) => m.id === t.id);
   if (!f) return { gone: true, name: t.name };
@@ -1008,6 +1043,12 @@ function renderChrome() {
   $('#resort-btn').classList.toggle('hidden', !gp.classList.contains('hidden') || !!S.group);
   $('#resort-btn-name').textContent = S.place?.name || '';
   $('#infobar').classList.toggle('hidden', !S.place);
+  $('#searchbtn').classList.toggle('hidden', !S.place);
+  // top left: the elevation where you stand (terrain height on the map, GPS height off it)
+  const fresh = S.me && Date.now() - S.me.t < 20000;
+  const ev = !fresh ? (S.loc?.active ? 'Finding…' : 'GPS OFF') : S.me.inBounds ? fmtVert(S.geo.elev(S.me.x, S.me.y)) : Number.isFinite(S.me.alt) ? fmtVert(S.me.alt) : '—';
+  $('#elev-val').textContent = ev;
+  $('#elev').classList.toggle('off', !fresh);
   $('#info-name').textContent = S.place?.name || '';
   const cur = S.wx?.data?.summit?.current;
   $('#info-wx').textContent = cur ? `${emo(describeCode(cur.weather_code)[1])} ${fmtTemp(cur.temperature_2m)}${tUnit()}` : '';
@@ -1053,7 +1094,9 @@ function stepText(s, lower) {
 
 // ---------- sheets
 function openSheet(name, arg) {
+  const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
+  if (fresh) { S.sheetHtml = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
   const tab = { group: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
@@ -1068,9 +1111,11 @@ function closeSheet() {
 
 function renderSheet() {
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = $('#sheet-title').textContent === title;
+  // size first, before any early return, so a panel never keeps the short size of the one before it
+  $('#sheet').classList.toggle('small', !!small);
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
   // don't clobber a text field the person is typing in
@@ -1079,7 +1124,6 @@ function renderSheet() {
   if (same && html === S.sheetHtml) return; // nothing changed: leave the DOM (and any tap in progress) alone
   S.sheetHtml = html;
   body.innerHTML = html;
-  $('#sheet').classList.toggle('small', !!small);
   if (same) body.scrollTop = keep;
 }
 
@@ -1260,7 +1304,6 @@ function sheetMore() {
       <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep screen on for directions • Use Pocket mode while riding.</span></div></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Closures</h4><div class="sub">${n.length ? `${n.length} marked closed: ${esc(n.slice(0, 4).join(', '))}${n.length > 4 ? '…' : ''}` : 'Avoid trails and lifts you mark closed.'}</div></div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h4>Offline map</h4><div id="offline-box">${off ? `<p class="ok-text" style="font-size:17px;margin:4px 0 2px">✓ ${esc(S.place.name)} saved</p><p class="sub" style="margin:0 0 4px 22px">${(off.bytes / 1048576).toFixed(1)} MB • ${fmtDate(off.at)}</p>` : `<p class="sub">Download the whole ${esc(S.place.name)} map (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal.</p>`}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
-    <div class="card"><button class="row-link" data-act="legend">${ICON.map}<div class="grow">Map legend</div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
     <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
     <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
@@ -1333,6 +1376,56 @@ function sheetLegend() {
     <p class="foot">Follow mountain signs and ropes.</p>`];
 }
 
+// ---------- search for places, runs and lifts on this mountain
+const POI_KIND = { lodge: 'Lodge', lift: 'Lift base', lifttop: 'Lift top', food: 'Food & drink', peak: 'Summit', service: 'Service', parking: 'Parking', shelter: 'Shelter' };
+function searchIndex() {
+  if (S.searchIdx?.id === S.place.id) return S.searchIdx.items;
+  const items = [];
+  for (const p of S.resort.pois) if (p.name) items.push({ k: 'poi', v: p.id, name: p.name, sub: POI_KIND[p.kind] || 'Place', badge: '<span class="sbadge poi">⌂</span>' });
+  const runs = new Map();
+  for (const t of S.resort.trails) if (t.name) { const e = runs.get(t.name) || { ids: [], d: t.d, c: t.c, u: t.u, bb: t.bb }; e.ids.push(t.id); runs.set(t.name, e); }
+  for (const [name, e] of runs) items.push({ k: 'trail', v: e.ids.join(','), name, sub: 'Run · ' + levelName(S.resort, e.d), badge: `<span class="sbadge ${runCss(S.resort, e)}">${runSym(S.resort, e)}</span>` });
+  for (const l of S.resort.lifts) if (l.name) items.push({ k: 'lift', v: l.id, name: l.name, sub: 'Lift', badge: `<span class="sbadge" style="color:${COLORS.lift}">↑</span>` });
+  items.sort((a, b) => a.name.localeCompare(b.name));
+  S.searchIdx = { id: S.place.id, items };
+  return items;
+}
+function searchResults() {
+  const q = (S.searchQ || '').trim().toLowerCase();
+  const all = searchIndex();
+  const hit = q ? all.filter((i) => i.name.toLowerCase().includes(q)).sort((a, b) => (b.name.toLowerCase().startsWith(q) - a.name.toLowerCase().startsWith(q))) : all;
+  if (!hit.length) return '<p class="sub" style="margin:14px 4px">Nothing on this mountain matches that name.</p>';
+  return hit.slice(0, 80).map((i) => `<button class="srow" data-act="search-go" data-k="${i.k}" data-v="${i.v}">${i.badge}<span class="grow"><b>${esc(i.name)}</b><small>${esc(i.sub)}</small></span><i>›</i></button>`).join('');
+}
+function sheetSearch() {
+  return [`Search ${S.place.name}`, `<label class="search"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><circle cx="10.500" cy="10.500" r="6.500"/><path d="M15.500 15.500 21 21"/></svg><input id="f-search" type="search" placeholder="Lodges, runs, lifts, food…" value="${esc(S.searchQ || '')}" autocomplete="off" autocorrect="off" spellcheck="false" /></label>
+    <div id="search-list">${searchResults()}</div>`];
+}
+/** Show a search result: frame it on the map and offer directions to it. */
+function searchGo(k, v) {
+  if (k === 'poi') {
+    const p = S.resort.pois[+v];
+    S.map.focus(p.x, p.y, 650);
+    openSheet('place', { type: 'poi', id: p.id });
+    return;
+  }
+  let pts = [], x, y, name;
+  if (k === 'trail') {
+    const ts = v.split(',').map((i) => S.resort.trails[+i]);
+    for (const t of ts) pts.push(...t.pts);
+    // directions go to the top of the run, where you would start skiing it
+    const top = ts.reduce((a, b) => (b.top > a.top ? b : a));
+    [x, y] = [top.pts[0], top.pts[1]]; name = top.name;
+  } else {
+    const l = S.resort.lifts[+v];
+    pts = l.pts; [x, y] = [l.pts[0], l.pts[1]]; name = l.name;   // a lift starts at its bottom station
+  }
+  S.map.fit(pts);
+  S.pin = { x, y, name, kind: k };
+  S.map.setPin(S.pin);
+  openSheet('place', { type: 'pin' });
+}
+
 function sheetPlace(ev) {
   if (ev.type === 'poi') {
     const p = S.resort.pois[ev.id];
@@ -1349,7 +1442,8 @@ function sheetPlace(ev) {
     return [m?.name || 'Meeting point', `<p class="sub">Shared meeting point${S.group?.state?.meet ? ` set by ${esc(S.group.state.meet.by)}` : ''}</p><button class="btn go" data-act="nav-meet">Directions</button>${S.group ? '<button class="btn alt" data-act="clear-meet">Clear meeting point</button>' : ''}`, true];
   }
   const p = S.pin;
-  return ['Dropped pin', `<p class="sub">${describeSpot(p.x, p.y)}</p><button class="btn go" data-act="nav-pin">Directions</button>
+  const where = p.kind === 'trail' ? `Top of the run · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : p.kind === 'lift' ? `Bottom of the lift · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : describeSpot(p.x, p.y);
+  return [p.name || 'Dropped pin', `<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions</button>
     ${S.group ? '<button class="btn alt" data-act="meet-here">Make this the group meeting point</button>' : ''}
     ${S.testMode ? '<button class="btn alt" data-act="sim-here">Put me here (test mode)</button>' : ''}
     <button class="btn alt" data-act="remove-pin">Remove pin</button>`, true];
@@ -1519,6 +1613,7 @@ async function downloadOffline() {
 // ---------- events
 function onInput(e) {
   const t = e.target;
+  if (t.id === 'f-search') { if (e.type === 'input') { S.searchQ = t.value; $('#search-list').innerHTML = searchResults(); } return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
@@ -1577,7 +1672,7 @@ async function onClick(e) {
     case 'wx-refresh': refreshWeather(true); break;
     case 'pick-resort': pickResort(d.id); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); break;
+    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) S.nearMe = null; renderResortList(); break;
     case 'near-me': nearMe(); break;
@@ -1619,7 +1714,9 @@ async function onClick(e) {
     case 'close-group': if (confirm('Close the group for everyone? All shared locations are deleted and each person keeps their own runs.')) leaveGroup(true); break;
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
-    case 'nav-pin': startNav({ type: 'pin', name: 'Dropped pin' }); break;
+    case 'nav-pin': startNav({ type: 'pin', name: S.pin?.name || 'Dropped pin' }); break;
+    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus(), 60); } break;
+    case 'search-go': $('#f-search')?.blur(); searchGo(d.k, d.v); break;
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
     case 'steps': openSheet('steps'); break;

@@ -95,20 +95,39 @@ export class Globe {
     const w = this.el.clientWidth || 1, h = this.el.clientHeight || 1;
     this.renderer.setSize(w, h);
     this.camera.aspect = w / h;
-    // At rest the globe sits in front of the mountain backdrop, between the title and the resort
-    // list: about 27% of the screen height (62% of the width at most), centred 30% down.
+    // At rest the globe fills the free space between the title and the resort list (setFrame);
+    // until that is known it sits at about 27% of the screen height, centred 30% down.
+    const f = this.frame ? this.frameFit(w, h) : { s: 0.27, c: 0.3 };
     const vis = 2 * Math.tan(THREE.MathUtils.degToRad(19));
-    const home = Math.max(2 / (vis * 0.27), 2 / (vis * (w / h) * 0.62));
-    const homeLift = (0.2 * vis * home) / (home - 1);
-    if (this.dist === this.home) { this.dist = home; this.lift = homeLift; }
+    const home = Math.max(1.6, 1 / Math.sin(Math.atan((f.s * vis) / 2)));
+    const homeLift = ((0.5 - f.c) * vis * home) / (home - 1);
+    if (this.dist === this.home && !this.tween) { this.dist = home; this.lift = homeLift; }
     this.home = home; this.homeLift = homeLift;
     this.camera.updateProjectionMatrix();
+  }
+
+  /** Fit the resting globe between two screen heights (px from the top of the globe's box). */
+  frameFit(w, h) {
+    const { top, bottom } = this.frame;
+    const d = Math.max(60, Math.min((bottom - top) * 0.94, w * 0.9));
+    return { s: d / h, c: (top + bottom) / 2 / h };
+  }
+
+  /** Called when the title or the resort list moves; glides to the new size when animate is set. */
+  setFrame(top, bottom, animate = false) {
+    this.frame = { top, bottom };
+    const atHome = !this.focused && Math.abs(this.dist - this.home) < 1e-3 && !this.tween;
+    const was = { d: this.home, l: this.homeLift };
+    this.resize();
+    if (!atHome || this.focused) return;
+    if (animate) { this.dist = was.d; this.lift = was.l; this.go({ d: this.home, l: this.homeLift }, 0.45).then(() => { if (!this.focused) this.spin = true; }); this.spin = true; }
+    else { this.dist = this.home; this.lift = this.homeLift; }
   }
 
   bindDrag() {
     const el = this.renderer.domElement;
     let last = null;
-    el.addEventListener('pointerdown', (e) => { last = { x: e.clientX, y: e.clientY }; this.spin = false; this.tween = null; el.setPointerCapture?.(e.pointerId); });
+    el.addEventListener('pointerdown', (e) => { if (this.focused) return; last = { x: e.clientX, y: e.clientY }; this.spin = false; this.tween = null; el.setPointerCapture?.(e.pointerId); });
     el.addEventListener('pointermove', (e) => {
       if (!last) return;
       const k = 0.005 * Math.min(1.5, this.dist / this.home);
