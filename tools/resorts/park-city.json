@@ -31,5 +31,23 @@
    "Transitions"
   ]
  },
- "zones_source": "Park City Mountain winter trail map (2025-26)"
+ "zones_source": "Park City Mountain winter trail map (2025-26)",
+ "rename": {
+  "100 turns": "One Hundred Turns",
+  "10th Mountain": "10th Mtn",
+  "Assesment": "Assessment",
+  "Bogeyman": "Boogeyman",
+  "Buckkeye": "Buckeye",
+  "Canis Lupis": "Canis Lupus",
+  "Deshutes": "Deschutes",
+  "Dutch Hallow": "Dutch Hollow",
+  "Ectasy": "Ecstasy",
+  "Ligity Split": "Ligety Split",
+  "Linelite": "Limelite",
+  "Mid-Mountain Meadows": "Mid-Mtn Meadows",
+  "Murdock's Bowl": "Murdock Bowl",
+  "Portuguse Gap": "Portuguese Gap",
+  "Sam's Know": "Sam's Knob",
+  "Home Run": "Homerun"
+ }
 }

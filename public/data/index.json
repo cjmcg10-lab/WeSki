@@ -202,10 +202,10 @@
   "baseLon": -111.5472,
   "top": 3046,
   "base": 2050,
-  "trails": 343,
+  "trails": 342,
   "lifts": 41,
   "zones": true,
-  "bytes": 2356350
+  "bytes": 2360319
  },
  {
   "id": "pizol",
