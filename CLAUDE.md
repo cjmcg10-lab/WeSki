@@ -64,9 +64,11 @@ session needs that the README does not: the rules, the state of the work, and wh
   2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
 - **Price:** free map everywhere; $24.99 a year, $5.99 a week, $39.99 group plan.
-- **Logo:** chosen by the owner on 2026-11-17: three peaks with three people (teal, white, orange dots) and an S-shaped
-  run on dark navy. Their own image, saved as `design/logo.png`; the app icons in `public/icons/` are made from it
-  (the maskable one is the same image shrunk to 74% on the navy background). The earlier concepts in "Logo work" are history.
+- **Logo:** replaced by the owner on 2026-11-17 with a new image: three skiers in helmets and goggles (blue, white,
+  orange) in front of three snowy peaks, with a white S-shaped run and blue and orange slopes, on dark navy. The original
+  upload is `design/logo-original.png`; `design/logo.png` is the rounded square cropped out and made square (squeezed
+  about 3% vertically). The app icons in `public/icons/` are made from it (the maskable one is the same image at 74% on
+  the background colour #010c1b). The earlier peaks-and-dots logo is in git history; the concepts in "Logo work" are history.
 - Launch plan document: https://claude.ai/artifact/7KCV26BCapRGtPWq5hfSFE
 - Logo concepts page: https://claude.ai/artifact/R58WwJVZZNDCQLJAUZ2oLS
 
