@@ -1,7 +1,7 @@
 {
-  "name": "WeSki — Jay Peak",
-  "short_name": "WeSki",
-  "description": "Jay Peak in 3D: trails, lifts, friends, directions and ski stats. Works offline.",
+  "name": "SkiWithMe",
+  "short_name": "SkiWithMe",
+  "description": "Ski resorts in 3D: trails, lifts, friends, directions and ski stats. Works offline.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

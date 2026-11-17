@@ -174,7 +174,7 @@ function initMap(id) {
     await recoverSession();
     if (S.crumbsOn) { startCrumbs(); loadHistory(); }
     if (!ticking) { ticking = true; setInterval(tick, 1000); }
-    window.weski = S; // handy for debugging from the Safari console
+    window.skiwithme = S; // handy for debugging from the Safari console
   })().catch((e) => { if (mapId === id) { mapP = null; mapId = null; } throw e; }));
 }
 
@@ -978,7 +978,7 @@ function sheetGroup() {
   return [`Group ${g.code}`, `
     <div class="card"><div class="bigcode">${g.code}</div><p class="sub" style="text-align:center;margin:4px 0 8px">${g.status === 'online' ? `${st?.members.length || 1} of ${st?.max || 20} people` : g.status === 'connecting' ? 'Connecting…' : 'Offline — reconnecting…'}</p><button class="btn alt" data-act="share-code">Share invite</button></div>
     <div class="card"><div class="rowf"><div class="grow"><b>Share my GPS location</b><div class="sub">${S.sharing ? 'On — your group sees you live. Turn off to pause.' : 'Off — your group cannot see you.'}</div></div><label class="switch"><input type="checkbox" id="f-share" ${S.sharing ? 'checked' : ''} /><i></i></label></div>
-      <p class="note">Keep WeSki open with the screen on while sharing: iPhone pauses web-app GPS when the screen locks. Your last location then shows as stale with its time.</p></div>
+      <p class="note">Keep SkiWithMe open with the screen on while sharing: iPhone pauses web-app GPS when the screen locks. Your last location then shows as stale with its time.</p></div>
     <div class="card"><h3>Members</h3>${rows || '<p class="sub">Connecting…</p>'}</div>
     ${meet ? `<div class="card"><h3>Meeting point</h3><div class="rowf"><div class="grow"><b>${esc(meet.name)}</b><div class="sub">Set by ${esc(meet.by)} at ${fmtClock(meet.at + (g.skew || 0))}</div></div><button class="btn sm go" data-act="nav-meet">Directions</button></div><button class="btn alt" data-act="clear-meet">Clear meeting point</button></div>` : ''}
     ${S.editProfile ? profileForm() : '<button class="btn alt" data-act="edit-profile">Edit my name, avatar and color</button>'}
@@ -1105,7 +1105,7 @@ function sheetMore() {
     <button class="btn alt" data-act="legend">Map legend</button>
 
     <button class="btn exit" data-act="change-resort">Choose a different resort</button>
-    <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open WeSki from the icon for full screen and offline use.</p></div>
+    <div class="card"><h3>Install on iPhone</h3><p class="sub">In Safari tap Share, then “Add to Home Screen”. Open SkiWithMe from the icon for full screen and offline use.</p></div>
     <div class="card"><h3>Map data</h3><p class="sub">Terrain: ${esc(S.resort.sources.terrain)}.<br>Trails, lifts, buildings, places: ${esc(S.resort.sources.map)}.<br>Zones: ${S.resort.sources.zones ? esc(S.resort.sources.zones) : 'none recorded for this resort yet'}.</p><p class="note">Not an official ${esc(S.place.name)} product. Always obey on-mountain signs, ropes and ski patrol. Closures here are what you mark, not a live resort feed.</p></div>`];
 }
 
@@ -1392,7 +1392,7 @@ async function onClick(e) {
       break;
     }
     case 'share-code': {
-      const text = `Join my WeSki group at ${S.place.name}. Open ${location.origin} and enter code ${S.group.code}`;
+      const text = `Join my SkiWithMe group at ${S.place.name}. Open ${location.origin} and enter code ${S.group.code}`;
       if (navigator.share) navigator.share({ text }).catch(() => {});
       else { try { await navigator.clipboard.writeText(text); toast('Invite copied.'); } catch { toast(`Code: ${S.group.code}`); } }
       break;

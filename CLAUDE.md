@@ -1,4 +1,4 @@
-# Ski With Me (repository name: WeSki)
+# SkiWithMe (repository name: WeSki)
 
 An installable web app for ski resorts: 3D mountain from LiDAR, friend groups with live GPS,
 directions, voice, stats. Vanilla JS + three.js + Vite, tests in vitest, hosted on Cloudflare.
@@ -8,7 +8,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 ## Rules for working here
 
 - Develop and push only on the branch the session names (`claude/...`). Pushing deploys: GitHub Actions
-  runs tests, builds, and deploys to https://weski.cjmcg10.workers.dev. No pull requests unless asked.
+  runs tests, builds, and deploys to https://skiwithme.cjmcg10.workers.dev. No pull requests unless asked.
 - Never ask for secrets in chat. The Cloudflare token is a GitHub secret and an environment network secret.
 - Outside requests use the User-Agent `weski-build` and never carry the owner's name or email.
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
@@ -25,7 +25,7 @@ session needs that the README does not: the rules, the state of the work, and wh
   live site?"), then edit that one line. Start the new branch from the tip of `claude/ecstatic-hamilton-2gsp2q`, which
   holds all the work (`main` may be behind).
 - **Confirm a deploy** by fetching a changed file from the live site with the `weski-build` User-Agent, for example
-  `https://weski.cjmcg10.workers.dev/data/<id>/resort.json`, and looking for the change. It takes two to four minutes.
+  `https://skiwithme.cjmcg10.workers.dev/data/<id>/resort.json`, and looking for the change. It takes two to four minutes.
 - **The cloud environment is called `weski`.** Its network only reaches listed hosts. Already allowed: the terrain and
   map sources the pipeline uses, `mtnpowder.com`, and the six Epic resort sites (which refuse automated clients anyway).
   A blocked host shows as a proxy refusal: request the exact host through the environment tools (the owner approves a
@@ -57,9 +57,10 @@ session needs that the README does not: the rules, the state of the work, and wh
 
 ## Decisions already made
 
-- **Name:** the product is being renamed from WeSki to **Ski With Me** (WeSki clashes with weski.com and the
-  "We Ski" app at weski.app). The rename in code, manifest, README and the Cloudflare address is NOT done yet.
-  The owner checked app stores, domains, handles and trademark registers and found the name clear.
+- **Name:** the app is called **SkiWithMe**, written as one word (owner's instruction, 2026-11-17). Renamed from WeSki,
+  which clashes with weski.com and the "We Ski" app at weski.app. The owner checked app stores, domains, handles and
+  trademark registers and found the name clear. The trademark draft below says SKI WITH ME; ask the owner whether to
+  file it as one word or three before drafting the final form.
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
 - **Price:** free map everywhere; $24.99 a year, $5.99 a week, $39.99 group plan.
 - **Logo:** not final. See "Logo work" below.
@@ -170,14 +171,15 @@ a fix in OpenStreetMap.
   - Main risk: a "merely descriptive" refusal. Planned answer: the phrase is an invitation, not a description of
     software. Fallback: the Supplemental Register. Until filing, the owner can use the TM symbol.
 
-## Rename checklist (not started)
+## Rename (done 2026-11-17)
 
-Product name in `index.html`, `public/` manifest and icons, `src/` strings (including spoken phrases in `voice.js`),
-`README.md`, `package.json`, the workflow comment, the Worker name in `wrangler.jsonc` and `wrangler.assets.jsonc`.
-Renaming the Worker changes the live address (`weski.cjmcg10.workers.dev`): the old address stops working, saved
-home-screen installs and group links break, and the storage keys in `src/store.js` should keep reading the old keys so
-nobody loses saved settings. Tell the owner before changing the address, and consider a custom domain instead (the
-owner would buy it). The repository name and the `weski-build` User-Agent can stay.
+The name SkiWithMe is in the app screens, manifest, README, package and both wrangler configs. The Cloudflare Worker is
+now `skiwithme`, so the live address is https://skiwithme.cjmcg10.workers.dev. Left as they were on purpose: the
+repository name, the `weski-build` User-Agent, the cloud environment name `weski`, and the on-device storage labels
+(`weski:` settings, the `weski` database, the `weski-map` cache), which users never see. The old Worker `weski` still
+exists in the owner's Cloudflare account at the old address, frozen at the last version before the rename, with its own
+separate group rooms. The owner can delete it in the Cloudflare dashboard, or a session can turn it into a redirect if
+asked. Icons still show the old artwork until the logo is chosen.
 
 ## Map data: things learned the hard way
 
@@ -204,7 +206,7 @@ owner would buy it). The repository name and the `weski-build` User-Agent can st
 
 ## Paid web app: the plan in short
 
-The full plan is in the launch plan document. In order: rename; one-page website; sign-in by email link; checkout
+The full plan is in the launch plan document. In order: one-page website; sign-in by email link; checkout
 through a seller-of-record service (handles sales tax; recommended over raw Stripe for a solo owner) or Stripe; paywall
 (the map stays free; which features sit behind the plan is set out in the launch plan document, confirm with the owner); manage-plan screen; safety notice
 shown before first use (the app is a guide, not a substitute for resort signs and ski patrol); terms and privacy
@@ -216,7 +218,7 @@ keys go in through the credential form, never chat.
 ## What is next
 
 1. Rating check for the remaining 20 resorts (above), in order of popularity.
-2. Rename to Ski With Me everywhere.
+2. (Done) Rename to SkiWithMe. Remaining: new icons once the logo is chosen; the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
    (Open-Meteo's free tier is non-commercial), "report a map mistake" button, add-to-home-screen guide,

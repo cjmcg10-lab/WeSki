@@ -1,4 +1,4 @@
-// WeSki service worker: keeps the whole app and the Jay Peak map on the phone so it opens offline.
+// SkiWithMe service worker: keeps the whole app and the Jay Peak map on the phone so it opens offline.
 const VERSION = '__VERSION__';
 const FILES = "__FILES__";
 const CACHE = 'weski-map';

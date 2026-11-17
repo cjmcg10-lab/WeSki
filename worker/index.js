@@ -1,4 +1,4 @@
-// WeSki Cloudflare Worker: serves the app (embedded static files) and private group rooms.
+// SkiWithMe Cloudflare Worker: serves the app (embedded static files) and private group rooms.
 // One Durable Object per group code relays opt-in GPS positions between up to 20 members.
 import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';

@@ -1,4 +1,4 @@
-# Tests, builds and deploys WeSki to Cloudflare on every push.
+# Tests, builds and deploys SkiWithMe to Cloudflare on every push.
 # Needs two repository secrets: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID.
 name: Deploy
 

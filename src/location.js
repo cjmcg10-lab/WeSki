@@ -26,7 +26,7 @@ export class Locator {
       },
       (e) => {
         this.onError(e.code === 1
-          ? 'Location is blocked. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites (or WeSki) → While Using, with Precise Location on.'
+          ? 'Location is blocked. On iPhone: Settings → Privacy & Security → Location Services → Safari Websites (or SkiWithMe) → While Using, with Precise Location on.'
           : 'Waiting for a GPS signal…');
         if (e.code === 1) this.stop();
       },

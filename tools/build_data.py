@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build WeSki resort data for Jay Peak from free sources.
+"""Build SkiWithMe resort data for Jay Peak from free sources.
 
 Inputs (downloaded separately, see tools/README.md):
   - USGS 3DEP 1 m LiDAR DEM GeoTIFFs (VT_Statewide_A23, EPSG:26918)
