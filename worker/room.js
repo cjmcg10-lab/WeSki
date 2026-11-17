@@ -2,7 +2,7 @@
 export const MAX_MEMBERS = 20;
 export const IDLE_MS = 12 * 60 * 60 * 1000; // rooms are wiped after 12 h without activity
 
-const AVATARS = ['boy-ski', 'girl-ski', 'boy-board', 'girl-board'];
+const AVATAR_RE = /^(boy|girl)-(ski|board)(~[a-z0-9]{0,40})?$/;
 const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
 const num = (v, lo, hi) => (typeof v === 'number' && Number.isFinite(v) && v >= lo && v <= hi ? v : null);
 
@@ -32,7 +32,8 @@ export function applyMessage(room, memberId, msg, now) {
     room.members[id] = {
       id,
       name,
-      avatar: AVATARS.includes(msg.avatar) ? msg.avatar : 'boy-ski',
+      // one of the four characters, optionally followed by a customisation code (see src/look.js)
+      avatar: typeof msg.avatar === 'string' && AVATAR_RE.test(msg.avatar) ? msg.avatar : 'boy-ski',
       color: /^#[0-9a-fA-F]{6}$/.test(msg.color) ? msg.color : '#ff5a36',
       sharing: existing ? existing.sharing : false,
       pos: existing ? existing.pos : null,

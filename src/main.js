@@ -13,6 +13,8 @@ import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
 import { COMING_SOON } from './resorts.js';
 import { Clouds } from './clouds.js';
 import { dragPanel } from './drag.js';
+import { parseLook, lookString, CHARACTERS, SKIN, HAIR_COLORS, LENS, HAT_COLORS, PANTS, GEAR, HEADS, HAIRS } from './look.js';
+import { avatarThumb, mountPreview } from './avatarview.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -1029,7 +1031,11 @@ function proposeMeet() {
 function onMapTap(ev) {
   if (S.player) return;
   if (ev.type === 'ground') { S.pin = { x: ev.x, y: ev.y }; S.map.setPin(S.pin); openSheet('place', { type: 'pin' }); }
-  else openSheet('place', ev);
+  else if (ev.type === 'me') S.map.wave('me');                  // tap yourself: your rider waves
+  else {
+    if (ev.type === 'friend') S.map.wave(ev.id);                // a friend's rider waves, and their card opens
+    openSheet('place', ev);
+  }
 }
 
 /** Legend card for the zones this resort actually has. */
@@ -1142,7 +1148,7 @@ function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
@@ -1156,7 +1162,7 @@ function closeSheet() {
 
 function renderSheet() {
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = $('#sheet-title').textContent === title;
   // size first, before any early return, so a panel never keeps the short size of the one before it
@@ -1170,6 +1176,8 @@ function renderSheet() {
   S.sheetHtml = html;
   body.innerHTML = html;
   if (same) body.scrollTop = keep;
+  const pv = $('#av-preview');
+  if (pv) { try { mountPreview(pv, S.profile.avatar, S.profile.color); } catch { pv.innerHTML = avatarSvg(S.profile.avatar.split('~')[0], S.profile.color); } }
 }
 
 // ---------- small line icons used in the panels
@@ -1190,12 +1198,55 @@ const ICON = {
 };
 const FIRST_DAY = `<svg viewBox="0 0 210 120" aria-hidden="true"><path d="M18 108 70 58 92 74 122 30 150 62 168 50 196 108z" fill="#8fb0cc"/><path d="M122 30 150 62 140 108H96z" fill="#5f84a8"/><path d="M70 58 92 74 80 108H18z" fill="#6f93b5"/><path d="M122 30 131 41 123 39 117 45 112 41z" fill="#f4f8fb"/><path d="M70 58 77 65 70 64 65 67z" fill="#eaf1f7"/><path d="M168 50 175 58 168 57 163 60z" fill="#eaf1f7"/><path d="M122 31V12" stroke="#d9e4ee" stroke-width="2"/><path d="M123 12h16l-4 5 4 5h-16z" fill="#3ee6c4"/><path d="M121 46c-14 8 10 16-4 26s-28 10-12 26" stroke="#fff" stroke-width="4.500" fill="none" stroke-linecap="round"/><path d="M30 108l6-16 6 16zM168 108l6-18 6 18zM186 108l5-13 5 13z" fill="#1f8a6a"/><path d="M8 108h194" stroke="#9fb7cc" stroke-width="2"/></svg>`;
 
-function profileFields() {
-  const p = S.profile;
-  return `<label class="lbl">Display name</label><input class="field" id="f-name" maxlength="20" placeholder="Optional" value="${esc(p.name)}" autocomplete="off" />
-    <label class="lbl">Avatar</label><div class="avatars">${AVATARS.map(([k, n]) => `<button data-act="avatar" data-v="${k}" class="${p.avatar === k ? 'on' : ''}">${avatarSvg(k, p.color)}${n}</button>`).join('')}</div>
-    <label class="lbl">Color</label><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>`;
+/** A rider picture for lists: 3D when the phone can draw it, the flat drawing otherwise. */
+function riderPic(avatar, color, size = 96) {
+  try { return `<img class="rider" src="${avatarThumb(avatar, color, size)}" alt="" />`; } catch { return avatarSvg(String(avatar).split('~')[0], color); }
 }
+
+function profileFields() {
+  const p = S.profile, L = parseLook(p.avatar), base = `${L.who}-${L.ride}`;
+  return `<label class="lbl">Display name</label><input class="field" id="f-name" maxlength="20" placeholder="Optional" value="${esc(p.name)}" autocomplete="off" />
+    <label class="lbl">Your rider</label>
+    <div class="rider-stage"><div id="av-preview" class="av-preview" title="Tap to wave"></div>
+      <button class="btn outline sm" data-act="open-sheet" data-s="customize">Customize</button></div>
+    <label class="lbl">Characters</label><div class="avatars chars">${CHARACTERS.map(([k, n]) => `<button data-act="avatar" data-v="${k}" class="${base === k ? 'on' : ''}">${riderPic(base === k ? p.avatar : k, p.color)}<span>${n}</span></button>`).join('')}</div>
+    <label class="lbl">Jacket color</label><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>`;
+}
+
+const sw = (k, list, cur, jacket) => `<div class="swatches">${list.map((c, i) => `<button data-act="look" data-k="${k}" data-v="${i}" class="${cur === i ? 'on' : ''} ${c === 'match' ? 'match' : ''}" style="background:${c === 'match' ? jacket : c}" aria-label="${k} ${i}">${c === 'match' ? '=' : ''}</button>`).join('')}</div>`;
+const chips = (k, list, cur) => `<div class="seg wrap">${list.map(([, n], i) => `<button data-act="look" data-k="${k}" data-v="${i}" class="${cur === i ? 'on' : ''}">${n}</button>`).join('')}</div>`;
+function sheetCustomize() {
+  const p = S.profile, L = parseLook(p.avatar);
+  return ['Customize rider', `<div class="rider-stage big"><div id="av-preview" class="av-preview" title="Tap to wave"></div><p class="sub">Tap your rider to wave. Your group sees this look on the map.</p></div>
+    <div class="card"><h3>Ride</h3><div class="seg"><button data-act="look" data-k="ride" data-v="ski" class="${L.ride === 'ski' ? 'on' : ''}">Skier</button><button data-act="look" data-k="ride" data-v="board" class="${L.ride === 'board' ? 'on' : ''}">Snowboarder</button></div>
+      <h3 style="margin-top:14px">Build</h3><div class="seg"><button data-act="look" data-k="who" data-v="boy" class="${L.who === 'boy' ? 'on' : ''}">Square jacket</button><button data-act="look" data-k="who" data-v="girl" class="${L.who === 'girl' ? 'on' : ''}">Fitted jacket</button></div>
+      <h3 style="margin-top:14px">Skin tone</h3>${sw('skin', SKIN, L.skin)}</div>
+    <div class="card"><h3>Headwear</h3>${chips('head', HEADS, L.head)}<h3 style="margin-top:14px">Hat or helmet color</h3>${sw('hat', HAT_COLORS, L.hat, p.color)}
+      <h3 style="margin-top:14px">Goggle lens</h3>${sw('lens', LENS, L.lens)}</div>
+    <div class="card"><h3>Hair</h3>${chips('hair', HAIRS, L.hair)}<h3 style="margin-top:14px">Hair color</h3>${sw('hairColor', HAIR_COLORS, L.hairColor)}</div>
+    <div class="card"><h3>Jacket</h3><div class="swatches">${PALETTE.map((c) => `<button data-act="color" data-v="${c}" class="${p.color === c ? 'on' : ''}" style="background:${c}" aria-label="color"></button>`).join('')}</div>
+      <h3 style="margin-top:14px">Pants</h3>${sw('pants', PANTS, L.pants, p.color)}
+      <h3 style="margin-top:14px">${L.ride === 'board' ? 'Snowboard' : 'Skis'}</h3>${sw('gear', GEAR, L.gear)}</div>
+    <div class="card"><h3>Extras</h3>
+      <div class="rowf"><div class="grow"><h4 style="margin:0">Backpack</h4></div><label class="switch"><input type="checkbox" data-look="pack" ${L.pack ? 'checked' : ''} /><i></i></label></div>
+      <div class="divide"></div>
+      <div class="rowf"><div class="grow"><h4 style="margin:0">Neck warmer</h4><div class="sub">Same color as the hat.</div></div><label class="switch"><input type="checkbox" data-look="gaiter" ${L.gaiter ? 'checked' : ''} /><i></i></label></div></div>
+    <button class="btn" data-act="tab" data-tab="group">Done</button>`];
+}
+/** Change one part of the look, save it and tell the group. */
+function setLook(k, v) {
+  const L = parseLook(S.profile.avatar);
+  L[k] = k === 'ride' || k === 'who' ? v : +v;
+  saveProfile({ avatar: lookString(L) });
+}
+function saveProfile(change) {
+  Object.assign(S.profile, change);
+  prefs.set('profile', S.profile);
+  S.group?.client.updateProfile(S.profile);
+  if (S.me && S.map?.me) S.map.setMe({ ...S.map.me, avatar: S.profile.avatar, color: S.profile.color });
+  renderSheet();
+}
+
 function profileForm() {
   return `<div class="card"><h3>Your profile</h3>${profileFields()}</div>`;
 }
@@ -1213,7 +1264,7 @@ function sheetGroup() {
   S.groupSig = groupSig();
   const rows = people.map((m) => {
     const me = m.id === S.profile.id, [status, cls] = memberStatus(m);
-    return `<div class="member"><div class="dot" style="background:${m.color}22">${avatarSvg(m.avatar, m.color)}</div>
+    return `<div class="member"><div class="dot" style="background:${m.color}22">${riderPic(m.avatar, m.color)}</div>
       <div class="grow" style="flex:1;min-width:0"><div class="nm">${esc(m.name)}${me ? ' <span class="tag">you</span>' : ''}${st.owner === m.id ? ' <span class="tag">creator</span>' : ''}</div><div class="st ${cls}" data-st="${m.id}">${status}</div></div>
       ${me ? '' : `<button class="btn sm go" data-act="nav-friend" data-id="${m.id}">Directions</button>`}</div>`;
   }).join('');
@@ -1480,7 +1531,7 @@ function sheetPlace(ev) {
   if (ev.type === 'friend') {
     const f = friends().find((m) => m.id === ev.id);
     if (!f) return ['Friend', '<p class="sub">No longer in the group.</p>', true];
-    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${avatarSvg(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
+    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${riderPic(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
   }
   if (ev.type === 'meet') {
     const m = S.map.meet;
@@ -1668,6 +1719,7 @@ function onInput(e) {
     else stopCrumbs();
     showTracks(); renderSheet(); renderChrome();
   }
+  else if (t.dataset.look && e.type === 'change') setLook(t.dataset.look, t.checked ? 1 : 0);
   else if (t.id === 'f-tracknote' && e.type === 'change') prefs.set('trackNoteOff', t.checked);
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
@@ -1741,8 +1793,9 @@ async function onClick(e) {
       renderChrome();
       break;
     case 'edit-profile': S.editProfile = true; renderSheet(); break;
-    case 'avatar': S.profile.avatar = d.v; prefs.set('profile', S.profile); S.group?.client.updateProfile(S.profile); renderSheet(); break;
-    case 'color': S.profile.color = d.v; prefs.set('profile', S.profile); S.group?.client.updateProfile(S.profile); renderSheet(); break;
+    case 'avatar': saveProfile({ avatar: d.v }); break;                 // a character: starts from its own look
+    case 'color': saveProfile({ color: d.v }); break;
+    case 'look': setLook(d.k, d.v); break;
     case 'create-group':
       b.disabled = true;
       try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { toast(err.message); b.disabled = false; }

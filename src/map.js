@@ -786,6 +786,37 @@ export class SkiMap {
       obj.rotation.y = u.yawNow;
     }
     if (u.avatar && !u.avatar.userData.ride) M.animateAvatar(u.avatar, this.t, dt, u.moving);
+    if (u.wave) this.waveStep(obj);
+  }
+
+  /** Make a person wave at the viewer (tapping them); tapping again starts the wave over. */
+  wave(id) {
+    const obj = id === 'me' ? this.meObj : this.friends.get(id)?.obj;
+    if (!obj?.visible) return;
+    if (obj.userData.wave) this.waveStep(obj, true);
+    obj.userData.wave = { t0: this.t };
+  }
+
+  waveStep(obj, stop = false) {
+    const u = obj.userData, w = u.wave, outer = u.avatar;
+    if (!outer) { u.wave = null; return; }
+    const ride = outer.userData.ride;
+    const av = ride ? outer.userData.av : outer;   // the rider in the chair, cabin or on the tow
+    if (!av) { u.wave = null; return; }
+    const k = (this.t - w.t0) / 2.8;
+    if (stop || k >= 1) {
+      M.endWave(av);
+      if (av.userData.hidden) av.visible = false;
+      u.wave = null;
+      return;
+    }
+    // turn to face whoever is looking at the map: the camera, seen from above, relative to the person
+    const cp = this.camera.position, op = obj.position;
+    const world = Math.atan2(cp.x - op.x, cp.z - op.z);
+    const face = world - obj.rotation.y - (ride ? outer.rotation.y : 0);
+    if (av.userData.hidden) av.visible = true;      // inside a cabin: lean out of the window
+    const lean = av.userData.hidden ? 0.55 : outer.userData.seated ? 0.3 : 0;
+    M.waveAvatar(av, k, face, lean);
   }
 
   // ---------- public state setters
@@ -1259,7 +1290,7 @@ export class SkiMap {
       ctx.fillStyle = col; roundRect(ctx, p.x - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tag, p.x, ly + 0.5);
       boxes.push([p.x - tw / 2, ly - 9, tw, 18]);
-      if (!d.me) this.hits.push({ x: p.x, y: is3 ? (p.y + ly) / 2 : p.y, r: 30, ev: { type: 'friend', id: d.id } });
+      this.hits.push({ x: p.x, y: is3 ? (p.y + ly) / 2 : p.y, r: 30, ev: d.me ? { type: 'me' } : { type: 'friend', id: d.id } });
     }
     const marker = (pt, obj, color, name, ev) => {
       const p = this.project(obj.position);
