@@ -60,8 +60,8 @@ session needs that the README does not: the rules, the state of the work, and wh
 
 - **Name:** the app is called **SkiWithMe**, written as one word (owner's instruction, 2026-11-17). Renamed from WeSki,
   which clashes with weski.com and the "We Ski" app at weski.app. The owner checked app stores, domains, handles and
-  trademark registers and found the name clear. The trademark draft below says SKI WITH ME; ask the owner whether to
-  file it as one word or three before drafting the final form.
+  trademark registers and found the name clear. The trademark is to be filed as SKIWITHME, one word (owner's decision,
+  2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
 - **Price:** free map everywhere; $24.99 a year, $5.99 a week, $39.99 group plan.
 - **Logo:** chosen by the owner on 2026-11-17: three peaks with three people (teal, white, orange dots) and an S-shaped
@@ -167,7 +167,7 @@ a fix in OpenStreetMap.
   research: an old US registration SKI WITH ME was cancelled in 1998; a ski-instruction business appears to use
   "SkiWithMe" informally. Neither was judged a blocker, but say so if asked. This is not legal advice.
 - The filing plan given to the owner (they file in the USPTO Trademark Center; Claude only drafts):
-  - Mark: SKI WITH ME, standard characters. The logo is a separate, later application once final.
+  - Mark: SKIWITHME (one word), standard characters. The logo is a separate, later application once final.
   - Owner: the person, or their company if one is formed first.
   - Class 42 (the one to pay for if only one): "Providing online non-downloadable software for viewing ski resort
     maps, sharing location among members of a group, and obtaining navigation directions at ski resorts."
@@ -234,7 +234,7 @@ keys go in through the credential form, never chat.
 4. Next US resorts: Palisades Tahoe, Killington, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
    Deer Valley, Snowbird and Alta, Northstar, Telluride.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
-6. Trademark: the owner intends to file "Ski With Me" themselves at the USPTO; Claude drafts, the owner files.
+6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.
 7. Open questions from the owner's phone: frame rate dropped from 120 to 30 fps at times; motion is now capped
    at 60 fps by default ("120 fps motion" in More). Awaiting their retest. "Terrain detail by distance" is
    unbuilt and only worth doing if the retest still shows drops.
