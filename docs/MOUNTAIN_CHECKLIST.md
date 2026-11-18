@@ -128,14 +128,14 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Catamount | yes (2026-11-18) | yes (2024-25 and 2025-26 trail maps from skimap.org, read by hand) | no (no free photo found) | Birch Glades East and West missing from OpenStreetMap |
 | Ragged Mountain | yes (2026-11-18) | yes (2023 trail map from skimap.org, read by hand) | yes (distant view) | Triple Take and Double Take missing from OpenStreetMap |
 | Pats Peak | yes (2026-11-18) | yes (2026 trail map's printed trail list) | no (no free photo found) | |
-| Mohawk Mountain | yes (2026-11-18) | yes (2025 trail map) | yes | OpenStreetMap lacks Back Bowl, Indian Crossing and Ridge Run |
-| Powder Ridge | yes (2026-11-18) | yes (2026 trail map's numbered list; parks left out) | yes | OpenStreetMap lacks Gun Powder Run and Powder Keg |
-| Ski Sundown | yes (2026-11-18) | yes (2024-25 trail map) | no (no free photo found) | OpenStreetMap lacks Loop |
-| Mount Southington | yes (2026-11-18) | yes (2025 trail map) | yes (night) | OpenStreetMap maps only 9 of 14 runs (no Avalanche, Liftline, Northstar, The Glacier, Thunderbolt, Whoopee); several runs end mid-slope; links join Turkey Turn and the Thunderbolt top |
-| Bretton Woods | yes (2026-11-18) | yes (2025-26 trail map; glades from its printed glade lists) | yes | six named glades not in OpenStreetMap (Black Fly, Mom Said No, Old Man, Peppersass, Stinger, Think Pink) |
-| Hunter Mountain | yes (2026-11-18) | yes (trail map, 400 dpi render) | no (only a snowless spring photo) | Upper Highlands starts at the HP Poma top, which OpenStreetMap lacks, so directions cannot start it from the top; about a dozen small base and park runs missing from OpenStreetMap |
-| Windham Mountain | yes (2026-11-18) | yes (trail map; "advanced" blue recorded as blue-black) | yes | |
-| Wachusett | yes (2026-11-18) | yes (trail map) | yes | OpenStreetMap lacks Lower Conifer and Polar Kids |
+| Mohawk Mountain | yes (2026-11-18) | yes (2025 trail map) | yes | Back Bowl, Indian Crossing and Ridge Run are not in OpenStreetMap: traced by hand (`extra_trails`) |
+| Powder Ridge | yes (2026-11-18) | yes (2026 trail map's numbered list; parks left out) | yes | Gun Powder Run and Powder Keg are not in OpenStreetMap: traced by hand |
+| Ski Sundown | yes (2026-11-18) | yes (2024-25 trail map) | no (no free photo found) | Loop is not in OpenStreetMap: traced by hand |
+| Mount Southington | yes (2026-11-18) | yes (2025 trail map) | yes (night) | OpenStreetMap maps only 9 of 14 runs; Avalanche, Liftline, Northstar, The Glacier, Thunderbolt and Whoopee traced by hand; links join Turkey Turn and the Thunderbolt top |
+| Bretton Woods | yes (2026-11-18) | yes (2025-26 trail map; glades from its printed glade lists) | yes | Black Fly, Mom Said No, Old Man, Peppersass, Stinger and Think Pink are not in OpenStreetMap: traced by hand from the map's glade codes (RN to RT, ZF, WI) |
+| Hunter Mountain | yes (2026-11-18) | yes (trail map, 400 dpi render) | no (only a snowless spring photo) | HP Poma lift added by hand (`extra_lifts`); twelve runs not in OpenStreetMap traced by hand (Macombs, Park Avenue, Park Avenue West, Bucky's Run, Gramercy Park, Madison Square, KMC Drive, Milky Way, The Milky Glades, Belt Parkway Bypass, Mad Box, Woodstock Glades); KMC Drive starts at the Kaatskill Mountain Club, which no run reaches |
+| Windham Mountain | yes (2026-11-18) | yes (trail map; "advanced" blue recorded as blue-black) | yes | What, Wooly Bear and a line through Whataride Glades traced by hand |
+| Wachusett | yes (2026-11-18) | yes (trail map) | yes | Polar Kids traced by hand; Lower Conifer renamed from OpenStreetMap's Lower Conifer Connection |
 | Tremblant | coming soon | no | yes | |
 | Jackson Hole | coming soon | no | yes | |
 | Whistler Blackcomb | coming soon | no | yes | |

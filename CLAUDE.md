@@ -265,6 +265,12 @@ were written by Claude, not checked by native speakers.
 
 ## Map data: things learned the hard way
 
+- Runs and lifts missing from OpenStreetMap (2026-11-18): a resort config can list `extra_trails`
+  (`{"name", "pts": [[lon, lat], ...]}` top to bottom; rating from the official list; marked `traced` in resort.json)
+  and `extra_lifts`. Trace them from the trail map plus a roughness picture of the 1 m terrain, where graded runs show as
+  smooth strips between tree islands (the script lived in the scratch folder: hillshade, local roughness, the built
+  trails drawn on top, a lon/lat grid every 0.001 degree). Used at the eight resorts added last on 2026-11-18. Aerial
+  photo services are not on the network allowlist.
 - `build_data.py` (2026-11-18): `area_bbox` [west, south, east, north] is used when the resort boundary in OSM is a
   multi-part relation the script cannot read (Sugarloaf, Sunday River). `links` now also takes two runs,
   `["trail:A", "trail:B"]`, for a run whose top stops short of the run it leaves from.
@@ -289,8 +295,7 @@ were written by Claude, not checked by native speakers.
   joining the network.
 - `build_zones.py` trims run ends that overshoot their last junction by up to 45 m. If the owner still reports
   overshoots, get the run name and look at that junction before changing the limit.
-- Known open items: Saddleback "Morning Glory" is not reachable from the base in the routing graph; Hunter's Upper Highlands starts at
-  the HP Poma top, which OpenStreetMap lacks; Les Arcs has a
+- Known open items: Saddleback "Morning Glory" is not reachable from the base in the routing graph; Les Arcs has a
   loose "Droset" piece; Zermatt's planned Breitboden to Rosenritz chair was removed and should return if it opens;
   a few dead-end runs remain at several resorts (see each build's connectivity report).
 - US resort feeds: only the four Alterra resorts answer on `mtnpowder.com`. Future Alterra resorts on the list
@@ -324,7 +329,8 @@ keys go in through the credential form, never chat.
 4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
    Berkshire East, Catamount, Ragged, Pats Peak), then Mohawk, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods,
-   Hunter, Windham and Wachusett. Small Connecticut hills have thin OpenStreetMap data (Southington maps 9 of 14 runs);
+   Hunter, Windham and Wachusett. Small Connecticut hills have thin OpenStreetMap data (Southington mapped 9 of 14 runs;
+   the rest were traced by hand, see `extra_trails`);
    the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Next: Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
    Deer Valley, Snowbird and Alta, Northstar, Telluride.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.

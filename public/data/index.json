@@ -58,10 +58,10 @@
   "baseLon": -71.46169,
   "top": 912,
   "base": 485,
-  "trails": 99,
+  "trails": 105,
   "lifts": 9,
   "zones": false,
-  "bytes": 424920
+  "bytes": 436019
  },
  {
   "id": "brundage",
@@ -186,10 +186,10 @@
   "baseLon": -74.20621,
   "top": 968,
   "base": 501,
-  "trails": 55,
-  "lifts": 10,
+  "trails": 67,
+  "lifts": 11,
   "zones": true,
-  "bytes": 436023
+  "bytes": 466941
  },
  {
   "id": "jay-peak",
@@ -762,10 +762,10 @@
   "baseLon": -74.25813,
   "top": 930,
   "base": 520,
-  "trails": 53,
+  "trails": 56,
   "lifts": 10,
   "zones": true,
-  "bytes": 349383
+  "bytes": 356377
  },
  {
   "id": "winter-park",
