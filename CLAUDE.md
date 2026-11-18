@@ -110,7 +110,7 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-18 (all 34 checked):
+Status on 2026-11-18 (all 42 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
@@ -120,6 +120,7 @@ Status on 2026-11-18 (all 34 checked):
 | Breckenridge, Park City, Keystone, Smugglers' Notch, Heavenly, Stowe | official trail maps the owner downloaded and uploaded to the chat (Epic and Smuggs sites refuse automated clients); symbols read by hand from enlarged tiles |
 | Stratton | resort feed, `official_ratings.py fetch mtnpowder 1 stratton` |
 | Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Loon, Whiteface | official trail maps (resort sites by curl, or skimap.org), read by hand from tiles (added 2026-11-18) |
+| Waterville Valley, Bolton Valley, Burke, Magic Mountain, Berkshire East, Catamount, Ragged, Pats Peak (Indy Pass, added 2026-11-18) | trail maps from skimap.org (`skimap.org/skiareas/view/<id>` lists them; `skimap.org/skimaps/view/<map id>` returns the file itself; the resort sites refuse the proxy), read by hand; Pats Peak from the printed list on its map |
 | Jay Peak | trail map PDF by curl; run names are real text, so the symbol left of each name was classified by script (`pdftotext -bbox`) |
 | Vail | 2026-27 maps from `scene7.vailresorts.com` (wid=4000; 8000 is refused), read by hand |
 | Copper, Brundage | resort trail maps (see sources in each official json), read by hand |
@@ -266,6 +267,10 @@ were written by Claude, not checked by native speakers.
 - `build_data.py` (2026-11-18): `area_bbox` [west, south, east, north] is used when the resort boundary in OSM is a
   multi-part relation the script cannot read (Sugarloaf, Sunday River). `links` now also takes two runs,
   `["trail:A", "trail:B"]`, for a run whose top stops short of the run it leaves from.
+- Terrain at tile and state edges (2026-11-18): USGS tiles of one survey can be mostly empty, and a resort can need
+  tiles from two surveys or two UTM zones (Catamount: Massachusetts and New York; Pats Peak: NH Coastal 2019 and
+  NH Connecticut River North 2015). Merge them first with rasterio (merge, then `fillnodata` for seams) into one file
+  and pass that to `build_data.py`; it reports "DEM has holes" otherwise.
 - Wikimedia's upload host rate-limits after a few failed requests (HTTP 429). A `web-fetch` agent can still fetch the
   960px thumbnails; strip the `?utm_...` query that the API now adds to file URLs.
 
@@ -308,14 +313,15 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
-1. Rating check: all 34 done, including Val Thorens's Orelle side.
+1. Rating check: all 42 done, including Val Thorens's Orelle side and the eight Indy Pass mountains added on 2026-11-18.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
    (Open-Meteo's free tier is non-commercial), "report a map mistake" button, add-to-home-screen guide,
    one-page website.
-4. Next US resorts (the eight northeast ones, Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Stratton, Loon and
-   Whiteface, were built on 2026-11-18): Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
+4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
+   Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
+   Berkshire East, Catamount, Ragged, Pats Peak). Next: Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
    Deer Valley, Snowbird and Alta, Northstar, Telluride.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.

@@ -120,7 +120,14 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Stratton | yes (2026-11-18) | yes (resort feed, mtnpowder id 1) | yes | |
 | Loon Mountain | yes (2026-11-18) | yes (trail map, read by hand) | no (no usable free photo found yet) | "Wildwood" glade and "Brookway Extension" not joined |
 | Whiteface | yes (2026-11-18) | yes (trail map, read by hand) | yes | parts of "The Slides" (hike-to expert terrain) are not joined to a lift |
-| Burke Mountain | coming soon | no | yes | |
+| Waterville Valley | yes (2026-11-18) | yes (2025-26 trail map from skimap.org, read by hand) | yes | Old Tecumseh joined to Terry's Trail by hand |
+| Bolton Valley | yes (2026-11-18) | yes (2024-25 trail map from skimap.org, read by hand) | yes | Showtime, Spellbinder and Twice as Nice Woods joined to Intro (Timberline midstation) by hand |
+| Burke Mountain | yes (2026-11-18) | yes (2025 trail map from skimap.org, read by hand) | yes | |
+| Magic Mountain | yes (2026-11-18) | yes (2026 trail map from skimap.org, read by hand) | yes | Pitch Black and Black Magic joined to Upper Wizard at the summit by hand |
+| Berkshire East | yes (2026-11-18) | yes (2024 and 2026 trail maps from skimap.org, read by hand) | no (no free winter photo found) | Gronk Glades and Horace's Grove missing from OpenStreetMap |
+| Catamount | yes (2026-11-18) | yes (2024-25 and 2025-26 trail maps from skimap.org, read by hand) | no (no free photo found) | Birch Glades East and West missing from OpenStreetMap |
+| Ragged Mountain | yes (2026-11-18) | yes (2023 trail map from skimap.org, read by hand) | yes (distant view) | Triple Take and Double Take missing from OpenStreetMap |
+| Pats Peak | yes (2026-11-18) | yes (2026 trail map's printed trail list) | no (no free photo found) | |
 | Tremblant | coming soon | no | yes | |
 | Jackson Hole | coming soon | no | yes | |
 | Whistler Blackcomb | coming soon | no | yes | |

@@ -352,6 +352,22 @@
   "bytes": 2360319
  },
  {
+  "id": "pats-peak",
+  "name": "Pats Peak",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 43.15187,
+  "lon": -71.79723,
+  "baseLat": 43.16323,
+  "baseLon": -71.79601,
+  "top": 412,
+  "base": 177,
+  "trails": 31,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 233652
+ },
+ {
   "id": "pizol",
   "name": "Pizol",
   "region": "St. Gallen, Switzerland",

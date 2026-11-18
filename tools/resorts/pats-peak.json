@@ -5,7 +5,7 @@
  "tz": "America/New_York",
  "area_name": "Pats Peak",
  "area_buffer": 400,
- "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NH Connecticut River North 2015 (public domain)",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NH Coastal 2019 and NH Connecticut River North 2015 (public domain)",
  "osm_bbox": [
   -71.83,
   43.13,

@@ -7,7 +7,7 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['berkshire-east', 'bolton-valley', 'breckenridge', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'geto-kogen', 'heavenly', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mount-snow', 'okemo', 'park-city', 'pizol', 'ragged', 'saalbach', 'saddleback', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'waterville-valley', 'whiteface', 'winter-park', 'zermatt']);
+    expect(index.map((r) => r.id).sort()).toEqual(['berkshire-east', 'bolton-valley', 'breckenridge', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'geto-kogen', 'heavenly', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mount-snow', 'okemo', 'park-city', 'pats-peak', 'pizol', 'ragged', 'saalbach', 'saddleback', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'waterville-valley', 'whiteface', 'winter-park', 'zermatt']);
   });
   for (const entry of index) {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
