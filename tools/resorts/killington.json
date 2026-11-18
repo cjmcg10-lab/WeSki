@@ -1,0 +1,28 @@
+{
+ "id": "killington",
+ "name": "Killington",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Killington Resort",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+ "osm_bbox": [
+  -72.83,
+  43.585,
+  -72.745,
+  43.637
+ ],
+ "skip_pois": [
+  "Killington Peak",
+  "Killington Resort"
+ ],
+ "rename": {
+  "Highline Race Trail": "Highline"
+ },
+ "links": [
+  [
+   "Bear Mountain Quad (top)",
+   "trail:Centerpiece"
+  ]
+ ]
+}

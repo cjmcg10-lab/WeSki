@@ -24,3 +24,11 @@ val-thorens valthorens
 winter-park winterpark
 zermatt zermatt2
 jay-peak jay
+killington killington
+sunday-river sundayriver
+sugarloaf sugarloaf
+okemo okemo
+mount-snow mountsnow
+stratton stratton
+loon loon
+whiteface whiteface

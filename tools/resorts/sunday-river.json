@@ -1,0 +1,24 @@
+{
+ "id": "sunday-river",
+ "name": "Sunday River",
+ "region": "Maine, USA",
+ "tz": "America/New_York",
+ "area_name": "Sunday River",
+ "area_buffer": 200,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, ME_WesternMtns_B24 (public domain)",
+ "osm_bbox": [
+  -70.915,
+  44.45,
+  -70.84,
+  44.495
+ ],
+ "skip_pois": [
+  "Sunday River"
+ ],
+ "area_bbox": [
+  -70.912,
+  44.455,
+  -70.844,
+  44.494
+ ]
+}

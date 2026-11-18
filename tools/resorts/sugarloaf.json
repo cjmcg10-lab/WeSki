@@ -1,0 +1,59 @@
+{
+ "id": "sugarloaf",
+ "name": "Sugarloaf",
+ "region": "Maine, USA",
+ "tz": "America/New_York",
+ "area_name": "Sugarloaf",
+ "area_buffer": 150,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, ME_WesternMtns_B24 (public domain)",
+ "osm_bbox": [
+  -70.345,
+  45.025,
+  -70.275,
+  45.072
+ ],
+ "skip_pois": [
+  "Sugarloaf",
+  "Sugarloaf Mountain"
+ ],
+ "area_bbox": [
+  -70.3365,
+  45.029,
+  -70.2955,
+  45.0695
+ ],
+ "links": [
+  [
+   "Timberline (top)",
+   "trail:High Rigger (Back Side)"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Ignitor"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Jagger"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Pure Heat"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Hard Track"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Adrenaline Rush"
+  ],
+  [
+   "Timberline (top)",
+   "trail:Awesome"
+  ],
+  [
+   "King Pine (top)",
+   "trail:Choker"
+  ]
+ ]
+}

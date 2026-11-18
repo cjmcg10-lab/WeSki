@@ -1,0 +1,39 @@
+{
+ "id": "whiteface",
+ "name": "Whiteface",
+ "region": "New York, USA",
+ "tz": "America/New_York",
+ "area_name": "Whiteface Mountain Ski Center",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, 2014 New York Clinton Essex Lake Champlain QL2 (public domain)",
+ "osm_bbox": [
+  -73.92,
+  44.345,
+  -73.852,
+  44.378
+ ],
+ "skip_pois": [
+  "Whiteface Mountain",
+  "Whiteface Mountain Ski Center"
+ ],
+ "rename": {
+  "Bobcat Shoot": "Bobcat Chute",
+  "Crossover Loop": "Crossover",
+  "L. Excelsior": "Lower Excelsior",
+  "L. Valley": "Lower Valley",
+  "U. Valley": "Upper Valley",
+  "Slide 1": "The Slides",
+  "Slide 2": "The Slides",
+  "Slide 3": "The Slides",
+  "Slide 4": "The Slides",
+  "Slide 5": "The Slides",
+  "Slide 6": "The Slides",
+  "Slide 7": "The Slides"
+ },
+ "links": [
+  [
+   "Summit Quad (top)",
+   "trail:The Slides"
+  ]
+ ]
+}

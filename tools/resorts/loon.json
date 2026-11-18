@@ -1,0 +1,19 @@
+{
+ "id": "loon",
+ "name": "Loon Mountain",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "area_name": "Loon Mountain Resort",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NH_Umbagog_LiDAR_2016_D16 (public domain)",
+ "osm_bbox": [
+  -71.668,
+  44.03,
+  -71.612,
+  44.062
+ ],
+ "skip_pois": [
+  "Loon Mountain",
+  "Loon Mountain Resort"
+ ]
+}

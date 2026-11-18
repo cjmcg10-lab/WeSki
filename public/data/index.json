@@ -128,6 +128,22 @@
   "bytes": 1046380
  },
  {
+  "id": "killington",
+  "name": "Killington",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 43.60496,
+  "lon": -72.81924,
+  "baseLat": 43.61455,
+  "baseLon": -72.7568,
+  "top": 1278,
+  "base": 356,
+  "trails": 152,
+  "lifts": 22,
+  "zones": false,
+  "bytes": 1088147
+ },
+ {
   "id": "la-plagne",
   "name": "La Plagne",
   "region": "Savoie, France",
@@ -176,6 +192,22 @@
   "bytes": 1182819
  },
  {
+  "id": "loon",
+  "name": "Loon Mountain",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 44.03505,
+  "lon": -71.61992,
+  "baseLat": 44.04821,
+  "baseLon": -71.65407,
+  "top": 928,
+  "base": 263,
+  "trails": 76,
+  "lifts": 12,
+  "zones": false,
+  "bytes": 536971
+ },
+ {
   "id": "mammoth",
   "name": "Mammoth Mountain",
   "region": "California, USA",
@@ -190,6 +222,38 @@
   "lifts": 28,
   "zones": false,
   "bytes": 1044723
+ },
+ {
+  "id": "mount-snow",
+  "name": "Mount Snow",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 42.95925,
+  "lon": -72.92276,
+  "baseLat": 42.96514,
+  "baseLon": -72.89273,
+  "top": 1093,
+  "base": 590,
+  "trails": 87,
+  "lifts": 19,
+  "zones": false,
+  "bytes": 553358
+ },
+ {
+  "id": "okemo",
+  "name": "Okemo",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 43.40374,
+  "lon": -72.7512,
+  "baseLat": 43.42241,
+  "baseLon": -72.71808,
+  "top": 1013,
+  "base": 353,
+  "trails": 120,
+  "lifts": 21,
+  "zones": true,
+  "bytes": 827770
  },
  {
   "id": "park-city",
@@ -320,6 +384,22 @@
   "bytes": 756368
  },
  {
+  "id": "stratton",
+  "name": "Stratton",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 43.09575,
+  "lon": -72.92103,
+  "baseLat": 43.09713,
+  "baseLon": -72.89119,
+  "top": 1183,
+  "base": 607,
+  "trails": 115,
+  "lifts": 17,
+  "zones": false,
+  "bytes": 885258
+ },
+ {
   "id": "sugarbush",
   "name": "Sugarbush",
   "region": "Vermont, USA",
@@ -334,6 +414,38 @@
   "lifts": 18,
   "zones": false,
   "bytes": 744786
+ },
+ {
+  "id": "sugarloaf",
+  "name": "Sugarloaf",
+  "region": "Maine, USA",
+  "tz": "America/New_York",
+  "lat": 45.03188,
+  "lon": -70.31289,
+  "baseLat": 45.06685,
+  "baseLon": -70.31252,
+  "top": 1286,
+  "base": 425,
+  "trails": 148,
+  "lifts": 15,
+  "zones": false,
+  "bytes": 896392
+ },
+ {
+  "id": "sunday-river",
+  "name": "Sunday River",
+  "region": "Maine, USA",
+  "tz": "America/New_York",
+  "lat": 44.46039,
+  "lon": -70.90563,
+  "baseLat": 44.46919,
+  "baseLon": -70.84695,
+  "top": 956,
+  "base": 248,
+  "trails": 132,
+  "lifts": 20,
+  "zones": false,
+  "bytes": 883973
  },
  {
   "id": "tignes-val-disere",
@@ -382,6 +494,22 @@
   "lifts": 32,
   "zones": true,
   "bytes": 1581380
+ },
+ {
+  "id": "whiteface",
+  "name": "Whiteface",
+  "region": "New York, USA",
+  "tz": "America/New_York",
+  "lat": 44.36632,
+  "lon": -73.90428,
+  "baseLat": 44.35322,
+  "baseLon": -73.86125,
+  "top": 1437,
+  "base": 372,
+  "trails": 91,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 484142
  },
  {
   "id": "winter-park",

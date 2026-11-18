@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (59 tests; the resort tests load every built map).
+- Run `npm test` before every push (82 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -110,7 +110,7 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-17 (11 of 26 checked):
+Status on 2026-11-18 (19 of 34 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
@@ -118,8 +118,16 @@ Status on 2026-11-17 (11 of 26 checked):
 | Saddleback | trail map PDF, which has a typed "Trails & Designations" list (`pdftotext` reads it) |
 | Cannon | trail map image, labels read by hand from enlarged crops (green, blue or black lettering) |
 | Breckenridge, Park City, Keystone, Smugglers' Notch, Heavenly | official trail maps the owner downloaded and uploaded to the chat (Epic and Smuggs sites refuse automated clients); symbols read by hand from enlarged tiles |
+| Stratton | resort feed, `official_ratings.py fetch mtnpowder 1 stratton` |
+| Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Loon, Whiteface | official trail maps (resort sites by curl, or skimap.org), read by hand from tiles (added 2026-11-18) |
 
 Not yet checked (15), with what was learned about each source:
+
+- mtnpowder.com feed ids with trail lists: Stratton 1, Snowshoe 2, Blue 3, Tremblant 4, Winter Park 5, Steamboat 6, Deer Valley 49,
+  Aspen 51-54, Eldora 56, Bear 57, Snow Summit 58, June 59, Mammoth 60, Palisades 61/62, Alta 63, Snowbird 64, Solitude 65,
+  Brighton 66, Jackson Hole 67, Big Sky 68, Sugarbush 70, Lake Louise 74, Norquay 75, Sunshine 76, Revelstoke 77, Taos 78,
+  Snoqualmie 79, Crystal 80. Weather only, no trail list (fetch fails with KeyError 'MountainAreas'): Killington 69, Loon 71,
+  Sugarloaf 72, Sunday River 73, Copper 55.
 
 - Copper: the trail report page is filled in by script. The official maps download fine through a web-fetch agent:
   `cms.coppercolorado.com/sites/default/files/2026-11/FY27_Maps_Web_MainTrailMap.pdf`, `.../2024-10/FY25_Copper_Bowl.pdf`,
@@ -230,6 +238,12 @@ were written by Claude, not checked by native speakers.
 
 ## Map data: things learned the hard way
 
+- `build_data.py` (2026-11-18): `area_bbox` [west, south, east, north] is used when the resort boundary in OSM is a
+  multi-part relation the script cannot read (Sugarloaf, Sunday River). `links` now also takes two runs,
+  `["trail:A", "trail:B"]`, for a run whose top stops short of the run it leaves from.
+- Wikimedia's upload host rate-limits after a few failed requests (HTTP 429). A `web-fetch` agent can still fetch the
+  960px thumbnails; strip the `?utm_...` query that the API now adds to file URLs.
+
 - Trail fields in `resort.json`: `d` 0 green, 1 blue, 2 black, 3 double black; `u` rating is a guess; `ok` confirmed
   against the resort's list; `bb` blue-black; `c` the European or Japanese colour class; `z` zone; `lit` night skiing.
   `src/routing.js` `level()` turns these into the difficulty directions use.
@@ -275,7 +289,8 @@ keys go in through the credential form, never chat.
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
    (Open-Meteo's free tier is non-commercial), "report a map mistake" button, add-to-home-screen guide,
    one-page website.
-4. Next US resorts: Palisades Tahoe, Killington, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
+4. Next US resorts (the eight northeast ones, Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Stratton, Loon and
+   Whiteface, were built on 2026-11-18): Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
    Deer Valley, Snowbird and Alta, Northstar, Telluride.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.

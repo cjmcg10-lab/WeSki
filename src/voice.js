@@ -5,7 +5,7 @@ const LEAD_S = 9;        // say a turn about this many seconds before reaching i
 const GPS_SLACK = 15;    // metres: GPS fixes arrive about a second late and a few metres off
 const PREP_S = 25;       // early "in 300 feet…" heads-up
 
-import { t, speechLang } from './i18n.js';
+import { t, speechLang, onLangChange } from './i18n.js';
 
 /** "ski Upper Northway", "bear left onto Taxi", "ride the Jet Triple"… (whole phrases, so each language can order them its own way) */
 export function phrase(s, fmtDist, withTurn = false) {
@@ -98,8 +98,27 @@ export class Speaker {
     if (urgent) speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
     u.lang = speechLang(); u.rate = 1.05;
+    const v = pickVoice(u.lang);
+    if (v) u.voice = v;
     speechSynthesis.speak(u);
   }
 
   stop() { if (this.ok) speechSynthesis.cancel(); }
 }
+
+/**
+ * A phone voice for the app's language: the exact one (de-DE) if installed, else any voice of that
+ * language (pt-BR for pt-PT), preferring the phone's default and better-quality voices. None found:
+ * leave it to the phone, which still reads the text with the language set on it.
+ */
+export function pickVoice(lang, list = typeof speechSynthesis !== 'undefined' ? speechSynthesis.getVoices() : []) {
+  if (!list || !list.length) return null;
+  const norm = (l) => String(l || '').replace('_', '-').toLowerCase();
+  const want = norm(lang), base = want.slice(0, 2);
+  const score = (v) => (v.default ? 2 : 0) + (/premium|enhanced|natural|neural/i.test(v.name) ? 1 : 0);
+  const best = (vs) => vs.sort((a, b) => score(b) - score(a))[0] || null;
+  return best(list.filter((v) => norm(v.lang) === want)) || best(list.filter((v) => norm(v.lang).slice(0, 2) === base));
+}
+
+// a new language: drop anything still waiting to be said in the old one
+onLangChange(() => { if (typeof speechSynthesis !== 'undefined') speechSynthesis.cancel(); });

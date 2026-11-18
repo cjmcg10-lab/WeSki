@@ -293,7 +293,7 @@ function renderResortList(q) {
   $('#resort-list').innerHTML = list.length
     ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbPic(r)}<span class="grow"><span class="nm"><b>${esc(r.name)}</b>${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}${r.id === last ? '<span class="lastv">Last visited</span>' : ''}</span><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
     : `<p class="start-empty">${S.favOnly && !S.favs.size ? 'No favorites yet. Open a mountain and tap its star to add it here.' : 'No mountain matches that search yet.'}</p>`;
-  if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
+  if (globe && !$('#start').classList.contains('focus') && !$('#start-panel').classList.contains('hidden')) requestAnimationFrame(() => layoutGlobe(true));
 }
 
 /** Home screen "History": every saved ski day on this phone, newest first, any mountain. */
@@ -309,7 +309,7 @@ async function renderDayList(q) {
   $('#resort-list').innerHTML = days.length
     ? days.map((s) => `<button class="mrow day" data-act="start-day" data-id="${s.id}" data-r="${resortOf(s)}">${thumbPic(placeById(resortOf(s)) || { id: resortOf(s), name: name(s), region: '' })}<span class="grow"><span class="nm"><b>${esc(name(s))}</b></span><small>${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}</small><small>${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}</small></span><i>›</i></button>`).join('')
     : `<p class="start-empty">${S.allDays.length ? 'No saved day matches that search.' : 'No saved ski days yet. Start tracking on a mountain and your days will be listed here.'}</p>`;
-  if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
+  if (globe && !$('#start').classList.contains('focus') && !$('#start-panel').classList.contains('hidden')) requestAnimationFrame(() => layoutGlobe(true));
 }
 
 /** Open a saved day from the home screen: fly into its mountain and show that day. */
@@ -516,6 +516,7 @@ async function exitToGlobe() {
     $('.start-top').classList.remove('hidden');
     $('#start').classList.remove('fade');
     $('#start-panel').classList.remove('hidden', 'mini');
+    layoutGlobe(true);                          // the list may have changed height while hidden (saved days load late)
   } catch (e) {
     // no globe available (e.g. first run offline): stay on the mountain
     console.warn(e);

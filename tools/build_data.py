@@ -14,6 +14,7 @@ usage: build_data.py <resort.json config> <osm.xml> <out_dir> <dem.tif> [<dem.ti
 """
 import json
 import math
+import os
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -153,6 +154,10 @@ def main():
     for wid, nd, t in ways:
         if t.get("landuse") == "winter_sports" and t.get("name") == cfg.get("area_name") and nd[0] == nd[-1]:
             area = Polygon([nodes[i] for i in nd]).buffer(cfg.get("area_buffer", 150))
+    if area is None and cfg.get("area_bbox"):
+        # the boundary is a multi-part relation in OSM (Sugarloaf, Sunday River): use a box drawn around it instead
+        w_, s_, e_, n_ = cfg["area_bbox"]
+        area = Polygon([tf.transform(x, y) for x, y in ((w_, s_), (e_, s_), (e_, n_), (w_, n_))]).buffer(cfg.get("area_buffer", 150))
     if cfg.get("area_name"):
         assert area is not None, f"no winter_sports area named {cfg['area_name']!r} in the OSM extract"
         inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
@@ -220,6 +225,7 @@ def main():
                          f"(needed E {b[0]:.0f}..{b[2]:.0f}, N {b[1]:.0f}..{b[3]:.0f})")
     zmin = math.floor(h.min())
     q = np.round((h - zmin) * 10).astype("<u2")
+    os.makedirs(out_dir, exist_ok=True)
     with open(f"{out_dir}/terrain.bin", "wb") as f:
         f.write(q.tobytes())
     hq = q.astype(np.float64) / 10 + zmin
@@ -568,6 +574,15 @@ def main():
     # short traverse from a lift top to a trail. Each is [lift end, lift end | "trail:Name"].
     ends = {P["name"]: P for P in pois if P["kind"] in ("lift", "lifttop")}
     for a_name, b_name in cfg.get("links", []):
+        if a_name.startswith("trail:") and b_name.startswith("trail:"):
+            # a run whose top stops short of the run it leaves from: ski from the nearest point of A onto B's top
+            cb = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
+            ca = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == a_name[6:]]
+            assert ca and cb, f"links: no trail named {a_name[6:]!r} or {b_name[6:]!r}"
+            wb, wa = min(((b, a) for b in cb for a in ca), key=lambda ba: ba[1]["line"].distance(Point(ba[0]["line"].coords[0][:2])))
+            top = wb["line"].coords[0][:2]
+            links.append((cut(wa, top), cut(wb, top), "x", False))
+            continue
         if a_name.startswith("trail:"):      # the end of a run that stops short of a lift base
             B = ends[b_name]
             cands = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == a_name[6:]]

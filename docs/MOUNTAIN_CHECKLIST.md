@@ -50,7 +50,27 @@ resort"). The owner does not need to run them; this list is also how to see what
 - [ ] Checked in a browser: the overview, 3D and 2D views, the legend colours (European resorts use
       their own colours), and a few close-ups at lift tops and busy junctions.
 
-### 6. Release
+### 6. Languages and voice (added 2026-11-18)
+- [ ] Switch the app to another language (More → Language, for example German or Japanese) and open the
+      mountain: menus, the card and the legend are translated, and run, lift and lodge names stay as the
+      resort spells them.
+- [ ] Place names made of common words (hut, top station, lake, peak, base lodge…) show their meaning
+      in brackets under the real name on the map, in search and in the place card. Proper names are left
+      alone.
+- [ ] Any new on-screen wording added for this mountain is in `src/i18n/en.js` with a new number and
+      translated in all nine other language files (`npm test` checks for gaps).
+- [ ] Spoken directions: with a non-English language chosen, ask for directions and check the voice
+      speaks that language (it follows the app language and picks a voice for it). Change the language
+      while directions are on and check the next instruction comes in the new language.
+
+### 7. Getting in and out (added 2026-11-18)
+- [ ] From the home globe, open the mountain, then go back: the globe and the "Find your mountain" list
+      return at their normal size.
+- [ ] Open a saved ski day from History at this mountain, then back out to the globe: the globe is
+      resized to fit the window like it normally is (this was broken and fixed on 2026-11-18).
+- [ ] Start a group here and join it from the start screen with the code: the app flies to this mountain.
+
+### 8. Release
 - [ ] `npm test` passes (it loads every built map).
 - [ ] The offline download size is reasonable.
 - [ ] Pushed, the deploy succeeded, and the live site serves the new mountain.
@@ -60,6 +80,9 @@ resort"). The owner does not need to run them; this list is also how to see what
 
 "Ratings" means the resort's own published ratings have been applied (`tools/official/<id>.json` exists).
 "Photo" means a real photo is in place of the drawn picture.
+Every mountain, including those built before 2026-11-18, should also be checked against sections 6
+and 7 (languages, spoken directions, and getting back out to the globe). These checks are about the app
+as a whole, so one pass at any mountain covers the app; the per-mountain part is the place names.
 
 | Mountain | Map built | Ratings checked | Photo | Known problems |
 | --- | --- | --- | --- | --- |
@@ -89,10 +112,15 @@ resort"). The owner does not need to run them; this list is also how to see what
 | Val Thorens | yes | no | yes | |
 | Winter Park | yes | yes | yes | 25 to 40 official runs missing or named differently |
 | Zermatt – Cervinia | yes | no | yes | planned Breitboden–Rosenritz chair left out until it opens |
-| Killington | coming soon | no | yes | |
+| Killington | yes (2026-11-18) | yes (trail map, read by hand) | yes | a few old runs OpenStreetMap still lists (Hawkeye, Horn, Old Vagabond) are not reachable |
+| Sunday River | yes (2026-11-18) | yes (trail map, read by hand) | yes | |
+| Sugarloaf | yes (2026-11-18) | yes (trail map, read by hand; Snowfields, Burnt Mountain and Brackett Basin glades take the area's experts-only rating) | yes | Snowfields reached by a short walk from the Timberline lift top (added by hand) |
+| Okemo | yes (2026-11-18) | yes (trail map, read by hand) | yes | "Hot Dog Hill" (beginner run at the base) not joined to a lift |
+| Mount Snow | yes (2026-11-18) | yes (trail map, read by hand) | yes | |
+| Stratton | yes (2026-11-18) | yes (resort feed, mtnpowder id 1) | yes | |
+| Loon Mountain | yes (2026-11-18) | yes (trail map, read by hand) | no (no usable free photo found yet) | "Wildwood" glade and "Brookway Extension" not joined |
+| Whiteface | yes (2026-11-18) | yes (trail map, read by hand) | yes | parts of "The Slides" (hike-to expert terrain) are not joined to a lift |
 | Burke Mountain | coming soon | no | yes | |
-| Whiteface | coming soon | no | yes | |
-| Sugarloaf | coming soon | no | yes | |
 | Tremblant | coming soon | no | yes | |
 | Jackson Hole | coming soon | no | yes | |
 | Whistler Blackcomb | coming soon | no | yes | |
