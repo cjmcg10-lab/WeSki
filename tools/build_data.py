@@ -64,6 +64,17 @@ def main():
         tags = {t.get("k"): t.get("v") for t in w.findall("tag")}
         if all(i in nodes for i in nd) and len(nd) >= 2:
             ways.append((w.get("id"), nd, tags))
+    # "split_ways" cuts one OpenStreetMap way in two where a run changes name part way down (a traverse that
+    # becomes a run, an upper and a lower part): {way id: [[lon, lat], "name of the first part", "name of the
+    # rest"]}, parts in the way's own order; an empty name keeps the way's name. The second part gets the id
+    # 20e9 + the way id.
+    for wid, (at, n1, n2) in cfg.get("split_ways", {}).items():
+        k = next(i for i, w in enumerate(ways) if w[0] == wid)
+        _, nd, tags = ways[k]
+        px, py = tf.transform(*at)
+        j = min(range(1, len(nd) - 1), key=lambda i: math.hypot(nodes[nd[i]][0] - px, nodes[nd[i]][1] - py))
+        ways[k] = (wid, nd[:j + 1], dict(tags, **({"name": n1, "piste:name": n1} if n1 else {})))
+        ways.append((str(20_000_000_000 + int(wid)), nd[j:], dict(tags, **({"name": n2, "piste:name": n2} if n2 else {}))))
 
     # Mountain railways and funiculars that work as ski lifts but are mapped as railways
     # (Zermatt's Gornergrat Bahn): the config gives each one as a line of [lon, lat] points.
@@ -140,12 +151,16 @@ def main():
     import official_ratings
     _off = official_ratings.load(cfg["id"])
     on_list = official_ratings.lookup(_off) if _off else (lambda n: None)
+    # names that some downhill way carries as its own name
+    named = {RENAME.get(t["name"], t["name"]) for _, _, t in ways if t.get("piste:type") == "downhill" and t.get("name")}
     for wid, _, t in ways:
         n = t.get("name:en") or t.get("name") or t.get("piste:name")
         if (t.get("piste:type") == "downhill" and t.get("piste:name") and t.get("name") and not t.get("name:en")
                 and (t.get("highway") or t.get("aerialway")) and not re.fullmatch(r"[\d\s,a-z/+-]{1,8}", t["piste:name"])
                 and difflib.SequenceMatcher(None, t["name"].lower(), t["piste:name"].lower()).ratio() < 0.75
-                and not on_list(RENAME.get(t["name"], t["name"]))):     # the resort's own list uses the road's name
+                and (not on_list(RENAME.get(t["name"], t["name"]))     # the resort's own list uses the road's name,
+                     or (on_list(RENAME.get(t["piste:name"], t["piste:name"]))   # unless it lists the run too and
+                         and RENAME.get(t["piste:name"], t["piste:name"]) not in named))):   # no other way carries it
             n = t["piste:name"]   # a road or lift line that is also a run: name holds the road, piste:name the run
         if n:
             t["name"] = RENAME.get(n, n)
@@ -156,6 +171,11 @@ def main():
         if n:
             t["name"] = RENAME.get(n, n)
 
+    # "as_runs" lists OpenStreetMap ways (a track or path) that the resort uses as a run but that carry no piste
+    # tags; they are drawn as runs under their own name (rating from the official list).
+    for wid, _, t in ways:
+        if str(wid) in cfg.get("as_runs", []):
+            t["piste:type"] = "downhill"
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
     # trains and funiculars only come from the resort config (extra_lifts), which gives them their track
     lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS and (w[2]["aerialway"] not in ("train", "funicular") or str(w[0]).startswith("x"))]

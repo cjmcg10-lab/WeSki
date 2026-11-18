@@ -330,10 +330,10 @@
   "baseLon": -118.98528,
   "top": 3361,
   "base": 2456,
-  "trails": 154,
+  "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1055608
+  "bytes": 1093218
  },
  {
   "id": "mohawk-mountain",
@@ -410,10 +410,10 @@
   "baseLon": -111.5472,
   "top": 3046,
   "base": 2050,
-  "trails": 340,
+  "trails": 352,
   "lifts": 41,
   "zones": true,
-  "bytes": 2366250
+  "bytes": 2395030
  },
  {
   "id": "pats-peak",
@@ -778,10 +778,10 @@
   "baseLon": -105.76308,
   "top": 3658,
   "base": 2771,
-  "trails": 172,
+  "trails": 186,
   "lifts": 25,
   "zones": true,
-  "bytes": 1104134
+  "bytes": 1120041
  },
  {
   "id": "zermatt",

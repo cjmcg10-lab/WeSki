@@ -18,5 +18,168 @@
   "Willett's Way": "Willets Way",
   "Baldy's": "Baldys Chute",
   "Jeff's": "Jeffs Chute"
- }
+ },
+ "way_names": {
+  "216511176": "Village Way - Bowl",
+  "1344657381": "Village Way - Switchyard",
+  "107391903": "Village Way - Switchyard to Mountain Road",
+  "1344657380": "Village Way - Mountain Road",
+  "107391923": "Village Way - Tunnel to Parkway",
+  "442937148": "Village Way - Parkway Bypass",
+  "377599487": "Wild Spur Trail Upper",
+  "377599489": "Wild Spur Trail Lower",
+  "778411770": "Corridor Mary Jane to Winter Park",
+  "1046955355": "Roundhouse Face"
+ },
+ "split_ways": {
+  "1162291126": [
+   [
+    -105.77,
+    39.8885
+   ],
+   "",
+   "Turnpike - Parkway Bypass"
+  ]
+ },
+ "extra_trails": [
+  {
+   "name": "Jelly Roll",
+   "pts": [
+    [
+     -105.8012,
+     39.8592
+    ],
+    [
+     -105.7998,
+     39.8588
+    ],
+    [
+     -105.7984,
+     39.8586
+    ],
+    [
+     -105.7972,
+     39.8588
+    ]
+   ]
+  },
+  {
+   "name": "Jelly Roll Glades",
+   "pts": [
+    [
+     -105.797,
+     39.859
+    ],
+    [
+     -105.7955,
+     39.8605
+    ],
+    [
+     -105.794,
+     39.862
+    ],
+    [
+     -105.7925,
+     39.8632
+    ],
+    [
+     -105.7912,
+     39.8638
+    ]
+   ]
+  },
+  {
+   "name": "Freeriders",
+   "pts": [
+    [
+     -105.7668,
+     39.861
+    ],
+    [
+     -105.766,
+     39.8625
+    ],
+    [
+     -105.7652,
+     39.864
+    ],
+    [
+     -105.7645,
+     39.8655
+    ]
+   ]
+  },
+  {
+   "name": "Iron Horse Trail",
+   "pts": [
+    [
+     -105.7708,
+     39.8636
+    ],
+    [
+     -105.77,
+     39.8648
+    ],
+    [
+     -105.7692,
+     39.866
+    ],
+    [
+     -105.7685,
+     39.8672
+    ]
+   ]
+  },
+  {
+   "name": "Pony Express Trail",
+   "pts": [
+    [
+     -105.7664,
+     39.8671
+    ],
+    [
+     -105.7655,
+     39.8682
+    ],
+    [
+     -105.7641,
+     39.8698
+    ],
+    [
+     -105.7629,
+     39.8715
+    ],
+    [
+     -105.7618,
+     39.8732
+    ]
+   ]
+  },
+  {
+   "name": "Sorensen Park",
+   "pts": [
+    [
+     -105.7667,
+     39.8903
+    ],
+    [
+     -105.7662,
+     39.8898
+    ],
+    [
+     -105.7656,
+     39.8892
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Traced 2026-11-18 from the 2026-27 trail map and aerial photos (NAIP); approximate (within about 100 m). The resort reports Village Way in six named sections, which are the six OpenStreetMap ways of Village Way in order from Parsenn Bowl to the village (section names assigned in that order; all green except the Bowl section).",
+ "links": [
+  [
+   "trail:Shadow Chute",
+   "trail:Jelly Roll",
+   "hike"
+  ]
+ ],
+ "links_note": "Jelly Roll is reached by hiking north along the Vasquez Cirque ridge."
 }

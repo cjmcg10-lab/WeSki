@@ -348,5 +348,13 @@
   "Yard Sale": 3,
   "Zeke's Road": 1
  },
- "note": "Park City marks expert terrain with one or two black diamonds; two diamonds are listed as 3. Runs whose name appears twice with different symbols take the harder one."
+ "note": "Park City marks expert terrain with one or two black diamonds; two diamonds are listed as 3. Runs whose name appears twice with different symbols take the harder one.",
+ "same_as": {
+  "Western": "Western Boundary"
+ },
+ "not_runs": {
+  "Halfpipe": "terrain park feature (orange on the map)",
+  "Little Kings": "terrain park (orange on the map, beside Flat Iron)"
+ },
+ "note_completeness": "'Western' was read from the label WESTERN BOUNDARY (Murdock Peak), which is printed over two lines; no separate run named Western appears on the map."
 }

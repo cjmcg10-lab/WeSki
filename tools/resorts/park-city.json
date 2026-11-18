@@ -50,7 +50,8 @@
   "Sam's Know": "Sam's Knob",
   "Home Run": "Homerun",
   "Powder Alley": "Power Alley",
-  "Homesite": "Homelite"
+  "Homesite": "Homelite",
+  "The Draw": "The Drain"
  },
  "links": [
   [
@@ -109,5 +110,258 @@
    "hike"
   ]
  ],
- "links_note": "Hike-to terrain as the official trail map shows it: Jupiter Peak along the ridge from McConkey's, Pinecone Ridge from the Jupiter lift, Murdock Peak from Super Condor. Directions show these approaches as a walk."
+ "links_note": "Hike-to terrain as the official trail map shows it: Jupiter Peak along the ridge from McConkey's, Pinecone Ridge from the Jupiter lift, Murdock Peak from Super Condor. Directions show these approaches as a walk.",
+ "way_names": {
+  "137761082": "King Con Access"
+ },
+ "extra_trails": [
+  {
+   "name": "Tube",
+   "pts": [
+    [
+     -111.5794,
+     40.6831
+    ],
+    [
+     -111.5796,
+     40.684
+    ],
+    [
+     -111.5797,
+     40.685
+    ],
+    [
+     -111.5795,
+     40.6858
+    ]
+   ]
+  },
+  {
+   "name": "The Chutes",
+   "pts": [
+    [
+     -111.5393,
+     40.613
+    ],
+    [
+     -111.5385,
+     40.6142
+    ],
+    [
+     -111.5378,
+     40.6155
+    ],
+    [
+     -111.5372,
+     40.6168
+    ],
+    [
+     -111.5368,
+     40.6178
+    ]
+   ]
+  },
+  {
+   "name": "Paradise Bowl",
+   "pts": [
+    [
+     -111.5795,
+     40.6712
+    ],
+    [
+     -111.5782,
+     40.6722
+    ],
+    [
+     -111.5768,
+     40.6728
+    ],
+    [
+     -111.5755,
+     40.673
+    ]
+   ]
+  },
+  {
+   "name": "Tombstone Alley",
+   "pts": [
+    [
+     -111.5715,
+     40.6765
+    ],
+    [
+     -111.57,
+     40.6757
+    ],
+    [
+     -111.5685,
+     40.675
+    ],
+    [
+     -111.5672,
+     40.6744
+    ],
+    [
+     -111.566,
+     40.6738
+    ]
+   ]
+  },
+  {
+   "name": "Bonanza Access",
+   "pts": [
+    [
+     -111.5114,
+     40.6326
+    ],
+    [
+     -111.5122,
+     40.6321
+    ],
+    [
+     -111.513,
+     40.6316
+    ],
+    [
+     -111.5134,
+     40.6314
+    ]
+   ]
+  },
+  {
+   "name": "Berg's Bowl",
+   "pts": [
+    [
+     -111.518,
+     40.6302
+    ],
+    [
+     -111.5172,
+     40.631
+    ],
+    [
+     -111.5165,
+     40.6318
+    ],
+    [
+     -111.516,
+     40.6326
+    ]
+   ]
+  },
+  {
+   "name": "Alloy Alley",
+   "pts": [
+    [
+     -111.5092,
+     40.6408
+    ],
+    [
+     -111.5086,
+     40.6418
+    ],
+    [
+     -111.508,
+     40.6428
+    ],
+    [
+     -111.5077,
+     40.6438
+    ]
+   ]
+  },
+  {
+   "name": "Stope",
+   "pts": [
+    [
+     -111.5112,
+     40.6486
+    ],
+    [
+     -111.5108,
+     40.6495
+    ],
+    [
+     -111.5103,
+     40.6505
+    ],
+    [
+     -111.5098,
+     40.6515
+    ]
+   ]
+  },
+  {
+   "name": "Snowonder",
+   "pts": [
+    [
+     -111.552,
+     40.649
+    ],
+    [
+     -111.5512,
+     40.6505
+    ],
+    [
+     -111.55,
+     40.652
+    ],
+    [
+     -111.549,
+     40.6535
+    ],
+    [
+     -111.5486,
+     40.6544
+    ]
+   ]
+  },
+  {
+   "name": "Lite's Out",
+   "pts": [
+    [
+     -111.5365,
+     40.6345
+    ],
+    [
+     -111.5372,
+     40.637
+    ],
+    [
+     -111.5378,
+     40.64
+    ],
+    [
+     -111.538,
+     40.643
+    ],
+    [
+     -111.5378,
+     40.6458
+    ]
+   ]
+  },
+  {
+   "name": "Rendezvous Bowl",
+   "pts": [
+    [
+     -111.585,
+     40.6895
+    ],
+    [
+     -111.583,
+     40.69
+    ],
+    [
+     -111.5805,
+     40.6908
+    ],
+    [
+     -111.578,
+     40.692
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Runs missing from OpenStreetMap traced 2026-11-18 from the 2025-26 trail map and aerial photos (NAIP); approximate (within about 100 m)."
 }
