@@ -248,6 +248,13 @@ async function openStart(from = null) {
   // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
   globe.onPick = (rs) => pickResort(rs.id);
   globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
+  // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
+  globe.onTap = () => {
+    const p = $('#start-panel');
+    if (p.classList.contains('hidden') || p.classList.contains('mini')) return false;
+    setStartMini(true);
+    return true;
+  };
   $('#globe-out').classList.add('hidden');
   if (import.meta.env.DEV) window.__globe = globe;   // for local browser checks only
   layoutGlobe(false);                           // measured with the list in place, so the globe lands in the right spot

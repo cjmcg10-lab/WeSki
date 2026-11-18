@@ -193,6 +193,8 @@ export class Globe {
       this.onPick?.(near[0].rs);
       return;
     }
+    // the page can claim the first tap (the home screen uses it to slide the mountain list down so the globe fills the screen)
+    if (this.onTap?.()) return;
     if (!this.zoomAt(x, y)) this.zoomOut();
   }
 

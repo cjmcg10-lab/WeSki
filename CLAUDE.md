@@ -220,7 +220,8 @@ Start screen (owner's mock-up, 2026-11-17): logo and "Your mountain. Your crew."
 the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
 Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted
 thumbnail per resort (`thumbSvg`, generated, not photos), a preview card with a Favorite star, Ski Here and Join Group.
-Globe (2026-11-18): tapping the globe zooms in on that spot (`zoomAt` in `src/globe.js`, four steps down to about 220 km
+Globe (2026-11-18): the first tap on the globe slides the mountain list down to its bar (as dragging the bar down does)
+so the globe fills the space (`globe.onTap` in `openStart`); after that, tapping zooms in on that spot (`zoomAt` in `src/globe.js`, four steps down to about 220 km
 up); a tap on a resort dot opens its card (`onPick`, only when no other dot is close enough to be the one meant, so tap
 to zoom first in crowded areas); two fingers pinch-zoom; a wheel zooms on a computer; the round button top right
 (`#globe-out`) or a tap off the globe zooms back out. Closing a card picked while zoomed in returns to that zoom.
