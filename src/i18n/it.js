@@ -28,8 +28,8 @@ export default {
   115: 'Quel luogo', 116: '{0} non è più disponibile', 117: 'Ha lasciato il gruppo.', 118: '{0} non condivide la posizione', 119: 'Chiedigli di attivare la condivisione o scegli un punto d’incontro.',
   120: 'In attesa della tua posizione…', 121: 'Consenti l’accesso alla posizione perché le indicazioni partano da dove sei.', 122: 'La posizione di {0} non è aggiornata',
   123: 'Ha messo in pausa la condivisione.', 124: 'Ultimo aggiornamento {0}: questo percorso porta dove si trovava.', 125: 'Percorso ricalcolato: {0} o ti sei spostato', 126: 'Percorso ricalcolato',
-  127: 'Sei fuori dalle piste della mappa', 128: 'Le indicazioni partono quando sei entro 250 m da una pista, un impianto o una base della mappa.',
-  129: '{0} è fuori dalla rete della mappa', 130: 'La sua posizione non è vicina a piste, impianti o sentieri della mappa, quindi non c’è un percorso verificato.',
+  127: 'Sei fuori dalle piste della mappa', 128: 'Le indicazioni partono quando sei entro 1 km da una pista, un impianto o una base della mappa.',
+  129: '{0} è fuori dalla rete della mappa', 130: 'La sua posizione è a più di 1 km da piste, impianti o sentieri della mappa, quindi non c’è un percorso verificato.',
   131: 'Le chiusure bloccano la strada verso {0}', 132: 'Ogni percorso usa un impianto o una pista che hai segnato chiusi. Riaprili in Altro → Chiusure se è cambiato, o trovatevi in un punto raggiungibile da entrambi.',
   133: 'Nessun percorso sulla mappa verso {0}', 134: 'Piste, impianti e sentieri della mappa non ti collegano.', 135: '{0} metri', 136: '{0} chilometri', 137: '{0} piedi', 138: '{0} miglia',
   139: 'Questo browser non ha una voce.', 140: 'Indicazioni vocali attive.', 141: 'Sei su una pista oltre il tuo limite {0}',
@@ -139,4 +139,5 @@ export default {
   617: 'Ora non si sta registrando nulla, quindi non ci sono nuovi dati da salvare.', 618: 'Pista da gara o da allenamento cronometrato; può essere chiusa al pubblico.',
   619: '{0}, USA', 620: '{0}, Francia', 621: '{0}, Svizzera', 622: '{0}, Austria', 623: '{0}, Giappone', 624: '{0}, Canada', 625: 'Francia', 626: '{0}, Svizzera / {1}, Italia',
   627: '{0} discese salvate nella Cronologia.', 628: '1 discesa salvata nella Cronologia.',
+  629: 'Cammina {0} fuori pista fino a {1}', 630: 'Cammina {0} fuori pista fino all’arrivo', 631: 'cammina {0} fuori pista fino a {1}', 632: 'cammina {0} fuori pista fino all’arrivo', 633: 'Tratti a piedi (fuori pista o su un sentiero)', 634: 'a piedi, fuori pista',
 };

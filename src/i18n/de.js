@@ -28,8 +28,8 @@ export default {
   115: 'Dieser Ort', 116: '{0} ist nicht mehr verfügbar', 117: 'Hat die Gruppe verlassen.', 118: '{0} teilt keinen Standort', 119: 'Bitte ums Teilen oder wähle einen Treffpunkt.',
   120: 'Warte auf deinen Standort…', 121: 'Erlaube den Standortzugriff, damit die Route bei dir beginnt.', 122: 'Der Standort von {0} ist veraltet',
   123: 'Teilen pausiert.', 124: 'Letzte Aktualisierung {0}: Diese Route führt dorthin, wo die Person war.', 125: 'Neu berechnet: {0} oder du hast dich bewegt', 126: 'Neu berechnet',
-  127: 'Du bist abseits der Kartenpisten', 128: 'Die Navigation startet, sobald du weniger als 250 m von einer Piste, einem Lift oder einer Talstation der Karte entfernt bist.',
-  129: '{0} ist außerhalb des Kartennetzes', 130: 'Der Standort liegt nicht in der Nähe einer Piste, eines Lifts oder Wegs der Karte, daher gibt es keine geprüfte Route.',
+  127: 'Du bist abseits der Kartenpisten', 128: 'Die Navigation startet, sobald du weniger als 1 km von einer Piste, einem Lift oder einer Talstation der Karte entfernt bist.',
+  129: '{0} ist außerhalb des Kartennetzes', 130: 'Der Standort liegt mehr als 1 km von jeder Piste, jedem Lift oder Weg der Karte entfernt, daher gibt es keine geprüfte Route.',
   131: 'Sperrungen blockieren den Weg zu {0}', 132: 'Jede Route nutzt einen Lift oder eine Piste, die du als gesperrt markiert hast. Öffne sie unter Mehr → Sperrungen wieder, falls sich das geändert hat, oder trefft euch an einem Ort, den ihr beide erreicht.',
   133: 'Keine Kartenroute zu {0}', 134: 'Pisten, Lifte und Wege der Karte verbinden dich nicht.', 135: '{0} Meter', 136: '{0} Kilometer', 137: '{0} Fuß', 138: '{0} Meilen',
   139: 'Dieser Browser hat keine Sprachausgabe.', 140: 'Sprachansagen sind an.', 141: 'Du bist auf einer Piste über deinem Limit {0}',
@@ -139,4 +139,5 @@ export default {
   617: 'Gerade wird nichts aufgezeichnet, also gibt es keine neuen Skidaten zu speichern.', 618: 'Renn- oder Trainingsstrecke mit Zeitnahme; kann für die Öffentlichkeit gesperrt sein.',
   619: '{0}, USA', 620: '{0}, Frankreich', 621: '{0}, Schweiz', 622: '{0}, Österreich', 623: '{0}, Japan', 624: '{0}, Kanada', 625: 'Frankreich', 626: '{0}, Schweiz / {1}, Italien',
   627: '{0} Abfahrten im Verlauf gespeichert.', 628: '1 Abfahrt im Verlauf gespeichert.',
+  629: 'Geh {0} abseits der Piste bis {1}', 630: 'Geh {0} abseits der Piste bis zum Ziel', 631: 'geh {0} abseits der Piste bis {1}', 632: 'geh {0} abseits der Piste bis zum Ziel', 633: 'Wege zu Fuß (abseits der Pisten oder auf einem Weg)', 634: 'zu Fuß, abseits der Pisten',
 };

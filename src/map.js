@@ -20,6 +20,7 @@ export const COLORS = {
   track: '#ff2d92',
   lift: '#e03131',
   route: '#00d5ff',
+  walk: '#ffb52e',      // the parts of a route done on foot
   closed: '#8d949e',
   me: '#0a84ff',
 };
@@ -899,11 +900,16 @@ export class SkiMap {
   setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
   setMeet(p) { this.overlayDirty = true; this.meet = p; this.meetObj.visible = !!p; if (p) this.meetObj.position.copy(this.world(p.x, p.y, 0)); }
 
-  setRoute(pts) {
+  /** Draw directions. `walk` lists the stretches done on foot, drawn over the route in their own colour. */
+  setRoute(pts, walk = null) {
     if (this.routeLine) { for (const l of this.routeLine) { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); } this.routeLine = null; }
     if (!pts || pts.length < 4) return;
     const pos = this.segs(densify(pts, 12), 6);
     this.routeLine = [this.fatLine(pos, '#06304a', 9, { overlay: true, opacity: 0.85, order: 20 }), this.fatLine(pos, COLORS.route, 5.5, { overlay: true, order: 21 })];
+    for (const w of walk || []) {
+      if (w.length < 4) continue;
+      this.routeLine.push(this.fatLine(this.segs(densify(w, 6), 6), COLORS.walk, 5.5, { overlay: true, order: 22, dash: [9, 6] }));
+    }
     for (const l of this.routeLine) this.scene.add(l);
   }
 

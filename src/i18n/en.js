@@ -136,9 +136,9 @@ export default {
   125: 'Rerouted — {0} or you moved',
   126: 'Rerouted',
   127: "You're off the mapped trails",
-  128: 'Directions start once you are within 250 m of a mapped trail, lift or base area here.',
+  128: 'Directions start once you are within 1 km of a mapped trail, lift or base area here.',
   129: '{0} is off the mapped network',
-  130: 'Their location is not near any mapped trail, lift or walkway, so there is no verified route.',
+  130: 'Their location is more than 1 km from any mapped trail, lift or walkway, so there is no verified route.',
   131: 'Closures block the way to {0}',
   132: 'Every route uses a lift or trail you marked closed. Reopen it in More → Closures if that has changed, or meet somewhere you can both reach.',
   133: 'No mapped route to {0}',
@@ -645,4 +645,5 @@ export default {
   625: 'France',
   626: '{0}, Switzerland / {1}, Italy',
   627: 'Saved {0} runs to History.', 628: 'Saved 1 run to History.',
+  629: 'Walk {0} off the trail to {1}', 630: 'Walk {0} off the trail to the finish', 631: 'walk {0} off the trail to {1}', 632: 'walk {0} off the trail to the finish', 633: 'Directions on foot (off the trails or along a walkway)', 634: 'on foot, off the trails',
 };

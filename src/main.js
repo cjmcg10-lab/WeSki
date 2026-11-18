@@ -953,7 +953,7 @@ function endNav() {
 
 function navDest() {
   const t = S.nav.target;
-  if (t.type === 'poi') { const p = S.resort.pois[t.id]; return { place: { node: p.n }, name: p.name, x: p.x, y: p.y }; }
+  if (t.type === 'poi') { const p = S.resort.pois[t.id]; return { place: p.n >= 0 ? { node: p.n } : { x: p.x, y: p.y }, name: p.name, x: p.x, y: p.y }; }
   if (t.type === 'pin') return S.pin ? { place: { x: S.pin.x, y: S.pin.y }, name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y } : null;
   if (t.type === 'meet') { const m = S.map.meet; return m ? { place: { x: m.x, y: m.y }, name: m.name || 'Meeting point', x: m.x, y: m.y } : null; }
   const f = friends().find((m) => m.id === t.id);
@@ -994,15 +994,15 @@ function recalcNav(force = false) {
         nav.route = null;
         const who = f ? f.name : dest.name;
         nav.problem = {
-          from_off_network: { title: "You're off the mapped trails", text: 'Directions start once you are within 250 m of a mapped trail, lift or base area here.', meet: !!f },
-          to_off_network: { title: `${who} is off the mapped network`, text: 'Their location is not near any mapped trail, lift or walkway, so there is no verified route.', meet: !!f },
+          from_off_network: { title: "You're off the mapped trails", text: 'Directions start once you are within 1 km of a mapped trail, lift or base area here.', meet: !!f },
+          to_off_network: { title: `${who} is off the mapped network`, text: 'Their location is more than 1 km from any mapped trail, lift or walkway, so there is no verified route.', meet: !!f },
           no_route_closures: { title: `Closures block the way to ${who}`, text: 'Every route uses a lift or trail you marked closed. Reopen it in More → Closures if that has changed, or meet somewhere you can both reach.', meet: true },
           no_route: { title: `No mapped route to ${who}`, text: 'The mapped trails, lifts and walkways do not connect you.', meet: true },
         }[r.reason];
       }
     }
   }
-  S.map.setRoute(nav.route ? nav.route.pts : null);
+  S.map.setRoute(nav.route ? nav.route.pts : null, nav.route?.walk);
   speakNav();
   renderChrome();
 }
@@ -1065,7 +1065,7 @@ function overWarning(r) {
 }
 
 function recordRoute(name, r) {
-  const rec = { t: Date.now(), to: name, time: r.time, dist: r.dist, steps: r.steps.map((s) => ({ kind: s.kind, name: s.name, d: s.d, dist: s.dist })), pts: r.pts.map((v) => Math.round(v)) };
+  const rec = { t: Date.now(), to: name, time: r.time, dist: r.dist, steps: r.steps.map((s) => ({ kind: s.kind, name: s.name, d: s.d, dist: s.dist })), pts: r.pts.map((v) => Math.round(v)), walk: (r.walk || []).map((w) => w.map((v) => Math.round(v))) };
   // Kept with the current session, or in a standalone list when nothing is being tracked.
   const list = S.session ? S.session.routes : prefs.get(pkey('routes'), []), last = list[list.length - 1];
   if (last && last.to === name && Date.now() - last.t < 30 * 60 * 1000) list[list.length - 1] = { ...rec, t: last.t };
@@ -1191,7 +1191,7 @@ function renderChrome() {
 }
 
 function stepIcon(s) {
-  const bg = s.kind === 'ski' ? runColor(S.resort, s) : s.kind === 'lift' ? COLORS.lift : s.kind === 'up' || s.kind === 'cross' ? '#b3620a' : '#59636e';
+  const bg = s.kind === 'ski' ? runColor(S.resort, s) : s.kind === 'lift' ? COLORS.lift : s.kind === 'up' || s.kind === 'cross' ? '#b3620a' : s.kind === 'walk' || s.kind === 'offwalk' ? '#b87a0e' : '#59636e';
   return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? runSym(S.resort, s)[0] : s.kind === 'lift' ? '↑' : s.kind === 'up' ? '⇡' : s.kind === 'cross' ? '⇢' : 'W'}</span>`;
 }
 function stepText(s, lower) {
@@ -1201,7 +1201,8 @@ function stepText(s, lower) {
       : s.grade === 1 ? (s.name ? t('Climb back {0} on {1}', d, s.name) : t('Climb back {0}', d))
         : (s.name ? t('Sidestep back up {0} on {1}', d, s.name) : t('Sidestep back up {0}', d)))
     : s.kind === 'cross' ? (s.to ? t('Cut across {0} to {1}', d, s.to) : t('Cut across {0}', d))
-    : s.kind === 'walk' ? t('Walk {0}', d) : t('Continue {0}', d);
+    : s.kind === 'walk' ? t('Walk {0}', d)
+    : s.kind === 'offwalk' ? (s.to ? t('Walk {0} off the trail to {1}', d, s.to) : t('Walk {0} off the trail to the finish', d)) : t('Continue {0}', d);
   return esc(lower && getLang() !== 'de' ? x[0].toLowerCase() + x.slice(1) : x);
 }
 
@@ -1533,7 +1534,7 @@ function sheetLegend() {
       ${classesUsed(S.resort).map((c) => line(sc.colors[c], sc.legend[c], false, `<b class="${sc.css[c]}">${sc.syms[c]}</b>`)).join('')}
       ${line(sc.colors[1], 'Glades (dashed trail)', true)}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
     ${zonesCard()}
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.walk, 'Directions on foot (off the trails or along a walkway)')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend (grey = location out of date)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>
     <p class="foot">Follow mountain signs and ropes.</p>`];
@@ -1617,7 +1618,7 @@ function sheetPlace(ev) {
 function sheetSteps() {
   const r = S.nav?.route;
   if (!r) return ['Directions', '<p class="sub">No route.</p>', true];
-  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${levelName(S.resort, S.maxDiff)}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.climb >= 1 ? ` · ${fmtVert(s.climb)} climb` : ''}${s.grade >= 0 ? ` · ${GRADE_NAMES[s.grade]}` : s.kind === 'cross' ? ' · level or downhill' : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails, lifts and walking links, plus short climbs and cut-acrosses allowed by your uphill tolerance (${TOLERANCE[S.uphill].label}, set in More). A cut-across is judged from the terrain only: the app cannot see trees, ropes or signs, so look before you go. Times are estimates.</p>`];
+  return [`To ${S.nav.name}`, `<p class="sub">${fmtDur(r.time)} · ${fmtDist(r.dist)} · your limit: ${levelName(S.resort, S.maxDiff)}</p>${S.nav.over ? `<div class="card bad"><b>⚠ ${esc(S.nav.over.title)}</b><br>${esc(S.nav.over.text)}</div>` : ''}<div class="card">${r.steps.map((s) => `<div class="step">${stepIcon(s)}<div><b>${stepText(s)}</b><div class="sub">${fmtDist(s.dist)} · ${fmtDur(s.time)}${s.kind === 'ski' ? ` · ${DIFF_NAMES[s.d]}` : ''}${s.climb >= 1 ? ` · ${fmtVert(s.climb)} climb` : ''}${s.grade >= 0 ? ` · ${GRADE_NAMES[s.grade]}` : s.kind === 'cross' ? ' · level or downhill' : s.kind === 'offwalk' ? ' · on foot, off the trails' : ''}${s.over ? ' · <b class="danger-ink">⚠ above your limit</b>' : ''}</div></div></div>`).join('')}</div><p class="note">Routes use mapped trails, lifts and walking links, plus short climbs and cut-acrosses allowed by your uphill tolerance (${TOLERANCE[S.uphill].label}, set in More). A cut-across is judged from the terrain only: the app cannot see trees, ropes or signs, so look before you go. Times are estimates.</p>`];
 }
 
 // ---------- weather
@@ -1913,7 +1914,7 @@ async function onClick(e) {
     case 'open-session': openSheet('session', d.id); break;
     case 'delete-session': if (confirm(t('Delete this session from this phone?'))) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
     case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s) startReplay(s, d.run != null ? +d.run : null); break; }
-    case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
+    case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts, r.walk); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
     case 'play-toggle': { const P = S.player; if (P.t >= P.pts[P.pts.length - 1][0]) { P.t = P.pts[0][0]; P.i = 0; } P.playing = !P.playing; b.textContent = P.playing ? '❚❚' : '▶'; break; }
     case 'play-rate': { const P = S.player, r = [5, 20, 60, 180]; P.rate = r[(r.indexOf(P.rate) + 1) % r.length]; b.textContent = P.rate + '×'; break; }
     case 'play-close': stopReplay(); break;

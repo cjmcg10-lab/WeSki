@@ -18,6 +18,7 @@ export function phrase(s, fmtDist, withTurn = false) {
   }
   if (s.kind === 'lift') return /^the /i.test(s.name) ? t('ride {0}', s.name) : t('ride the {0}', s.name);
   if (s.kind === 'walk') return t('walk {0}', fmtDist(s.dist));
+  if (s.kind === 'offwalk') return s.to ? t('walk {0} off the trail to {1}', fmtDist(s.dist), s.to) : t('walk {0} off the trail to the finish', fmtDist(s.dist));
   if (s.kind === 'up') {
     const d = fmtDist(s.dist);
     if (s.grade <= 0) return s.name ? t('skate back {0} along {1}', d, s.name) : t('skate back {0}', d);

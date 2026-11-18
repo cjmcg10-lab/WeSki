@@ -28,8 +28,8 @@ export default {
   115: 'Esse local', 116: '{0} já não está disponível', 117: 'Saiu do grupo.', 118: '{0} não está a partilhar a localização', 119: 'Pede para ligar a partilha ou escolhe um ponto de encontro.',
   120: 'À espera da tua localização…', 121: 'Permite o acesso à localização para que as indicações comecem onde estás.', 122: 'A localização de {0} está desatualizada',
   123: 'Pausou a partilha.', 124: 'Última atualização {0}: esta rota vai para onde estava.', 125: 'Rota recalculada: {0} ou mudaste de sítio', 126: 'Rota recalculada',
-  127: 'Estás fora das pistas do mapa', 128: 'As indicações começam quando estás a menos de 250 m de uma pista, elevador ou zona base do mapa.',
-  129: '{0} está fora da rede do mapa', 130: 'A localização não está perto de nenhuma pista, elevador ou caminho do mapa, por isso não há rota verificada.',
+  127: 'Estás fora das pistas do mapa', 128: 'As indicações começam quando estás a menos de 1 km de uma pista, elevador ou zona base do mapa.',
+  129: '{0} está fora da rede do mapa', 130: 'A localização está a mais de 1 km de qualquer pista, elevador ou caminho do mapa, por isso não há rota verificada.',
   131: 'Os encerramentos bloqueiam o caminho para {0}', 132: 'Todas as rotas usam um elevador ou pista que marcaste como fechado. Reabre em Mais → Encerramentos se mudou, ou encontrem-se num sítio a que ambos cheguem.',
   133: 'Sem rota no mapa para {0}', 134: 'As pistas, elevadores e caminhos do mapa não te ligam.', 135: '{0} metros', 136: '{0} quilómetros', 137: '{0} pés', 138: '{0} milhas',
   139: 'Este navegador não tem voz.', 140: 'Indicações por voz ligadas.', 141: 'Estás numa pista acima do teu limite {0}',
@@ -139,4 +139,5 @@ export default {
   617: 'Não está a ser registado nada agora, por isso não há dados novos para guardar.', 618: 'Pista de corrida ou treino cronometrado; pode estar fechada ao público.',
   619: '{0}, EUA', 620: '{0}, França', 621: '{0}, Suíça', 622: '{0}, Áustria', 623: '{0}, Japão', 624: '{0}, Canadá', 625: 'França', 626: '{0}, Suíça / {1}, Itália',
   627: '{0} descidas guardadas no Histórico.', 628: '1 descida guardada no Histórico.',
+  629: 'Caminha {0} fora da pista até {1}', 630: 'Caminha {0} fora da pista até ao destino', 631: 'caminha {0} fora da pista até {1}', 632: 'caminha {0} fora da pista até ao destino', 633: 'Trajetos a pé (fora das pistas ou por um caminho)', 634: 'a pé, fora das pistas',
 };

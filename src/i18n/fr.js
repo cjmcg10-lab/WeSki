@@ -28,8 +28,8 @@ export default {
   115: 'Cet endroit', 116: '{0} n’est plus disponible', 117: 'Cette personne a quitté le groupe.', 118: '{0} ne partage pas sa position', 119: 'Demande-lui d’activer le partage ou choisis un point de rendez-vous.',
   120: 'En attente de ta position…', 121: 'Autorise l’accès à la position pour que le guidage parte de là où tu es.', 122: 'La position de {0} est ancienne',
   123: 'Le partage est en pause.', 124: 'Dernière mise à jour {0} : cet itinéraire va là où la personne était.', 125: 'Nouvel itinéraire : {0} ou tu as bougé', 126: 'Nouvel itinéraire',
-  127: 'Tu es hors des pistes cartographiées', 128: 'Le guidage commence quand tu es à moins de 250 m d’une piste, d’une remontée ou d’un pied de pistes de la carte.',
-  129: '{0} est hors du réseau cartographié', 130: 'Sa position n’est près d’aucune piste, remontée ou chemin de la carte : pas d’itinéraire vérifié.',
+  127: 'Tu es hors des pistes cartographiées', 128: 'Le guidage commence quand tu es à moins de 1 km d’une piste, d’une remontée ou d’un pied de pistes de la carte.',
+  129: '{0} est hors du réseau cartographié', 130: 'Sa position est à plus de 1 km de toute piste, remontée ou chemin de la carte : pas d’itinéraire vérifié.',
   131: 'Des fermetures bloquent le chemin vers {0}', 132: 'Chaque itinéraire passe par une remontée ou une piste marquée fermée. Rouvre-la dans Plus → Fermetures si c’est le cas, ou retrouvez-vous à un endroit accessible à tous les deux.',
   133: 'Pas d’itinéraire cartographié vers {0}', 134: 'Les pistes, remontées et chemins de la carte ne te relient pas.', 135: '{0} mètres', 136: '{0} kilomètres', 137: '{0} pieds', 138: '{0} miles',
   139: 'Ce navigateur n’a pas de voix.', 140: 'Guidage vocal activé.', 141: 'Tu es sur une piste au-dessus de ta limite {0}',
@@ -139,4 +139,5 @@ export default {
   617: 'Rien n’est suivi en ce moment, il n’y a donc pas de nouvelles données à enregistrer.', 618: 'Parcours de course ou d’entraînement chronométré ; peut être fermé au public.',
   619: '{0}, États-Unis', 620: '{0}, France', 621: '{0}, Suisse', 622: '{0}, Autriche', 623: '{0}, Japon', 624: '{0}, Canada', 625: 'France', 626: '{0}, Suisse / {1}, Italie',
   627: '{0} descentes enregistrées dans l’Historique.', 628: '1 descente enregistrée dans l’Historique.',
+  629: 'Marche {0} hors piste jusqu’à {1}', 630: 'Marche {0} hors piste jusqu’à l’arrivée', 631: 'marche {0} hors piste jusqu’à {1}', 632: 'marche {0} hors piste jusqu’à l’arrivée', 633: 'Itinéraire à pied (hors des pistes ou sur un chemin)', 634: 'à pied, hors des pistes',
 };

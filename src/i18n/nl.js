@@ -28,8 +28,8 @@ export default {
   115: 'Die plek', 116: '{0} is niet meer beschikbaar', 117: 'Heeft de groep verlaten.', 118: '{0} deelt zijn locatie niet', 119: 'Vraag of die delen aanzet, of kies een ontmoetingspunt.',
   120: 'Wachten op je locatie…', 121: 'Geef toegang tot je locatie zodat de route begint waar je bent.', 122: 'De locatie van {0} is verouderd',
   123: 'Heeft delen gepauzeerd.', 124: 'Laatst bijgewerkt {0}: deze route gaat naar waar die toen was.', 125: 'Route aangepast: {0} of jij bent verplaatst', 126: 'Route aangepast',
-  127: 'Je bent buiten de pistes op de kaart', 128: 'De route start als je binnen 250 m van een piste, lift of basisgebied op de kaart bent.',
-  129: '{0} is buiten het kaartnetwerk', 130: 'Die locatie ligt niet bij een piste, lift of pad op de kaart, dus er is geen gecontroleerde route.',
+  127: 'Je bent buiten de pistes op de kaart', 128: 'De route start als je binnen 1 km van een piste, lift of basisgebied op de kaart bent.',
+  129: '{0} is buiten het kaartnetwerk', 130: 'Die locatie ligt meer dan 1 km van elke piste, lift of pad op de kaart, dus er is geen gecontroleerde route.',
   131: 'Afsluitingen blokkeren de weg naar {0}', 132: 'Elke route gebruikt een lift of piste die je als gesloten hebt gemarkeerd. Open ze weer in Meer → Afsluitingen als dat veranderd is, of spreek af op een plek die jullie allebei kunnen bereiken.',
   133: 'Geen kaartroute naar {0}', 134: 'De pistes, liften en paden op de kaart verbinden jullie niet.', 135: '{0} meter', 136: '{0} kilometer', 137: '{0} voet', 138: '{0} mijl',
   139: 'Deze browser heeft geen stem.', 140: 'Gesproken aanwijzingen aan.', 141: 'Je bent op een piste boven je {0}-grens',
@@ -139,4 +139,5 @@ export default {
   617: 'Er wordt nu niets opgenomen, dus er zijn geen nieuwe gegevens om op te slaan.', 618: 'Wedstrijd- of getimede trainingspiste; kan gesloten zijn voor publiek.',
   619: '{0}, VS', 620: '{0}, Frankrijk', 621: '{0}, Zwitserland', 622: '{0}, Oostenrijk', 623: '{0}, Japan', 624: '{0}, Canada', 625: 'Frankrijk', 626: '{0}, Zwitserland / {1}, Italië',
   627: '{0} afdalingen opgeslagen in Geschiedenis.', 628: '1 afdaling opgeslagen in Geschiedenis.',
+  629: 'Loop {0} naast de piste naar {1}', 630: 'Loop {0} naast de piste naar de bestemming', 631: 'loop {0} naast de piste naar {1}', 632: 'loop {0} naast de piste naar de bestemming', 633: 'Te voet (naast de pistes of over een pad)', 634: 'te voet, naast de pistes',
 };

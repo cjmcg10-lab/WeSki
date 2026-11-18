@@ -9,6 +9,10 @@ const LINK_SPEED = 2.5;             // short skate/slide between adjacent trails
 const LIFT_WAIT = 150;              // seconds of queueing + loading
 const OVER_PENALTY = 30;            // trails above the skier's limit cost 30x: used only to get off them, or when nothing else works
 export const SNAP_MAX = 250;        // further than this from every trail/lift/walkway = off the network
+export const WALK_MAX = 1000;       // directions walk off the trails this far, to a building, a pin or a friend
+const OFF_SLACK = 20;               // closer than this to a trail is GPS error, not a walk
+const WALK_CLIMB = 6;               // seconds per metre climbed on foot
+const WALK_COST = 2;                // a walk in ski boots counts double, so the route keeps to the trails where it can
 
 // ---- self-powered moves: going back up a trail, or cutting across to a neighbouring one ----
 // Every such move is scored in effort-time: real seconds times a multiplier that grows with
@@ -251,13 +255,13 @@ export class Router {
   }
 
   /** The nearest edge, plus other trails within `near` metres (best point on each trail), nearest first. */
-  _snaps(x, y, near) {
+  _snaps(x, y, near, max = SNAP_MAX) {
     const all = [];
     for (let i = 0; i < this.edges.length; i++) {
       const e = this.edges[i];
       if (e.k === 'l' || e.k === 'v') continue;
       const n = nearestOnLine(e.pts, x, y);
-      if (n.d > SNAP_MAX) continue;
+      if (n.d > max) continue;
       const total = lineLength(e.pts) || 1;
       all.push({ e: i, d: n.d, along: (n.along * e.len) / total, x: n.x, y: n.y });
     }
@@ -299,10 +303,21 @@ export class Router {
 
   /** The straight hop between where someone actually stands and a nearby trail (free for the nearest one: that is GPS error). */
   _hop(place, s, first, toTrail, T) {
+    if (first && s.d > OFF_SLACK) return this._walkOff(place, s, toTrail);
     if (first || !this.geo) return first ? { t: 0, c: 0, up: 0, band: -1, pts: null } : null;
     const prof = toTrail ? this._profile(place.x, place.y, s.x, s.y) : this._profile(s.x, s.y, place.x, place.y);
     const m = this._crossEffort(prof, false, T);
     return m && { ...m, len: prof.len, pts: toTrail ? [place.x, place.y, s.x, s.y] : [s.x, s.y, place.x, place.y] };
+  }
+
+  /** A walk on foot between a place off the trails (a building, a pin, a friend) and the nearest trail. */
+  _walkOff(place, s, toTrail) {
+    const len = Math.hypot(place.x - s.x, place.y - s.y);
+    const za = this.geo ? this.geo.elev(place.x, place.y) : 0, zb = this.geo ? this.geo.elev(s.x, s.y) : 0;
+    const up = Math.max(0, toTrail ? zb - za : za - zb);
+    const t = len / WALK_SPEED + up * WALK_CLIMB;
+    return { t, c: t * WALK_COST, up: 0, climbOnFoot: up, band: -1, len, walk: true,
+      pts: toTrail ? [place.x, place.y, s.x, s.y] : [s.x, s.y, place.x, place.y] };
   }
 
   _route(from, to, opts) {
@@ -311,8 +326,8 @@ export class Router {
     const prev = new Array(N).fill(null); // {from, e, rev} or {start:[edgeIdx, a0, a1], hop}
     // Riding a lift: the route starts where it lets you off (falls back to your position if the lift is unknown).
     const ride = from.lift != null ? this.edges.findIndex((e) => e.k === 'l' && e.r === from.lift) : -1;
-    const sFrom = ride >= 0 || from.node != null ? null : this._snaps(from.x, from.y, NEAR_START);
-    const sTo = to.node == null ? this._snaps(to.x, to.y, NEAR_START) : null;
+    const sFrom = ride >= 0 || from.node != null ? null : this._snaps(from.x, from.y, NEAR_START, WALK_MAX);
+    const sTo = to.node == null || to.node < 0 ? this._snaps(to.x, to.y, NEAR_START, WALK_MAX) : null;
     if (sFrom && !sFrom.length) return { ok: false, reason: 'from_off_network' };
     if (sTo && !sTo.length) return { ok: false, reason: 'to_off_network' };
     const heap = new Heap();
@@ -394,6 +409,7 @@ export class Router {
     const pts = [];
     const steps = [];
     let dist = 0, vertDown = 0, vertUp = 0, time = 0, climb = 0;
+    const walk = [];   // the parts done on foot, drawn in their own colour
     const add = (seg) => { for (let i = pts.length ? 2 : 0; i < seg.length; i++) pts.push(seg[i]); };
     let at = 0;   // index in pts where the piece being added starts
     const push = (kind, name, ref, d, len, m, seg) => {
@@ -405,7 +421,8 @@ export class Router {
       if (part.hop) {
         const h = part.hop;
         at = Math.max(0, pts.length - 2); add(h.pts); dist += h.len; time += h.t; climb += h.up;
-        push('cross', null, -1, -1, h.len, h, h.pts);
+        if (h.walk) { walk.push(h.pts.slice()); push('offwalk', null, -1, -1, h.len, { ...h, up: h.climbOnFoot }, h.pts); }
+        else push('cross', null, -1, -1, h.len, h, h.pts);
         continue;
       }
       const [ei, a0, a1, riding] = part;
@@ -432,19 +449,21 @@ export class Router {
       else if (e.k === 'x') push('link', null, -1, -1, len, m, seg);
       else if (e.k === 'p') push('ski', this.resort.trails[e.r].name || 'Connector trail', e.r, this.resort.trails[e.r].d, len, m, seg);
       else if (e.k === 'l') push('lift', this.resort.lifts[e.r].name, e.r, -1, len, m, seg);
-      else push('walk', null, -1, -1, len, m, seg);
+      else { walk.push(seg.slice()); push('walk', null, -1, -1, len, m, seg); }
     }
     // Fold tiny leftover fragments into their neighbours so the list reads cleanly.
-    const tidy = steps.filter((s) => ((s.kind === 'ski' || s.kind === 'lift') && s.dist >= 3) || s.dist >= 15 || s.climb >= 2 || steps.length === 1);
+    const tidy = steps.filter((s) => ((s.kind === 'ski' || s.kind === 'lift' || s.kind === 'offwalk') && s.dist >= 3) || s.dist >= 15 || s.climb >= 2 || steps.length === 1);
     const list = tidy.length ? tidy : steps, max = opts.maxDiff ?? 3;
     list.forEach((s, i) => {
       s.over = (s.kind === 'ski' || s.kind === 'up') && (s.ref >= 0 ? this.level(s.ref) : s.d) > max;
       // a cut-across is described by the trail (or lift) it brings you to
       if (s.kind === 'cross') s.to = list.slice(i + 1).find((n) => n.name)?.name || null;
+      // a walk off the trails at the start leads to the first trail or lift; at the end it leads to the destination
+      if (s.kind === 'offwalk') s.to = i === list.length - 1 ? null : list.slice(i + 1).find((n) => n.name)?.name || null;
       s.turn = i ? turnAt(pts, s.i0) : 0;   // degrees, + = right, - = left
     });
     const over = list.filter((s) => s.over);
-    return { ok: true, time, dist, pts, steps: list, vertDown, vertUp, climb, over, overNow: !!list[0]?.over };
+    return { ok: true, time, dist, pts, walk, steps: list, vertDown, vertUp, climb, over, overNow: !!list[0]?.over };
   }
 
   _z(e, along) {
