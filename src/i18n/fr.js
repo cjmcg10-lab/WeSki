@@ -139,5 +139,5 @@ export default {
   617: 'Rien n’est suivi en ce moment, il n’y a donc pas de nouvelles données à enregistrer.', 618: 'Parcours de course ou d’entraînement chronométré ; peut être fermé au public.',
   619: '{0}, États-Unis', 620: '{0}, France', 621: '{0}, Suisse', 622: '{0}, Autriche', 623: '{0}, Japon', 624: '{0}, Canada', 625: 'France', 626: '{0}, Suisse / {1}, Italie',
   627: '{0} descentes enregistrées dans l’Historique.', 628: '1 descente enregistrée dans l’Historique.',
-  629: 'Marche {0} hors piste jusqu’à {1}', 630: 'Marche {0} hors piste jusqu’à l’arrivée', 631: 'marche {0} hors piste jusqu’à {1}', 632: 'marche {0} hors piste jusqu’à l’arrivée', 633: 'Itinéraire à pied (hors des pistes ou sur un chemin)', 634: 'à pied, hors des pistes',
+  629: 'Marche {0} hors piste jusqu’à {1}', 630: 'Marche {0} hors piste jusqu’à l’arrivée', 631: 'marche {0} hors piste jusqu’à {1}', 632: 'marche {0} hors piste jusqu’à l’arrivée', 633: 'Itinéraire à pied (hors des pistes ou sur un chemin)', 634: 'à pied, hors des pistes', 635: 'Dézoomer',
 };

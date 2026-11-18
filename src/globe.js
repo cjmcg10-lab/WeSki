@@ -20,6 +20,7 @@ const ll = (lat, lon, r = 1) => {
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
 };
 
+const MIN_DIST = 1.035, ZOOM_STEP = 0.36; // tap-to-zoom: each tap brings the camera this much closer, down to ~220 km up
 const CARD_DIST = 1.6, CARD_LIFT = 0.13, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
 
 export class Globe {
@@ -126,18 +127,118 @@ export class Globe {
 
   bindDrag() {
     const el = this.renderer.domElement;
-    let last = null;
-    el.addEventListener('pointerdown', (e) => { if (this.focused) return; last = { x: e.clientX, y: e.clientY }; this.spin = false; this.tween = null; el.setPointerCapture?.(e.pointerId); });
+    let last = null, down = null, pinch = null;
+    const fingers = new Map();
+    const spread = () => { const [a, b] = [...fingers.values()]; return Math.hypot(a.x - b.x, a.y - b.y); };
+    el.addEventListener('pointerdown', (e) => {
+      if (this.focused) return;
+      fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      el.setPointerCapture?.(e.pointerId);
+      this.spin = false; this.tween = null;
+      if (fingers.size === 2) { pinch = { s: spread(), d: this.dist }; last = null; down = null; return; }
+      if (fingers.size > 2) return;
+      last = { x: e.clientX, y: e.clientY }; down = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 };
+    });
     el.addEventListener('pointermove', (e) => {
+      if (fingers.has(e.pointerId)) fingers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch && fingers.size === 2) {
+        // two fingers: spread them to zoom in, pinch them to zoom out
+        const d = Math.min(this.home, Math.max(MIN_DIST, 1 + (pinch.d - 1) * (pinch.s / Math.max(10, spread()))));
+        this.dist = d;
+        if (d > this.home - 0.02) { this.lift = this.homeLift; if (this.zoomed) { this.zoomed = false; this.onZoom?.(false); } }
+        else {
+          // ease the globe from its resting place to the zoomed-in framing as it comes closer
+          const k = (this.home - d) / (this.home - 1);
+          this.lift = this.homeLift + (this.zoomLift() - this.homeLift) * Math.min(1, k * 3);
+          if (!this.zoomed) { this.zoomed = true; this.onZoom?.(true); }
+        }
+        return;
+      }
       if (!last) return;
-      const k = 0.005 * Math.min(1.5, this.dist / this.home);
+      // the closer in, the slower the globe turns under the finger
+      const k = 0.005 * Math.min(1.5, (this.dist - 1) / (this.home - 1));
       this.globe.rotation.y += (e.clientX - last.x) * k;
       this.globe.rotation.x = Math.min(1.3, Math.max(-1.3, this.globe.rotation.x + (e.clientY - last.y) * k));
+      if (down) down.moved = Math.max(down.moved, Math.hypot(e.clientX - down.x, e.clientY - down.y));
       last = { x: e.clientX, y: e.clientY };
     });
-    const up = () => { last = null; clearTimeout(this.resume); this.resume = setTimeout(() => { if (!this.focused) this.spin = true; }, 2500); };
+    const up = (e) => {
+      fingers.delete(e.pointerId);
+      if (pinch) { if (fingers.size === 0) pinch = null; last = null; down = null; }
+      const tap = down && e.type === 'pointerup' && down.moved < 10 && performance.now() - down.t < 500;
+      last = null; down = null;
+      clearTimeout(this.resume);
+      if (tap) this.tap(e.clientX, e.clientY);
+      this.resume = setTimeout(() => { if (!this.focused && !this.zoomed) this.spin = true; }, 2500);
+    };
     el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+    // a mouse wheel or trackpad zooms too (on a computer)
+    el.addEventListener('wheel', (e) => {
+      if (this.focused) return;
+      e.preventDefault();
+      if (e.deltaY > 0) this.zoomOut(); else { const r = el.getBoundingClientRect(); this.zoomAt(e.clientX - r.left, e.clientY - r.top); }
+    }, { passive: false });
     el.style.touchAction = 'none';
+  }
+
+  /**
+   * A tap on the globe: on a resort dot (with no other dot close enough to be the one meant) it picks
+   * that resort; anywhere else on the globe it zooms in on that spot; off the globe it zooms back out.
+   */
+  tap(cx, cy) {
+    const r = this.renderer.domElement.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
+    const near = this.pinsNear(x, y);
+    const hitR = 24, clearR = 30;
+    if (near.length && near[0].px < hitR && (near.length < 2 || near[1].px > clearR || this.dist <= MIN_DIST + 0.01)) {
+      this.onPick?.(near[0].rs);
+      return;
+    }
+    if (!this.zoomAt(x, y)) this.zoomOut();
+  }
+
+  /** Resort dots on the visible side of the globe, nearest to a screen point first, with their distance in px. */
+  pinsNear(x, y) {
+    const w = this.renderer.domElement.clientWidth, h = this.renderer.domElement.clientHeight;
+    const cam = this.camera.position, out = [], v = new THREE.Vector3();
+    this.globe.updateMatrixWorld();
+    for (const { rs, pin } of this.pins) {
+      if (!pin.visible) continue;
+      pin.getWorldPosition(v);
+      // behind the globe: the dot faces away from the camera
+      if (v.clone().normalize().dot(cam.clone().sub(v)) <= 0) continue;
+      v.project(this.camera);
+      out.push({ rs, px: Math.hypot((v.x + 1) / 2 * w - x, (1 - v.y) / 2 * h - y) });
+    }
+    return out.sort((a, b) => a.px - b.px);
+  }
+
+  /** Zoom in one step, turning the tapped spot to the middle. False when the point is off the globe. */
+  zoomAt(x, y) {
+    const w = this.renderer.domElement.clientWidth, h = this.renderer.domElement.clientHeight;
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2((x / w) * 2 - 1, 1 - (y / h) * 2), this.camera);
+    const hit = ray.ray.intersectSphere(new THREE.Sphere(new THREE.Vector3(), 1), new THREE.Vector3());
+    if (!hit) return false;
+    this.globe.updateMatrixWorld();
+    const p = this.globe.worldToLocal(hit).normalize();
+    const lat = THREE.MathUtils.radToDeg(Math.asin(p.y)), lon = THREE.MathUtils.radToDeg(Math.atan2(p.z, -p.x)) - 180;
+    const a = this.aim({ lat, lon });
+    let dy = a.y - this.globe.rotation.y;
+    dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+    const d = Math.max(MIN_DIST, 1 + (this.dist - 1) * ZOOM_STEP);
+    this.spin = false; this.zoomed = true; this.onZoom?.(true);
+    this.go({ y: this.globe.rotation.y + dy, x: Math.min(1.3, Math.max(-1.3, a.x)), d, l: this.zoomLift() }, 0.7, { zoom: true });
+    return true;
+  }
+
+  /** The lift that puts the spot facing the camera where the resting globe's centre is on screen. */
+  zoomLift() { return (this.homeLift * (this.home - 1)) / this.home; }
+
+  /** Back out to the whole globe, which then spins again. */
+  zoomOut() {
+    if (!this.zoomed) return;
+    this.zoomed = false; this.onZoom?.(false);
+    this.go({ d: this.home, l: this.homeLift }, 0.9, { zoom: true }).then(() => { if (!this.focused && !this.zoomed) this.spin = true; });
   }
 
   aim(rs) {
@@ -155,6 +256,9 @@ export class Globe {
   /** Turn the globe so the resort faces the camera and zoom in. Resolves when it arrives. */
   flyTo(rs, seconds = 1.8, lift = CARD_LIFT) {
     this.spin = false; this.focused = rs;
+    // picked while zoomed in: stay at least that close, and come back to it when the card is closed
+    this.backTo = this.zoomed ? this.dist : null;
+    if (this.zoomed) { this.zoomed = false; this.onZoom?.(false); }
     clearTimeout(this.resume);
     const a = this.aim(rs);
     let dy = a.y - this.globe.rotation.y;
@@ -164,12 +268,17 @@ export class Globe {
     this.ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.ring.position.clone().normalize());
     this.ring.visible = true;
     // CARD_LIFT puts the resort about a third of the way down, above the resort card
-    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: CARD_DIST, l: lift }, seconds);
+    return this.go({ y: this.globe.rotation.y + dy, x: a.x, d: Math.min(CARD_DIST, this.dist), l: lift }, seconds, this.backTo ? { zoom: true } : {});
   }
 
   /** Back to the slow spin (after closing a resort card). */
   release() {
-    this.focused = null; this.ring.visible = false;
+    this.focused = null; this.ring.visible = false; this.diving = false;
+    if (this.backTo) {
+      const d = this.backTo; this.backTo = null; this.zoomed = true; this.onZoom?.(true);
+      this.go({ d, l: this.zoomLift() }, 0.9, { zoom: true });
+      return;
+    }
     this.go({ d: this.home, l: this.homeLift }, 1.4).then(() => { this.spin = true; });
   }
 
@@ -179,14 +288,14 @@ export class Globe {
    * 3D map then starts from: the hand-off has no cut and no fade.
    */
   dive(seconds = 2.2) {
-    this.ring.visible = false;
+    this.ring.visible = false; this.diving = true;
     return this.go({ d: SURFACE_DIST, l: 0, u: 1 }, seconds, { zoom: true, ease: 'in' });
   }
 
   /** Start on the ground at a resort (used when leaving the mountain), then pull back to the spinning globe. */
   surface(rs) {
     const a = this.aim(rs);
-    this.spin = false; this.tween = null; this.focused = null;
+    this.spin = false; this.tween = null; this.focused = null; this.diving = false; this.zoomed = false; this.backTo = null;
     this.globe.rotation.set(a.x, a.y, 0);
     this.dist = SURFACE_DIST; this.lift = 0; this.unlit = 1;
   }
@@ -234,9 +343,11 @@ export class Globe {
     this.mat.emissiveIntensity = this.unlit;
     this.hemi.intensity = 1.5 * (1 - this.unlit);
     this.sun.intensity = 1.6 * (1 - this.unlit);
-    if (this.ring.visible) { const s = 1 + 0.35 * Math.sin(this.t * 3); this.ring.scale.setScalar(s * Math.max(0.5, this.dist - 0.9)); this.ring.material.opacity = 0.9 - 0.3 * Math.sin(this.t * 3); }
+    if (this.ring.visible) { const s = 1 + 0.35 * Math.sin(this.t * 3); this.ring.scale.setScalar(s * Math.max(0.03, this.dist - 0.98)); this.ring.material.opacity = 0.9 - 0.3 * Math.sin(this.t * 3); }
     // resort dots shrink away before the camera reaches them
-    const ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.min(2.6, Math.max(0.35, (this.dist - 0.95) / 2.4));
+    let ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.min(2.6, Math.max(0.35, (this.dist - 0.95) / 2.4));
+    // zoomed in by tapping (or flying to a resort card from there): the dots stay about the same size on screen
+    if (this.zoomed || (this.focused && this.dist < 1.6 && !this.diving)) ps = Math.min(2.6, Math.max(0.012, (this.dist - 0.995) / 2.4));
     for (const p of this.pins) { p.pin.visible = ps > 0.001; p.pin.scale.setScalar(ps || 0.001); }
     const d = this.dist;
     this.camera.near = Math.max(0.00002, (d - 1) * 0.4);

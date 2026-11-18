@@ -139,5 +139,5 @@ export default {
   617: 'Er wordt nu niets opgenomen, dus er zijn geen nieuwe gegevens om op te slaan.', 618: 'Wedstrijd- of getimede trainingspiste; kan gesloten zijn voor publiek.',
   619: '{0}, VS', 620: '{0}, Frankrijk', 621: '{0}, Zwitserland', 622: '{0}, Oostenrijk', 623: '{0}, Japan', 624: '{0}, Canada', 625: 'Frankrijk', 626: '{0}, Zwitserland / {1}, Italië',
   627: '{0} afdalingen opgeslagen in Geschiedenis.', 628: '1 afdaling opgeslagen in Geschiedenis.',
-  629: 'Loop {0} naast de piste naar {1}', 630: 'Loop {0} naast de piste naar de bestemming', 631: 'loop {0} naast de piste naar {1}', 632: 'loop {0} naast de piste naar de bestemming', 633: 'Te voet (naast de pistes of over een pad)', 634: 'te voet, naast de pistes',
+  629: 'Loop {0} naast de piste naar {1}', 630: 'Loop {0} naast de piste naar de bestemming', 631: 'loop {0} naast de piste naar {1}', 632: 'loop {0} naast de piste naar de bestemming', 633: 'Te voet (naast de pistes of over een pad)', 634: 'te voet, naast de pistes', 635: 'Uitzoomen',
 };

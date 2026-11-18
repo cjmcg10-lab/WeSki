@@ -590,3 +590,9 @@ img.thumb.photo { object-fit: cover; background: #23415f; }
 .start-filters button svg { width: 19px; height: 19px; }
 .start-filters .sep { margin: 0 3px; }
 .mrow.day small + small { margin-top: 1px; }
+
+/* Home globe: tap to zoom in; this button (top right) zooms back out */
+.globe-out { position: absolute; top: calc(var(--sat) + 100px); right: 16px; z-index: 4; width: 46px; height: 46px; border-radius: 50%;
+  display: grid; place-items: center; padding: 0; border: 1px solid rgba(255, 255, 255, .35); background: rgba(6, 22, 44, .78); color: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .45); transition: opacity .3s; }
+.globe-out.hidden, #start.focus .globe-out, #start.fade .globe-out { opacity: 0; pointer-events: none; }

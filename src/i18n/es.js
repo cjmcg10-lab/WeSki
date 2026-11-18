@@ -139,5 +139,5 @@ export default {
   617: 'No se está registrando nada ahora, así que no hay datos nuevos que guardar.', 618: 'Circuito de carreras o entrenamiento cronometrado; puede estar cerrado al público.',
   619: '{0}, EE. UU.', 620: '{0}, Francia', 621: '{0}, Suiza', 622: '{0}, Austria', 623: '{0}, Japón', 624: '{0}, Canadá', 625: 'Francia', 626: '{0}, Suiza / {1}, Italia',
   627: '{0} bajadas guardadas en Historial.', 628: '1 bajada guardada en Historial.',
-  629: 'Camina {0} fuera de pista hasta {1}', 630: 'Camina {0} fuera de pista hasta el destino', 631: 'camina {0} fuera de pista hasta {1}', 632: 'camina {0} fuera de pista hasta el destino', 633: 'Indicaciones a pie (fuera de las pistas o por un camino)', 634: 'a pie, fuera de las pistas',
+  629: 'Camina {0} fuera de pista hasta {1}', 630: 'Camina {0} fuera de pista hasta el destino', 631: 'camina {0} fuera de pista hasta {1}', 632: 'camina {0} fuera de pista hasta el destino', 633: 'Indicaciones a pie (fuera de las pistas o por un camino)', 634: 'a pie, fuera de las pistas', 635: 'Alejar',
 };

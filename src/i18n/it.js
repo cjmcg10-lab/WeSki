@@ -139,5 +139,5 @@ export default {
   617: 'Ora non si sta registrando nulla, quindi non ci sono nuovi dati da salvare.', 618: 'Pista da gara o da allenamento cronometrato; può essere chiusa al pubblico.',
   619: '{0}, USA', 620: '{0}, Francia', 621: '{0}, Svizzera', 622: '{0}, Austria', 623: '{0}, Giappone', 624: '{0}, Canada', 625: 'Francia', 626: '{0}, Svizzera / {1}, Italia',
   627: '{0} discese salvate nella Cronologia.', 628: '1 discesa salvata nella Cronologia.',
-  629: 'Cammina {0} fuori pista fino a {1}', 630: 'Cammina {0} fuori pista fino all’arrivo', 631: 'cammina {0} fuori pista fino a {1}', 632: 'cammina {0} fuori pista fino all’arrivo', 633: 'Tratti a piedi (fuori pista o su un sentiero)', 634: 'a piedi, fuori pista',
+  629: 'Cammina {0} fuori pista fino a {1}', 630: 'Cammina {0} fuori pista fino all’arrivo', 631: 'cammina {0} fuori pista fino a {1}', 632: 'cammina {0} fuori pista fino all’arrivo', 633: 'Tratti a piedi (fuori pista o su un sentiero)', 634: 'a piedi, fuori pista', 635: 'Riduci zoom',
 };

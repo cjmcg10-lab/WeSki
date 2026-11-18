@@ -245,6 +245,11 @@ async function openStart(from = null) {
   $('#f-resort').value = '';
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
+  // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
+  globe.onPick = (rs) => pickResort(rs.id);
+  globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
+  $('#globe-out').classList.add('hidden');
+  if (import.meta.env.DEV) window.__globe = globe;   // for local browser checks only
   layoutGlobe(false);                           // measured with the list in place, so the globe lands in the right spot
   $('#start-panel').classList.toggle('hidden', !!from);
   $('.start-top').classList.toggle('hidden', !!from);
@@ -282,11 +287,11 @@ function renderResortList(q) {
   if (S.favOnly) list = list.filter((r) => S.favs.has(r.id));
   const near = S.nearMe;
   const dist = (r) => (near ? kmBetween(near.lat, near.lon, r.lat, r.lon) : 0);
-  // nearest first with "Use my location"; otherwise favourites, then ready maps, in the usual order
   const last = prefs.get('lastResort', null);
-  // the last mountain visited always comes first; then nearest first with "Use my location",
-  // otherwise favourites, then ready maps, in the usual order
-  list = list.map((r, i) => ({ r, i, d: dist(r) })).sort((a, b) => ((b.r.id === last) - (a.r.id === last)) || (near ? a.d - b.d : (S.favs.has(b.r.id) - S.favs.has(a.r.id)) || (b.r.available - a.r.available) || a.i - b.i));
+  // With "Use my location" the list is purely nearest first (the last mountain visited keeps its tag but
+  // takes its place by distance). Otherwise the last mountain visited comes first, then favourites, then
+  // ready maps, in the usual order.
+  list = list.map((r, i) => ({ r, i, d: dist(r) })).sort((a, b) => (near ? a.d - b.d : ((b.r.id === last) - (a.r.id === last)) || (S.favs.has(b.r.id) - S.favs.has(a.r.id)) || (b.r.available - a.r.available) || a.i - b.i));
   const away = (km) => (imp() ? `${Math.round(km / 1.609).toLocaleString()} mi` : `${Math.round(km).toLocaleString()} km`);
   $('#near-btn').classList.toggle('on', !!near);
   $('#fav-btn').classList.toggle('on', !!S.favOnly);
@@ -1840,6 +1845,7 @@ async function onClick(e) {
     case 'hist-start': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (simulated location).' : 'Tracking started: finding GPS…'); openSheet('track'); trackNotice(); break;
     case 'wx-refresh': refreshWeather(true); break;
     case 'pick-resort': pickResort(d.id); break;
+    case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
     case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
