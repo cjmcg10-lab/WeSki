@@ -19,6 +19,22 @@
  ],
  "rename": {
   "Genghis Kahn": "Genghis Khan",
-  "Riva Ridge - Tourist Trap": "Tourist Trap"
- }
+  "Riva Ridge - Tourist Trap": "Tourist Trap",
+  "Slalom Alley": "GS Alley",
+  "Chopstix": "Gillett's Dream"
+ },
+ "way_names": {
+  "1564018110": "Lodgepole Gulch"
+ },
+ "split_ways": {
+  "191569240": [
+   [
+    -106.35,
+    39.6024
+   ],
+   "Headwall Ridge",
+   ""
+  ]
+ },
+ "names_note": "From the 2026-27 trail map: OpenStreetMap's 'Slalom Alley' beside the Golden Peak T-bar is the map's GS Alley; 'Chopstix' from the Orient Express top into Poppyfields is Gillett's Dream; the lower part of Lodgepole below the Avanti lift is Lodgepole Gulch; the top of Headwall along the ridge is Headwall Ridge (split by eye, within about 150 m)."
 }

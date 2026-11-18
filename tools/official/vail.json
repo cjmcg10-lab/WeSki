@@ -195,5 +195,8 @@
   "Yonder Gully": 2,
   "Zot": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "Big Rock Park": "The resort lists the whole park and also its East and West parts; both parts are on the map."
+ }
 }

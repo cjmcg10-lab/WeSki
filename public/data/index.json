@@ -394,10 +394,10 @@
   "baseLon": -72.71808,
   "top": 1013,
   "base": 353,
-  "trails": 120,
+  "trails": 122,
   "lifts": 21,
   "zones": true,
-  "bytes": 828062
+  "bytes": 830609
  },
  {
   "id": "park-city",
@@ -506,10 +506,10 @@
   "baseLon": -70.53189,
   "top": 1218,
   "base": 653,
-  "trails": 67,
+  "trails": 66,
   "lifts": 5,
   "zones": false,
-  "bytes": 396447
+  "bytes": 396482
  },
  {
   "id": "ski-sundown",
@@ -682,10 +682,10 @@
   "baseLon": -106.40166,
   "top": 3526,
   "base": 2454,
-  "trails": 216,
+  "trails": 219,
   "lifts": 32,
   "zones": false,
-  "bytes": 1805521
+  "bytes": 1805822
  },
  {
   "id": "val-thorens",
@@ -698,10 +698,10 @@
   "baseLon": 6.5442,
   "top": 3220,
   "base": 1822,
-  "trails": 101,
+  "trails": 102,
   "lifts": 32,
   "zones": true,
-  "bytes": 1608581
+  "bytes": 1609498
  },
  {
   "id": "wachusett",

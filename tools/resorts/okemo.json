@@ -28,5 +28,29 @@
    "Evergreen Summit Express (top)",
    "trail:Upper Tomahawk"
   ]
- ]
+ ],
+ "extra_trails": [
+  {
+   "name": "Lower Sel",
+   "pts": [
+    [
+     -72.72873,
+     43.40798
+    ],
+    [
+     -72.72677,
+     43.40781
+    ],
+    [
+     -72.72504,
+     43.40756
+    ],
+    [
+     -72.72354,
+     43.40722
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Lower Sel (the open slope beside The Pull, continuing Sel's Choice below Mountain Road) traced from NAIP aerial photos."
 }
