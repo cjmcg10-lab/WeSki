@@ -110,7 +110,7 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-18 (all 42 checked):
+Status on 2026-11-18 (all 50 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
@@ -121,6 +121,7 @@ Status on 2026-11-18 (all 42 checked):
 | Stratton | resort feed, `official_ratings.py fetch mtnpowder 1 stratton` |
 | Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Loon, Whiteface | official trail maps (resort sites by curl, or skimap.org), read by hand from tiles (added 2026-11-18) |
 | Waterville Valley, Bolton Valley, Burke, Magic Mountain, Berkshire East, Catamount, Ragged, Pats Peak (Indy Pass, added 2026-11-18) | trail maps from skimap.org (`skimap.org/skiareas/view/<id>` lists them; `skimap.org/skimaps/view/<map id>` returns the file itself; the resort sites refuse the proxy), read by hand; Pats Peak from the printed list on its map |
+| Mohawk Mountain, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods, Hunter, Windham, Wachusett (added 2026-11-18, the owner's four Connecticut picks plus four popular northeast mountains) | trail maps from skimap.org, read by hand from tiles. Bretton Woods prints its glades as lists with single or double diamonds; its trails are rated by line and label colour. Windham's "more difficult (advanced)" (blue square with a diamond) is stored as `bb`. Hunter's map PDF has broken text, so it was rendered at 400 dpi |
 | Jay Peak | trail map PDF by curl; run names are real text, so the symbol left of each name was classified by script (`pdftotext -bbox`) |
 | Vail | 2026-27 maps from `scene7.vailresorts.com` (wid=4000; 8000 is refused), read by hand |
 | Copper, Brundage | resort trail maps (see sources in each official json), read by hand |
@@ -288,7 +289,8 @@ were written by Claude, not checked by native speakers.
   joining the network.
 - `build_zones.py` trims run ends that overshoot their last junction by up to 45 m. If the owner still reports
   overshoots, get the run name and look at that junction before changing the limit.
-- Known open items: Saddleback "Morning Glory" is not reachable from the base in the routing graph; Les Arcs has a
+- Known open items: Saddleback "Morning Glory" is not reachable from the base in the routing graph; Hunter's Upper Highlands starts at
+  the HP Poma top, which OpenStreetMap lacks; Les Arcs has a
   loose "Droset" piece; Zermatt's planned Breitboden to Rosenritz chair was removed and should return if it opens;
   a few dead-end runs remain at several resorts (see each build's connectivity report).
 - US resort feeds: only the four Alterra resorts answer on `mtnpowder.com`. Future Alterra resorts on the list
@@ -313,7 +315,7 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
-1. Rating check: all 42 done, including Val Thorens's Orelle side and the eight Indy Pass mountains added on 2026-11-18.
+1. Rating check: all 50 done, including Val Thorens's Orelle side and the sixteen northeast mountains added on 2026-11-18.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
@@ -321,7 +323,9 @@ keys go in through the credential form, never chat.
    one-page website.
 4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
-   Berkshire East, Catamount, Ragged, Pats Peak). Next: Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
+   Berkshire East, Catamount, Ragged, Pats Peak), then Mohawk, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods,
+   Hunter, Windham and Wachusett. Small Connecticut hills have thin OpenStreetMap data (Southington maps 9 of 14 runs);
+   the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Next: Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
    Deer Valley, Snowbird and Alta, Northstar, Telluride.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.

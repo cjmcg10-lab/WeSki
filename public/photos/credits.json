@@ -9,6 +9,11 @@
   "lic": "CC BY-SA 4.0",
   "title": "File:Breckenridge ski resort.jpg"
  },
+ "bretton-woods": {
+  "artist": "Storylanding",
+  "lic": "CC0",
+  "title": "File:Bretton Woods Resort.jpg"
+ },
  "burke": {
   "artist": "Patrick McCaffrey",
   "lic": "CC BY-SA 3.0",
@@ -79,10 +84,20 @@
   "lic": "Public domain",
   "title": "File:Mammoth Mountain Ski Area.jpg"
  },
+ "mohawk-mountain": {
+  "artist": "Jrclark",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:MohawkMountain.jpg"
+ },
  "mount-snow": {
   "artist": "Mount Snow",
   "lic": "CC BY-SA 4.0",
   "title": "File:MountSnowWinter.jpg"
+ },
+ "mount-southington": {
+  "artist": "Morrowlong",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Mount Southington Ski Area at night.jpg"
  },
  "okemo": {
   "artist": "Henry P. Gray",
@@ -98,6 +113,11 @@
   "artist": "karico",
   "lic": "CC BY-SA 3.0",
   "title": "File:Skigebiet Pizol - panoramio.jpg"
+ },
+ "powder-ridge": {
+  "artist": "Morrowlong",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Powder Ridge Park. Looking down the Middlefield slope.jpg"
  },
  "ragged": {
   "artist": "MConradWard",
@@ -164,6 +184,11 @@
   "lic": "CC0",
   "title": "File:Skiing towards Val Thorens from the south, 1998.jpg"
  },
+ "wachusett": {
+  "artist": "Grendelkhan",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Wachusett Mountain in winter.gk.jpg"
+ },
  "waterville-valley": {
   "artist": "MConradWard",
   "lic": "CC BY-SA 4.0",
@@ -178,6 +203,11 @@
   "artist": "Baombaom",
   "lic": "CC BY-SA 4.0",
   "title": "File:Whiteface Mountain Ski Area off the Gondola Lift.jpg"
+ },
+ "windham-mountain": {
+  "artist": "tps12",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Windham Mountain - 2008.jpg"
  },
  "winter-park": {
   "artist": "Murray Foubister",
