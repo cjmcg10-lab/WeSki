@@ -368,6 +368,22 @@
   "bytes": 880084
  },
  {
+  "id": "ragged",
+  "name": "Ragged Mountain",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 43.47249,
+  "lon": -71.84497,
+  "baseLat": 43.48501,
+  "baseLon": -71.84373,
+  "top": 673,
+  "base": 337,
+  "trails": 53,
+  "lifts": 5,
+  "zones": false,
+  "bytes": 300151
+ },
+ {
   "id": "saalbach",
   "name": "Saalbach Hinterglemm",
   "region": "Salzburg, Austria",

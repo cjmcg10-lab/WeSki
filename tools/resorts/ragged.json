@@ -14,5 +14,8 @@
  ],
  "skip_pois": [
   "Ragged Mountain Resort"
- ]
+ ],
+ "rename": {
+  "Riches": "Rags to Riches"
+ }
 }

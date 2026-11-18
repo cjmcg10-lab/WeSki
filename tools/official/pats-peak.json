@@ -1,0 +1,33 @@
+{
+ "source": "Pats Peak 2026 trail map by James Niehues (skimap.org map 44067): its printed trail list by rating",
+ "fetched": "2026-11-18",
+ "runs": {
+  "Backdraft": 0,
+  "Beginners Area": 0,
+  "Blast": 0,
+  "Blizzard": 1,
+  "Bluster": 0,
+  "Breeze": 0,
+  "Cascade Brook": 0,
+  "Crosswind": 0,
+  "Cyclone": 2,
+  "Downdraft": 1,
+  "Duster": 1,
+  "East Wind": 1,
+  "F.I.S. Race Trail": 3,
+  "Hurricane": 3,
+  "Knight Slope": 2,
+  "Lower East Wind": 1,
+  "Lower Tornado": 0,
+  "Nor'easter": 2,
+  "Puff": 0,
+  "Squall Line": 0,
+  "Tempest": 1,
+  "Tornado": 3,
+  "Twister": 2,
+  "Vortex": 3,
+  "Whisper": 0,
+  "Zephyr": 0
+ },
+ "blue_black": []
+}
