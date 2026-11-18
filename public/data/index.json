@@ -240,6 +240,22 @@
   "bytes": 536971
  },
  {
+  "id": "magic-mountain",
+  "name": "Magic Mountain",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 43.19196,
+  "lon": -72.75852,
+  "baseLat": 43.2021,
+  "baseLon": -72.77179,
+  "top": 870,
+  "base": 419,
+  "trails": 50,
+  "lifts": 6,
+  "zones": true,
+  "bytes": 272966
+ },
+ {
   "id": "mammoth",
   "name": "Mammoth Mountain",
   "region": "California, USA",

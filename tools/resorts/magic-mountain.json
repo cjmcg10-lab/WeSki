@@ -14,5 +14,18 @@
  ],
  "skip_pois": [
   "Magic Mountain Ski Area"
- ]
+ ],
+ "links": [
+  [
+   "trail:Upper Wizard",
+   "trail:Pitch Black"
+  ],
+  [
+   "trail:Upper Wizard",
+   "trail:Black Magic"
+  ]
+ ],
+ "rename": {
+  "Lower Red Line": "Lower Redline"
+ }
 }
