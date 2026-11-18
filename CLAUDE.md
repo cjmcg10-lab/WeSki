@@ -217,6 +217,17 @@ exists in the owner's Cloudflare account at the old address, frozen at the last 
 separate group rooms. The owner can delete it in the Cloudflare dashboard, or a session can turn it into a redirect if
 asked. The icons show the owner's logo.
 
+## Languages (2026-11-18)
+
+Ten languages (en, es, fr, de, it, pt, nl, ja, ko, zh), chosen under More → Language (defaults to the phone's language).
+Every English phrase has a number in `src/i18n/en.js`; each language file uses the same numbers. Code calls
+`t('English text', ...)`; text put on the page is translated automatically by a watcher in `src/i18n.js` (exact phrase,
+then `{0}` patterns, then " · " pieces and sentences). Mark names with `translate="no"`. **When adding UI text, add the
+English to en.js with a new number and the translation to all nine files** (`tests/i18n.test.js` checks slots and gaps).
+Place names: `src/placenames.js` translates common words only (hut, top station, lake…) and shows the meaning in
+brackets under the real name on the map, in search and in the place card; proper names are left alone. Translations
+were written by Claude, not checked by native speakers.
+
 ## Map data: things learned the hard way
 
 - Trail fields in `resort.json`: `d` 0 green, 1 blue, 2 black, 3 double black; `u` rating is a guess; `ok` confirmed

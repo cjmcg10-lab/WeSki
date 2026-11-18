@@ -2,6 +2,8 @@
 // top-down 2D mode. Trails, lifts, buildings, POIs, friends, routes and tracks are
 // all placed at their real coordinates.
 import * as THREE from 'three';
+import { t } from './i18n.js';
+import { placeTr } from './placenames.js';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
@@ -1282,7 +1284,7 @@ export class SkiMap {
         ctx.fillText((d.name || '?').slice(0, 1).toUpperCase(), p.x, p.y + 0.5);
         ly = p.y + 24;
       }
-      const tag = d.me ? 'You' : d.name + (d.paused ? ' · paused' : d.stale ? ` · ${fmtAge(d.age)}` : '');
+      const tag = d.me ? t('You') : d.name + (d.paused ? ' · ' + t('paused') : d.stale ? ` · ${fmtAge(d.age)}` : '');
       ctx.font = '700 12px "Nunito Sans Variable", -apple-system, system-ui, sans-serif';
       const tw = ctx.measureText(tag).width + 14;
       ctx.fillStyle = col; roundRect(ctx, p.x - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
@@ -1297,8 +1299,8 @@ export class SkiMap {
       text(name, p.x, p.y + (is3 ? 12 : 18), color, 11, 700);
       this.hits.push({ x: p.x, y: p.y - (is3 ? 10 : 0), r: 28, ev });
     };
-    if (this.pin) marker(this.pin, this.pinObj, '#d92d20', 'Pin', { type: 'pin' });
-    if (this.meet) marker(this.meet, this.meetObj, '#c96f00', this.meet.name || 'Meet here', { type: 'meet' });
+    if (this.pin) marker(this.pin, this.pinObj, '#d92d20', t('Pin'), { type: 'pin' });
+    if (this.meet) marker(this.meet, this.meetObj, '#c96f00', this.meet.name || t('Meet here'), { type: 'meet' });
     if (this.play && !is3) {
       const p = this.project(this.playObj.position);
       if (p) { ctx.beginPath(); ctx.arc(p.x, p.y, 9, 0, 7); ctx.fillStyle = this.play?.color || COLORS.track; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#fff'; ctx.stroke(); }
@@ -1317,16 +1319,23 @@ export class SkiMap {
       this.hits.push({ x: s.x, y: s.y, r: 20, ev: { type: 'poi', id: p.id } });
       if (near > 1.6 || st[2] === 0) {
         const name = p.name.replace(' (base)', '');
+        const sub = placeTr(name);                        // in the reader's language, under the real name
         ctx.font = '600 10.5px "Nunito Sans Variable", -apple-system, system-ui, sans-serif';
-        const tw = ctx.measureText(name).width;
-        if (free(s.x - tw / 2 - 2, s.y + 10, tw + 4, 13)) text(name, s.x, s.y + 16.5, '#1c2733', 10.5, 600);
+        let tw = ctx.measureText(name).width;
+        if (sub) { ctx.font = '600 9.5px "Nunito Sans Variable", -apple-system, system-ui, sans-serif'; tw = Math.max(tw, ctx.measureText(`(${sub})`).width); }
+        if (free(s.x - tw / 2 - 2, s.y + 10, tw + 4, sub ? 25 : 13)) {
+          text(name, s.x, s.y + 16.5, '#1c2733', 10.5, 600);
+          if (sub) text(`(${sub})`, s.x, s.y + 28, '#3d4b5a', 9.5, 600);
+        }
       }
     }
     // zone + lift + trail names
     if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label(ZONES[z.kind].sym + ' ' + z.name, s, ZONES[z.kind].ink, 11, 700); }
     if (near > 1.15) for (const z of this.liftLabels) {
       const s = this.project(z.p);
-      if (s) label(z.l.name + (this.closed.has('l' + z.l.id) ? ' (closed)' : ''), s, this.closed.has('l' + z.l.id) ? '#6b7280' : COLORS.liftInk, 11, 700);
+      if (!s) continue;
+      const shut = this.closed.has('l' + z.l.id), sub = placeTr(z.l.name);
+      if (label(z.l.name + (shut ? ` (${t('closed')})` : ''), s, shut ? '#6b7280' : COLORS.liftInk, 11, 700) && sub) label(`(${sub})`, { x: s.x, y: s.y + 13 }, shut ? '#6b7280' : COLORS.liftInk, 9.5, 600);
     }
     if (near > 1.7) {
       const sym = ['●', '■', '◆', '◆◆'];
@@ -1335,7 +1344,7 @@ export class SkiMap {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        label(`${runSym(this.resort, z.t)} ${z.t.name}${shut ? ' (closed)' : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
+        label(`${runSym(this.resort, z.t)} ${z.t.name}${shut ? ` (${t('closed')})` : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
       }
     }
   }
@@ -1346,11 +1355,11 @@ function roundRect(ctx, x, y, w, h, r) {
 }
 
 export function fmtAge(s) {
-  if (s == null) return 'no location';
-  if (s < 10) return 'just now';
-  if (s < 90) return `${Math.round(s / 10) * 10}s ago`;
-  if (s < 5400) return `${Math.round(s / 60)}m ago`;
-  return `${Math.round(s / 3600)}h ago`;
+  if (s == null) return t('no location');
+  if (s < 10) return t('just now');
+  if (s < 90) return t('{0}s ago', Math.round(s / 10) * 10);
+  if (s < 5400) return t('{0}m ago', Math.round(s / 60));
+  return t('{0}h ago', Math.round(s / 3600));
 }
 
 function densify(pts, step) {

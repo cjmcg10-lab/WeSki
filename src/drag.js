@@ -12,7 +12,12 @@
  */
 export function dragPanel(panel, opts) {
   const zone = opts.zone ?? 64;
-  let st = null;
+  let st = null, quietUntil = 0;
+  // A tap or drag on the strip can move the panel under the finger; on iPhones the click that
+  // follows lands on whatever is there now (a mountain in the list). Swallow clicks for a moment.
+  panel.addEventListener('click', (e) => {
+    if (performance.now() < quietUntil) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
   panel.addEventListener('pointerdown', (e) => {
     const r = panel.getBoundingClientRect();
     if (e.clientY - r.top > zone) return;
@@ -33,7 +38,11 @@ export function dragPanel(panel, opts) {
     st = null;
     panel.classList.remove('dragging');
     panel.style.transform = '';
-    if (!moved) { if (e.type === 'pointerup') opts.onTap?.(); return; }
+    if (!moved) {
+      if (e.type === 'pointerup' && opts.onTap?.()) quietUntil = performance.now() + 500;
+      return;
+    }
+    quietUntil = performance.now() + 500;
     if (dy > 70) opts.onDown?.();
     else if (dy < -40) opts.onUp?.();
   };

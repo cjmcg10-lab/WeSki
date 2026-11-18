@@ -15,6 +15,8 @@ import { Clouds } from './clouds.js';
 import { dragPanel } from './drag.js';
 import { parseLook, lookString, CHARACTERS, SKIN, HAIR_COLORS, LENS, HAT_COLORS, PANTS, GEAR, HEADS, HAIRS } from './look.js';
 import { avatarThumb, mountPreview } from './avatarview.js';
+import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
+import { placeTr } from './placenames.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -84,8 +86,10 @@ const distParts = (m) => (imp() ? [(m / 1609.34).toFixed(1), 'mi'] : [(m / 1000)
 const vertParts = (m) => (imp() ? [Math.round(m * 3.28084).toLocaleString(), 'ft'] : [Math.round(m).toLocaleString(), 'm']);
 const fmtVert = (m) => vertParts(m).join(' ');
 const fmtDur = (s) => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60); return h ? `${h}h ${m}m` : m ? `${m} min` : `${s}s`; };
-const fmtClock = (t) => new Date(t).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-const fmtDate = (t) => new Date(t).toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
+const fmtClock = (x) => new Date(x).toLocaleTimeString(locale(), { hour: 'numeric', minute: '2-digit' });
+const fmtDate = (x) => new Date(x).toLocaleDateString(locale(), { weekday: 'short', month: 'short', day: 'numeric' });
+/** Dates and times in the app's language (the phone's own format when that is the same language). */
+const locale = () => { const l = getLang(); return (navigator.language || '').slice(0, 2) === l ? navigator.language : l; };
 
 function toast(msg, ms = 3200) {
   const t = $('#toast');
@@ -556,8 +560,9 @@ async function leaveResort(save) {
 function askLeaveResort() {
   const st = S.tracker ? S.tracker.stats : null;
   const what = S.session
-    ? `This ${S.session.kind === 'group' ? 'group session' : 'tracking session'} has ${st.runCount} run${st.runCount === 1 ? '' : 's'} and ${S.tracker.points.length} GPS points${S.session.routes.length ? `, plus ${S.session.routes.length} route${S.session.routes.length > 1 ? 's' : ''}` : ''}.`
-    : 'Nothing is being tracked right now, so there is no new ski data to save.';
+    ? (S.session.kind === 'group' ? t('This group session has {0} runs and {1} GPS points.', st.runCount, S.tracker.points.length) : t('This tracking session has {0} runs and {1} GPS points.', st.runCount, S.tracker.points.length))
+      + (S.session.routes.length ? ' ' + t('It also has {0} saved routes.', S.session.routes.length) : '')
+    : t('Nothing is being tracked right now, so there is no new ski data to save.');
   $('#modal').innerHTML = `<div class="modal-box"><h2>Choose a different resort?</h2>
     <p>${what}${S.group ? ' You will also leave your group.' : ''}</p>
     <button class="btn go" data-act="exit-save">Save ski data and exit</button>
@@ -570,11 +575,18 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('/sw.js').catch(() => {});
 }
 persist();
+// Language: translate the page as it changes, starting with the saved choice or the phone's language.
+watchPage();
+setLang(initialLang(), false).catch(() => {});
+onLangChange(() => {
+  if (!$('#sheet').classList.contains('hidden')) renderSheet();
+  if (S.map) { renderChrome(); S.map.overlayDirty = true; }
+});
 document.addEventListener('click', onClick);
 // Pull panels down by their grab bar: the mountain list shrinks (the globe grows into the space),
 // every other panel closes.
 dragPanel($('#start-panel'), { zone: 70, offset: () => ($('#start-panel').classList.contains('mini') ? miniShift() : 0),
-  onDown: () => setStartMini(true), onUp: () => setStartMini(false), onTap: () => { if ($('#start-panel').classList.contains('mini')) setStartMini(false); } });
+  onDown: () => setStartMini(true), onUp: () => setStartMini(false), onTap: () => { if (!$('#start-panel').classList.contains('mini')) return false; setStartMini(false); return true; } });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
@@ -712,7 +724,7 @@ async function endSession(reason) {
   try { if (worth) await sessions.put(s); else await sessions.del(s.id); } catch (e) { toast('Could not save this session on the phone.'); return null; }
   S.historyLoaded = false;
   if (S.crumbsOn) { loadHistory(); startCrumbs(); }
-  if (worth) toast(`${reason} Saved ${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} to History.`);
+  if (worth) toast(`${reason} ${s.stats.runCount === 1 ? t('Saved 1 run to History.') : t('Saved {0} runs to History.', s.stats.runCount)}`);
   renderChrome();
   return worth ? s : null;
 }
@@ -997,9 +1009,9 @@ function recalcNav(force = false) {
 // ---------- spoken directions
 const speaker = new Speaker();
 const spokenDist = (m) => {
-  if (!imp()) return m < 1000 ? `${Math.max(10, Math.round(m / 10) * 10)} metres` : `${(m / 1000).toFixed(1)} kilometres`;
+  if (!imp()) return m < 1000 ? t('{0} metres', Math.max(10, Math.round(m / 10) * 10)) : t('{0} kilometres', (m / 1000).toFixed(1));
   const ft = m * 3.28084;
-  return ft < 1000 ? `${Math.max(50, Math.round(ft / 50) * 50)} feet` : `${(m / 1609.34).toFixed(1)} miles`;
+  return ft < 1000 ? t('{0} feet', Math.max(50, Math.round(ft / 50) * 50)) : t('{0} miles', (m / 1609.34).toFixed(1));
 };
 const guide = new Guide(spokenDist);
 
@@ -1163,7 +1175,7 @@ function renderChrome() {
   if (r) {
     html += `<div class="meta">${nav.arrived ? "You've arrived" : `${fmtDur(r.time)} · ${fmtDist(r.dist)} · ↓${fmtVert(r.vertDown)} ↑${fmtVert(r.vertUp)}${r.climb >= 1 ? ` · ${fmtVert(r.climb)} on foot` : ''}`}</div>`;
     const s = r.steps[0];
-    if (s && !nav.arrived) html += `<div class="next">${stepIcon(s)}<span>${stepText(s)}${r.steps[1] ? `, then ${stepText(r.steps[1], true)}` : ''}</span></div>`;
+    if (s && !nav.arrived) html += `<div class="next">${stepIcon(s)}<span>${r.steps[1] ? t('{0}, then {1}', stepText(s), stepText(r.steps[1], true)) : stepText(s)}</span></div>`;
   }
   if (nav.over && r) html += `<div class="warnbox over"><b>⚠ ${esc(nav.over.title)}</b>${esc(nav.over.text)}</div>`;
   if (w) html += box(w);
@@ -1182,19 +1194,21 @@ function stepIcon(s) {
   return `<span class="ico step-ico" style="background:${bg};width:26px;height:26px;border-radius:8px;display:inline-grid;place-items:center;color:#fff;font-weight:800;flex:none">${s.kind === 'ski' ? runSym(S.resort, s)[0] : s.kind === 'lift' ? '↑' : s.kind === 'up' ? '⇡' : s.kind === 'cross' ? '⇢' : 'W'}</span>`;
 }
 function stepText(s, lower) {
-  const how = s.grade <= 0 ? 'Skate back' : s.grade === 1 ? 'Climb back' : 'Sidestep back up';
-  const t = s.kind === 'ski' ? `Ski ${s.name}` : s.kind === 'lift' ? `Ride ${s.name}`
-    : s.kind === 'up' ? `${how} ${fmtDist(s.dist)}${s.name ? ` ${s.grade <= 0 ? 'along' : 'on'} ${s.name}` : ''}`
-    : s.kind === 'cross' ? `Cut across ${fmtDist(s.dist)}${s.to ? ` to ${s.to}` : ''}`
-    : s.kind === 'walk' ? `Walk ${fmtDist(s.dist)}` : `Continue ${fmtDist(s.dist)}`;
-  return esc(lower ? t[0].toLowerCase() + t.slice(1) : t);
+  const d = fmtDist(s.dist);
+  const x = s.kind === 'ski' ? t('Ski {0}', s.name) : s.kind === 'lift' ? t('Ride {0}', s.name)
+    : s.kind === 'up' ? (s.grade <= 0 ? (s.name ? t('Skate back {0} along {1}', d, s.name) : t('Skate back {0}', d))
+      : s.grade === 1 ? (s.name ? t('Climb back {0} on {1}', d, s.name) : t('Climb back {0}', d))
+        : (s.name ? t('Sidestep back up {0} on {1}', d, s.name) : t('Sidestep back up {0}', d)))
+    : s.kind === 'cross' ? (s.to ? t('Cut across {0} to {1}', d, s.to) : t('Cut across {0}', d))
+    : s.kind === 'walk' ? t('Walk {0}', d) : t('Continue {0}', d);
+  return esc(lower && getLang() !== 'de' ? x[0].toLowerCase() + x.slice(1) : x);
 }
 
 // ---------- sheets
 function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
-  if (fresh) { S.sheetHtml = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
+  if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
   const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
@@ -1211,9 +1225,11 @@ function renderSheet() {
   if (!S.sheet) return;
   const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
-  const body = $('#sheet-body'), keep = body.scrollTop, same = $('#sheet-title').textContent === title;
+  const body = $('#sheet-body'), keep = body.scrollTop, same = S.sheetTitle === title && S.sheetLang === getLang();
+  S.sheetTitle = title; S.sheetLang = getLang();
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
+  $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
   // don't clobber a text field the person is typing in
@@ -1449,6 +1465,7 @@ function sheetMore() {
       <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep screen on for directions • Use Pocket mode while riding.</span></div></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Closures</h4><div class="sub">${n.length ? `${n.length} marked closed: ${esc(n.slice(0, 4).join(', '))}${n.length > 4 ? '…' : ''}` : 'Avoid trails and lifts you mark closed.'}</div></div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h4>Offline map</h4><div id="offline-box">${off ? `<p class="ok-text" style="font-size:17px;margin:4px 0 2px">✓ ${esc(S.place.name)} saved</p><p class="sub" style="margin:0 0 4px 22px">${(off.bytes / 1048576).toFixed(1)} MB • ${fmtDate(off.at)}</p>` : `<p class="sub">Download the whole ${esc(S.place.name)} map (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal.</p>`}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
+    <div class="card"><h4>Language</h4><select class="field" id="f-lang" translate="no" style="margin:6px 0 8px">${LANGS.map(([k, n]) => `<option value="${k}" ${getLang() === k ? 'selected' : ''}>${n}</option>`).join('')}</select><div class="sub">Words in the app, spoken directions, and the meaning of foreign place names on the map (shown in brackets under the real name).</div></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
     <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
     <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
@@ -1515,7 +1532,7 @@ function sheetLegend() {
       ${classesUsed(S.resort).map((c) => line(sc.colors[c], sc.legend[c], false, `<b class="${sc.css[c]}">${sc.syms[c]}</b>`)).join('')}
       ${line(sc.colors[1], 'Glades (dashed trail)', true)}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
     ${zonesCard()}
-    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift, just above and between its two cables)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
+    <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
       ${ic(PALETTE[5], 'A', 'Friend (grey = location out of date)')}${ic('#d92d20', '', 'Dropped pin')}${ic('#c96f00', '⚑', 'Group meeting point')}</div>
     <p class="foot">Follow mountain signs and ropes.</p>`];
@@ -1540,7 +1557,7 @@ function searchResults() {
   const all = searchIndex();
   const hit = q ? all.filter((i) => i.name.toLowerCase().includes(q)).sort((a, b) => (b.name.toLowerCase().startsWith(q) - a.name.toLowerCase().startsWith(q))) : all;
   if (!hit.length) return '<p class="sub" style="margin:14px 4px">Nothing on this mountain matches that name.</p>';
-  return hit.slice(0, 80).map((i) => `<button class="srow" data-act="search-go" data-k="${i.k}" data-v="${i.v}">${i.badge}<span class="grow"><b>${esc(i.name)}</b><small>${esc(i.sub)}</small></span><i>›</i></button>`).join('');
+  return hit.slice(0, 80).map((i) => { const m = i.k !== 'trail' && placeTr(i.name); return `<button class="srow" data-act="search-go" data-k="${i.k}" data-v="${i.v}">${i.badge}<span class="grow"><b translate="no">${esc(i.name)}</b>${m ? `<small class="means" translate="no">(${esc(m)})</small>` : ''}<small>${esc(i.sub)}</small></span><i>›</i></button>`; }).join('');
 }
 function sheetSearch() {
   return [`Search ${S.place.name}`, `<label class="search"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><circle cx="10.500" cy="10.500" r="6.500"/><path d="M15.500 15.500 21 21"/></svg><input id="f-search" type="search" placeholder="Lodges, runs, lifts, food…" value="${esc(S.searchQ || '')}" autocomplete="off" autocorrect="off" spellcheck="false" /></label>
@@ -1575,20 +1592,22 @@ function sheetPlace(ev) {
   if (ev.type === 'poi') {
     const p = S.resort.pois[ev.id];
     const kind = { lodge: 'Lodge', lift: 'Lift base', lifttop: 'Lift top', food: 'Food & drink', peak: 'Summit', service: 'Service', parking: 'Parking', shelter: 'Shelter' }[p.kind];
-    return [p.name, `<p class="sub">${kind} · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}</p><button class="btn go" data-act="nav-poi" data-id="${p.id}">Directions</button>`, true];
+    const means = placeTr(p.name);
+    return [p.name, `${means ? `<p class="means" translate="no">(${esc(means)})</p>` : ''}<p class="sub">${kind} · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}</p><button class="btn go" data-act="nav-poi" data-id="${p.id}">Directions</button>`, true];
   }
   if (ev.type === 'friend') {
     const f = friends().find((m) => m.id === ev.id);
-    if (!f) return ['Friend', '<p class="sub">No longer in the group.</p>', true];
+    if (!f) return [t('Friend'), '<p class="sub">No longer in the group.</p>', true];
     return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${riderPic(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
   }
   if (ev.type === 'meet') {
     const m = S.map.meet;
-    return [m?.name || 'Meeting point', `<p class="sub">Shared meeting point${S.group?.state?.meet ? ` set by ${esc(S.group.state.meet.by)}` : ''}</p><button class="btn go" data-act="nav-meet">Directions</button>${S.group ? '<button class="btn alt" data-act="clear-meet">Clear meeting point</button>' : ''}`, true];
+    return [m?.name || t('Meeting point'), `<p class="sub">Shared meeting point${S.group?.state?.meet ? ` set by ${esc(S.group.state.meet.by)}` : ''}</p><button class="btn go" data-act="nav-meet">Directions</button>${S.group ? '<button class="btn alt" data-act="clear-meet">Clear meeting point</button>' : ''}`, true];
   }
   const p = S.pin;
   const where = p.kind === 'trail' ? `Top of the run · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : p.kind === 'lift' ? `Bottom of the lift · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : describeSpot(p.x, p.y);
-  return [p.name || 'Dropped pin', `<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions</button>
+  const pm = p.name && placeTr(p.name);
+  return [p.name || t('Dropped pin'), `${pm ? `<p class="means" translate="no">(${esc(pm)})</p>` : ''}<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions</button>
     ${S.group ? '<button class="btn alt" data-act="meet-here">Make this the group meeting point</button>' : ''}
     ${S.testMode ? '<button class="btn alt" data-act="sim-here">Put me here (test mode)</button>' : ''}
     <button class="btn alt" data-act="remove-pin">Remove pin</button>`, true];
@@ -1607,7 +1626,7 @@ const fmtWind = (ms) => `${Math.round(imp() ? ms * 2.23694 : ms * 3.6)}`;
 const fmtSnow = (cm) => (imp() ? `${cm / 2.54 < 0.95 && cm > 0.2 ? '<1' : Math.round(cm / 2.54)} in` : `${cm < 0.95 && cm > 0.2 ? '<1' : Math.round(cm)} cm`);
 const compass = (deg) => ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'][Math.round(deg / 45) % 8];
 const hourLabel = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}${h < 12 ? 'a' : 'p'}`; };
-const dayLabel = (iso, i) => (i === 0 ? 'Today' : new Date(iso + 'T12:00').toLocaleDateString([], { weekday: 'short' }));
+const dayLabel = (iso, i) => (i === 0 ? 'Today' : new Date(iso + 'T12:00').toLocaleDateString(locale(), { weekday: 'short' }));
 
 async function refreshWeather(force) {
   S.wx = S.wx || {};
@@ -1760,6 +1779,7 @@ function onInput(e) {
   const t = e.target;
   if (t.id === 'f-search') { if (e.type === 'input') { S.searchQ = t.value; $('#search-list').innerHTML = searchResults(); } return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
+  if (t.id === 'f-lang') { if (e.type === 'change') setLang(t.value); return; }
   if (t.id === 'f-name') { S.profile.name = t.value.trim().slice(0, 20); prefs.set('profile', S.profile); if (e.type === 'change' && S.group) S.group.client.updateProfile(S.profile); }
   else if (t.id === 'f-share' && e.type === 'change') setSharing(t.checked);
   else if (t.id === 'f-crumbs' && e.type === 'change') {
@@ -1858,13 +1878,13 @@ async function onClick(e) {
       break;
     }
     case 'share-code': {
-      const text = `Join my SkiWithMe group at ${S.place.name}. Open ${location.origin} and enter code ${S.group.code}`;
+      const text = t('Join my SkiWithMe group at {0}. Open {1} and enter code {2}', S.place.name, location.origin, S.group.code);
       if (navigator.share) navigator.share({ text }).catch(() => {});
       else { try { await navigator.clipboard.writeText(text); toast('Invite copied.'); } catch { toast(`Code: ${S.group.code}`); } }
       break;
     }
-    case 'leave-group': if (confirm('Leave this group? Your runs, routes and stats will be saved on this phone.')) leaveGroup(false); break;
-    case 'close-group': if (confirm('Close the group for everyone? All shared locations are deleted and each person keeps their own runs.')) leaveGroup(true); break;
+    case 'leave-group': if (confirm(t('Leave this group? Your runs, routes and stats will be saved on this phone.'))) leaveGroup(false); break;
+    case 'close-group': if (confirm(t('Close the group for everyone? All shared locations are deleted and each person keeps their own runs.'))) leaveGroup(true); break;
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
     case 'nav-pin': startNav({ type: 'pin', name: S.pin?.name || 'Dropped pin' }); break;
@@ -1873,7 +1893,7 @@ async function onClick(e) {
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
     case 'steps': openSheet('steps'); break;
-    case 'clear-tracks': if (confirm('Remove the saved location-only tracks from the map? Sessions in History are not affected.')) { S.tracksSaved = []; await saveTracks(); S.map.crumbCount = -2; showTracks(); renderSheet(); } break;
+    case 'clear-tracks': if (confirm(t('Remove the saved location-only tracks from the map? Sessions in History are not affected.'))) { S.tracksSaved = []; await saveTracks(); S.map.crumbCount = -2; showTracks(); renderSheet(); } break;
     case 'crumb-scope': S.crumbScope = d.v; if (!S.historyLoaded) loadHistory(); showTracks(); renderSheet(); break;
     case 'theme': prefs.set('theme', d.v); applyTheme(d.v); renderSheet(); break;
     case 'meet': proposeMeet(); break;
@@ -1888,9 +1908,9 @@ async function onClick(e) {
     case 'sim-here': S.loc.simTeleport(S.pin.x, S.pin.y); S.pin = null; S.map.setPin(null); closeSheet(); toast('Test location set.'); break;
     case 'sim-go': if (S.nav?.route) { S.loc.simFollow(S.nav.route.pts, 9); toast('Simulating movement along the route…'); } break;
     case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); trackNotice(); break;
-    case 'end-track': if (confirm('End tracking and save this session?')) { const s = await endSession('Tracking ended.'); S.historyLoaded = false; if (s) { await loadHistory(); openSheet('session', s.id); } else { toast('Nothing recorded yet, so nothing was saved.'); renderSheet(); } } break;
+    case 'end-track': if (confirm(t('End tracking and save this session?'))) { const s = await endSession('Tracking ended.'); S.historyLoaded = false; if (s) { await loadHistory(); openSheet('session', s.id); } else { toast('Nothing recorded yet, so nothing was saved.'); renderSheet(); } } break;
     case 'open-session': openSheet('session', d.id); break;
-    case 'delete-session': if (confirm('Delete this session from this phone?')) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
+    case 'delete-session': if (confirm(t('Delete this session from this phone?'))) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
     case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s) startReplay(s, d.run != null ? +d.run : null); break; }
     case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
     case 'play-toggle': { const P = S.player; if (P.t >= P.pts[P.pts.length - 1][0]) { P.t = P.pts[0][0]; P.i = 0; } P.playing = !P.playing; b.textContent = P.playing ? '❚❚' : '▶'; break; }

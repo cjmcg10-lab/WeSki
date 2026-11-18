@@ -80,9 +80,20 @@ export function makeAvatar(avatar, color, pose = 'stand') {
     parts.push(cap(0.66));
     for (const x of [-0.13, 0.13]) parts.push(part(new THREE.CylinderGeometry(0.05, 0.035, 0.42, 6), hair, x, 1.38, -0.04, 0.28));
   }
-  if (L.hair === 4) {                    // long, down the back
-    parts.push(cap(0.66));
-    parts.push(part(box(0.38, 0.32, 0.1), hair, 0, 1.38, -0.03, 0.18));
+  if (L.hair === 4) {                    // long: carries straight on from the head shell, down over the back
+    const k = 0.7, ry = 1.6 + 0.206 * Math.cos(Math.PI * k), rr = 0.206 * Math.sin(Math.PI * k);
+    parts.push(cap(k));
+    // round the back of the neck, as wide as the shell's rim, down to the shoulders
+    const nape = new THREE.CylinderGeometry(rr, rr + 0.02, 0.1, 12, 1, true, Math.PI / 2, Math.PI);
+    nape.translate(0, ry - 0.05, 0.14);
+    parts.push(part(nape, hair));
+    // then a shallow curved sheet lying on the back (the jacket leans forward, so it hangs just behind it)
+    const sheet = new THREE.CylinderGeometry(0.15, 0.2, 0.28, 12, 1, true, Math.PI / 2, Math.PI);
+    sheet.scale(1, 1, 0.42); sheet.translate(0, -0.14, 0); sheet.rotateX(0.12); sheet.translate(0, ry + 0.01, -0.035);
+    parts.push(part(sheet, hair));
+    // the ends: short tapered locks
+    for (const x of [-0.14, -0.07, 0, 0.07, 0.14])
+      parts.push(part(new THREE.ConeGeometry(0.045, 0.1, 5), hair, x, ry - 0.3, -0.125 + Math.abs(x) * 0.15, Math.PI + 0.12));
   }
   // headwear
   if (L.head === 0) {                    // helmet with a little peak
