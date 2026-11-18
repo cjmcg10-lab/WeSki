@@ -110,7 +110,7 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-18 (19 of 34 checked):
+Status on 2026-11-18 (33 of 34 checked; only Stowe is left):
 
 | Checked against the resort's list | Source |
 | --- | --- |
@@ -120,23 +120,32 @@ Status on 2026-11-18 (19 of 34 checked):
 | Breckenridge, Park City, Keystone, Smugglers' Notch, Heavenly | official trail maps the owner downloaded and uploaded to the chat (Epic and Smuggs sites refuse automated clients); symbols read by hand from enlarged tiles |
 | Stratton | resort feed, `official_ratings.py fetch mtnpowder 1 stratton` |
 | Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Loon, Whiteface | official trail maps (resort sites by curl, or skimap.org), read by hand from tiles (added 2026-11-18) |
+| Jay Peak | trail map PDF by curl; run names are real text, so the symbol left of each name was classified by script (`pdftotext -bbox`) |
+| Vail | 2026-27 maps from `scene7.vailresorts.com` (wid=4000; 8000 is refused), read by hand |
+| Copper, Brundage | resort trail maps (see sources in each official json), read by hand |
+| Les Contamines, La Plagne, Les Arcs (Paradiski map), Tignes – Val d'Isère, Val Thorens, Geto Kogen | official piste maps, line colours read by hand from tiles |
+| Zermatt – Cervinia | Cervino Ski Paradise PDF (cervinia-api.devtherocks.it, 45 MB, curl): coloured number badges classified by script, names from the map's printed piste list |
+| Saalbach, SkiWelt | Intermaps data behind the resorts' own interactive maps: `winter.intermaps.com/<map>/data?lang=de` (`saalbach_hinterglemm_leogang_fieberbrunn`, `skiwelt`): every slope with number, name and colour |
+| Pizol | the resort's piste report on `www.infosnow.ch/~apgmontagne/?lang=de&id=47&tab=web-wi`: number, name and a colour icon (13 blue, 14 red, 15 black, 16 yellow = ski route) |
 
-Not yet checked (15), with what was learned about each source:
+Not yet checked: **Stowe** only. stowe.com refuses automated clients and its PDF is over the web-fetch 10 MB limit:
+the owner needs to upload the trail map. Val Thorens's list does not cover the Orelle side (the Orelle map is
+`les3vallees.com/media/download/plan-orelle.pdf`, not read yet).
 
-- mtnpowder.com feed ids with trail lists: Stratton 1, Snowshoe 2, Blue 3, Tremblant 4, Winter Park 5, Steamboat 6, Deer Valley 49,
-  Aspen 51-54, Eldora 56, Bear 57, Snow Summit 58, June 59, Mammoth 60, Palisades 61/62, Alta 63, Snowbird 64, Solitude 65,
-  Brighton 66, Jackson Hole 67, Big Sky 68, Sugarbush 70, Lake Louise 74, Norquay 75, Sunshine 76, Revelstoke 77, Taos 78,
-  Snoqualmie 79, Crystal 80. Weather only, no trail list (fetch fails with KeyError 'MountainAreas'): Killington 69, Loon 71,
-  Sugarloaf 72, Sunday River 73, Copper 55.
+European and Japanese ratings use `"scheme": "colour"` in the official json (0 green, 1 blue, 2 red, 3 black,
+4 ski route; Japan 0, 2, 3). Resorts that number their runs instead of naming them (Saalbach, Pizol) add
+`"numbers": {"30": 1, ...}`; `build_zones.py` matches them against the OpenStreetMap `ref` tag or a number at the
+start of the name, but a match by number alone never makes a run easier than OpenStreetMap rates it (an OSM number
+can be wrong: Saalbach's "Zwölferkogel - Nordabfahrt" carries 14 instead of 40). SkiWelt is matched by name only,
+because its numbers repeat between areas. `build_zones.py` now resets each run to its OpenStreetMap rating before
+applying the official list, so taking a run off the list really undoes it; it also applies the config `rename`.
 
-- Copper: the trail report page is filled in by script. The official maps download fine through a web-fetch agent:
-  `cms.coppercolorado.com/sites/default/files/2026-11/FY27_Maps_Web_MainTrailMap.pdf`, `.../2024-10/FY25_Copper_Bowl.pdf`,
-  `.../2024-10/FY25_Spaulding.pdf`. Run names are drawn artwork, not text: render and read crops.
-- Jay Peak: the host is allowed; curl with the `weski-build` User-Agent downloads the 19 MB trail map PDF (`jaypeakresort.com/sites/default/files/2026-02/JPR_TrailMap_Winter_2025%2B2026_ToPRINT.pdf`).
-- Brundage: `brundage.com` is now an allowed host; the map images linked from `brundage.com/winter-maps/` download with curl.
-- Vail and Stowe: their sites refuse automated clients. The owner said on 2026-11-17 they would upload these two maps
-  to the chat next; uploads land in the session's uploads folder.
-- The ten European and Japanese resorts: not tried yet. European sites usually publish a piste list with colours.
+mtnpowder.com feed ids with trail lists (for future resorts): Stratton 1, Snowshoe 2, Blue 3, Tremblant 4, Winter Park 5,
+Steamboat 6, Deer Valley 49, Aspen 51-54, Eldora 56, Bear 57, Snow Summit 58, June 59, Mammoth 60, Palisades 61/62,
+Alta 63, Snowbird 64, Solitude 65, Brighton 66, Jackson Hole 67, Big Sky 68, Sugarbush 70, Lake Louise 74, Norquay 75,
+Sunshine 76, Revelstoke 77, Taos 78, Snoqualmie 79, Crystal 80. Weather only, no trail list: Killington 69, Loon 71,
+Sugarloaf 72, Sunday River 73, Copper 55. Intermaps (`winter.intermaps.com`) serves many Alpine resorts' maps; a
+resort's map name is in its website's map embed.
 
 When one map run covers an upper and a lower part with different official ratings, the checker leaves it alone unless
 the official json names the whole run. Give the whole run the harder rating (see the note in `cannon-mountain.json`).
@@ -225,6 +234,13 @@ exists in the owner's Cloudflare account at the old address, frozen at the last 
 separate group rooms. The owner can delete it in the Cloudflare dashboard, or a session can turn it into a redirect if
 asked. The icons show the owner's logo.
 
+## Walking off the trails (2026-11-18)
+
+Directions can now start or end off the trail network: to a building, a dropped pin or a friend standing off a run.
+`src/routing.js` `_walkOff` adds a straight walk of up to `WALK_MAX` (1000 m) between the place and the nearest trail
+or lift point. Those parts are drawn orange and dashed (`COLORS.walk` in `src/map.js`) and listed in the map legend.
+Not yet tried on a phone.
+
 ## Languages (2026-11-18)
 
 Ten languages (en, es, fr, de, it, pt, nl, ja, ko, zh), chosen under More → Language (defaults to the phone's language).
@@ -283,7 +299,7 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
-1. Rating check for the remaining 15 resorts (above), in order of popularity.
+1. Rating check: only Stowe is left (needs the owner's upload of the trail map); also read the Orelle map for Val Thorens.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source

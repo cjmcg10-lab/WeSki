@@ -55,6 +55,11 @@ named = {"slow": set(cfg.get("slow_zone_trails", [])), "family": set(), "race": 
 for k, v in cfg.get("zones", {}).items():
     assert k in named, f"zones: unknown kind {k!r}"
     named[k].update(v)
+# Name corrections from the config (also applied by build_data.py), so a misspelling found during the
+# rating check is fixed without rebuilding the terrain.
+for T in R["trails"]:
+    if T["name"] in cfg.get("rename", {}):
+        T["name"] = cfg["rename"][T["name"]]
 known = {T["name"] for T in R["trails"]}
 for k, names in named.items():
     assert not names - known, f"zones.{k}: no run named {sorted(names - known)}"
@@ -120,6 +125,12 @@ def trim_ends(limit=45.0):
 # Runs with no rating in the map data. The build draws them blue; a better guess is the rating of
 # the same run's other pieces, then of the runs it joins (for a short connector), then its slope.
 rated = lambda T: bool(tags.get(T.get("osm"), {}).get("piste:difficulty"))
+# This script re-reads its own output: start every rated run again from the map data's rating, so an
+# official rating applied by an earlier run of this script never sticks after it is taken off the list.
+DIFF = {"novice": 0, "easy": 0, "intermediate": 1, "advanced": 2, "expert": 3, "extreme": 3, "freeride": 3}
+for T in R["trails"]:
+    if rated(T):
+        T["d"] = DIFF.get(tags[T["osm"]]["piste:difficulty"], 1)
 by_name, at_node = {}, {}
 for T in R["trails"]:
     if rated(T) and T["name"]:
@@ -152,7 +163,17 @@ if official:
     find = official_ratings.lookup(official)
     for T in R["trails"]:
         hit = find(T["name"]) if T["name"] else None
-        if hit:
+        if not hit:                                 # resorts that number their runs instead of naming them
+            hit = official_ratings.by_number(official, T["name"], tags.get(T.get("osm"), {}).get("ref"))
+            # A number in OpenStreetMap can be wrong, and a run matched only by number is not checked by name:
+            # never let such a match make a run easier than the map rates it. Listed for a look by hand.
+            if hit and official.get("scheme") == "colour" and official_ratings.COLOUR_LEVEL[hit[0]] < T["d"]:
+                print(f"  number match not applied (would make it easier): {T['name']} osm {T.get('osm')}")
+                hit = None
+        if hit and official.get("scheme") == "colour":
+            T["c"], T["d"], T["ok"] = hit[0], official_ratings.COLOUR_LEVEL[hit[0]], True
+            official_n += 1
+        elif hit:
             T["d"], T["ok"] = hit[0], True          # ok: rating confirmed against the resort's list
             if hit[1]:
                 T["bb"] = True                      # blue-black: harder than a blue, not a black
@@ -171,13 +192,14 @@ for T in R["trails"]:
         z = "extreme"
     if not z and (t.get("piste:difficulty") == "freeride" or t.get("piste:grooming") == "backcountry"):
         z = "free"
+    keep_c = T.get("c") if T.get("ok") and official and official.get("scheme") == "colour" else None
     T.pop("c", None)
     T.pop("u", None)
     if T.get("osm") in tags and not t.get("piste:difficulty") and not T.get("ok"):
         T["u"] = True           # no rating in the map data: the level shown is a guess
         count["unrated"] = count.get("unrated", 0) + 1
     if SCHEME != "us":
-        T["c"] = (JP_CLASS if SCHEME == "jp" else EU_CLASS).get(t.get("piste:difficulty"), [1, 2, 3, 4][T["d"]])
+        T["c"] = keep_c if keep_c is not None else (JP_CLASS if SCHEME == "jp" else EU_CLASS).get(t.get("piste:difficulty"), [1, 2, 3, 4][T["d"]])
     T.pop("z", None)
     T.pop("lit", None)
     if z:

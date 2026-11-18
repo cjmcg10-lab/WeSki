@@ -17,5 +17,9 @@
   46.96,
   9.5,
   47.04
- ]
+ ],
+ "rename": {
+  "Abfahrtsroute Jona": "Abfahrt Jona",
+  "Abfahrtsroute Wangs": "Abfahrt Wangs"
+ }
 }

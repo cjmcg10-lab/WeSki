@@ -8,6 +8,13 @@
            trail map or trail report, in the same shape:
              {"source": "...", "fetched": "YYYY-MM-DD", "runs": {"Run name": 0..3}, "blue_black": ["Run name"]}
            Levels: 0 green circle, 1 blue square, 2 black diamond, 3 double black / extreme.
+           European and Japanese resorts rate by piste colour instead: add "scheme": "colour" and give
+           each run its colour class: 0 green, 1 blue, 2 red, 3 black, 4 ski route / freeride itinerary
+           (Japan: 0 green, 2 red, 3 black). The map's level for directions follows from the colour.
+
+           Resorts that number their runs instead of naming them (Saalbach, SkiWelt) add
+           "numbers": {"30": 0, "121a": 3, ...}: a map run whose OpenStreetMap ref is that number, or
+           whose name is the number ("107", "40 Zwölferkogel", "Skiroute 208"), takes that rating.
 
   check    official_ratings.py check <id>
            Compares public/data/<id>/resort.json with tools/official/<id>.json and lists every
@@ -27,6 +34,9 @@ import urllib.request
 HERE = os.path.dirname(os.path.abspath(__file__))
 ICON = {"GreenCircle": 0, "BlueSquare": 1, "BlueBlackSquare": 1, "BlackDiamond": 2, "DoubleBlackDiamond": 3, "ExtremeTerrain": 3}
 NAMES = ["green", "blue", "black", "double black"]
+COLOURS = ["green", "blue", "red", "black", "ski route"]
+# colour class -> difficulty level used by directions (matches build_data.py DIFF and build_zones.py EU_CLASS)
+COLOUR_LEVEL = [0, 0, 1, 2, 3]
 
 
 def key(name):
@@ -74,6 +84,26 @@ def lookup(off):
     return f
 
 
+def number_of(name, ref=None):
+    """The piste number a map run carries: its OSM ref, or a number at the start of its name."""
+    if ref:
+        return ref.strip().lower()
+    m = re.match(r"^(?:(?:piste|skiroute|route)\s+)?(\d+[a-z]?)(?:\s|$)", (name or "").strip().lower())
+    return m.group(1) if m else None
+
+
+def by_number(off, name, ref=None):
+    nums = off.get("numbers")
+    n = number_of(name, ref) if nums else None
+    if n is None:
+        return None
+    n = n.lstrip("0") or "0"
+    for k, v in nums.items():
+        if (k.lower().lstrip("0") or "0") == n:
+            return (v, False)
+    return None
+
+
 def load(rid):
     p = f"{HERE}/official/{rid}.json"
     return json.load(open(p)) if os.path.exists(p) else None
@@ -102,22 +132,29 @@ def check(rid):
     assert off, f"no tools/official/{rid}.json"
     R = json.load(open(f"{HERE}/../public/data/{rid}/resort.json"))
     find = lookup(off)
+    colour = off.get("scheme") == "colour"
+    names = COLOURS if colour else NAMES
     seen, diff, extra = set(), {}, set()
     for T in R["trails"]:
         if not T["name"]:
             continue
-        hit = find(T["name"])
+        hit = find(T["name"]) or by_number(off, T["name"])
         if hit:
             seen.add(key(T["name"]))
             seen.add(loose(T["name"]))
-            if hit[0] != T["d"]:
-                diff[T["name"]] = (T["d"], hit[0])
+            have = T.get("c", COLOURS.index("blue")) if colour else T["d"]
+            if hit[0] != have:
+                diff[T["name"]] = (have, hit[0])
         else:
             extra.add(T["name"])
     missing = sorted(n for n in off["runs"] if key(n) not in seen and loose(n) not in seen)
+    if off.get("numbers"):
+        got = {number_of(T["name"]) for T in R["trails"] if T["name"]}
+        print(f"  numbered runs on the resort's list: {len(off['numbers'])}, found by number in map names: "
+              f"{len([k for k in off['numbers'] if k.lower() in got])} (OpenStreetMap refs are matched at build time)")
     print(f"{rid}: {len(off['runs'])} official runs, {len(seen)} matched on the map, {len(diff)} with a different rating")
     for n, (a, b) in sorted(diff.items()):
-        print(f"  [rating] {n}: map {NAMES[a]}, resort {NAMES[b]}")
+        print(f"  [rating] {n}: map {names[a]}, resort {names[b]}")
     print(f"  official runs not on the map ({len(missing)}): {', '.join(missing)}")
     print(f"  map runs the resort does not list ({len(extra)}): {', '.join(sorted(extra))}")
 

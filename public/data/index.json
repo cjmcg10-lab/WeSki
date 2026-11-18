@@ -29,7 +29,7 @@
   "trails": 77,
   "lifts": 6,
   "zones": false,
-  "bytes": 443593
+  "bytes": 444587
  },
  {
   "id": "cannon-mountain",
@@ -61,7 +61,7 @@
   "trails": 140,
   "lifts": 23,
   "zones": false,
-  "bytes": 933643
+  "bytes": 935230
  },
  {
   "id": "geto-kogen",
@@ -77,7 +77,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174150
+  "bytes": 174501
  },
  {
   "id": "heavenly",
@@ -109,7 +109,7 @@
   "trails": 90,
   "lifts": 9,
   "zones": true,
-  "bytes": 459675
+  "bytes": 460752
  },
  {
   "id": "keystone",
@@ -157,7 +157,7 @@
   "trails": 154,
   "lifts": 85,
   "zones": true,
-  "bytes": 2771410
+  "bytes": 2773620
  },
  {
   "id": "les-arcs",
@@ -173,7 +173,7 @@
   "trails": 132,
   "lifts": 78,
   "zones": true,
-  "bytes": 2898093
+  "bytes": 2901740
  },
  {
   "id": "les-contamines",
@@ -189,7 +189,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1182819
+  "bytes": 1183717
  },
  {
   "id": "loon",
@@ -285,7 +285,7 @@
   "trails": 32,
   "lifts": 13,
   "zones": true,
-  "bytes": 879338
+  "bytes": 880084
  },
  {
   "id": "saalbach",
@@ -301,7 +301,7 @@
   "trails": 100,
   "lifts": 81,
   "zones": true,
-  "bytes": 2511585
+  "bytes": 2512798
  },
  {
   "id": "saddleback",
@@ -333,7 +333,7 @@
   "trails": 157,
   "lifts": 76,
   "zones": true,
-  "bytes": 2798405
+  "bytes": 2800167
  },
  {
   "id": "smugglers-notch",
@@ -461,7 +461,7 @@
   "trails": 180,
   "lifts": 78,
   "zones": true,
-  "bytes": 2846538
+  "bytes": 2849442
  },
  {
   "id": "vail",
@@ -477,7 +477,7 @@
   "trails": 219,
   "lifts": 32,
   "zones": false,
-  "bytes": 1802231
+  "bytes": 1804981
  },
  {
   "id": "val-thorens",
@@ -493,7 +493,7 @@
   "trails": 102,
   "lifts": 32,
   "zones": true,
-  "bytes": 1581380
+  "bytes": 1582897
  },
  {
   "id": "whiteface",
@@ -541,6 +541,6 @@
   "trails": 134,
   "lifts": 62,
   "zones": true,
-  "bytes": 2614820
+  "bytes": 2616645
  }
 ]

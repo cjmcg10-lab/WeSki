@@ -16,5 +16,9 @@
  "isolated_lifts": [
   "Rip's Ride Carpet",
   "Golden Peak"
- ]
+ ],
+ "rename": {
+  "Genghis Kahn": "Genghis Khan",
+  "Riva Ridge - Tourist Trap": "Tourist Trap"
+ }
 }

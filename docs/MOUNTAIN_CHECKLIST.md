@@ -87,31 +87,31 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Mountain | Map built | Ratings checked | Photo | Known problems |
 | --- | --- | --- | --- | --- |
 | Breckenridge | yes | yes | yes | |
-| Brundage Mountain | yes | no (maps download from brundage.com) | no | |
+| Brundage Mountain | yes | yes (four trail maps from brundage.com, read by hand, 2026-11-18) | no | |
 | Cannon Mountain | yes | yes | yes | |
-| Copper Mountain | yes | no (map PDFs download; names are artwork) | yes | |
-| Geto Kogen | yes | no | no | |
+| Copper Mountain | yes | yes (2026-27 trail map and the Copper Bowl and Spaulding insets, read by hand, 2026-11-18) | yes | a few official names (Spillway, Guthrie's Chute, Union Meadows) are not runs in OpenStreetMap |
+| Geto Kogen | yes | yes (course map and course page on getokogen.com, colours read by hand, 2026-11-18) | no | |
 | Heavenly | yes | yes | yes | |
-| Jay Peak | yes | no (trail map PDF downloads) | yes | |
+| Jay Peak | yes | yes (2025-26 trail map; symbols read automatically next to each printed name, 2026-11-18) | yes | |
 | Keystone | yes | yes | yes | |
-| La Plagne | yes | no | yes | |
-| Les Arcs | yes | no | yes | loose "Droset" piece |
-| Les Contamines | yes | no | yes | |
+| La Plagne | yes | yes (La Plagne piste map 2026 from la-plagne.com, line colours read by hand, 2026-11-18) | yes | |
+| Les Arcs | yes | yes (Paradiski piste map 2026, Les Arcs and Peisey-Vallandry side, read by hand, 2026-11-18) | yes | loose "Droset" piece |
+| Les Contamines | yes | yes (piste map 2025-26 from the resort's ski pass site, read by hand, 2026-11-18) | yes | |
 | Mammoth Mountain | yes | yes | yes | 25 to 40 official runs missing or named differently |
 | Park City | yes | yes | yes | |
-| Pizol | yes | no | yes | |
-| Saalbach Hinterglemm | yes | no | yes | |
+| Pizol | yes | yes (the resort's piste report on infosnow.ch: number, name and colour, 2026-11-18) | yes | |
+| Saalbach Hinterglemm | yes | yes (the resort's interactive map data, 155 numbered runs matched by piste number, 2026-11-18) | yes | two pieces of "Zwölferkogel - Nordabfahrt" and one of "Sonnenmulde" carry a run number in OpenStreetMap that would make them easier; left at the map rating |
 | Saddleback | yes | yes | yes | "Morning Glory" not reachable from the base |
-| SkiWelt | yes | no | yes | |
+| SkiWelt | yes | yes (the resort's interactive map data, matched by run name, 2026-11-18) | yes | |
 | Smugglers' Notch | yes | yes | no | |
 | Steamboat | yes | yes | yes | |
 | Stowe | yes | no (owner to upload the map) | no | |
 | Sugarbush | yes | yes | yes | |
-| Tignes – Val d'Isère | yes | no | yes | |
-| Vail | yes | no (owner to upload the map) | yes | |
-| Val Thorens | yes | no | yes | |
+| Tignes – Val d'Isère | yes | yes (Tignes – Val d'Isère piste map from tignes.net, read by hand, 2026-11-18) | yes | |
+| Vail | yes | yes (2026-27 Front Side, Back Bowls and Blue Sky Basin maps from vail.com, read by hand, 2026-11-18) | yes | |
+| Val Thorens | yes | yes (Val Thorens piste map from les3vallees.com, read by hand; Orelle side not on that map, 2026-11-18) | yes | |
 | Winter Park | yes | yes | yes | 25 to 40 official runs missing or named differently |
-| Zermatt – Cervinia | yes | no | yes | planned Breitboden–Rosenritz chair left out until it opens |
+| Zermatt – Cervinia | yes | yes (Cervino Ski Paradise map 2026-27 from cervinia.it, colour badges read and checked against its printed list, 2026-11-18) | yes | planned Breitboden–Rosenritz chair left out until it opens |
 | Killington | yes (2026-11-18) | yes (trail map, read by hand) | yes | a few old runs OpenStreetMap still lists (Hawkeye, Horn, Old Vagabond) are not reachable |
 | Sunday River | yes (2026-11-18) | yes (trail map, read by hand) | yes | |
 | Sugarloaf | yes (2026-11-18) | yes (trail map, read by hand; Snowfields, Burnt Mountain and Brackett Basin glades take the area's experts-only rating) | yes | Snowfields reached by a short walk from the Timberline lift top (added by hand) |

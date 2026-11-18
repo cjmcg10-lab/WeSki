@@ -1,0 +1,7 @@
+{
+ "source": "Geto Kogen trail map and course page (getokogen.com/winter/01trail), course colours read by hand; Japanese scheme: 0 beginner (green), 2 intermediate, 3 advanced (black)",
+ "fetched": "2026-11-18",
+ "scheme": "colour",
+ "runs": {"A1": 0, "A2": 2, "A3": 3, "A4": 2, "A5": 0, "A6": 0, "B1": 2, "B2": 3, "B3": 3, "C1": 3, "C2": 2, "C3": 2, "C4": 0, "C5": 3},
+ "blue_black": []
+}
