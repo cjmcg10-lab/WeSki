@@ -23,6 +23,26 @@
  ],
  "rename": {
   "10th Mountain Trail": "10th Mtn Trail",
-  "Lower 10th Mountain": "Lower 10th Mtn Trail"
- }
+  "Lower 10th Mountain": "Lower 10th Mtn Trail",
+  "Lower Conifer Connection": "Lower Conifer"
+ },
+ "extra_trails": [
+  {
+   "name": "Polar Kids",
+   "pts": [
+    [
+     -71.8858,
+     42.5005
+    ],
+    [
+     -71.886,
+     42.501
+    ],
+    [
+     -71.88615,
+     42.5014
+    ]
+   ]
+  }
+ ]
 }

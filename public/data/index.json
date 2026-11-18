@@ -346,10 +346,10 @@
   "baseLon": -73.31541,
   "top": 456,
   "base": 279,
-  "trails": 25,
+  "trails": 28,
   "lifts": 7,
   "zones": false,
-  "bytes": 143864
+  "bytes": 149846
  },
  {
   "id": "mount-snow",
@@ -378,10 +378,10 @@
   "baseLon": -72.92551,
   "top": 170,
   "base": 61,
-  "trails": 8,
+  "trails": 14,
   "lifts": 7,
   "zones": true,
-  "bytes": 133959
+  "bytes": 143523
  },
  {
   "id": "okemo",
@@ -458,10 +458,10 @@
   "baseLon": -72.73728,
   "top": 245,
   "base": 115,
-  "trails": 10,
+  "trails": 12,
   "lifts": 8,
   "zones": true,
-  "bytes": 118595
+  "bytes": 122788
  },
  {
   "id": "ragged",
@@ -522,10 +522,10 @@
   "baseLon": -72.94591,
   "top": 322,
   "base": 153,
-  "trails": 16,
+  "trails": 17,
   "lifts": 5,
   "zones": false,
-  "bytes": 128605
+  "bytes": 131040
  },
  {
   "id": "skiwelt",
@@ -714,10 +714,10 @@
   "baseLon": -71.88686,
   "top": 602,
   "base": 315,
-  "trails": 26,
+  "trails": 27,
   "lifts": 8,
   "zones": false,
-  "bytes": 225671
+  "bytes": 228412
  },
  {
   "id": "waterville-valley",

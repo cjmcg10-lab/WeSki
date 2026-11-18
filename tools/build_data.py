@@ -119,6 +119,18 @@ def main():
             tags["aerialway:duration"] = str(x["minutes"])
         ways.append((f"x{k}", ids, tags))
 
+    # Runs on the resort's trail map that OpenStreetMap lacks, traced by hand from the trail map and the
+    # terrain (smooth graded ground between tree islands). Each is {"name", "pts": [[lon, lat], ...]} from
+    # top to bottom; the rating comes from the official list. Ids start at 9e9, above any real way id.
+    for k, x in enumerate(cfg.get("extra_trails", [])):
+        wid = str(9_000_000_000 + k)
+        ids = []
+        for j, (lon, lat) in enumerate(x["pts"]):
+            nid = f"t{k}_{j}"
+            nodes[nid] = tf.transform(lon, lat)
+            ids.append(nid)
+        ways.append((wid, ids, {"piste:type": "downhill", "name": x["name"], "_traced": "yes"}))
+
     # English names where the map has them (Japan), plus per-resort corrections from the config
     RENAME = cfg.get("rename", {})
     for _, _, t in ways:
@@ -314,6 +326,8 @@ def main():
             "pts": flat(densify(pts)),
             "_line": line, "_loop": wid in loop_ids,
         })
+        if t.get("_traced"):
+            trails[-1]["traced"] = True   # not in OpenStreetMap: drawn by hand from the trail map
         trail_ways.append(nd)
 
     # ---- lifts
