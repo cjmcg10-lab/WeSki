@@ -105,7 +105,7 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | SkiWelt | yes | yes (the resort's interactive map data, matched by run name, 2026-11-18) | yes | |
 | Smugglers' Notch | yes | yes | no | |
 | Steamboat | yes | yes | yes | |
-| Stowe | yes | no (owner to upload the map) | no | |
+| Stowe | yes | yes (2026-27 winter trail map the owner uploaded, read by hand, 2026-11-18) | no | glades carry no rating on the resort's map and keep the OpenStreetMap rating |
 | Sugarbush | yes | yes | yes | |
 | Tignes – Val d'Isère | yes | yes (Tignes – Val d'Isère piste map from tignes.net, read by hand, 2026-11-18) | yes | |
 | Vail | yes | yes (2026-27 Front Side, Back Bowls and Blue Sky Basin maps from vail.com, read by hand, 2026-11-18) | yes | |

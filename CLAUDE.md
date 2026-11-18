@@ -110,14 +110,14 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-18 (33 of 34 checked; only Stowe is left):
+Status on 2026-11-18 (all 34 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
 | Steamboat, Winter Park, Mammoth, Sugarbush | resort feed, `official_ratings.py fetch mtnpowder <resortId> <id>` (6, 5, 60, 70) |
 | Saddleback | trail map PDF, which has a typed "Trails & Designations" list (`pdftotext` reads it) |
 | Cannon | trail map image, labels read by hand from enlarged crops (green, blue or black lettering) |
-| Breckenridge, Park City, Keystone, Smugglers' Notch, Heavenly | official trail maps the owner downloaded and uploaded to the chat (Epic and Smuggs sites refuse automated clients); symbols read by hand from enlarged tiles |
+| Breckenridge, Park City, Keystone, Smugglers' Notch, Heavenly, Stowe | official trail maps the owner downloaded and uploaded to the chat (Epic and Smuggs sites refuse automated clients); symbols read by hand from enlarged tiles |
 | Stratton | resort feed, `official_ratings.py fetch mtnpowder 1 stratton` |
 | Killington, Sunday River, Sugarloaf, Okemo, Mount Snow, Loon, Whiteface | official trail maps (resort sites by curl, or skimap.org), read by hand from tiles (added 2026-11-18) |
 | Jay Peak | trail map PDF by curl; run names are real text, so the symbol left of each name was classified by script (`pdftotext -bbox`) |
@@ -128,8 +128,9 @@ Status on 2026-11-18 (33 of 34 checked; only Stowe is left):
 | Saalbach, SkiWelt | Intermaps data behind the resorts' own interactive maps: `winter.intermaps.com/<map>/data?lang=de` (`saalbach_hinterglemm_leogang_fieberbrunn`, `skiwelt`): every slope with number, name and colour |
 | Pizol | the resort's piste report on `www.infosnow.ch/~apgmontagne/?lang=de&id=47&tab=web-wi`: number, name and a colour icon (13 blue, 14 red, 15 black, 16 yellow = ski route) |
 
-Not yet checked: **Stowe** only. stowe.com refuses automated clients and its PDF is over the web-fetch 10 MB limit:
-the owner needs to upload the trail map. Val Thorens's list does not cover the Orelle side (the Orelle map is
+Stowe (2026-27 map uploaded by the owner): unlabelled upper Spruce Peak runs take their black line colour, and glades
+keep the OpenStreetMap rating because the map gives glades no rating (see the note in `tools/official/stowe.json`).
+Val Thorens's list does not cover the Orelle side (the Orelle map is
 `les3vallees.com/media/download/plan-orelle.pdf`, not read yet).
 
 European and Japanese ratings use `"scheme": "colour"` in the official json (0 green, 1 blue, 2 red, 3 black,
@@ -299,7 +300,7 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
-1. Rating check: only Stowe is left (needs the owner's upload of the trail map); also read the Orelle map for Val Thorens.
+1. Rating check: all 34 done. Still to read: the Orelle map for Val Thorens.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
