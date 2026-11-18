@@ -109,7 +109,7 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Sugarbush | yes | yes | yes | |
 | Tignes – Val d'Isère | yes | yes (Tignes – Val d'Isère piste map from tignes.net, read by hand, 2026-11-18) | yes | |
 | Vail | yes | yes (2026-27 Front Side, Back Bowls and Blue Sky Basin maps from vail.com, read by hand, 2026-11-18) | yes | |
-| Val Thorens | yes | yes (Val Thorens piste map from les3vallees.com, read by hand; Orelle side not on that map, 2026-11-18) | yes | |
+| Val Thorens | yes | yes (Val Thorens piste map from les3vallees.com, read by hand, and the Orelle piste map for the Orelle side, 2026-11-18) | yes | |
 | Winter Park | yes | yes | yes | 25 to 40 official runs missing or named differently |
 | Zermatt – Cervinia | yes | yes (Cervino Ski Paradise map 2026-27 from cervinia.it, colour badges read and checked against its printed list, 2026-11-18) | yes | planned Breitboden–Rosenritz chair left out until it opens |
 | Killington | yes (2026-11-18) | yes (trail map, read by hand) | yes | a few old runs OpenStreetMap still lists (Hawkeye, Horn, Old Vagabond) are not reachable |

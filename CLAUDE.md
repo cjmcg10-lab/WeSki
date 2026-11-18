@@ -130,8 +130,8 @@ Status on 2026-11-18 (all 34 checked):
 
 Stowe (2026-27 map uploaded by the owner): unlabelled upper Spruce Peak runs take their black line colour, and glades
 keep the OpenStreetMap rating because the map gives glades no rating (see the note in `tools/official/stowe.json`).
-Val Thorens's list does not cover the Orelle side (the Orelle map is
-`les3vallees.com/media/download/plan-orelle.pdf`, not read yet).
+Val Thorens's Orelle side was read from `les3vallees.com/media/download/plan-orelle.pdf` (web-fetch agent; curl is
+refused by the proxy for that host): every Orelle run already matched OpenStreetMap.
 
 European and Japanese ratings use `"scheme": "colour"` in the official json (0 green, 1 blue, 2 red, 3 black,
 4 ski route; Japan 0, 2, 3). Resorts that number their runs instead of naming them (Saalbach, Pizol) add
@@ -300,7 +300,7 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
-1. Rating check: all 34 done. Still to read: the Orelle map for Val Thorens.
+1. Rating check: all 34 done, including Val Thorens's Orelle side.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
    screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
