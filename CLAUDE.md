@@ -225,6 +225,8 @@ so the globe fills the space (`globe.onTap` in `openStart`); after that, tapping
 up); a tap on a resort dot opens its card (`onPick`, only when no other dot is close enough to be the one meant, so tap
 to zoom first in crowded areas); two fingers pinch-zoom; a wheel zooms on a computer; the round button top right
 (`#globe-out`) or a tap off the globe zooms back out. Closing a card picked while zoomed in returns to that zoom.
+The viewer's own position shows on the globe as a blue dot with a pulsing halo (`globe.setMe`, `showMeOnGlobe` in
+`src/main.js`) when location is already allowed for the site, or once "Use my location" is used; it never asks by itself.
 "Use my location" sorts purely by distance; the "Last visited" mountain keeps its tag but is only put first otherwise.
 Join Group from the start screen asks for the code, looks up the group's mountain (`GET /api/groups/<code>`, served by
 `roomInfo` in `worker/room.js`) and flies straight there, then joins. A group records its mountain from the first

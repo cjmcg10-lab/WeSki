@@ -80,6 +80,17 @@ export class Globe {
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.026, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide, transparent: true }));
     this.ring.visible = false;
     g.add(this.ring);
+    // "You are here": a white-rimmed blue dot with a soft pulsing halo, shown once the phone shares its location
+    this.me = new THREE.Group();
+    this.me.add(new THREE.Mesh(new THREE.CircleGeometry(0.016, 28), new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide })));
+    const core = new THREE.Mesh(new THREE.CircleGeometry(0.0115, 28), new THREE.MeshBasicMaterial({ color: '#1e88ff', side: THREE.DoubleSide }));
+    core.position.z = 0.0004;
+    this.me.add(core);
+    this.meHalo = new THREE.Mesh(new THREE.CircleGeometry(0.03, 32), new THREE.MeshBasicMaterial({ color: '#1e88ff', transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false }));
+    this.meHalo.position.z = -0.0002;
+    this.me.add(this.meHalo);
+    this.me.visible = false;
+    g.add(this.me);
     g.rotation.order = 'XYZ';
     g.rotation.set(0.42, 1.9, 0);
     this.scene.add(g);
@@ -243,6 +254,15 @@ export class Globe {
     this.go({ d: this.home, l: this.homeLift }, 0.9, { zoom: true }).then(() => { if (!this.focused && !this.zoomed) this.spin = true; });
   }
 
+  /** Show (or with null, hide) the viewer's own position on the globe. */
+  setMe(lat, lon) {
+    if (lat == null) { this.me.visible = false; return; }
+    this.me.position.copy(ll(lat, lon, 1.005));
+    // lay it flat on the sphere, facing straight out
+    this.me.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.me.position.clone().normalize());
+    this.me.visible = true;
+  }
+
   aim(rs) {
     return { y: Math.PI / 2 - THREE.MathUtils.degToRad(rs.lon + 180), x: THREE.MathUtils.degToRad(rs.lat) };
   }
@@ -326,7 +346,8 @@ export class Globe {
     const now = performance.now(), dt = Math.min(0.12, (now - this.last) / 1000);
     this.last = now; this.t += dt;
     const g = this.globe;
-    if (this.spin) { g.rotation.y += dt * 0.085; g.rotation.x += (0.42 - g.rotation.x) * Math.min(1, dt * 0.6); } // drifts back to its resting tilt
+    // never spins while zoomed in or showing a resort, whatever asked it to
+    if (this.spin && !this.zoomed && !this.focused) { g.rotation.y += dt * 0.085; g.rotation.x += (0.42 - g.rotation.x) * Math.min(1, dt * 0.6); } // drifts back to its resting tilt
     const tw = this.tween;
     if (tw) {
       tw.t = Math.min(1, tw.t + dt / tw.dur);
@@ -351,6 +372,13 @@ export class Globe {
     // zoomed in by tapping (or flying to a resort card from there): the dots stay about the same size on screen
     if (this.zoomed || (this.focused && this.dist < 1.6 && !this.diving)) ps = Math.min(2.6, Math.max(0.012, (this.dist - 0.995) / 2.4));
     for (const p of this.pins) { p.pin.visible = ps > 0.001; p.pin.scale.setScalar(ps || 0.001); }
+    if (this.me.visible) {
+      const show = ps > 0.001 && !this.diving;
+      this.me.children.forEach((c) => (c.visible = show));
+      this.me.scale.setScalar(Math.max(0.001, ps));
+      const k = (this.t * 0.8) % 1;
+      this.meHalo.scale.setScalar(0.6 + k * 0.9); this.meHalo.material.opacity = 0.35 * (1 - k);
+    }
     const d = this.dist;
     this.camera.near = Math.max(0.00002, (d - 1) * 0.4);
     this.camera.updateProjectionMatrix();

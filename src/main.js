@@ -256,6 +256,7 @@ async function openStart(from = null) {
     return true;
   };
   $('#globe-out').classList.add('hidden');
+  showMeOnGlobe();
   if (import.meta.env.DEV) window.__globe = globe;   // for local browser checks only
   layoutGlobe(false);                           // measured with the list in place, so the globe lands in the right spot
   $('#start-panel').classList.toggle('hidden', !!from);
@@ -409,6 +410,20 @@ function toggleFav(id) {
   renderResortList();
 }
 
+/**
+ * Put the viewer's position on the home globe, but only when they already share their location with the app
+ * (never asks: the question only comes from "Use my location" or GPS on the mountain).
+ */
+async function showMeOnGlobe() {
+  if (S.nearMe) { globe?.setMe(S.nearMe.lat, S.nearMe.lon); return; }
+  try {
+    if (!navigator.geolocation || !navigator.permissions) return;
+    const st = await navigator.permissions.query({ name: 'geolocation' });
+    if (st.state !== 'granted') return;
+    navigator.geolocation.getCurrentPosition((p) => globe?.setMe(p.coords.latitude, p.coords.longitude), () => {}, { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 });
+  } catch { /* no permissions API: wait for "Use my location" */ }
+}
+
 /** "Use my location": sort the list by distance from here (asks for location once). */
 function nearMe() {
   if (S.nearMe) { S.nearMe = null; renderResortList(); return; }
@@ -416,7 +431,7 @@ function nearMe() {
   $('#near-btn').classList.add('on');
   toast('Finding your location…', 2500);
   navigator.geolocation.getCurrentPosition(
-    (p) => { S.nearMe = { lat: p.coords.latitude, lon: p.coords.longitude }; S.favOnly = false; renderResortList(); toast('Nearest mountains first.'); },
+    (p) => { S.nearMe = { lat: p.coords.latitude, lon: p.coords.longitude }; S.favOnly = false; globe?.setMe(S.nearMe.lat, S.nearMe.lon); renderResortList(); toast('Nearest mountains first.'); },
     (e) => { $('#near-btn').classList.remove('on'); toast(e.code === 1 ? 'Location is blocked. Allow it for this site in Settings to sort by distance.' : 'Could not find your location. Try again outside or near a window.', 5000); },
     { enableHighAccuracy: false, timeout: 15000, maximumAge: 600000 },
   );
