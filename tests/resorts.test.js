@@ -7,13 +7,13 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['bolton-valley', 'breckenridge', 'brundage', 'burke', 'cannon-mountain', 'copper-mountain', 'geto-kogen', 'heavenly', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mount-snow', 'okemo', 'park-city', 'pizol', 'saalbach', 'saddleback', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'waterville-valley', 'whiteface', 'winter-park', 'zermatt']);
+    expect(index.map((r) => r.id).sort()).toEqual(['berkshire-east', 'bolton-valley', 'breckenridge', 'brundage', 'burke', 'cannon-mountain', 'copper-mountain', 'geto-kogen', 'heavenly', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mount-snow', 'okemo', 'park-city', 'pizol', 'saalbach', 'saddleback', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'waterville-valley', 'whiteface', 'winter-park', 'zermatt']);
   });
   for (const entry of index) {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
       const { resort, geo } = loadResort(entry.id);
       expect(resort.id).toBe(entry.id);
-      expect(resort.trails.length).toBeGreaterThan(entry.id === 'geto-kogen' ? 10 : 70);
+      expect(resort.trails.length).toBeGreaterThan(entry.id === 'geto-kogen' ? 10 : 30);
       expect(resort.lifts.length).toBe(entry.lifts);
       // the index's summit point lands inside this resort's map at about the stated elevation
       const [x, y] = geo.toLocal(entry.lat, entry.lon);

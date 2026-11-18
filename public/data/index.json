@@ -1,5 +1,21 @@
 [
  {
+  "id": "berkshire-east",
+  "name": "Berkshire East",
+  "region": "Massachusetts, USA",
+  "tz": "America/New_York",
+  "lat": 42.61365,
+  "lon": -72.87011,
+  "baseLat": 42.62027,
+  "baseLon": -72.87849,
+  "top": 468,
+  "base": 184,
+  "trails": 40,
+  "lifts": 6,
+  "zones": false,
+  "bytes": 247688
+ },
+ {
   "id": "bolton-valley",
   "name": "Bolton Valley",
   "region": "Vermont, USA",
