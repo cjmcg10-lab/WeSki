@@ -44,5 +44,9 @@
     ]
    ]
   }
- ]
+ ],
+ "way_names": {
+  "1358231467": "Mass Pike West",
+  "331856212": "Mass Pike East"
+ }
 }

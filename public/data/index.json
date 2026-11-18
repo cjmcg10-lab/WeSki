@@ -10,10 +10,10 @@
   "baseLon": -72.87849,
   "top": 468,
   "base": 184,
-  "trails": 40,
+  "trails": 42,
   "lifts": 6,
   "zones": false,
-  "bytes": 247688
+  "bytes": 252470
  },
  {
   "id": "bolton-valley",
@@ -122,10 +122,10 @@
   "baseLon": -73.47879,
   "top": 576,
   "base": 282,
-  "trails": 42,
+  "trails": 46,
   "lifts": 7,
   "zones": false,
-  "bytes": 222504
+  "bytes": 230261
  },
  {
   "id": "copper-mountain",
@@ -314,10 +314,10 @@
   "baseLon": -72.77179,
   "top": 870,
   "base": 419,
-  "trails": 50,
+  "trails": 52,
   "lifts": 6,
   "zones": true,
-  "bytes": 272966
+  "bytes": 273003
  },
  {
   "id": "mammoth",
@@ -474,10 +474,10 @@
   "baseLon": -71.84373,
   "top": 673,
   "base": 337,
-  "trails": 53,
+  "trails": 56,
   "lifts": 5,
   "zones": false,
-  "bytes": 300240
+  "bytes": 307047
  },
  {
   "id": "saalbach",
@@ -650,10 +650,10 @@
   "baseLon": -70.84695,
   "top": 956,
   "base": 248,
-  "trails": 132,
+  "trails": 137,
   "lifts": 20,
   "zones": false,
-  "bytes": 884269
+  "bytes": 892796
  },
  {
   "id": "tignes-val-disere",
@@ -714,10 +714,10 @@
   "baseLon": -71.88686,
   "top": 602,
   "base": 315,
-  "trails": 26,
+  "trails": 27,
   "lifts": 8,
   "zones": false,
-  "bytes": 228431
+  "bytes": 228441
  },
  {
   "id": "waterville-valley",

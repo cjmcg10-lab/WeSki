@@ -14,5 +14,54 @@
  ],
  "skip_pois": [
   "Berkshire East Ski Resort"
- ]
+ ],
+ "extra_trails": [
+  {
+   "name": "Gronk Glades",
+   "pts": [
+    [
+     -72.87883,
+     42.61207
+    ],
+    [
+     -72.88001,
+     42.61228
+    ],
+    [
+     -72.88015,
+     42.61337
+    ],
+    [
+     -72.88014,
+     42.61443
+    ],
+    [
+     -72.88019,
+     42.61556
+    ],
+    [
+     -72.87996,
+     42.61668
+    ]
+   ]
+  },
+  {
+   "name": "Horace's Grove",
+   "pts": [
+    [
+     -72.86995,
+     42.61442
+    ],
+    [
+     -72.87045,
+     42.61415
+    ],
+    [
+     -72.871,
+     42.61392
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Gronk Glades (between Roundabout and Hemlock) and Horace's Grove (below the summit between Ralicki's Run and Riva Ridge) are glades on the trail map, drawn between their neighbouring runs."
 }

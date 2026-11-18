@@ -16,6 +16,85 @@
   "Ragged Mountain Resort"
  ],
  "rename": {
-  "Riches": "Rags to Riches"
- }
+  "Riches": "Rags to Riches",
+  "Meadows Learning Area": "Meadows"
+ },
+ "extra_trails": [
+  {
+   "name": "Double Take",
+   "pts": [
+    [
+     -71.85234,
+     43.47481
+    ],
+    [
+     -71.85196,
+     43.4749
+    ],
+    [
+     -71.85155,
+     43.47476
+    ],
+    [
+     -71.85104,
+     43.4747
+    ],
+    [
+     -71.85061,
+     43.47486
+    ],
+    [
+     -71.85016,
+     43.47504
+    ]
+   ]
+  },
+  {
+   "name": "Triple Take",
+   "pts": [
+    [
+     -71.84953,
+     43.47396
+    ],
+    [
+     -71.8495,
+     43.4742
+    ],
+    [
+     -71.84945,
+     43.47444
+    ],
+    [
+     -71.84929,
+     43.47468
+    ],
+    [
+     -71.84895,
+     43.4749
+    ],
+    [
+     -71.84864,
+     43.47513
+    ]
+   ]
+  },
+  {
+   "name": "Home Run",
+   "pts": [
+    [
+     -71.84455,
+     43.48302
+    ],
+    [
+     -71.8442,
+     43.484
+    ],
+    [
+     -71.8438,
+     43.4848
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Double Take and Triple Take are expert glades the trail map shows beside Miss Behavin' below the Spear summit; drawn between the neighbouring runs (within about 150 m). Home Run continues Turnpike to the base."
 }

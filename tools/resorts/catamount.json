@@ -20,5 +20,88 @@
   "Fisher's Fluke": "Fisher's Flume",
   "Ridge Run Extension": "Ridge Run Ext",
   "Race Slope": "Toni Matt"
- }
+ },
+ "extra_trails": [
+  {
+   "name": "Spencer's Way",
+   "pts": [
+    [
+     -73.47078,
+     42.16515
+    ],
+    [
+     -73.47162,
+     42.16572
+    ],
+    [
+     -73.4728,
+     42.1664
+    ],
+    [
+     -73.47358,
+     42.16717
+    ],
+    [
+     -73.47423,
+     42.16785
+    ],
+    [
+     -73.47462,
+     42.16836
+    ]
+   ]
+  },
+  {
+   "name": "Birch Glades (East)",
+   "pts": [
+    [
+     -73.47358,
+     42.16659
+    ],
+    [
+     -73.47397,
+     42.16727
+    ],
+    [
+     -73.47436,
+     42.1679
+    ]
+   ]
+  },
+  {
+   "name": "Birch Glades (West)",
+   "pts": [
+    [
+     -73.47423,
+     42.16533
+    ],
+    [
+     -73.47433,
+     42.16606
+    ],
+    [
+     -73.47443,
+     42.16679
+    ]
+   ]
+  },
+  {
+   "name": "Homeward Bound",
+   "pts": [
+    [
+     -73.47488,
+     42.16872
+    ],
+    [
+     -73.47554,
+     42.16855
+    ],
+    [
+     -73.476,
+     42.16834
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Spencer's Way, the two Birch Glades and Homeward Bound are not in OpenStreetMap; placed from the trail map against NAIP aerial photos (within about 60 m)."
 }

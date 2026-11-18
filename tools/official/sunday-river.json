@@ -142,5 +142,8 @@
   "Yetiville": 2,
   "iCaramba!": 3
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "iCaramba!": "The resort lists the whole run and also its upper and lower parts; both parts are on the map."
+ }
 }

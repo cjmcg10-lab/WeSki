@@ -30,5 +30,8 @@
   "Smith Walton": 2,
   "Sundowner": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "Mass Pike": "The resort lists the whole trail and also its East and West parts; both parts are on the map."
+ }
 }

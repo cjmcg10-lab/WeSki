@@ -20,5 +20,122 @@
   44.455,
   -70.844,
   44.494
- ]
+ ],
+ "split_ways": {
+  "199385452": [
+   [
+    -70.90265,
+    44.46582
+   ],
+   "Upper Caramba",
+   "Lower Caramba"
+  ]
+ },
+ "extra_trails": [
+  {
+   "name": "Starwood",
+   "pts": [
+    [
+     -70.85111,
+     44.46285
+    ],
+    [
+     -70.85065,
+     44.4636
+    ],
+    [
+     -70.85004,
+     44.46425
+    ],
+    [
+     -70.84958,
+     44.46498
+    ],
+    [
+     -70.84943,
+     44.46576
+    ],
+    [
+     -70.84928,
+     44.46655
+    ]
+   ]
+  },
+  {
+   "name": "Starstruck",
+   "pts": [
+    [
+     -70.84942,
+     44.46231
+    ],
+    [
+     -70.84922,
+     44.46334
+    ],
+    [
+     -70.84893,
+     44.46438
+    ],
+    [
+     -70.84871,
+     44.46541
+    ],
+    [
+     -70.84831,
+     44.46643
+    ],
+    [
+     -70.84817,
+     44.46744
+    ]
+   ]
+  },
+  {
+   "name": "Hollywood",
+   "pts": [
+    [
+     -70.87115,
+     44.46128
+    ],
+    [
+     -70.87081,
+     44.46214
+    ],
+    [
+     -70.87016,
+     44.46292
+    ],
+    [
+     -70.8694,
+     44.46367
+    ],
+    [
+     -70.86864,
+     44.46441
+    ],
+    [
+     -70.86778,
+     44.46508
+    ]
+   ]
+  },
+  {
+   "name": "Cutoff",
+   "pts": [
+    [
+     -70.85949,
+     44.46698
+    ],
+    [
+     -70.8603,
+     44.46715
+    ],
+    [
+     -70.86097,
+     44.46748
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Starwood, Starstruck and Hollywood are tree glades the trail map shows between two runs; they are drawn down the middle of those runs (Starburst and Starlight; Moonstruck and Starburst; Top Gun and Agony). Cutoff joins Wildfire to Cascades as on the map. iCaramba! is split in half into Upper and Lower Caramba (the split point is a guess)."
 }

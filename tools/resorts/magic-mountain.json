@@ -27,5 +27,10 @@
  ],
  "rename": {
   "Lower Red Line": "Lower Redline"
- }
+ },
+ "way_names": {
+  "685754846": "Abracadabra",
+  "231035739": "Rabbit Run"
+ },
+ "names_note": "From the trail map and NAIP photos: the unnamed western branch of the Little Dipper loop is Rabbit Run, and the short unnamed run beside lower Hocus Pocus is Abracadabra."
 }
