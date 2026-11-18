@@ -54,6 +54,37 @@
   [
    "King Pine (top)",
    "trail:Choker"
+  ],
+  [
+   "trail:Golden Road",
+   "trail:Eastern Territory",
+   "hike"
+  ],
+  [
+   "trail:Eastern Territory",
+   "trail:Burnt Mountain Snowfields",
+   "hike"
+  ],
+  [
+   "trail:Eastern Territory",
+   "trail:Burnt Mountain Sidecountry Area",
+   "hike"
+  ],
+  [
+   "trail:Burnt Mountain Snowfields",
+   "trail:Adroscoggin Glade",
+   "hike"
+  ],
+  [
+   "trail:Burnt Mountain Snowfields",
+   "trail:Kennebec Glade",
+   "hike"
+  ],
+  [
+   "trail:Burnt Mountain Snowfields",
+   "trail:Little Androscoggin Glade",
+   "hike"
   ]
- ]
+ ],
+ "links_note": "Burnt Mountain is reached along the Eastern Territory and a hike up the mountain; directions show those parts as a walk."
 }

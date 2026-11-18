@@ -214,5 +214,13 @@
   "Roller Coaster",
   "Solitude"
  ],
- "note_whole_runs": "Back for More, Downhill, Roller Coaster and Solitude are one way each in OpenStreetMap; the resort rates the upper part blue-black and the lower part blue (Back for More lower: green), so the whole run takes the harder rating."
+ "note_whole_runs": "Back for More, Downhill, Roller Coaster and Solitude are one way each in OpenStreetMap; the resort rates the upper part blue-black and the lower part blue (Back for More lower: green), so the whole run takes the harder rating.",
+ "same_as": {
+  "Antin Alley / Chickadee": "Chickadee",
+  "The Snowflakes / Fascination": "Fascination",
+  "Sesame Street": "Sesame Street West"
+ },
+ "not_runs": {
+  "The Hemlocks": "hike-to terrain park on the back side (the trail map lists it under Unbound parks); parks carry no run rating"
+ }
 }

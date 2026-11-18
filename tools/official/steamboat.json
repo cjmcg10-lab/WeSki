@@ -208,5 +208,15 @@
   "Sunset",
   "Surprise",
   "Two O'Clock"
- ]
+ ],
+ "not_runs": {
+  "Gate 1": "backcountry access gate, not a run",
+  "Gate 2": "backcountry access gate, not a run",
+  "Gate 3": "backcountry access gate, not a run",
+  "Gate 4": "backcountry access gate, not a run",
+  "Gate 5": "backcountry access gate, not a run",
+  "Gate 6": "backcountry access gate, not a run",
+  "Gate 7": "backcountry access gate, not a run",
+  "Gate 8": "backcountry access gate, not a run"
+ }
 }

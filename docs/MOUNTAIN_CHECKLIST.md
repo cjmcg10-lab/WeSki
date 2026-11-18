@@ -97,7 +97,7 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | La Plagne | yes | yes (La Plagne piste map 2026 from la-plagne.com, line colours read by hand, 2026-11-18) | yes | |
 | Les Arcs | yes | yes (Paradiski piste map 2026, Les Arcs and Peisey-Vallandry side, read by hand, 2026-11-18) | yes | loose "Droset" piece |
 | Les Contamines | yes | yes (piste map 2025-26 from the resort's ski pass site, read by hand, 2026-11-18) | yes | |
-| Mammoth Mountain | yes | yes | yes | 25 to 40 official runs missing or named differently |
+| Mammoth Mountain | yes | yes | yes | 20 official runs still to trace (see below) |
 | Park City | yes | yes | yes | |
 | Pizol | yes | yes (the resort's piste report on infosnow.ch: number, name and colour, 2026-11-18) | yes | |
 | Saalbach Hinterglemm | yes | yes (the resort's interactive map data, 155 numbered runs matched by piste number, 2026-11-18) | yes | two pieces of "Zwölferkogel - Nordabfahrt" and one of "Sonnenmulde" carry a run number in OpenStreetMap that would make them easier; left at the map rating |
@@ -145,3 +145,21 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 Not yet tracked per mountain (do these as each mountain is next worked on): the lift-list check, the
 directions check to every lift top, place names, and the browser close-ups in sections 4 and 5. Several
 mountains also have a few dead-end runs listed in their build's connectivity report.
+
+
+## Runs on the resort's list but not yet on the map (2026-11-18, evening)
+
+`python3 tools/official_ratings.py check <id>` gives the names. Every run on the map is now reachable from the lifts
+(tested for every run confirmed against the resort's list); these are runs OpenStreetMap does not have at all, still to
+trace from the trail map and aerial photos. Total 165, down from about 200.
+
+| Mountain | Still to trace | Notes |
+| --- | --- | --- |
+| Mammoth | 20 | positions read from the trail map (Main Traverse, Roma's Road and Glades, Dragon's Pass, Exhibition, Europa Cup, Rusty's, Walter's, Triangle, Sliver, Ricardo Bluffs, Relief, back side: Reds Lake Run, Rigley's Bowl, Outpost Glades) |
+| Winter Park | 17 | mostly "Village Way" sections and connectors |
+| Park City | 16 | |
+| Pizol | 15 | |
+| Whiteface | 9 | Ausable Run, Fox Island, Deer Valley Glades, Slide View Glades, Yellow Dot, Loop, Wildway, Ilmar's Alley, High County Road |
+| Heavenly 8, SkiWelt 8 (in the map area), Copper 7, Zermatt 7, Sunday River 6, Vail 6, Catamount 5, Steamboat 4, Ragged 4 | | |
+| 1 to 3 each | | Berkshire East, Breckenridge, Cannon, Geto Kogen, Killington, La Plagne, Les Contamines, Magic, Mount Snow, Okemo, Saddleback, Smugglers' Notch, Stowe, Stratton, Sugarbush, Tignes, Val Thorens, Wachusett |
+| Saalbach | 104 numbers | the resort lists runs by number only; OpenStreetMap carries a number on few runs. Those runs keep OpenStreetMap's rating. A colour comparison with the resort's own drawn runs found about 40 places to look at by eye |

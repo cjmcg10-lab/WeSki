@@ -124,5 +124,13 @@
   "Yodeler Express": 0,
   "Yodeler, Underpass": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "Lower & Upper Kidderbrook": "trail-report line grouping runs listed on their own",
+  "Lower Wanderer, West Meadows, Mike's Way": "trail-report line grouping runs listed on their own",
+  "Old Log Rd, West Meadows, Mike's Way": "trail-report line grouping runs listed on their own",
+  "Sun Bowl, Home Run, 91, Main Base Area": "trail-report line grouping runs listed on their own",
+  "Yodeler, Underpass": "trail-report line grouping runs listed on their own",
+  "Lower Standard - Uphill": "uphill route for skinning, not a ski run"
+ }
 }

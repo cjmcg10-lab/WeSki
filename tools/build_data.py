@@ -136,11 +136,16 @@ def main():
     # "way_names" names one OpenStreetMap way: a run mapped as an upper and a lower way under one name, where
     # the resort rates "Upper X" and "Lower X" separately.
     RENAME, WAY_NAMES = cfg.get("rename", {}), cfg.get("way_names", {})
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import official_ratings
+    _off = official_ratings.load(cfg["id"])
+    on_list = official_ratings.lookup(_off) if _off else (lambda n: None)
     for wid, _, t in ways:
         n = t.get("name:en") or t.get("name") or t.get("piste:name")
         if (t.get("piste:type") == "downhill" and t.get("piste:name") and t.get("name") and not t.get("name:en")
                 and (t.get("highway") or t.get("aerialway")) and not re.fullmatch(r"[\d\s,a-z/+-]{1,8}", t["piste:name"])
-                and difflib.SequenceMatcher(None, t["name"].lower(), t["piste:name"].lower()).ratio() < 0.75):
+                and difflib.SequenceMatcher(None, t["name"].lower(), t["piste:name"].lower()).ratio() < 0.75
+                and not on_list(RENAME.get(t["name"], t["name"]))):     # the resort's own list uses the road's name
             n = t["piste:name"]   # a road or lift line that is also a run: name holds the road, piste:name the run
         if n:
             t["name"] = RENAME.get(n, n)
@@ -469,7 +474,7 @@ def main():
     gw = []   # graph ways: dict(kind, ref, line, osm_nodes, bridge)
     for T, nd in zip(trails, trail_ways):
         # the middle of an outlined area stops short of the runs its edge touched: let it join from further away
-        gw.append({"k": "p", "ref": T["id"], "line": T["_line"], "nd": nd, "bridge": T["bridge"], "reach": 220 if T["_loop"] else 38})
+        gw.append({"k": "p", "ref": T["id"], "line": T["_line"], "nd": nd, "bridge": T["bridge"], "reach": 220 if T["_loop"] else 38, "loop": T["_loop"]})
     for L, nd in zip(lift_out, lift_ways):
         gw.append({"k": "l", "ref": L["id"], "line": L["_line"], "nd": nd, "bridge": True, "bi": L["both"]})
     bases = [Point(L["pts"][0], L["pts"][1]) for L in lift_out]
@@ -538,6 +543,42 @@ def main():
                 oid = cut(o, pt)
                 if oid != nid:
                     links.append((oid, nid, "x", False) if end == 0 else (nid, oid, "x", False))
+    # A run end that touches nothing: a bowl or glade drawn down the middle of its outline often starts
+    # inside the area, away from the ridge it is entered from, and mapped runs often stop short. Join each
+    # such end to the nearest run or lift end within 450 m (a bowl) or 250 m (a mapped line): skied across
+    # if that point is level or above, walked if not. Every join is printed for review.
+    auto = []
+    lifts_l = [w for w in gw if w["k"] == "l"]
+    for w in ps:
+        c = list(w["line"].coords)
+        for end, pt in ((0, c[0]), (1, c[-1])):
+            near = [o for o in ps if o is not w and o["line"].distance(Point(pt)) <= w["reach"]]
+            near += [L for L in lifts_l if math.dist(L["line"].coords[-1 if end == 0 else 0][:2], pt) <= 110]
+            if near:
+                continue
+            opts = [(o["line"].distance(Point(pt)), "t", o) for o in ps if o is not w]
+            opts += [(math.dist(L["line"].coords[-1 if end == 0 else 0][:2], pt), "l", L) for L in lifts_l]
+            d, kind, o = min(opts, key=lambda v: v[0])
+            if d > (450 if w.get("loop") else 250):
+                continue
+            nid = G.node(pt)
+            if kind == "l":
+                q = o["line"].coords[-1 if end == 0 else 0][:2]
+                oid = G.node(q)
+            else:
+                oid = cut(o, pt)
+                q = G.pts[oid]
+            za, zb = elev(*q), elev(*pt)
+            if end == 0:
+                ski = za >= zb - 15
+                links.append((oid, nid, "x", False) if ski else (oid, nid, "w", True))
+            else:
+                ski = za <= zb + 15
+                links.append((nid, oid, "x", False) if ski else (nid, oid, "w", True))
+            auto.append(f"{trails[w['ref']]['name']} {'top' if end == 0 else 'bottom'} "
+                        f"{'ski' if ski else 'walk'} {d:.0f} m")
+    if auto:
+        print("loose run ends joined automatically:", "; ".join(auto))
     # lifts: unload at top onto nearby trails, reach the bottom from nearby trails
     ls = [w for w in gw if w["k"] == "l"]
     ww = [w for w in gw if w["k"] == "w"]
@@ -610,17 +651,16 @@ def main():
             # reached on foot along a ridge. Directions show it as a walk, in both directions.
             cb = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
             assert b_name.startswith("trail:") and cb, f"links: no trail named {b_name[6:]!r}"
-            if a_name.startswith("trail:"):
+            if a_name.startswith("trail:"):       # from the point of run A nearest to where B starts
                 ca = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == a_name[6:]]
                 assert ca, f"links: no trail named {a_name[6:]!r}"
-                fa = lambda w: Point(w["line"].coords[0][:2])
+                fa = lambda w, p: w["line"].distance(p)
             else:
                 A = ends[a_name]
-                ca, fa = [None], lambda w: Point(A["x"], A["y"])
-            wb, wa = min(((b, a) for b in cb for a in ca), key=lambda ba: Point(ba[0]["line"].coords[0][:2]).distance(
-                fa(ba[1]) if ba[1] else Point(A["x"], A["y"])))
+                ca, fa = [None], lambda w, p: Point(A["x"], A["y"]).distance(p)
+            wb, wa = min(((b, a) for b in cb for a in ca), key=lambda ba: fa(ba[1], Point(ba[0]["line"].coords[0][:2])))
             top = wb["line"].coords[0][:2]
-            start = cut(wa, wa["line"].coords[0][:2]) if wa else A["n"]
+            start = cut(wa, top) if wa else A["n"]
             links.append((start, cut(wb, top), "w", True))
             continue
         if a_name.startswith("trail:") and b_name.startswith("trail:"):
@@ -668,6 +708,7 @@ def main():
         edges.append({"a": a, "b": b_, "k": k, "r": -1, "len": round(max(math.dist(pa, pb), 1), 1), "bi": bi,
                       "pts": flat([pa, pb])})
 
+    join_cut_off(G, edges, trails, elev)
     report(G, edges, trails, lift_out, pois)
 
     # ---- parks (geometry derived from the trail they sit on)
@@ -838,7 +879,11 @@ def report(G, edges, trails, lifts, pois):
     reaches = {e["a"]: reach(e["a"]) for e in lift_edges}
     tram = max(lift_edges, key=lambda e: (len(reaches[e["a"]]), -G.elev(*G.pts[e["a"]])))
     r = reaches[tram["a"]]
-    cover = {e["r"] for e in edges if e["k"] == "p" and e["a"] in r}
+    starts = {}       # each run's highest node: a run counts as reachable only if its top is
+    for e in edges:
+        if e["k"] == "p" and (e["r"] not in starts or G.elev(*G.pts[e["a"]]) > G.elev(*G.pts[starts[e["r"]]])):
+            starts[e["r"]] = e["a"]
+    cover = {k for k, n in starts.items() if n in r}
     miss = sorted({T["name"] or f"unnamed#{T['id']}" for T in trails if T["id"] not in cover})
     print(f"from the base of {lifts[tram['r']]['name']}: {len(cover)}/{len(trails)} trail segments reachable; not reachable: {miss}")
     for e in lift_edges:
@@ -846,6 +891,86 @@ def report(G, edges, trails, lifts, pois):
             print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to that base {tram['a'] in reach(e['b'])}")
     print("  POIs off-network:", [P["name"] for P in pois if P["n"] < 0],
           "| unreachable:", [P["name"] for P in pois if P["n"] >= 0 and P["n"] not in r])
+
+
+def join_cut_off(G, edges, trails, elev):
+    """Runs no lift reaches (a top that stops short of the ridge or lift it is entered from): join the highest
+    such run's top to the nearest point the lifts do reach, skied across from above (up to 400 m) or walked
+    (up to 250 m), and repeat. Every join is printed for review; ends further away are left for the config."""
+    def pairs(e):
+        return [(e["pts"][i], e["pts"][i + 1]) for i in range(0, len(e["pts"]), 2)]
+
+    def reachable():
+        adj = {}
+        for e in edges:
+            adj.setdefault(e["a"], []).append(e["b"])
+            if e["bi"]:
+                adj.setdefault(e["b"], []).append(e["a"])
+        st = [e["b"] for e in edges if e["k"] == "l"] + [e["a"] for e in edges if e["k"] == "l" and e["bi"]]
+        seen = set(st)
+        while st:
+            for v in adj.get(st.pop(), ()):
+                if v not in seen:
+                    seen.add(v)
+                    st.append(v)
+        return seen
+
+    def split(i, k):
+        e = edges[i]
+        P = pairs(e)
+        if k == 0:
+            return e["a"]
+        if k == len(P) - 1:
+            return e["b"]
+        nid = G.node(P[k], merge=False)
+        la = LineString(P[:k + 1]).length
+        lb = LineString(P[k:]).length
+        edges[i] = dict(e, b=nid, pts=flat(P[:k + 1]), len=round(la, 1))
+        edges.append(dict(e, a=nid, pts=flat(P[k:]), len=round(lb, 1)))
+        return nid
+
+    tried, done = set(), []
+    while True:
+        r = reachable()
+        # a run counts as reached when its top is: a run whose upper part hangs off a cut-off peak is not
+        starts = {}
+        for e in edges:
+            if e["k"] == "p" and (e["r"] not in starts or elev(*G.pts[e["a"]]) > elev(*G.pts[starts[e["r"]]])):
+                starts[e["r"]] = e["a"]
+        cut = [T for T in trails if T["id"] in starts and starts[T["id"]] not in r and T["id"] not in tried]
+        if not cut:
+            break
+        T = max(cut, key=lambda T: T["top"])
+        tried.add(T["id"])
+        top = starts[T["id"]]
+        pt, zt = G.pts[top], elev(*G.pts[top])
+        best = {"ski": (401, None), "walk": (251, None)}
+        for i, e in enumerate(edges):
+            if e["k"] == "p" and (e["a"] in r or (e["bi"] and e["b"] in r)):
+                for k, q in enumerate(pairs(e)):
+                    d = math.dist(q, pt)
+                    if d < best["walk"][0]:
+                        best["walk"] = (d, (i, k))
+                    if d < best["ski"][0] and elev(*q) >= zt - 10:
+                        best["ski"] = (d, (i, k))
+            elif e["k"] == "l" and e["b"] in r:
+                q = G.pts[e["b"]]
+                d = math.dist(q, pt)
+                if d < best["walk"][0]:
+                    best["walk"] = (d, ("n", e["b"]))
+                if d < best["ski"][0] and elev(*q) >= zt - 10:
+                    best["ski"] = (d, ("n", e["b"]))
+        (ds, s), (dw, w) = best["ski"], best["walk"]
+        how, d, at = ("ski", ds, s) if s and (not w or ds <= dw + 250) else ("walk", dw, w) if w else (None, 0, None)
+        if not how:
+            continue
+        nid = at[1] if at[0] == "n" else split(*at)
+        q = G.pts[nid]
+        edges.append({"a": nid, "b": top, "k": "x" if how == "ski" else "w", "r": -1, "len": round(max(d, 1), 1),
+                      "bi": how == "walk", "pts": flat([q, pt])})
+        done.append(f"{T['name'] or 'unnamed#%d' % T['id']} {how} {d:.0f} m")
+    if done:
+        print("cut-off runs joined to the nearest reachable point:", "; ".join(done))
 
 
 if __name__ == "__main__":

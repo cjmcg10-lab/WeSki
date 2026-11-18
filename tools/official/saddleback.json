@@ -69,5 +69,8 @@
   "Warden's Worry": 2,
   "Wheeler Slope": 0,
   "Woolly Bugger Glades": 2
+ },
+ "same_as": {
+  "Casablanca Glades": "Casablanca Glades and Chutes"
  }
 }

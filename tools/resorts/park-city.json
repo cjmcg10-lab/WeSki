@@ -48,6 +48,66 @@
   "Murdock's Bowl": "Murdock Bowl",
   "Portuguse Gap": "Portuguese Gap",
   "Sam's Know": "Sam's Knob",
-  "Home Run": "Homerun"
- }
+  "Home Run": "Homerun",
+  "Powder Alley": "Power Alley",
+  "Homesite": "Homelite"
+ },
+ "links": [
+  [
+   "McConkey's Hi-Speed Six-Pack (top)",
+   "trail:Pinyon Ridge",
+   "hike"
+  ],
+  [
+   "McConkey's Hi-Speed Six-Pack (top)",
+   "trail:O-Zone",
+   "hike"
+  ],
+  [
+   "McConkey's Hi-Speed Six-Pack (top)",
+   "trail:Dead Tree",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Constellation",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Half Moon",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Quarter Moon",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:New Moon",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Sam's Knob",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Homelite",
+   "hike"
+  ],
+  [
+   "Jupiter Lift (top)",
+   "trail:Pine Cone Ridge",
+   "hike"
+  ],
+  [
+   "Super Condor Express (top)",
+   "trail:Murdock Bowl",
+   "hike"
+  ]
+ ],
+ "links_note": "Hike-to terrain as the official trail map shows it: Jupiter Peak along the ridge from McConkey's, Pinecone Ridge from the Jupiter lift, Murdock Peak from Super Condor. Directions show these approaches as a walk."
 }

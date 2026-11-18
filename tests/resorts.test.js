@@ -36,6 +36,19 @@ describe('every built resort', () => {
         }
       }
       expect(bad).toEqual([]);
+      // every run confirmed against the resort's own list can be reached: its top is on the lift network
+      {
+        const { nodes, edges } = resort.graph, adj = new Map();
+        const link = (a, b) => { if (!adj.has(a)) adj.set(a, []); adj.get(a).push(b); };
+        for (const e of edges) { link(e.a, e.b); if (e.bi) link(e.b, e.a); }
+        const seen = new Set(edges.filter((e) => e.k === 'l').flatMap((e) => (e.bi ? [e.a, e.b] : [e.b])));
+        const stack = [...seen];
+        while (stack.length) for (const v of adj.get(stack.pop()) || []) if (!seen.has(v)) { seen.add(v); stack.push(v); }
+        const top = new Map();
+        for (const e of edges) if (e.k === 'p' && (!top.has(e.r) || nodes[e.a][2] > nodes[top.get(e.r)][2])) top.set(e.r, e.a);
+        const cut = resort.trails.filter((t) => t.ok && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
+        expect(cut).toEqual([]);
+      }
       // zones: only known kinds, with geometry inside the map
       const kinds = ['slow', 'family', 'race', 'park', 'extreme', 'free'];
       for (const t of resort.trails) if (t.z) expect(kinds).toContain(t.z);

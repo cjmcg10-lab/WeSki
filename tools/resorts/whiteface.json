@@ -28,12 +28,16 @@
   "Slide 4": "The Slides",
   "Slide 5": "The Slides",
   "Slide 6": "The Slides",
-  "Slide 7": "The Slides"
+  "Slide 7": "The Slides",
+  "1,900 Road": "1900 Road",
+  "2,200 Road": "2200 Road"
  },
  "links": [
   [
    "Summit Quad (top)",
-   "trail:The Slides"
+   "trail:The Slides",
+   "hike"
   ]
- ]
+ ],
+ "links_note": " The Slides are hike-to terrain entered through a gate above the Summit Quad; directions show the approach as a walk."
 }

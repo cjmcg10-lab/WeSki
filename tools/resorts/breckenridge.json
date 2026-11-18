@@ -27,5 +27,16 @@
    "Freeway Terrain Park & Pipe"
   ]
  },
- "zones_source": "Breckenridge winter trail map (2022-23), Peaks 7 and 8"
+ "zones_source": "Breckenridge winter trail map (2022-23), Peaks 7 and 8",
+ "rename": {
+  "A Lift Line": "A Chair Line"
+ },
+ "links": [
+  [
+   "Kensho SuperChair (top)",
+   "trail:Breathless",
+   "hike"
+  ]
+ ],
+ "links_note": "Breathless is hike-to terrain above the Kensho SuperChair."
 }

@@ -12,5 +12,11 @@
  ],
  "isolated_lifts": [
   "Tubing"
- ]
+ ],
+ "rename": {
+  "Johnstone Junction": "Johnstones Junction",
+  "Willett's Way": "Willets Way",
+  "Baldy's": "Baldys Chute",
+  "Jeff's": "Jeffs Chute"
+ }
 }

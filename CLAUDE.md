@@ -163,9 +163,28 @@ with no symbol of their own take the area's rating. Kids' adventure trails and t
 leave them out rather than guessing. The checker only applies a rating listed for "Lower X" to a map run called
 "Lower X", never to "X" or "Upper X".
 
-Known gaps after the checks: Mammoth and Winter Park each have about 25 to 40 official runs the map
-lacks or names differently (see the `check` output). Each needs a `rename` entry in the resort config or
-a fix in OpenStreetMap.
+Completeness work (2026-11-18): the goal is that every run on the resort's own list is on the map, rated, and reachable.
+- `official_ratings.py check <id>` lists official runs not on the map. An entry that is not a separate run to draw is
+  explained in the official json, never just dropped: `same_as` (the resort's other name for a map run), `not_runs`
+  (gates, uphill routes, terrain parks, report lines that group several runs) and `elsewhere` (a separate lift area
+  outside the map, e.g. SkiWelt's Kelchsau and Schwoich). Numbered resorts also print numbers not found on the map.
+- `build_data.py` now: turns a named bowl or glade mapped only as an outline into a run down its middle; uses a
+  road's or lift line's `piste:name` as the run name (unless the road's own name is on the resort's list); applies
+  `way_names` ({osm way id: name}) for upper and lower parts OpenStreetMap lumps together; joins loose run ends to the
+  nearest run or lift end (450 m for bowls, 250 m for lines; ski across if level or above, walk if not); and finally
+  joins every run whose top no lift reaches to the nearest reachable point (ski 400 m, walk 250 m). Each join is
+  printed ("joined automatically", "cut-off runs joined") for review. A run counts as reachable only if its top is.
+- Config `links` take a third element `"hike"`: `["<lift> (top)", "trail:X", "hike"]` walks from the lift end to the
+  top of X (both ways), for hike-to terrain (Keystone's bowls, Park City's Jupiter and Pinecone ridges, Whiteface's
+  Slides). Directions show it as a walk.
+- `two_way_lifts` in a resort config marks a lift that carries skiers both ways (Zermatt's Rote Nase).
+- Intermaps resorts (Saalbach, SkiWelt): `winter.intermaps.com/<map>/` serves `grid.json` (map pixel to GPS, at twice
+  the size of the run overlay `image/<map>_srm/svg/R.svg`), so the resort's own drawn runs can be placed on the ground
+  (median error about 65 m against our lifts). Tried for matching Saalbach's numbers: about 1 in 5 wrong where runs share
+  a slope, so it is not used to set ratings, only as a review list.
+- Trail-map PDFs with real text (Mammoth) can be tied to the ground from the labels of runs we have
+  (about 200 m accuracy): enough to know where to look in the aerial photos.
+- Still to trace by hand (2026-11-18 evening): see the table in `docs/MOUNTAIN_CHECKLIST.md`.
 
 ## Logo work
 

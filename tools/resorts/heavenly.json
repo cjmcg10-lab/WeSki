@@ -18,5 +18,13 @@
   "Promised Land": "Promise Land",
   "Ramarah's": "Ramarrah",
   "Stateline": "Stateline Chute"
- }
+ },
+ "links": [
+  [
+   "Dipper Express (top)",
+   "trail:Milky Way Bowl",
+   "hike"
+  ]
+ ],
+ "links_note": "Milky Way Bowl is entered on foot from the ridge above the Dipper Express."
 }

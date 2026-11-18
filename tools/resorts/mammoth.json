@@ -15,6 +15,21 @@
  "poi_range": 120,
  "way_names": {
   "87217741": "Ricochet (Upper)",
-  "87217745": "Ricochet (Lower)"
+  "87217745": "Ricochet (Lower)",
+  "87096651": "Apple Pie"
+ },
+ "rename": {
+  "Commin Through": "Comin' Thru",
+  "Repeat": "Repeat 22",
+  "Ski Back Trail": "Village Ski Back Trail",
+  "Avalanche Chute 1": "Avalanche Chutes",
+  "Avalance Chute 2": "Avalanche Chutes",
+  "Avalance Chute 3": "Avalanche Chutes",
+  "Dropout Chute 1": "Dropout Chutes",
+  "Dropout Chute 2": "Dropout Chutes",
+  "Drop Out Chute 3": "Dropout Chutes",
+  "Wipeout Chute 1": "Wipeout Chutes",
+  "Wipeout Chute 2": "Wipeout Chutes",
+  "Wipeout Chute 3": "Wipeout Chutes"
  }
 }
