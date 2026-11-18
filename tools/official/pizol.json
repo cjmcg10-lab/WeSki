@@ -82,5 +82,8 @@
   "6b": 1,
   "8b": 1,
   "9b": 1
+ },
+ "not_runs": {
+  "Obersäss": "On the piste report as 8b, but not drawn on the resort's own map, so it cannot be placed. Check again when the resort's map shows it."
  }
 }

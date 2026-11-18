@@ -39,5 +39,178 @@
    "hike"
   ]
  ],
- "links_note": " The Slides are hike-to terrain entered through a gate above the Summit Quad; directions show the approach as a walk."
+ "links_note": " The Slides are hike-to terrain entered through a gate above the Summit Quad; directions show the approach as a walk.",
+ "split_ways": {
+  "204866966": [
+   [
+    -73.8742,
+    44.3653
+   ],
+   "",
+   "Deer Valley Glades"
+  ]
+ },
+ "extra_trails": [
+  {
+   "name": "Ausable Run",
+   "pts": [
+    [
+     -73.8692,
+     44.35486
+    ],
+    [
+     -73.8697,
+     44.35414
+    ],
+    [
+     -73.8692,
+     44.35307
+    ],
+    [
+     -73.8678,
+     44.3525
+    ],
+    [
+     -73.8665,
+     44.35211
+    ],
+    [
+     -73.8645,
+     44.35171
+    ]
+   ]
+  },
+  {
+   "name": "Fox Island",
+   "pts": [
+    [
+     -73.868,
+     44.356
+    ],
+    [
+     -73.8668,
+     44.35536
+    ],
+    [
+     -73.865,
+     44.35443
+    ],
+    [
+     -73.8635,
+     44.35371
+    ],
+    [
+     -73.8626,
+     44.35343
+    ]
+   ]
+  },
+  {
+   "name": "Ilmar's Alley",
+   "pts": [
+    [
+     -73.8921,
+     44.36
+    ],
+    [
+     -73.8908,
+     44.36
+    ],
+    [
+     -73.8896,
+     44.3594
+    ]
+   ]
+  },
+  {
+   "name": "Slide View Glades",
+   "pts": [
+    [
+     -73.8862,
+     44.3581
+    ],
+    [
+     -73.885,
+     44.359
+    ],
+    [
+     -73.8838,
+     44.36
+    ],
+    [
+     -73.8822,
+     44.3604
+    ]
+   ]
+  },
+  {
+   "name": "Wildway",
+   "pts": [
+    [
+     -73.884,
+     44.35755
+    ],
+    [
+     -73.882,
+     44.3579
+    ],
+    [
+     -73.88,
+     44.3582
+    ]
+   ]
+  },
+  {
+   "name": "Yellow Dot",
+   "pts": [
+    [
+     -73.8903,
+     44.3634
+    ],
+    [
+     -73.8893,
+     44.363
+    ],
+    [
+     -73.8882,
+     44.3624
+    ]
+   ]
+  },
+  {
+   "name": "High County Road",
+   "pts": [
+    [
+     -73.88225,
+     44.35946
+    ],
+    [
+     -73.8823,
+     44.3605
+    ],
+    [
+     -73.8827,
+     44.3614
+    ]
+   ]
+  },
+  {
+   "name": "Loop",
+   "pts": [
+    [
+     -73.892,
+     44.3632
+    ],
+    [
+     -73.8913,
+     44.3627
+    ],
+    [
+     -73.8905,
+     44.3626
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Not in OpenStreetMap; placed from the 2025-26 trail map against NAIP aerial photos and the runs around them, within about 100 m. OpenStreetMap draws Sugar Valley Glades down the whole valley; the trail map's lower half is Deer Valley Glades, so the way is split."
 }

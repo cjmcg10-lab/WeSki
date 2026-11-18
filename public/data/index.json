@@ -442,10 +442,10 @@
   "baseLon": 9.43213,
   "top": 2249,
   "base": 536,
-  "trails": 32,
+  "trails": 39,
   "lifts": 13,
   "zones": true,
-  "bytes": 880894
+  "bytes": 887418
  },
  {
   "id": "powder-ridge",
@@ -746,10 +746,10 @@
   "baseLon": -73.86125,
   "top": 1437,
   "base": 372,
-  "trails": 91,
+  "trails": 100,
   "lifts": 11,
   "zones": false,
-  "bytes": 485737
+  "bytes": 505725
  },
  {
   "id": "windham-mountain",

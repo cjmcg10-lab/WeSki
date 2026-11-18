@@ -20,6 +20,71 @@
  ],
  "rename": {
   "Abfahrtsroute Jona": "Abfahrt Jona",
-  "Abfahrtsroute Wangs": "Abfahrt Wangs"
- }
+  "Abfahrtsroute Wangs": "Abfahrt Wangs",
+  "25": "Alpina Couloir",
+  "6b": "Kappeler",
+  "Skiroute 36": "Abfahrt Grosses Täli",
+  "Abfahrtsroute Gaffia": "Couloir",
+  "Trainingsstrecke": "Adler Piste",
+  "Vreni Schneider Run": "untere Adler Piste",
+  "17 Vreni Schneider Run": "untere Adler Piste"
+ },
+ "way_names": {
+  "30496400": "Soldanella",
+  "659550761": "Twärchamm - Piste",
+  "909395814": "Twärchamm - Piste",
+  "907035013": "Waldweg",
+  "909395820": "Waldweg",
+  "909395818": "Waldweg",
+  "906998633": "Schwiffiggler",
+  "1034266509": "Schneise",
+  "909395846": "Kinderhang",
+  "909395844": "Kinderhang",
+  "909395847": "Kinderhang"
+ },
+ "extra_trails": [
+  {
+   "name": "Abfahrt Zanuz",
+   "pts": [
+    [
+     9.442,
+     46.9815
+    ],
+    [
+     9.447,
+     46.9831
+    ],
+    [
+     9.452,
+     46.985
+    ],
+    [
+     9.4555,
+     46.986
+    ],
+    [
+     9.4574,
+     46.9858
+    ]
+   ]
+  },
+  {
+   "name": "Trainingspiste Schwamm",
+   "pts": [
+    [
+     9.454,
+     46.9876
+    ],
+    [
+     9.456,
+     46.9884
+    ],
+    [
+     9.4589,
+     46.98875
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Names follow the resort's own interactive map (infosnow.ch, map 59a), whose drawn pistes carry the report's numbers: OpenStreetMap's 'Trainingsstrecke' is drawn there as 17 Adler Piste, its '17 Vreni Schneider Run' as the lower Adler Piste, '25', '6b' and 'Skiroute 36' as 25, 6b and 36, 'Abfahrtsroute Gaffia' as 34 Couloir, the two upper 'Valeis' branches as 19 Soldanella (from the Gaffia chair) and 10 Twärchamm (from the SAC lift), and the upper 'Mittelsäss' as 9 Waldweg. Abfahrt Zanuz (a ski route) and Trainingspiste Schwamm are not in OpenStreetMap and were traced from the resort's map and swisstopo aerial photos (within about 150 m)."
 }
