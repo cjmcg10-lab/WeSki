@@ -1,0 +1,21 @@
+{
+ "id": "burke",
+ "name": "Burke Mountain",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Burke Mountain Resort",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, Vermont Statewide 2023 (public domain)",
+ "osm_bbox": [
+  -71.95,
+  44.55,
+  -71.85,
+  44.61
+ ],
+ "skip_pois": [
+  "Burke Mountain Resort"
+ ],
+ "rename": {
+  "Enchanted Forest Glade": "Enchanted Forest"
+ }
+}

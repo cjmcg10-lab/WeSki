@@ -1,0 +1,18 @@
+{
+ "id": "magic-mountain",
+ "name": "Magic Mountain",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Magic Mountain Ski Area",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, Vermont Statewide 2023 (public domain)",
+ "osm_bbox": [
+  -72.81,
+  43.18,
+  -72.74,
+  43.23
+ ],
+ "skip_pois": [
+  "Magic Mountain Ski Area"
+ ]
+}

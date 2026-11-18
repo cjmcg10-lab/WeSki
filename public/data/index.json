@@ -1,5 +1,21 @@
 [
  {
+  "id": "bolton-valley",
+  "name": "Bolton Valley",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 44.41488,
+  "lon": -72.83417,
+  "baseLat": 44.41054,
+  "baseLon": -72.86404,
+  "top": 950,
+  "base": 476,
+  "trails": 79,
+  "lifts": 6,
+  "zones": false,
+  "bytes": 348261
+ },
+ {
   "id": "breckenridge",
   "name": "Breckenridge",
   "region": "Colorado, USA",
@@ -30,6 +46,22 @@
   "lifts": 6,
   "zones": false,
   "bytes": 444587
+ },
+ {
+  "id": "burke",
+  "name": "Burke Mountain",
+  "region": "Vermont, USA",
+  "tz": "America/New_York",
+  "lat": 44.5708,
+  "lon": -71.89412,
+  "baseLat": 44.58788,
+  "baseLon": -71.91541,
+  "top": 978,
+  "base": 371,
+  "trails": 59,
+  "lifts": 5,
+  "zones": true,
+  "bytes": 426638
  },
  {
   "id": "cannon-mountain",
@@ -493,7 +525,23 @@
   "trails": 102,
   "lifts": 32,
   "zones": true,
-  "bytes": 1582897
+  "bytes": 1583172
+ },
+ {
+  "id": "waterville-valley",
+  "name": "Waterville Valley",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 43.95909,
+  "lon": -71.55522,
+  "baseLat": 43.96434,
+  "baseLon": -71.52594,
+  "top": 1160,
+  "base": 556,
+  "trails": 68,
+  "lifts": 10,
+  "zones": false,
+  "bytes": 335300
  },
  {
   "id": "whiteface",

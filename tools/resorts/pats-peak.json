@@ -1,0 +1,18 @@
+{
+ "id": "pats-peak",
+ "name": "Pats Peak",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "area_name": "Pats Peak",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NH Connecticut River North 2015 (public domain)",
+ "osm_bbox": [
+  -71.83,
+  43.13,
+  -71.76,
+  43.18
+ ],
+ "skip_pois": [
+  "Pats Peak"
+ ]
+}

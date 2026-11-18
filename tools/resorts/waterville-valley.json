@@ -1,0 +1,28 @@
+{
+ "id": "waterville-valley",
+ "name": "Waterville Valley",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "area_name": "Waterville Valley Resort",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NY NH Gaps 2024 (public domain)",
+ "osm_bbox": [
+  -71.58,
+  43.93,
+  -71.48,
+  44.0
+ ],
+ "skip_pois": [
+  "Waterville Valley Resort"
+ ],
+ "rename": {
+  "Pfosi's Folly": "Pfosi's Pfolly",
+  "Psycho": "Psyched"
+ },
+ "links": [
+  [
+   "trail:Terry's Trail",
+   "trail:Old Tecumseh"
+  ]
+ ]
+}

@@ -1,4 +1,9 @@
 {
+ "bolton-valley": {
+  "artist": "Robot psychiatrist",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Bolton Valley December 2014.JPG"
+ },
  "breckenridge": {
   "artist": "좀비 브렌다",
   "lic": "CC BY-SA 4.0",
@@ -64,6 +69,11 @@
   "lic": "CC0",
   "title": "File:Skiers ready to start skiing, Coins slope, Les Contamines-Montjoie, 2025.jpg"
  },
+ "magic-mountain": {
+  "artist": "Jared C. Benedict",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Magic Mountain aerial.jpg"
+ },
  "mammoth": {
   "artist": "Plane777",
   "lic": "Public domain",
@@ -88,6 +98,11 @@
   "artist": "karico",
   "lic": "CC BY-SA 3.0",
   "title": "File:Skigebiet Pizol - panoramio.jpg"
+ },
+ "ragged": {
+  "artist": "MConradWard",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Orange Mountain & Ragged Mountain from Cardigan Mountain.jpg"
  },
  "saalbach": {
   "artist": "F30",
@@ -148,6 +163,11 @@
   "artist": "DimiTalen",
   "lic": "CC0",
   "title": "File:Skiing towards Val Thorens from the south, 1998.jpg"
+ },
+ "waterville-valley": {
+  "artist": "MConradWard",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Waterville Valley Resort upper mountain.jpg"
  },
  "whistler": {
   "artist": "Murray Foubister",

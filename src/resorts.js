@@ -1,7 +1,6 @@
 // Resorts listed on the start-screen globe that do not have a built 3D map yet. Resorts with a
 // map come from /data/index.json (written by tools/build_index.py) and are not listed here.
 export const COMING_SOON = [
-  { id: 'burke', name: 'Burke Mountain', region: 'Vermont, USA', lat: 44.5712, lon: -71.8923 },
   { id: 'tremblant', name: 'Mont Tremblant', region: 'Québec, Canada', lat: 46.2096, lon: -74.5852 },
   { id: 'vail', name: 'Vail', region: 'Colorado, USA', lat: 39.6061, lon: -106.3550 },
   { id: 'park-city', name: 'Park City', region: 'Utah, USA', lat: 40.6514, lon: -111.5080 },
