@@ -5,7 +5,7 @@
  "tz": "America/New_York",
  "area_name": "Catamount Mountain Resort",
  "area_buffer": 400,
- "terrain_source": "USGS 3DEP 1 m LiDAR DEM, Western Massachusetts 2024 (public domain)",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, Western Massachusetts 2024 and NY Hudson 2022 (public domain)",
  "osm_bbox": [
   -73.51,
   42.14,
@@ -14,5 +14,11 @@
  ],
  "skip_pois": [
   "Catamount Mountain Resort"
- ]
+ ],
+ "rename": {
+  "Birch Cathederal": "Birch Cathedral",
+  "Fisher's Fluke": "Fisher's Flume",
+  "Ridge Run Extension": "Ridge Run Ext",
+  "Race Slope": "Toni Matt"
+ }
 }

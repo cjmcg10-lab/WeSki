@@ -1,5 +1,5 @@
 {
- "source": "SRC",
+ "source": "Catamount 2024-25 printed trail map (skimap.org map 33104), checked against the 2025-26 map (map 37806), read by hand",
  "fetched": "2026-11-18",
  "runs": {
   "Ali's Alley": 0,
@@ -46,5 +46,6 @@
   "Upper Sidewinder": 1,
   "Walter's Way": 1
  },
- "blue_black": []
+ "blue_black": [],
+ "note": "Race Slope was renamed Toni Matt on the 2024-25 map. Kelli's Run shows no rating symbol and keeps its OpenStreetMap rating. Panther Park (a terrain park) was removed on the 2025-26 map but is still in OpenStreetMap. The Birch Glades (East and West) on the 2025-26 map are not in OpenStreetMap yet. Terrain on the New York side comes from the NY Hudson 2022 survey."
 }
