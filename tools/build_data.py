@@ -12,6 +12,7 @@ Everything specific to one resort lives in tools/resorts/<id>.json (see README).
 
 usage: build_data.py <resort.json config> <osm.xml> <out_dir> <dem.tif> [<dem.tif> ...]
 """
+import difflib
 import json
 import math
 import os
@@ -132,11 +133,19 @@ def main():
         ways.append((wid, ids, {"piste:type": "downhill", "name": x["name"], "_traced": "yes"}))
 
     # English names where the map has them (Japan), plus per-resort corrections from the config
-    RENAME = cfg.get("rename", {})
-    for _, _, t in ways:
+    # "way_names" names one OpenStreetMap way: a run mapped as an upper and a lower way under one name, where
+    # the resort rates "Upper X" and "Lower X" separately.
+    RENAME, WAY_NAMES = cfg.get("rename", {}), cfg.get("way_names", {})
+    for wid, _, t in ways:
         n = t.get("name:en") or t.get("name") or t.get("piste:name")
+        if (t.get("piste:type") == "downhill" and t.get("piste:name") and t.get("name") and not t.get("name:en")
+                and (t.get("highway") or t.get("aerialway")) and not re.fullmatch(r"[\d\s,a-z/+-]{1,8}", t["piste:name"])
+                and difflib.SequenceMatcher(None, t["name"].lower(), t["piste:name"].lower()).ratio() < 0.75):
+            n = t["piste:name"]   # a road or lift line that is also a run: name holds the road, piste:name the run
         if n:
             t["name"] = RENAME.get(n, n)
+        if str(wid) in WAY_NAMES:
+            t["name"] = WAY_NAMES[str(wid)]
     for t in node_tags.values():
         n = t.get("name:en") or t.get("name")
         if n:
@@ -293,14 +302,22 @@ def main():
     trail_ways = []   # parallel: osm node id lists (oriented)
     loops, loop_ids = [], set()
     areas = []
+    line_names = {_nkey(t.get("name") or t.get("piste:name")) for _, nd, t in pistes if t.get("area") != "yes"}
     for wid, nd, t in pistes:
         pts = [loc(i) for i in nd]
         name = t.get("name") or t.get("piste:name")
         diff = DIFF.get(t.get("piste:difficulty"), 1)
         if t.get("area") == "yes":
-            if name and all(inside(p) for p in pts):
+            if not (name and all(inside(p) for p in pts)):
+                continue
+            if _nkey(name) in line_names or nd[0] != nd[-1] or len(nd) < 5:
                 areas.append({"name": name, "d": diff, "pts": flat(pts)})
-            continue
+                continue
+            # A named bowl or glade mapped only as an outline: keep the outline (unlabelled) and also give it
+            # a line down the middle, so it can be found, rated against the resort's list and routed over.
+            areas.append({"name": None, "d": diff, "pts": flat(pts)})
+            if re.search(r"glade|trees|woods", name, re.I):
+                t = dict(t, gladed="yes")
         if not all(inside(p) for p in pts):
             continue
         if nd[0] == nd[-1] and len(nd) >= 4:
@@ -702,6 +719,10 @@ def main():
         print("outlined areas drawn down the middle:", ", ".join(loops))
     print(f"trails {len(trails)} areas {len(areas)} lifts {len(lift_out)} buildings {len(buildings)} pois {len(pois)} "
           f"parks {len(parks)} nodes {len(G.pts)} edges {len(edges)} slow {sum(T['slow'] for T in trails)}")
+
+
+def _nkey(name):
+    return re.sub(r"[^a-z0-9]+", "", (name or "").lower())
 
 
 def flat(pts):

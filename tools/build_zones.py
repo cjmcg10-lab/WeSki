@@ -60,6 +60,8 @@ for k, v in cfg.get("zones", {}).items():
 for T in R["trails"]:
     if T["name"] in cfg.get("rename", {}):
         T["name"] = cfg["rename"][T["name"]]
+    if str(T.get("osm")) in cfg.get("way_names", {}):
+        T["name"] = cfg["way_names"][str(T["osm"])]
 known = {T["name"] for T in R["trails"]}
 for k, names in named.items():
     assert not names - known, f"zones.{k}: no run named {sorted(names - known)}"
@@ -159,6 +161,9 @@ official_n = 0
 for T in R["trails"]:
     T.pop("bb", None)
     T.pop("ok", None)
+    T.pop("ref", None)
+    if official and official.get("numbers") and tags.get(T.get("osm"), {}).get("ref"):
+        T["ref"] = tags[T["osm"]]["ref"]            # the run's number on the map, so the checker sees it too
 if official:
     find = official_ratings.lookup(official)
     for T in R["trails"]:

@@ -3,6 +3,8 @@
  "name": "Zermatt – Cervinia",
  "region": "Valais, Switzerland / Aosta Valley, Italy",
  "tz": "Europe/Zurich",
+ "two_way_lifts": ["Rote Nase"],
+ "two_way_lifts_note": "Hohtälli to Rote Nase is a nearly level shuttle cable car (3286 m to 3247 m): it carries skiers both ways.",
  "area_name": "Zermatt - Breuil-Cervinia",
  "terrain_source": "swisstopo swissALTI3D 2 m (Switzerland); TINITALY 10 m, INGV, CC BY 4.0 (Italy)",
  "osm_bbox": [

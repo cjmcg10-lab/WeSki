@@ -12,5 +12,9 @@
   37.67
  ],
  "building_range": 150,
- "poi_range": 120
+ "poi_range": 120,
+ "way_names": {
+  "87217741": "Ricochet (Upper)",
+  "87217745": "Ricochet (Lower)"
+ }
 }

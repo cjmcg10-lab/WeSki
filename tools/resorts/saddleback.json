@@ -28,5 +28,21 @@
   "Thrombosis": "Thrombosis Glades",
   "Wheeler": "Wheeler Slope",
   "Wooly Bugger": "Woolly Bugger Glades"
+ },
+ "way_names": {
+  "255267827": "Green Hornet - upper",
+  "255268425": "Green Hornet - lower",
+  "255221609": "Grey Ghost - upper",
+  "255234324": "Grey Ghost - lower",
+  "255241095": "Jane Craig - upper",
+  "255241203": "Jane Craig - lower",
+  "255242830": "Peachy's Peril - upper",
+  "255261874": "Peachy's Peril - lower",
+  "255239385": "Professor - upper",
+  "255240311": "Professor - lower",
+  "255232721": "Royal Coachman - upper",
+  "255232467": "Royal Coachman - lower",
+  "255092319": "Tight Line - upper",
+  "255267684": "Tight Line - lower"
  }
 }

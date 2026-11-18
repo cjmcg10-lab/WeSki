@@ -39,15 +39,23 @@ COLOURS = ["green", "blue", "red", "black", "ski route"]
 COLOUR_LEVEL = [0, 0, 1, 2, 3]
 
 
+def unnumbered(name):
+    """'21a Streif-Familienabfahrt' -> 'Streif-Familienabfahrt': lists that print a piste number before the name
+    (SkiWelt). Names that are only a number, or a number and a short word, are left alone."""
+    s = re.sub(r"^\s*\d+[a-z]?\s+(?:-\s+)?(?=\D{3})", "", name or "")
+    # "L. Binder" / "U. Boomauger" (Sugarloaf's list) are Lower / Upper
+    return re.sub(r"\b([LU])\.\s*", lambda m: "Lower " if m.group(1) == "L" else "Upper ", s)
+
+
 def key(name):
     """Run names differ in small ways between sources: 'Arriba (Upper)' / 'Upper Arriba', & / and, apostrophes."""
-    s = (name or "").lower().replace("&", " and ").replace("’", "'").replace("'", "")
+    s = unnumbered(name).lower().replace("&", " and ").replace("’", "'").replace("'", "")
     return " ".join(sorted(t for t in re.split(r"[^a-z0-9]+", s) if t and t not in ("the", "trail", "run")))
 
 
 def loose(name):
     """A looser form for a second try: no Upper / Lower / Middle, no spaces, no plural s."""
-    s = re.sub(r"\(.*?\)", " ", (name or "").lower()).replace("&", "and").replace("’", "").replace("'", "")
+    s = re.sub(r"\(.*?\)", " ", unnumbered(name).lower()).replace("&", "and").replace("’", "").replace("'", "")
     toks = [t for t in re.split(r"[^a-z0-9]+", s) if t and t not in ("the", "trail", "run", "upper", "lower", "middle", "top", "bottom", "half")]
     return re.sub(r"s$", "", "".join(toks).replace("saint", "st"))
 
@@ -61,7 +69,11 @@ def qual(name):
 def lookup(off):
     """Returns f(map run name) -> (level, is blue-black) or None, from an official list."""
     bb = set(off.get("blue_black", []))
-    exact = {key(n): (d, n in bb) for n, d in off["runs"].items()}
+    exact = {}
+    for n, d in off["runs"].items():
+        # the same name twice with different ratings (two numbered pistes of one name): the harder one
+        if key(n) not in exact or d > exact[key(n)][0]:
+            exact[key(n)] = (d, n in bb)
     groups = {}
     for n, d in off["runs"].items():
         groups.setdefault(loose(n), set()).add((d, n in bb))
@@ -138,24 +150,45 @@ def check(rid):
     for T in R["trails"]:
         if not T["name"]:
             continue
-        hit = find(T["name"]) or by_number(off, T["name"])
+        hit = find(T["name"]) or by_number(off, T["name"], T.get("ref"))
         if hit:
             seen.add(key(T["name"]))
             seen.add(loose(T["name"]))
+            n = number_of(T["name"], T.get("ref")) if off.get("numbers") and not find(T["name"]) else None
+            for o in off["runs"] if n else ():     # matched by its number: the listed run of that number is on the map
+                if number_of(o) == n:
+                    seen.add(key(o))
             have = T.get("c", COLOURS.index("blue")) if colour else T["d"]
             if hit[0] != have:
                 diff[T["name"]] = (have, hit[0])
         else:
             extra.add(T["name"])
     missing = sorted(n for n in off["runs"] if key(n) not in seen and loose(n) not in seen)
+    # entries the resort lists that are not a separate run to draw: the same run under a second name
+    # ("same_as": {"Schoolmarm Family Ski Trail": "Schoolmarm"}) or not a ski run at all ("not_runs":
+    # {"Gate 1": "backcountry access gate"}); each says why, so nothing is left out silently
+    same, notr, away = off.get("same_as", {}), off.get("not_runs", {}), off.get("elsewhere", {})
+    map_names = {T["name"] for T in R["trails"]}
+    for a, b in same.items():
+        assert b in map_names, f"same_as: no map run named {b!r}"
+    missing = [n for n in missing if n not in same and n not in notr and n not in away]
     if off.get("numbers"):
         got = {number_of(T["name"]) for T in R["trails"] if T["name"]}
-        print(f"  numbered runs on the resort's list: {len(off['numbers'])}, found by number in map names: "
-              f"{len([k for k in off['numbers'] if k.lower() in got])} (OpenStreetMap refs are matched at build time)")
+        got |= {(T.get("ref") or "").strip().lower() for T in R["trails"]}
+        got = {g.lstrip("0") or "0" for g in got if g}
+        named = {number_of(o) for o in off["runs"] if key(o) in seen or loose(o) in seen
+                 or o in same or o in notr or o in away}
+        lost = sorted((k for k in off["numbers"] if (k.lower().lstrip("0") or "0") not in got and k.lower() not in named
+                       and k not in same and k not in notr and k not in away), key=lambda k: (int(re.match(r"\d+", k).group()), k))
+        print(f"  numbered runs on the resort's list: {len(off['numbers'])}, numbers not found on the map "
+              f"({len(lost)}): {', '.join(lost)}")
     print(f"{rid}: {len(off['runs'])} official runs, {len(seen)} matched on the map, {len(diff)} with a different rating")
     for n, (a, b) in sorted(diff.items()):
         print(f"  [rating] {n}: map {names[a]}, resort {names[b]}")
     print(f"  official runs not on the map ({len(missing)}): {', '.join(missing)}")
+    if same or notr or away:
+        print(f"  listed but explained: {len(same)} other names for a run on the map, {len(notr)} not ski runs, "
+              f"{len(away)} at a separate area outside this map")
     print(f"  map runs the resort does not list ({len(extra)}): {', '.join(sorted(extra))}")
 
 

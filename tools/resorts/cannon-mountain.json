@@ -10,5 +10,15 @@
   44.13,
   -71.66,
   44.19
- ]
+ ],
+ "way_names": {
+  "253832621": "Upper Fleitman Trail",
+  "479738362": "Lower Fleitman Trail",
+  "253264527": "Upper Gremlin",
+  "253651239": "Lower Gremlin",
+  "253824584": "Upper Red Ball",
+  "253824759": "Lower Red Ball",
+  "253827640": "Upper Turnpike",
+  "253827298": "Lower Turnpike"
+ }
 }

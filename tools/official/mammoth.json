@@ -169,7 +169,11 @@
   "Whitebark Bowl (Upper)": 2,
   "Whitebark Ridge": 1,
   "Wipeout Chutes": 3,
-  "World Cup": 1
+  "World Cup": 1,
+  "Back for More": 1,
+  "Downhill": 1,
+  "Roller Coaster": 1,
+  "Solitude": 1
  },
  "blue_black": [
   "Arriba (Lower)",
@@ -204,6 +208,11 @@
   "Slot",
   "Solitude (Upper)",
   "Terry's Run",
-  "Wall Street"
- ]
+  "Wall Street",
+  "Back for More",
+  "Downhill",
+  "Roller Coaster",
+  "Solitude"
+ ],
+ "note_whole_runs": "Back for More, Downhill, Roller Coaster and Solitude are one way each in OpenStreetMap; the resort rates the upper part blue-black and the lower part blue (Back for More lower: green), so the whole run takes the harder rating."
 }
