@@ -74,6 +74,9 @@ session needs that the README does not: the rules, the state of the work, and wh
 
 ## Building and checking a resort
 
+**Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
+mountain stands; update its row whenever a mountain is worked on.
+
 The order matters. Every step is in `tools/`.
 
 1. OSM extract: `python3 tools/dev/osmget.py <out.osm> <west> <south> <east> <north> [splits]`. The bounding

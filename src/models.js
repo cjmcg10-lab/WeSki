@@ -26,7 +26,8 @@ const vcMat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShad
  * turned sideways on the board. `userData.rig` is the part that animateAvatar() moves;
  * `userData.arm` is the right arm (pivoting at the shoulder) used for waving.
  */
-export function makeAvatar(avatar, color) {
+export function makeAvatar(avatar, color, pose = 'stand') {
+  const sit = pose === 'sit';
   const L = parseLook(avatar), C = lookColors(L, color);
   const board = L.ride === 'board', girl = L.who === 'girl';
   const jacket = new THREE.Color(color);
@@ -35,28 +36,54 @@ export function makeAvatar(avatar, color) {
   const trim = jacket.clone().lerp(new THREE.Color(0xffffff), 0.75);
   const glove = 0x1e232b, boot = 0x2a2f38, skin = C.skin, hair = C.hair;
   const parts = [];
-  // boots and legs (knees bent, a little wider at the boot)
+  // boots and legs: standing with knees bent, or sitting (thighs level, shins hanging down)
   for (const x of [-0.14, 0.14]) {
-    parts.push(part(box(0.22, 0.24, 0.34), boot, x, 0.24, 0.03));
-    parts.push(part(box(0.21, 0.36, 0.23), pants, x, 0.5, 0.0, 0.25));
-    parts.push(part(box(0.2, 0.32, 0.22), pants, x, 0.8, -0.02, -0.15));
+    if (sit) {
+      parts.push(part(box(0.21, 0.22, 0.58), pants, x, 0.9, 0.22));
+      parts.push(part(box(0.2, 0.42, 0.22), pants, x, 0.66, 0.46, 0.1));
+      parts.push(part(box(0.22, 0.24, 0.34), boot, x, 0.42, 0.55));
+    } else {
+      parts.push(part(box(0.22, 0.24, 0.34), boot, x, 0.24, 0.03));
+      parts.push(part(box(0.21, 0.36, 0.23), pants, x, 0.5, 0.0, 0.25));
+      parts.push(part(box(0.2, 0.32, 0.22), pants, x, 0.8, -0.02, -0.15));
+    }
   }
-  // torso: jacket with a zip line and a contrasting hem; slimmer waist for the "girl" build
-  parts.push(part(girl ? new THREE.CylinderGeometry(0.22, 0.3, 0.62, 8) : box(0.54, 0.62, 0.32), jacket, 0, 1.1, 0.06, 0.22));
-  parts.push(part(box(girl ? 0.5 : 0.56, 0.08, girl ? 0.34 : 0.34), trim, 0, 0.82, 0.0, 0.22));
-  parts.push(part(box(0.025, 0.5, 0.02), 0x15181f, 0, 1.12, girl ? 0.27 : 0.25, 0.22));
+  // torso: jacket with a zip line and a contrasting hem; slimmer waist for the "girl" build.
+  // Leaning forward when riding, upright when sitting.
+  const tl = sit ? 0.05 : 0.22;
+  parts.push(part(girl ? new THREE.CylinderGeometry(0.22, 0.3, 0.62, 8) : box(0.54, 0.62, 0.32), jacket, 0, 1.1, 0.06, tl));
+  parts.push(part(box(girl ? 0.5 : 0.56, 0.08, girl ? 0.34 : 0.34), trim, 0, 0.82, sit ? 0.06 : 0.0, tl));
+  parts.push(part(box(0.025, 0.5, 0.02), 0x15181f, 0, 1.12, girl ? 0.27 : 0.25, tl));
   // left arm with glove (the right arm is separate, below)
-  parts.push(part(box(0.14, 0.5, 0.15), jacket, 0.37, 1.08, 0.15, -0.7));
-  parts.push(part(box(0.15, 0.13, 0.16), glove, 0.37, 0.88, 0.36, -0.7));
+  if (sit) {                             // hand resting on the thigh
+    parts.push(part(box(0.14, 0.5, 0.15), jacket, 0.33, 1.1, 0.14, -0.35));
+    parts.push(part(box(0.15, 0.13, 0.16), glove, 0.31, 0.95, 0.32, -0.35));
+  } else {
+    parts.push(part(box(0.14, 0.5, 0.15), jacket, 0.37, 1.08, 0.15, -0.7));
+    parts.push(part(box(0.15, 0.13, 0.16), glove, 0.37, 0.88, 0.36, -0.7));
+  }
+  const headFrom = parts.length;
   // neck: collar or neck warmer
   parts.push(part(new THREE.CylinderGeometry(0.13, 0.15, 0.12, 8), L.gaiter ? hat : jacket, 0, 1.43, 0.12));
   // head
   parts.push(part(new THREE.IcosahedronGeometry(0.19, 1), skin, 0, 1.6, 0.14));
   // hair (under the hat)
-  if (L.hair === 1) parts.push(part(box(0.4, 0.14, 0.3), hair, 0, 1.6, 0.06));
-  if (L.hair === 2) { parts.push(part(box(0.38, 0.12, 0.3), hair, 0, 1.62, 0.05)); parts.push(part(box(0.11, 0.38, 0.11), hair, 0, 1.42, -0.12, -0.35)); }
-  if (L.hair === 3) for (const x of [-0.13, 0.13]) parts.push(part(box(0.1, 0.44, 0.1), hair, x, 1.34, -0.08, -0.25));
-  if (L.hair === 4) parts.push(part(box(0.42, 0.46, 0.12), hair, 0, 1.42, -0.04, -0.18));
+  // Every style starts from a shell hugging the back of the head, so nothing floats.
+  const cap = (down) => part(new THREE.SphereGeometry(0.206, 12, 8, Math.PI, Math.PI, 0, Math.PI * down), hair, 0, 1.6, 0.14);
+  if (L.hair === 1) parts.push(cap(0.6));
+  if (L.hair === 2) {                    // ponytail tied at the back of the head
+    parts.push(cap(0.62));
+    parts.push(part(new THREE.CylinderGeometry(0.065, 0.03, 0.36, 7), hair, 0, 1.43, -0.1, 0.32));
+    parts.push(part(new THREE.IcosahedronGeometry(0.05, 0), C.hat || trim, 0, 1.6, -0.06));
+  }
+  if (L.hair === 3) {                    // two braids from behind the ears
+    parts.push(cap(0.66));
+    for (const x of [-0.13, 0.13]) parts.push(part(new THREE.CylinderGeometry(0.05, 0.035, 0.42, 6), hair, x, 1.38, -0.04, 0.28));
+  }
+  if (L.hair === 4) {                    // long, down the back
+    parts.push(cap(0.66));
+    parts.push(part(box(0.38, 0.32, 0.1), hair, 0, 1.38, -0.03, 0.18));
+  }
   // headwear
   if (L.head === 0) {                    // helmet with a little peak
     parts.push(part(new THREE.SphereGeometry(0.225, 10, 6, 0, Math.PI * 2, 0, Math.PI * 0.56), hat, 0, 1.63, 0.13));
@@ -73,13 +100,24 @@ export function makeAvatar(avatar, color) {
   parts.push(part(box(0.33, 0.13, 0.08), 0x15181f, 0, 1.63, 0.31));
   parts.push(part(box(0.29, 0.09, 0.03), C.lens, 0, 1.63, 0.355));
   parts.push(part(new THREE.CylinderGeometry(0.212, 0.212, 0.05, 12, 1, true), 0x15181f, 0, 1.63, 0.13));
-  if (L.pack) {
+  if (sit) for (let i = headFrom; i < parts.length; i++) parts[i].translate(0, 0.02, -0.05);   // head over the upright back
+  if (L.pack && !sit) {
     parts.push(part(box(0.36, 0.42, 0.17), pants, 0, 1.12, -0.21, 0.22));
     parts.push(part(box(0.3, 0.1, 0.05), trim, 0, 1.0, -0.3, 0.22));
   }
   const gear = [];
   const gearCol = C.gear, top = new THREE.Color(gearCol).lerp(jacket, 0.35);
-  if (board) {
+  if (sit) {
+    // feet resting forward: skis or the board hanging under the boots, tips pointing ahead
+    const fy = 0.28, fz = 0.67, tilt = 0.25;
+    if (board) {
+      gear.push(part(box(0.3, 0.05, 1.45), gearCol, 0.14, fy, fz, tilt));
+      gear.push(part(box(0.28, 0.06, 0.18), 0x3a3f4a, 0.14, fy + 0.05, fz - 0.12, tilt));
+    } else for (const x of [-0.15, 0.15]) {
+      gear.push(part(box(0.11, 0.04, 1.6), gearCol, x, fy, fz, tilt));
+      gear.push(part(box(0.09, 0.015, 1.3), top, x, fy + 0.025, fz, tilt));
+    }
+  } else if (board) {
     gear.push(part(box(0.3, 0.05, 1.55), gearCol, 0, 0.1, 0));       // long axis = direction of travel
     gear.push(part(box(0.31, 0.02, 1.2), top, 0, 0.13, 0));
     gear.push(part(box(0.28, 0.06, 0.18), 0x3a3f4a, 0, 0.16, -0.17));
@@ -92,23 +130,26 @@ export function makeAvatar(avatar, color) {
     }
     parts.push(part(box(0.03, 0.95, 0.03), 0x30343c, 0.44, 0.62, 0.02, 0.9));
   }
+  if (sit && !board) parts.push(part(box(0.03, 0.95, 0.03), 0x30343c, 0.42, 0.75, 0.3, 0.5));
   const body = new THREE.Mesh(mergeGeometries(parts), vcMat());
   // right arm: a separate piece pivoting at the shoulder, so it can wave
   const armParts = [part(box(0.14, 0.5, 0.15), jacket, 0, -0.24, 0), part(box(0.15, 0.13, 0.16), glove, 0, -0.5, 0)];
-  if (!board) armParts.push(part(box(0.03, 0.95, 0.03), 0x30343c, 0, -0.5, -0.33, 1.3));
+  if (!board && !sit) armParts.push(part(box(0.03, 0.95, 0.03), 0x30343c, 0, -0.5, -0.33, 1.3));
   const arm = new THREE.Mesh(mergeGeometries(armParts), vcMat());
   const shoulder = new THREE.Group();
   shoulder.position.set(-0.37, 1.32, 0.06);
-  shoulder.rotation.x = -0.7;
+  shoulder.rotation.x = sit ? -0.35 : -0.7;
   shoulder.add(arm);
   body.add(shoulder);
   // Sideways stance: the rider stands across the board, which keeps pointing downhill.
-  if (board) body.rotation.y = Math.PI / 2;
+  // (Sitting, everyone faces forward.)
+  const stance = board && !sit ? Math.PI / 2 : 0;
+  body.rotation.y = stance;
   const rig = new THREE.Group();
   rig.add(new THREE.Mesh(mergeGeometries(gear), vcMat()), body);
   const g = new THREE.Group();
   g.add(rig);
-  g.userData = { rig, body, arm: shoulder, board, stance: board ? Math.PI / 2 : 0, phase: Math.random() * 6.28, amt: 0 };
+  g.userData = { rig, body, arm: shoulder, board, sit, stance, armRest: sit ? -0.35 : -0.7, phase: Math.random() * 6.28, amt: 0 };
   return g;
 }
 
@@ -123,13 +164,16 @@ export function waveAvatar(g, k, face, lean = 0) {
   // in for the first 15%, out for the last 15%
   const e = k < 0.15 ? k / 0.15 : k > 0.85 ? (1 - k) / 0.15 : 1;
   const s = e * e * (3 - 2 * e);
-  let d = face - (u.baseYaw ?? 0);
+  // The whole rider turns, board or skis and all, so a snowboarder stays standing across the
+  // board: their chest faces the viewer, the board ends up side-on. Someone sitting can only
+  // twist so far in the seat.
+  let d = face - u.stance - (u.baseYaw ?? 0);
   d = Math.atan2(Math.sin(d), Math.cos(d));
+  if (u.sit) d = Math.max(-0.6, Math.min(0.6, d));
   g.rotation.y = (u.baseYaw ?? 0) + d * s;
-  u.body.rotation.y = u.stance * (1 - s);
   g.rotation.z = -lean * s;
   const swing = Math.sin(k * Math.PI * 7) * 0.32 * s;
-  u.arm.rotation.set(-0.7 * (1 - s), 0, -2.55 * s + swing);
+  u.arm.rotation.set((u.armRest ?? -0.7) * (1 - s), 0, -2.55 * s + swing);
 }
 
 /** Back to the normal riding pose after a wave. */
@@ -137,8 +181,7 @@ export function endWave(g) {
   const u = g.userData;
   if (!u.arm) return;
   g.rotation.y = u.baseYaw ?? 0; g.rotation.z = 0;
-  u.body.rotation.y = u.stance;
-  u.arm.rotation.set(-0.7, 0, 0);
+  u.arm.rotation.set(u.armRest ?? -0.7, 0, 0);
 }
 
 /**
@@ -167,28 +210,32 @@ export function animateAvatar(g, t, dt, moving) {
  */
 export function makeRide(kind, avatar, color) {
   const g = new THREE.Group();
+  const glass = new THREE.MeshLambertMaterial({ color: 0x9fc4e0, transparent: true, opacity: 0.28, depthWrite: false });
   if (kind === 'cabin') {
+    // a gondola cabin in their colour with glass all round; they sit on the bench inside
     const c = new THREE.Color(color), geo = mergeGeometries([
       part(box(0.14, 1.5, 0.14), 0x3a3f4a, 0, 3.0, 0),
       part(box(2.0, 0.2, 2.3), 0xe9edf2, 0, 2.1, 0),
-      part(box(1.9, 1.0, 2.2), 0x1d2530, 0, 1.5, 0),
+      ...[[-0.97, -1.12], [0.97, -1.12], [-0.97, 1.12], [0.97, 1.12]].map(([x, z]) => part(box(0.08, 1.0, 0.08), 0xe9edf2, x, 1.5, z)),
       part(box(2.0, 0.95, 2.3), c, 0, 0.55, 0),
       part(box(1.6, 0.2, 1.9), 0x2a2f38, 0, 0, 0),
+      part(box(0.55, 0.12, 1.9), 0x3a3f4a, -0.62, 0.62, 0),       // bench along one side
     ]);
-    g.add(new THREE.Mesh(geo, vcMat()));
-    g.userData = { ride: kind, av: leaner(g, avatar, color, 1.05, 0.15) };
+    g.add(new THREE.Mesh(geo, vcMat()), new THREE.Mesh(box(1.96, 0.98, 2.26).translate(0, 1.5, 0), glass));
+    g.userData = { ride: kind, av: seat(g, avatar, color, -0.72, 0.68 - SEAT_Y, 0, Math.PI / 2, true) };
     return g;
   }
   if (kind === 'train' || kind === 'funicular') {
-    // a single rail car in the rider's colour
+    // a single rail car in the rider's colour, windows all round, a seat by the window
     const c = new THREE.Color(color), geo = mergeGeometries([
       part(box(1.9, 0.35, 4.6), 0x2a2f38, 0, 0.25, 0),
       part(box(2.1, 1.0, 4.8), c, 0, 0.95, 0),
-      part(box(2.0, 0.8, 4.6), 0x1d2530, 0, 1.8, 0),
+      ...[-2.35, -0.8, 0.8, 2.35].flatMap((z) => [part(box(0.08, 0.8, 0.12), c, -1.02, 1.85, z), part(box(0.08, 0.8, 0.12), c, 1.02, 1.85, z)]),
       part(box(2.2, 0.22, 5.0), 0xe9edf2, 0, 2.3, 0),
+      part(box(0.9, 0.12, 0.6), 0x3a3f4a, 0.45, 0.95, 0),          // seat
     ]);
-    g.add(new THREE.Mesh(geo, vcMat()));
-    g.userData = { ride: kind, av: leaner(g, avatar, color, 1.1, 0.4) };
+    g.add(new THREE.Mesh(geo, vcMat()), new THREE.Mesh(box(2.06, 0.8, 4.76).translate(0, 1.85, 0), glass));
+    g.userData = { ride: kind, av: seat(g, avatar, color, 0.45, 1.01 - SEAT_Y, -0.1, 0, true) };
     return g;
   }
   if (kind.startsWith('tow-')) {
@@ -206,26 +253,21 @@ export function makeRide(kind, avatar, color) {
     g.userData = { ride: kind, av };
     return g;
   }
+  // chairlift: sitting on the seat, back against the backrest, skis or board hanging in front
   const chair = new THREE.Mesh(chairGeometry(2), vcMat());
-  chair.position.y = 3.4;                       // seat at y = 0, hanger rising above
-  const av = makeAvatar(avatar, color), u = av.userData;
-  // sitting: leaning back against the backrest, skis or board hanging out in front
-  if (u.board) { u.body.rotation.y = 0.5; u.stance = 0.5; }
-  av.rotation.x = -0.32;
-  av.position.set(0, -0.3, 0.12);
-  u.rig = null;                                  // no riding animation while seated
-  u.baseYaw = 0;
-  g.add(chair, av);
-  g.userData = { ride: kind, av, seated: true };
+  chair.position.y = 3.4;                       // seat surface at y = 0.07, hanger rising above
+  g.add(chair);
+  g.userData = { ride: kind, av: seat(g, avatar, color, 0, 0.07 - SEAT_Y, 0.08, 0), seated: true };
   return g;
 }
 
-/** A rider inside a cabin or rail car: hidden until they lean out of the window to wave. */
-function leaner(g, avatar, color, side, y) {
-  const av = makeAvatar(avatar, color);
-  av.userData.rig = null; av.userData.hidden = true; av.userData.baseYaw = 0;
-  av.position.set(side, y, 0);
-  av.visible = false;
+// how high above the boot soles a sitting rider's seat is (the underside of the thighs)
+const SEAT_Y = 0.79;
+function seat(g, avatar, color, x, y, z, yaw, inside = false) {
+  const av = makeAvatar(avatar, color, 'sit');
+  if (inside) av.children[0].children[0].visible = false;   // skis and boards ride outside, in the racks
+  av.userData.rig = null; av.userData.baseYaw = yaw;
+  av.position.set(x, y, z); av.rotation.y = yaw;
   g.add(av);
   return av;
 }

@@ -579,3 +579,14 @@ img.thumb.photo { object-fit: cover; background: #23415f; }
 #resort-card .photo-big img { width: 100%; height: 100%; object-fit: cover; display: block; }
 #resort-card .photo-big small { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 10px 4px; font-size: 10.5px; color: rgba(255, 255, 255, .85);
   background: linear-gradient(transparent, rgba(0, 0, 0, .55)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* top right: the mountain button always stays; GPS, test mode and group status sit underneath it */
+#topbar .pills { flex-direction: column; align-items: flex-end; flex-wrap: nowrap; gap: 6px; }
+#topbar .pills .pill { padding: 5px 10px; font-size: 12.5px; }
+
+/* three choices under the search box: Use my location | Favorites | History */
+.start-filters { gap: 0; }
+.start-filters button { gap: 6px; padding: 6px 9px; font-size: 14.5px; }
+.start-filters button svg { width: 19px; height: 19px; }
+.start-filters .sep { margin: 0 3px; }
+.mrow.day small + small { margin-top: 1px; }

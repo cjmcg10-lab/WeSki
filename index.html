@@ -29,7 +29,7 @@
       <div class="grab"></div>
       <h2>Find your mountain</h2>
       <label class="search"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linecap="round"><circle cx="10.500" cy="10.500" r="6.500"/><path d="M15.500 15.500 21 21"/></svg><input id="f-resort" type="search" placeholder="Search mountains or regions" autocomplete="off" autocorrect="off" spellcheck="false" /></label>
-      <div class="start-filters"><button data-act="near-me" id="near-btn"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.500-6.200-6.500-11a6.500 6.500 0 0 1 13 0c0 4.800-6.500 11-6.500 11z"/><circle cx="12" cy="10" r="2.300"/></svg>Use my location</button><span class="sep"></span><button data-act="favs" id="fav-btn"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.200l2.700 5.600 6.100.8-4.500 4.200 1.100 6.100L12 17l-5.400 2.900 1.100-6.100L3.200 9.600l6.100-.8z"/></svg>Favorites</button></div>
+      <div class="start-filters"><button data-act="near-me" id="near-btn"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-6.500-6.200-6.500-11a6.500 6.500 0 0 1 13 0c0 4.800-6.500 11-6.500 11z"/><circle cx="12" cy="10" r="2.300"/></svg>Use my location</button><span class="sep"></span><button data-act="favs" id="fav-btn"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3.200l2.700 5.600 6.100.8-4.500 4.200 1.100 6.100L12 17l-5.400 2.900 1.100-6.100L3.200 9.600l6.100-.8z"/></svg>Favorites</button><span class="sep"></span><button data-act="start-hist" id="hist-btn"><svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/></svg>History</button></div>
       <div id="resort-list"></div>
       <button class="btn outline join-btn" data-act="start-join">Join Group</button>
     </div>
@@ -39,8 +39,8 @@
   <div id="headbg"></div>
   <header id="topbar">
     <button class="elev" id="elev" data-act="locate" aria-label="Elevation. Tap to show my location"><span>Elevation</span><b id="elev-val">GPS OFF</b></button>
-    <div class="pills"><button class="pill hidden" id="gps-pill" data-act="locate">GPS off</button><button class="pill hidden" id="group-pill" data-act="tab" data-tab="group"></button>
-      <button class="resort-btn" id="resort-btn" data-act="change-resort" aria-label="Change mountain"><svg viewBox="0 0 64 32" width="52" height="26"><path d="M0 30 18 12l6 5 12-14 28 27z" fill="#5d7f9e"/><path d="M36 3l8 10-5-1-3 4-3-5-5 3z M18 12l5 5-4-1-2 2-2-3z" fill="#eef4fa"/><path d="M36 3 64 30H40z" fill="#000" opacity=".18"/></svg><span id="resort-btn-name"></span><i>›</i></button></div>
+    <div class="pills">      <button class="resort-btn" id="resort-btn" data-act="change-resort" aria-label="Change mountain"><svg viewBox="0 0 64 32" width="52" height="26"><path d="M0 30 18 12l6 5 12-14 28 27z" fill="#5d7f9e"/><path d="M36 3l8 10-5-1-3 4-3-5-5 3z M18 12l5 5-4-1-2 2-2-3z" fill="#eef4fa"/><path d="M36 3 64 30H40z" fill="#000" opacity=".18"/></svg><span id="resort-btn-name"></span><i>›</i></button>
+      <button class="pill hidden" id="gps-pill" data-act="locate">GPS off</button><button class="pill hidden" id="group-pill" data-act="tab" data-tab="group"></button></div>
   </header>
 
   <section id="navbar" class="hidden"></section>

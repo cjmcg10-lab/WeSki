@@ -228,7 +228,8 @@ async function boot() {
 let globe = null, clouds = null;
 /** Show the globe. With `from` (a resort) it starts on the ground there, hidden, ready to pull back. */
 async function openStart(from = null) {
-  const el = $('#start');
+  const el = $("#start");
+  S.allDays = null;   // re-read saved days next time History is shown
   const [{ Globe }, meta, bin] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json()), fetchOk('/data/globe.bin').then((r) => r.arrayBuffer()), loadPlaces()]);
   el.classList.toggle('prep', !!from);          // laid out but invisible until the map has flown out
   el.classList.toggle('fade', !!from);
@@ -271,6 +272,8 @@ function setStartMini(on) {
 
 function renderResortList(q) {
   q = (q ?? $('#f-resort').value).trim().toLowerCase();
+  $('#hist-btn').classList.toggle('on', !!S.histOnly);
+  if (S.histOnly) { renderDayList(q); return; }
   let list = PLACES.filter((r) => !q || r.name.toLowerCase().includes(q) || r.region.toLowerCase().includes(q));
   if (S.favOnly) list = list.filter((r) => S.favs.has(r.id));
   const near = S.nearMe;
@@ -287,6 +290,38 @@ function renderResortList(q) {
     ? list.map(({ r, d }) => `<button class="mrow ${r.id === last ? 'sel' : ''}" data-act="pick-resort" data-id="${r.id}">${thumbPic(r)}<span class="grow"><span class="nm"><b>${esc(r.name)}</b>${S.favs.has(r.id) ? '<span class="star">★</span>' : ''}${r.id === last ? '<span class="lastv">Last visited</span>' : ''}</span><small>${esc(r.region)}${near ? ` · ${away(d)}` : ''}</small>${r.available ? '' : '<em class="soon-tag">Map coming soon</em>'}</span><i>›</i></button>`).join('')
     : `<p class="start-empty">${S.favOnly && !S.favs.size ? 'No favorites yet. Open a mountain and tap its star to add it here.' : 'No mountain matches that search yet.'}</p>`;
   if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
+}
+
+/** Home screen "History": every saved ski day on this phone, newest first, any mountain. */
+async function renderDayList(q) {
+  $('#near-btn').classList.remove('on'); $('#fav-btn').classList.remove('on');
+  if (!S.allDays) {
+    $('#resort-list').innerHTML = '<p class="start-empty">Loading…</p>';
+    try { S.allDays = (await sessions.list()).filter((s) => !s.active); } catch { S.allDays = []; }
+    if (!S.histOnly) return;
+  }
+  const name = (s) => placeById(resortOf(s))?.name || resortOf(s);
+  const days = S.allDays.filter((s) => !q || name(s).toLowerCase().includes(q));
+  $('#resort-list').innerHTML = days.length
+    ? days.map((s) => `<button class="mrow day" data-act="start-day" data-id="${s.id}" data-r="${resortOf(s)}">${thumbPic(placeById(resortOf(s)) || { id: resortOf(s), name: name(s), region: '' })}<span class="grow"><span class="nm"><b>${esc(name(s))}</b></span><small>${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}</small><small>${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}</small></span><i>›</i></button>`).join('')
+    : `<p class="start-empty">${S.allDays.length ? 'No saved day matches that search.' : 'No saved ski days yet. Start tracking on a mountain and your days will be listed here.'}</p>`;
+  if (globe && !$('#start').classList.contains('focus')) requestAnimationFrame(() => layoutGlobe(true));
+}
+
+/** Open a saved day from the home screen: fly into its mountain and show that day. */
+async function openDay(rid, sid) {
+  const r = placeById(rid);
+  if (!r?.available || !globe) { toast('That mountain\'s map is not available.'); return; }
+  $('#start-panel').classList.add('hidden');
+  $('#start').classList.add('focus');
+  const card = $('#resort-card');
+  card.innerHTML = `<p class="soon" style="text-align:center;margin:10px 0 14px">Opening your day at <b>${esc(r.name)}</b>…</p>`;
+  card.classList.remove('hidden'); card.dataset.id = r.id;
+  initMap(r.id).catch(() => {});
+  await globe.flyTo(r, 1.4);
+  await goSki(r.id, null);
+  S.pendingDay = sid; S.historyLoaded = false;
+  openSheet('history');
 }
 
 /** Great-circle distance in km. */
@@ -1104,8 +1139,6 @@ function renderChrome() {
     g.textContent = `${S.group.code} · ${n}${S.group.status === 'online' ? '' : ' · offline'}${S.sharing ? ' · sharing' : ''}`;
     g.className = 'pill' + (S.sharing && S.group.status === 'online' ? ' live' : '');
   } else g.className = 'pill hidden';
-  // the mountain button shows when no status needs the space
-  $('#resort-btn').classList.toggle('hidden', !gp.classList.contains('hidden') || !!S.group);
   $('#resort-btn-name').textContent = S.place?.name || '';
   $('#infobar').classList.toggle('hidden', !S.place);
   $('#searchbtn').classList.toggle('hidden', !S.place);
@@ -1231,7 +1264,7 @@ const sw = (k, list, cur, jacket) => `<div class="swatches">${list.map((c, i) =>
 const chips = (k, list, cur) => `<div class="seg wrap">${list.map(([, n], i) => `<button data-act="look" data-k="${k}" data-v="${i}" class="${cur === i ? 'on' : ''}">${n}</button>`).join('')}</div>`;
 function sheetCustomize() {
   const p = S.profile, L = parseLook(p.avatar);
-  return ['Customize rider', `<div class="rider-stage big"><div id="av-preview" class="av-preview" title="Tap to wave"></div><p class="sub">Tap your rider to wave. Your group sees this look on the map.</p></div>
+  return ['Customize rider', `<div class="rider-stage big"><div id="av-preview" class="av-preview" title="Tap to wave"></div><p class="sub">Drag your rider to turn them round, tap to wave. Your group sees this look on the map.</p></div>
     <div class="card"><h3>Ride</h3><div class="seg"><button data-act="look" data-k="ride" data-v="ski" class="${L.ride === 'ski' ? 'on' : ''}">Skier</button><button data-act="look" data-k="ride" data-v="board" class="${L.ride === 'board' ? 'on' : ''}">Snowboarder</button></div>
       <h3 style="margin-top:14px">Build</h3><div class="seg"><button data-act="look" data-k="who" data-v="boy" class="${L.who === 'boy' ? 'on' : ''}">Square jacket</button><button data-act="look" data-k="who" data-v="girl" class="${L.who === 'girl' ? 'on' : ''}">Fitted jacket</button></div>
       <h3 style="margin-top:14px">Skin tone</h3>${sw('skin', SKIN, L.skin)}</div>
@@ -1384,6 +1417,8 @@ async function loadHistory() {
   S.historyElsewhere = all.length - S.history.length;
   showTracks();
   S.historyLoaded = true;
+  if (S.pendingDay && S.history.some((s) => s.id === S.pendingDay)) { const id = S.pendingDay; S.pendingDay = null; openSheet('session', id); return; }
+  S.pendingDay = null;
   if (S.sheet === 'history' || S.sheet === 'session') renderSheet();
 }
 
@@ -1786,8 +1821,10 @@ async function onClick(e) {
     case 'ski-here': skiHere(b); break;
     case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
-    case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) S.nearMe = null; renderResortList(); break;
-    case 'near-me': nearMe(); break;
+    case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
+    case 'near-me': S.histOnly = false; nearMe(); break;
+    case 'start-hist': S.histOnly = !S.histOnly; if (S.histOnly) { S.favOnly = false; S.nearMe = null; S.allDays = null; } renderResortList(); break;
+    case 'start-day': openDay(d.r, d.id); break;
     case 'start-join': startJoinAsk(); break;
     case 'start-join-go': startJoinGo(b); break;
     case 'go-group-mtn': goGroupMountain(d.code, d.id); break;

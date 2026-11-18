@@ -806,7 +806,6 @@ export class SkiMap {
     const k = (this.t - w.t0) / 2.8;
     if (stop || k >= 1) {
       M.endWave(av);
-      if (av.userData.hidden) av.visible = false;
       u.wave = null;
       return;
     }
@@ -814,8 +813,7 @@ export class SkiMap {
     const cp = this.camera.position, op = obj.position;
     const world = Math.atan2(cp.x - op.x, cp.z - op.z);
     const face = world - obj.rotation.y - (ride ? outer.rotation.y : 0);
-    if (av.userData.hidden) av.visible = true;      // inside a cabin: lean out of the window
-    const lean = av.userData.hidden ? 0.55 : outer.userData.seated ? 0.3 : 0;
+    const lean = outer.userData.seated ? 0.15 : 0;     // on a chair: a little lean out to the side
     M.waveAvatar(av, k, face, lean);
   }
 

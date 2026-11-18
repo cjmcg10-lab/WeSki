@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { makeAvatar, animateAvatar, waveAvatar, endWave } from './models.js';
 
 let R = null;
+let held = null;   // the angle the rider was last turned to by hand (kept while the page re-draws)
 function setup() {
   if (R) return R;
   const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
@@ -58,7 +59,7 @@ export function avatarThumb(avatar, color, size = 120) {
 
 /**
  * A live, slowly turning preview inside `el` (a sized box). Returns a stop function. Only one
- * live preview runs at a time; tapping it makes the rider wave.
+ * live preview runs at a time. Drag sideways to turn the rider round; a tap makes them wave.
  */
 export function mountPreview(el, avatar, color) {
   const r = setup();
@@ -71,7 +72,21 @@ export function mountPreview(el, avatar, color) {
   let alive = true, last = performance.now(), t = 0, wave = null;
   const live = { av, stop: () => { alive = false; if (r.live === live) r.live = null; } };
   r.live = live;
-  canvas.onclick = () => { wave = 0; };
+  // drag to turn the rider; once turned by hand it stays where it is put
+  let yaw = held ?? 0, manual = held != null, drag = null;
+  canvas.style.touchAction = 'pan-y';
+  canvas.onpointerdown = (e) => { drag = { x: e.clientX, y0: yaw, moved: false, id: e.pointerId }; canvas.setPointerCapture?.(e.pointerId); };
+  canvas.onpointermove = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    const dx = e.clientX - drag.x;
+    if (Math.abs(dx) > 6) drag.moved = true;
+    if (drag.moved) { manual = true; wave = null; endWave(av); yaw = drag.y0 + dx * 0.012; held = yaw; }
+  };
+  canvas.onpointerup = canvas.onpointercancel = (e) => {
+    if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.moved && e.type === 'pointerup') wave = 0;
+    drag = null;
+  };
   const loop = () => {
     if (!alive || !el.isConnected) { live.stop(); return; }
     requestAnimationFrame(loop);
@@ -79,7 +94,8 @@ export function mountPreview(el, avatar, color) {
     last = now; t += dt;
     const w = Math.max(1, el.clientWidth), h = Math.max(1, el.clientHeight);
     frame(w, h, false);
-    av.userData.baseYaw = Math.sin(t * 0.5) * 0.7;           // turn gently from side to side
+    if (!manual) yaw = Math.sin(t * 0.5) * 0.7;              // turn gently from side to side until turned by hand
+    av.userData.baseYaw = yaw;
     if (wave != null) {
       wave += dt / 2.8;
       if (wave >= 1) { wave = null; endWave(av); } else waveAvatar(av, wave, 0);
