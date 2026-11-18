@@ -1,0 +1,35 @@
+{
+ "id": "hunter-mountain",
+ "name": "Hunter Mountain",
+ "region": "New York, USA",
+ "tz": "America/New_York",
+ "area_name": "Hunter Mountain",
+ "area_buffer": 150,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NY FEMA R2 Central 2018 and NY SouthEast 4 County 2022 (public domain)",
+ "osm_bbox": [
+  -74.27,
+  42.17,
+  -74.18,
+  42.23
+ ],
+ "skip_pois": [
+  "Hunter Mountain"
+ ],
+ "area_bbox": [
+  -74.2445,
+  42.195,
+  -74.2055,
+  42.212
+ ],
+ "links": [
+  [
+   "Broadway Express (base)",
+   "20th Century Quad (base)"
+  ]
+ ],
+ "rename": {
+  "Colonel's Alternate": "The Colonel's Alternative",
+  "Heuga Express": "Jimmy Huega",
+  "Sleepy Hallow": "Sleepy Hollow"
+ }
+}

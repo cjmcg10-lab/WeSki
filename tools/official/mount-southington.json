@@ -1,0 +1,21 @@
+{
+ "source": "Mount Southington 2025 trail map (https://skimap.org/skimaps/view/37432), read by hand",
+ "fetched": "2026-11-18",
+ "runs": {
+  "Avalanche": 1,
+  "Boomerang": 1,
+  "Dom's Way": 0,
+  "Laurel": 1,
+  "Liftline": 1,
+  "Northstar": 0,
+  "Snowflake": 0,
+  "Stardust": 0,
+  "Steeplechase": 1,
+  "Tester": 2,
+  "The Glacier": 0,
+  "Thunderbolt": 2,
+  "Turkey Turn": 1,
+  "Whoopee": 0
+ },
+ "blue_black": []
+}

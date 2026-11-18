@@ -1,0 +1,28 @@
+{
+ "id": "wachusett",
+ "name": "Wachusett",
+ "region": "Massachusetts, USA",
+ "tz": "America/New_York",
+ "area_name": "Wachusett Mountain",
+ "area_buffer": 150,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, MA Central Eastern 2021 and MA Western 2024 (public domain)",
+ "osm_bbox": [
+  -71.92,
+  42.48,
+  -71.86,
+  42.525
+ ],
+ "skip_pois": [
+  "Wachusett Mountain"
+ ],
+ "area_bbox": [
+  -71.8955,
+  42.4885,
+  -71.8815,
+  42.5065
+ ],
+ "rename": {
+  "10th Mountain Trail": "10th Mtn Trail",
+  "Lower 10th Mountain": "Lower 10th Mtn Trail"
+ }
+}

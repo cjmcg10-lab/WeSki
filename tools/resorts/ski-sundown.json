@@ -1,0 +1,18 @@
+{
+ "id": "ski-sundown",
+ "name": "Ski Sundown",
+ "region": "Connecticut, USA",
+ "tz": "America/New_York",
+ "area_name": "Ski Sundown",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, CT_Statewide_C16 (public domain)",
+ "osm_bbox": [
+  -72.985,
+  41.86,
+  -72.91,
+  41.91
+ ],
+ "skip_pois": [
+  "Ski Sundown"
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "id": "powder-ridge",
+ "name": "Powder Ridge",
+ "region": "Connecticut, USA",
+ "tz": "America/New_York",
+ "area_name": "Powder Ridge Ski Area",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, CT_Statewide_C16 (public domain)",
+ "osm_bbox": [
+  -72.78,
+  41.48,
+  -72.71,
+  41.535
+ ],
+ "skip_pois": [
+  "Powder Ridge Ski Area"
+ ]
+}

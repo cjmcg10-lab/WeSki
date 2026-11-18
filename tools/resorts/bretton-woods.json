@@ -1,0 +1,32 @@
+{
+ "id": "bretton-woods",
+ "name": "Bretton Woods",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "area_name": "Bretton Woods Ski Area",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, NH Umbagog 2016 and NH Connecticut River North 2015 (public domain)",
+ "osm_bbox": [
+  -71.51,
+  44.22,
+  -71.4,
+  44.29
+ ],
+ "skip_pois": [
+  "Bretton Woods Ski Area"
+ ],
+ "links": [
+  [
+   "trail:Avalon",
+   "trail:Presidential"
+  ]
+ ],
+ "rename": {
+  "Black forest Glade": "Black Forest",
+  "Carrol": "Carroll",
+  "Downspout Glade": "Downspout",
+  "Lizzie Borne Glades": "Lizzie Bourne Glade",
+  "Mcintyre's Ride": "McIntire's Ride",
+  "Minhan Ridge": "Minahan's Ridge"
+ }
+}

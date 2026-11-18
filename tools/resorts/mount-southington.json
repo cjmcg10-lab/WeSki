@@ -1,0 +1,28 @@
+{
+ "id": "mount-southington",
+ "name": "Mount Southington",
+ "region": "Connecticut, USA",
+ "tz": "America/New_York",
+ "area_name": "Mount Southington Ski Area",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, CT_Statewide_C16 (public domain)",
+ "osm_bbox": [
+  -72.935,
+  41.55,
+  -72.865,
+  41.6
+ ],
+ "skip_pois": [
+  "Mount Southington Ski Area"
+ ],
+ "links": [
+  [
+   "trail:Steeplechase",
+   "trail:Turkey Turn"
+  ],
+  [
+   "Thunderbolt Triple (top)",
+   "trail:Laurel"
+  ]
+ ]
+}

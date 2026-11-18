@@ -1,0 +1,18 @@
+{
+ "id": "mohawk-mountain",
+ "name": "Mohawk Mountain",
+ "region": "Connecticut, USA",
+ "tz": "America/New_York",
+ "area_name": "Mohawk Mountain Ski Area",
+ "area_buffer": 400,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, CT_Statewide_C16 (public domain)",
+ "osm_bbox": [
+  -73.345,
+  41.81,
+  -73.275,
+  41.865
+ ],
+ "skip_pois": [
+  "Mohawk Mountain Ski Area"
+ ]
+}
