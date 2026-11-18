@@ -604,7 +604,25 @@ def main():
     # Hand-made joins the map lacks: a walk through a summit tunnel between two stations, or a
     # short traverse from a lift top to a trail. Each is [lift end, lift end | "trail:Name"].
     ends = {P["name"]: P for P in pois if P["kind"] in ("lift", "lifttop")}
-    for a_name, b_name in cfg.get("links", []):
+    for a_name, b_name, *how in cfg.get("links", []):
+        if how == ["hike"]:
+            # hike-to terrain: walk from a lift end (or a run's top) to where a run starts, e.g. a bowl
+            # reached on foot along a ridge. Directions show it as a walk, in both directions.
+            cb = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
+            assert b_name.startswith("trail:") and cb, f"links: no trail named {b_name[6:]!r}"
+            if a_name.startswith("trail:"):
+                ca = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == a_name[6:]]
+                assert ca, f"links: no trail named {a_name[6:]!r}"
+                fa = lambda w: Point(w["line"].coords[0][:2])
+            else:
+                A = ends[a_name]
+                ca, fa = [None], lambda w: Point(A["x"], A["y"])
+            wb, wa = min(((b, a) for b in cb for a in ca), key=lambda ba: Point(ba[0]["line"].coords[0][:2]).distance(
+                fa(ba[1]) if ba[1] else Point(A["x"], A["y"])))
+            top = wb["line"].coords[0][:2]
+            start = cut(wa, wa["line"].coords[0][:2]) if wa else A["n"]
+            links.append((start, cut(wb, top), "w", True))
+            continue
         if a_name.startswith("trail:") and b_name.startswith("trail:"):
             # a run whose top stops short of the run it leaves from: ski from the nearest point of A onto B's top
             cb = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]

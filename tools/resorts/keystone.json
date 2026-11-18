@@ -33,5 +33,760 @@
  "rename": {
   "Wichita": "Witchita",
   "Jacques St. James": "St. James"
- }
+ },
+ "extra_lifts": [
+  {
+   "name": "Outback Express",
+   "kind": "chair_lift",
+   "pts": [
+    [
+     -105.94,
+     39.548
+    ],
+    [
+     -105.9192,
+     39.5456
+    ]
+   ]
+  }
+ ],
+ "extra_trails": [
+  {
+   "name": "Elk Run",
+   "pts": [
+    [
+     -105.9192,
+     39.5456
+    ],
+    [
+     -105.923,
+     39.546
+    ],
+    [
+     -105.926,
+     39.5462
+    ],
+    [
+     -105.93,
+     39.5468
+    ],
+    [
+     -105.934,
+     39.5472
+    ],
+    [
+     -105.9375,
+     39.5474
+    ],
+    [
+     -105.94,
+     39.548
+    ]
+   ]
+  },
+  {
+   "name": "Oh, Bob",
+   "pts": [
+    [
+     -105.9215,
+     39.5459
+    ],
+    [
+     -105.9255,
+     39.5463
+    ],
+    [
+     -105.927,
+     39.5476
+    ],
+    [
+     -105.929,
+     39.5489
+    ],
+    [
+     -105.9315,
+     39.549
+    ],
+    [
+     -105.9345,
+     39.5482
+    ],
+    [
+     -105.9375,
+     39.5478
+    ],
+    [
+     -105.94,
+     39.548
+    ]
+   ]
+  },
+  {
+   "name": "Wildcat",
+   "pts": [
+    [
+     -105.9265,
+     39.5468
+    ],
+    [
+     -105.9295,
+     39.5476
+    ],
+    [
+     -105.933,
+     39.5478
+    ],
+    [
+     -105.936,
+     39.5476
+    ]
+   ]
+  },
+  {
+   "name": "Bighorn",
+   "pts": [
+    [
+     -105.923,
+     39.5457
+    ],
+    [
+     -105.9265,
+     39.5456
+    ],
+    [
+     -105.93,
+     39.5449
+    ],
+    [
+     -105.9345,
+     39.5448
+    ],
+    [
+     -105.9385,
+     39.5447
+    ],
+    [
+     -105.94,
+     39.5455
+    ],
+    [
+     -105.94,
+     39.548
+    ]
+   ]
+  },
+  {
+   "name": "Porcupine",
+   "pts": [
+    [
+     -105.9255,
+     39.5452
+    ],
+    [
+     -105.929,
+     39.5442
+    ],
+    [
+     -105.934,
+     39.5437
+    ],
+    [
+     -105.938,
+     39.5434
+    ],
+    [
+     -105.94,
+     39.5445
+    ]
+   ]
+  },
+  {
+   "name": "The Willows",
+   "pts": [
+    [
+     -105.924,
+     39.5385
+    ],
+    [
+     -105.928,
+     39.5395
+    ],
+    [
+     -105.931,
+     39.5412
+    ],
+    [
+     -105.935,
+     39.542
+    ],
+    [
+     -105.9385,
+     39.5428
+    ],
+    [
+     -105.94,
+     39.5445
+    ],
+    [
+     -105.9402,
+     39.547
+    ]
+   ]
+  },
+  {
+   "name": "Lodgepole",
+   "pts": [
+    [
+     -105.9255,
+     39.5405
+    ],
+    [
+     -105.929,
+     39.5415
+    ],
+    [
+     -105.933,
+     39.5428
+    ],
+    [
+     -105.937,
+     39.5436
+    ],
+    [
+     -105.9385,
+     39.543
+    ]
+   ]
+  },
+  {
+   "name": "Pika Glades",
+   "pts": [
+    [
+     -105.923,
+     39.5452
+    ],
+    [
+     -105.926,
+     39.544
+    ],
+    [
+     -105.929,
+     39.5428
+    ],
+    [
+     -105.931,
+     39.5418
+    ]
+   ]
+  },
+  {
+   "name": "Wildfire",
+   "pts": [
+    [
+     -105.9215,
+     39.545
+    ],
+    [
+     -105.9235,
+     39.5432
+    ],
+    [
+     -105.9255,
+     39.5418
+    ],
+    [
+     -105.9265,
+     39.5408
+    ]
+   ]
+  },
+  {
+   "name": "Wolverine",
+   "pts": [
+    [
+     -105.92,
+     39.5447
+    ],
+    [
+     -105.9215,
+     39.5428
+    ],
+    [
+     -105.9235,
+     39.5412
+    ],
+    [
+     -105.9255,
+     39.5403
+    ]
+   ]
+  },
+  {
+   "name": "Mr. Toad's Wild Ride",
+   "pts": [
+    [
+     -105.918,
+     39.5445
+    ],
+    [
+     -105.919,
+     39.5425
+    ],
+    [
+     -105.9205,
+     39.5405
+    ],
+    [
+     -105.9225,
+     39.539
+    ],
+    [
+     -105.9245,
+     39.5385
+    ]
+   ]
+  },
+  {
+   "name": "South Bowl Trees",
+   "pts": [
+    [
+     -105.916,
+     39.5435
+    ],
+    [
+     -105.917,
+     39.5415
+    ],
+    [
+     -105.9185,
+     39.5398
+    ],
+    [
+     -105.9205,
+     39.5388
+    ],
+    [
+     -105.924,
+     39.5384
+    ]
+   ]
+  },
+  {
+   "name": "Puma Bowl",
+   "pts": [
+    [
+     -105.915,
+     39.5447
+    ],
+    [
+     -105.9157,
+     39.5435
+    ],
+    [
+     -105.917,
+     39.5415
+    ]
+   ]
+  },
+  {
+   "name": "Wombat Chutes",
+   "pts": [
+    [
+     -105.9138,
+     39.5446
+    ],
+    [
+     -105.9148,
+     39.543
+    ],
+    [
+     -105.9165,
+     39.5416
+    ]
+   ]
+  },
+  {
+   "name": "Bingo",
+   "pts": [
+    [
+     -105.9125,
+     39.5445
+    ],
+    [
+     -105.9137,
+     39.5428
+    ],
+    [
+     -105.916,
+     39.5413
+    ]
+   ]
+  },
+  {
+   "name": "South Bowl",
+   "pts": [
+    [
+     -105.904,
+     39.5462
+    ],
+    [
+     -105.9075,
+     39.544
+    ],
+    [
+     -105.91,
+     39.542
+    ],
+    [
+     -105.913,
+     39.5405
+    ],
+    [
+     -105.9165,
+     39.5395
+    ],
+    [
+     -105.9205,
+     39.5388
+    ]
+   ]
+  },
+  {
+   "name": "Tele Trees",
+   "pts": [
+    [
+     -105.906,
+     39.543
+    ],
+    [
+     -105.9085,
+     39.5405
+    ],
+    [
+     -105.9115,
+     39.539
+    ],
+    [
+     -105.916,
+     39.538
+    ],
+    [
+     -105.922,
+     39.5378
+    ],
+    [
+     -105.924,
+     39.5384
+    ]
+   ]
+  },
+  {
+   "name": "The Black Forest",
+   "pts": [
+    [
+     -105.92,
+     39.5462
+    ],
+    [
+     -105.9208,
+     39.549
+    ],
+    [
+     -105.9215,
+     39.5515
+    ],
+    [
+     -105.922,
+     39.5535
+    ]
+   ]
+  },
+  {
+   "name": "North Bowl",
+   "pts": [
+    [
+     -105.904,
+     39.547
+    ],
+    [
+     -105.9075,
+     39.5482
+    ],
+    [
+     -105.911,
+     39.5495
+    ],
+    [
+     -105.914,
+     39.5505
+    ],
+    [
+     -105.9165,
+     39.5517
+    ]
+   ]
+  },
+  {
+   "name": "Erickson Bowl",
+   "pts": [
+    [
+     -105.9105,
+     39.564
+    ],
+    [
+     -105.9125,
+     39.5622
+    ],
+    [
+     -105.915,
+     39.5603
+    ],
+    [
+     -105.9172,
+     39.5585
+    ]
+   ]
+  },
+  {
+   "name": "Bergman Bowl",
+   "pts": [
+    [
+     -105.915,
+     39.564
+    ],
+    [
+     -105.918,
+     39.5655
+    ],
+    [
+     -105.921,
+     39.5662
+    ],
+    [
+     -105.924,
+     39.5663
+    ]
+   ]
+  },
+  {
+   "name": "Independence Bowl",
+   "pts": [
+    [
+     -105.909,
+     39.5755
+    ],
+    [
+     -105.912,
+     39.5728
+    ],
+    [
+     -105.9145,
+     39.5712
+    ],
+    [
+     -105.9159,
+     39.5706
+    ]
+   ]
+  },
+  {
+   "name": "The Windows",
+   "pts": [
+    [
+     -105.923,
+     39.573
+    ],
+    [
+     -105.9245,
+     39.5715
+    ],
+    [
+     -105.9258,
+     39.57
+    ],
+    [
+     -105.9265,
+     39.568
+    ],
+    [
+     -105.9259,
+     39.566
+    ]
+   ]
+  }
+ ],
+ "extra_note": "The Outback Express and the runs it serves are missing from OpenStreetMap. Traced 2026-11-18 from the official trail map layout, aerial photos (NAIP) and 1 m terrain. Back-bowl and glade lines are approximate (within about 100 m).",
+ "links": [
+  [
+   "River Run Gondola (top)",
+   "trail:Mouse Trap",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Narrow Gauge",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Gun Barrel",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Wild Card",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Black Jack",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Brahma",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Crap Game",
+   "hike"
+  ],
+  [
+   "River Run Gondola (top)",
+   "trail:Roulette",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Wolverine"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:The Trap"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Mr. Toad's Wild Ride"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Wildfire"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Conquest"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Pika Glades"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Victory Chutes"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Puma Bowl"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:The Stadium"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:South Bowl Trees"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Bingo",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Wombat Chutes",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Goalpost Gully",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:North Bowl",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:South Bowl",
+   "hike"
+  ],
+  [
+   "Outback Express (top)",
+   "trail:Tele Trees",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Nuchu"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Silver Heels"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Liberty"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Erickson Bowl",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Eagle's Nest",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Independence Bowl",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Indy Face",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Two If By Sea",
+   "hike"
+  ],
+  [
+   "Bergman Express (top)",
+   "trail:Bald Mountain Glades",
+   "hike"
+  ],
+  [
+   "trail:Bald Mountain Glades",
+   "trail:The Corral",
+   "hike"
+  ],
+  [
+   "trail:The Corral",
+   "trail:Christmas Tree",
+   "hike"
+  ],
+  [
+   "trail:Bighorn",
+   "trail:Porcupine"
+  ],
+  [
+   "trail:Witchita",
+   "trail:Midnight Ride"
+  ]
+ ],
+ "links_note": "Hike-to terrain, as the official trail map shows it: the ridge east of the Dercum summit (Summit House) to the North Peak double blacks; Independence, Erickson and Bergman bowls and Wapiti Peak from the Bergman Express; North and South Bowl from the Outback Express. Directions show these joins as a walk."
 }

@@ -138,5 +138,10 @@
   "Wolverine": 2,
   "Wombat Chutes": 2
  },
- "note": "Double black diamonds and EX (extreme) runs are listed as 3. Terrain park features (Easy Street, The Alley, Park Lane, Main Street, I-70 Cross Course, Deacon Seat) and kids' adventure trails (smiley faces) carry no rating and are left out."
+ "note": "Double black diamonds and EX (extreme) runs are listed as 3. Terrain park features (Easy Street, The Alley, Park Lane, Main Street, I-70 Cross Course, Deacon Seat) and kids' adventure trails (smiley faces) carry no rating and are left out.",
+ "same_as": {
+  "Schoolmarm Family Ski Trail": "Schoolmarm",
+  "Jacques": "St. James"
+ },
+ "same_as_note": "OpenStreetMap draws Jacques and St. James as one line (renamed St. James in the resort config); Schoolmarm Family Ski Trail is the resort's long name for Schoolmarm."
 }
