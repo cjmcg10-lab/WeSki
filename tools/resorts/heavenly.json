@@ -17,7 +17,8 @@
   "Boundry Chutes": "Boundary Chutes",
   "Promised Land": "Promise Land",
   "Ramarah's": "Ramarrah",
-  "Stateline": "Stateline Chute"
+  "Stateline": "Stateline Chute",
+  "Widow Maker": "Lone Wolf"
  },
  "links": [
   [
@@ -26,5 +27,108 @@
    "hike"
   ]
  ],
- "links_note": "Milky Way Bowl is entered on foot from the ridge above the Dipper Express."
+ "links_note": "Milky Way Bowl is entered on foot from the ridge above the Dipper Express.",
+ "extra_trails": [
+  {
+   "name": "Big Easy",
+   "pts": [
+    [
+     -119.90669,
+     38.93863
+    ],
+    [
+     -119.90733,
+     38.93826
+    ],
+    [
+     -119.90796,
+     38.93788
+    ],
+    [
+     -119.9086,
+     38.93751
+    ],
+    [
+     -119.90923,
+     38.93713
+    ]
+   ]
+  },
+  {
+   "name": "Pioneer",
+   "pts": [
+    [
+     -119.92794,
+     38.93078
+    ],
+    [
+     -119.92857,
+     38.9303
+    ],
+    [
+     -119.9292,
+     38.92983
+    ]
+   ]
+  },
+  {
+   "name": "Galaxy Line",
+   "pts": [
+    [
+     -119.89439,
+     38.93646
+    ],
+    [
+     -119.89264,
+     38.93812
+    ],
+    [
+     -119.89089,
+     38.93978
+    ],
+    [
+     -119.88914,
+     38.94143
+    ],
+    [
+     -119.88738,
+     38.94309
+    ],
+    [
+     -119.88563,
+     38.94475
+    ],
+    [
+     -119.88388,
+     38.94641
+    ],
+    [
+     -119.88212,
+     38.94807
+    ]
+   ]
+  },
+  {
+   "name": "Sky Chute",
+   "pts": [
+    [
+     -119.9163,
+     38.9231
+    ],
+    [
+     -119.918,
+     38.9228
+    ],
+    [
+     -119.9197,
+     38.9226
+    ],
+    [
+     -119.9212,
+     38.9232
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Big Easy, Pioneer and Galaxy Line run beside their lifts and Sky Chute links the Sky Deck to Maggie's; OpenStreetMap lacks them, so they were drawn from the 2024-25 trail map: approximate. OpenStreetMap's Widow Maker is the run the resort calls Lone Wolf (between Snake Eyes and Hully Gully)."
 }

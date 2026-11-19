@@ -92,8 +92,7 @@
   "Sand Dunes": 1,
   "Silver Spur": 1,
   "Ski Ways Glades": 2,
-  "Sky": 2,
-  "Sky Canyon": 1,
+  "Sky Canyon": 2,
   "Sky Chute": 1,
   "Skyline Trail": 1,
   "Snake Eyes": 3,
@@ -120,5 +119,9 @@
   "West Bowl": 2,
   "World Cup": 1
  },
- "note": "Mott and Killebrew Canyons are a gated experts-only area; every run inside is listed as 3 whether or not it carries its own symbol."
+ "note": "Mott and Killebrew Canyons are a gated experts-only area; every run inside is listed as 3 whether or not it carries its own symbol. Sky Canyon carries a black diamond on the 2024-25 map (an earlier reading split its label into 'Sky' and 'Sky Canyon').",
+ "not_runs": {
+  "Killebrew Canyon": "The name of the gated experts-only area; its runs (Outer Limits, Pipeline, Ramarrah's, The Fingers, Stateline Chute, Bob's Boulevard, Sweetwater, Boundary Chutes) are each on the map.",
+  "Rocky Point": "An area name printed inside Mott Canyon between Bill's and Promise Land with no run line of its own; the map runs there (Under the Gun, Pac-Man) are double black."
+ }
 }

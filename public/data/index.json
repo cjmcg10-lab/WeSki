@@ -138,10 +138,10 @@
   "baseLon": -106.1462,
   "top": 3762,
   "base": 2959,
-  "trails": 143,
+  "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 953222
+  "bytes": 965480
  },
  {
   "id": "geto-kogen",
@@ -170,10 +170,10 @@
   "baseLon": -119.94268,
   "top": 3050,
   "base": 1916,
-  "trails": 128,
+  "trails": 132,
   "lifts": 24,
   "zones": true,
-  "bytes": 1126453
+  "bytes": 1142124
  },
  {
   "id": "hunter-mountain",
@@ -570,10 +570,10 @@
   "baseLon": -106.80336,
   "top": 3219,
   "base": 2105,
-  "trails": 192,
+  "trails": 195,
   "lifts": 23,
   "zones": true,
-  "bytes": 1155519
+  "bytes": 1161841
  },
  {
   "id": "stowe",

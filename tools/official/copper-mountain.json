@@ -146,5 +146,8 @@
   "Woodwinds": 0,
   "Woodwinds Traverse": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "same_as": {
+  "The Taco": "The Taco / Curecanti"
+ }
 }

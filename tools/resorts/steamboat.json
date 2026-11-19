@@ -6,5 +6,75 @@
  "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
  "building_range": 150,
  "poi_range": 120,
- "area_name": "Steamboat Ski Resort"
+ "area_name": "Steamboat Ski Resort",
+ "extra_trails": [
+  {
+   "name": "Bashor",
+   "pts": [
+    [
+     -106.78826,
+     40.45793
+    ],
+    [
+     -106.7881,
+     40.45924
+    ],
+    [
+     -106.78806,
+     40.46046
+    ],
+    [
+     -106.78814,
+     40.46143
+    ]
+   ]
+  },
+  {
+   "name": "Crowtrack",
+   "pts": [
+    [
+     -106.74422,
+     40.45523
+    ],
+    [
+     -106.74506,
+     40.45501
+    ],
+    [
+     -106.74594,
+     40.45489
+    ],
+    [
+     -106.74681,
+     40.45496
+    ],
+    [
+     -106.74765,
+     40.45512
+    ],
+    [
+     -106.74854,
+     40.45522
+    ]
+   ]
+  },
+  {
+   "name": "Kit",
+   "pts": [
+    [
+     -106.7475,
+     40.4485
+    ],
+    [
+     -106.7461,
+     40.4478
+    ],
+    [
+     -106.74457,
+     40.44711
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Bashor (beside the Bashor chair), Crowtrack (between The Ridge and Over Easy below the Morningside top) and Kit (from Tomahawk Face across to Black Powder) are missing from OpenStreetMap and were drawn from the trail map: approximate."
 }

@@ -187,5 +187,11 @@
   "Yugen": 3,
   "Zoot Chute": 3
  },
- "note": "Runs inside a named bowl or chute area that carry no symbol of their own take the area's rating (for example the Six Senses and Serenity Bowl lines are double black / extreme). Crescendo is blue at the top and green lower down; the whole run is listed blue. Forget-Me-Not, White Crown, Ptarmigan and Pika had no readable symbol and are left unlisted. Smiley-face trails (CJ's Cabin, Rip's Ravine, Lost Cabin, Ripperoo's Forest, Porcupine Alley, Dragon Trail) are kids' adventure zones with no rating on the map and are left unlisted."
+ "note": "Runs inside a named bowl or chute area that carry no symbol of their own take the area's rating (for example the Six Senses and Serenity Bowl lines are double black / extreme). Crescendo is blue at the top and green lower down; the whole run is listed blue. Forget-Me-Not, White Crown, Ptarmigan and Pika had no readable symbol and are left unlisted. Smiley-face trails (CJ's Cabin, Rip's Ravine, Lost Cabin, Ripperoo's Forest, Porcupine Alley, Dragon Trail) are kids' adventure zones with no rating on the map and are left unlisted.",
+ "same_as": {
+  "Barton Breezeway": "Barton's Breezeway",
+  "Deja Vu": "Déjà Vu",
+  "North Bowl": "North Bowl Traverse"
+ },
+ "same_as_note": "Barton Breezeway is printed twice on the map (with and without the apostrophe). North Bowl is open bowl terrain on Peak 8; OpenStreetMap draws it only as the traverse line that leads into it, so that line carries the bowl's black rating."
 }

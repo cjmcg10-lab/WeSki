@@ -37,5 +37,166 @@
    "hike"
   ]
  ],
- "links_note": "Tucker Mountain is hike-to (or snowcat) terrain beyond Copper Bowl; directions show the approach as a walk."
+ "links_note": "Tucker Mountain is hike-to (or snowcat) terrain beyond Copper Bowl; directions show the approach as a walk.",
+ "extra_trails": [
+  {
+   "name": "Kokomo Glade",
+   "pts": [
+    [
+     -106.17564,
+     39.49419
+    ],
+    [
+     -106.17531,
+     39.49495
+    ],
+    [
+     -106.17498,
+     39.4957
+    ]
+   ]
+  },
+  {
+   "name": "Boulderado",
+   "pts": [
+    [
+     -106.1655,
+     39.4566
+    ],
+    [
+     -106.164,
+     39.4575
+    ],
+    [
+     -106.163,
+     39.4587
+    ],
+    [
+     -106.1624,
+     39.46
+    ],
+    [
+     -106.163,
+     39.4612
+    ]
+   ]
+  },
+  {
+   "name": "Western Slope",
+   "pts": [
+    [
+     -106.17266,
+     39.45661
+    ],
+    [
+     -106.1722,
+     39.45758
+    ],
+    [
+     -106.17228,
+     39.45859
+    ],
+    [
+     -106.17213,
+     39.45963
+    ],
+    [
+     -106.17154,
+     39.46057
+    ],
+    [
+     -106.17102,
+     39.46155
+    ]
+   ]
+  },
+  {
+   "name": "Summit Stash",
+   "pts": [
+    [
+     -106.1757,
+     39.4571
+    ],
+    [
+     -106.17592,
+     39.45784
+    ],
+    [
+     -106.17578,
+     39.45845
+    ],
+    [
+     -106.17601,
+     39.45906
+    ],
+    [
+     -106.17589,
+     39.45976
+    ],
+    [
+     -106.17547,
+     39.46049
+    ],
+    [
+     -106.17508,
+     39.46123
+    ]
+   ]
+  },
+  {
+   "name": "Spillway",
+   "pts": [
+    [
+     -106.17055,
+     39.47368
+    ],
+    [
+     -106.17035,
+     39.47437
+    ],
+    [
+     -106.17,
+     39.47491
+    ],
+    [
+     -106.1696,
+     39.47568
+    ],
+    [
+     -106.1695,
+     39.47619
+    ]
+   ]
+  },
+  {
+   "name": "Guthrie's Chute",
+   "pts": [
+    [
+     -106.17375,
+     39.4721
+    ],
+    [
+     -106.174,
+     39.47306
+    ],
+    [
+     -106.17412,
+     39.474
+    ],
+    [
+     -106.17421,
+     39.47476
+    ],
+    [
+     -106.1746,
+     39.47569
+    ],
+    [
+     -106.1752,
+     39.47659
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Kokomo Glade, Boulderado, Western Slope, Summit Stash, Spillway and Guthrie's Chute are missing from OpenStreetMap and were drawn from the 2026-27 trail map and its Tucker / Copper Bowl inset, placed between their neighbouring runs on aerial photos: approximate."
 }
