@@ -17,12 +17,41 @@
   "Killington Resort"
  ],
  "rename": {
-  "Highline Race Trail": "Highline"
+  "Highline Race Trail": "Highline",
+  "Great Bear - Upper": "Grizzly"
  },
  "links": [
   [
    "Bear Mountain Quad (top)",
    "trail:Centerpiece"
   ]
- ]
+ ],
+ "extra_trails": [
+  {
+   "name": "Ledgewood Yurt Trail",
+   "pts": [
+    [
+     -72.79097,
+     43.6168
+    ],
+    [
+     -72.78992,
+     43.61713
+    ],
+    [
+     -72.78863,
+     43.61701
+    ],
+    [
+     -72.78735,
+     43.61654
+    ],
+    [
+     -72.78642,
+     43.61612
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Ledgewood Yurt Trail follows the track visible in NAIP photos from Northbrook Trail to the Northbrook Quad base, where the trail map puts the yurt. The resort's list has Grizzly and Great Bear - Lower but no upper Great Bear, so OpenStreetMap's 'Great Bear - Upper' (blue, as Grizzly is) is named Grizzly."
 }

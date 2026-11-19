@@ -20,5 +20,54 @@
   "253824759": "Lower Red Ball",
   "253827640": "Upper Turnpike",
   "253827298": "Lower Turnpike"
- }
+ },
+ "extra_trails": [
+  {
+   "name": "Lil' Bertha",
+   "pts": [
+    [
+     -71.69825,
+     44.17459
+    ],
+    [
+     -71.69821,
+     44.175
+    ],
+    [
+     -71.6982,
+     44.17541
+    ],
+    [
+     -71.69822,
+     44.17582
+    ],
+    [
+     -71.69829,
+     44.17622
+    ],
+    [
+     -71.69834,
+     44.17662
+    ]
+   ]
+  },
+  {
+   "name": "Middle Hardscrabble Cut-Thru",
+   "pts": [
+    [
+     -71.70166,
+     44.16771
+    ],
+    [
+     -71.70195,
+     44.16859
+    ],
+    [
+     -71.70225,
+     44.16946
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Lil' Bertha (between Time Zone and Snowmakers' Glade) and the Middle Hardscrabble cut-through (from Middle Hardscrabble to the top of Red Ball, marked MH Cut Thru on the map) are drawn from the trail map between their neighbours."
 }

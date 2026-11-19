@@ -106,10 +106,10 @@
   "baseLon": -71.711,
   "top": 1231,
   "base": 574,
-  "trails": 100,
+  "trails": 102,
   "lifts": 9,
   "zones": false,
-  "bytes": 453963
+  "bytes": 457506
  },
  {
   "id": "catamount",
@@ -234,10 +234,10 @@
   "baseLon": -72.7568,
   "top": 1278,
   "base": 356,
-  "trails": 152,
+  "trails": 153,
   "lifts": 22,
   "zones": false,
-  "bytes": 1089094
+  "bytes": 1091359
  },
  {
   "id": "la-plagne",
@@ -554,10 +554,10 @@
   "baseLon": -72.78575,
   "top": 1112,
   "base": 339,
-  "trails": 81,
+  "trails": 84,
   "lifts": 9,
   "zones": false,
-  "bytes": 498073
+  "bytes": 503071
  },
  {
   "id": "steamboat",

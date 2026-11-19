@@ -31,7 +31,6 @@
   "Lower Exhibition": 1,
   "Olympic": 2,
   "One More Time": 1,
-  "Outpost": 2,
   "Overbrook": 1,
   "PDF": 2,
   "Pat's Pitch": 2,
@@ -55,5 +54,8 @@
   "Upper Exhibition": 1,
   "Yard Sale": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "Outpost": "Read from the trail map by mistake: Outpost is chairlift #10 on the North Face (red lift label), already on the map as a lift."
+ }
 }

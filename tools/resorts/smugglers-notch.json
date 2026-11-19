@@ -1,21 +1,69 @@
 {
-  "id": "smugglers-notch",
-  "name": "Smugglers' Notch",
-  "region": "Vermont, USA",
-  "tz": "America/New_York",
-  "area_name": "Smugglers' Notch Resort",
-  "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
-  "osm_bbox": [
-    -72.835,
-    44.535,
-    -72.745,
-    44.612
-  ],
-  "dem_tiles": [
-    "x67y494",
-    "x67y495"
-  ],
-  "skip_pois": [
-    "Smugglers' Notch Resort"
-  ]
+ "id": "smugglers-notch",
+ "name": "Smugglers' Notch",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Smugglers' Notch Resort",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+ "osm_bbox": [
+  -72.835,
+  44.535,
+  -72.745,
+  44.612
+ ],
+ "dem_tiles": [
+  "x67y494",
+  "x67y495"
+ ],
+ "skip_pois": [
+  "Smugglers' Notch Resort"
+ ],
+ "way_names": {
+  "904498404": "Magic Learning Trail"
+ },
+ "extra_trails": [
+  {
+   "name": "Crossover",
+   "pts": [
+    [
+     -72.771,
+     44.5638
+    ],
+    [
+     -72.7725,
+     44.5643
+    ],
+    [
+     -72.774,
+     44.5648
+    ],
+    [
+     -72.775,
+     44.5652
+    ]
+   ]
+  },
+  {
+   "name": "Bud's Way",
+   "pts": [
+    [
+     -72.7758,
+     44.5869
+    ],
+    [
+     -72.7768,
+     44.5863
+    ],
+    [
+     -72.7778,
+     44.5856
+    ],
+    [
+     -72.77829,
+     44.58533
+    ]
+   ]
+  }
+ ],
+ "extra_note": "From the 2025-26 trail map: the lower part of Howie's Wanderer down to Meadowlark is the Magic Learning Trail; Crossover (Sterling, from below Poacher's Woods across to Treasure Run) and Bud's Way (from Dixie's Knoll to the Morse lift junction) are placed by eye between their neighbours (within about 100 m)."
 }

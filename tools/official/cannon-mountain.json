@@ -108,5 +108,8 @@
   "MH Cut Thru": 1,
   "Toss-Up Freestyle Terrain": 2
  },
- "note": "Baron's Run is black on its upper part and blue below; the map draws it as one run, so the whole run is rated black here (the safe side)."
+ "note": "Baron's Run is black on its upper part and blue below; the map draws it as one run, so the whole run is rated black here (the safe side).",
+ "same_as": {
+  "Tossup Park": "Toss-Up Freestyle Terrain"
+ }
 }
