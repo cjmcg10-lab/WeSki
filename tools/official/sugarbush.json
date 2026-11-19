@@ -114,5 +114,8 @@
   "Way Back": 1,
   "Which Way": 1
  },
- "blue_black": []
+ "blue_black": [],
+ "same_as": {
+  "Runout": "Castlerock Runout"
+ }
 }

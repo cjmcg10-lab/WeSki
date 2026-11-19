@@ -586,10 +586,10 @@
   "baseLon": -72.76738,
   "top": 1116,
   "base": 399,
-  "trails": 128,
+  "trails": 130,
   "lifts": 12,
   "zones": false,
-  "bytes": 775296
+  "bytes": 777061
  },
  {
   "id": "stratton",
@@ -794,9 +794,9 @@
   "baseLon": 7.62399,
   "top": 3874,
   "base": 1558,
-  "trails": 146,
+  "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 2857811
+  "bytes": 2857821
  }
 ]

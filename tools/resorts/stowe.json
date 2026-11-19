@@ -1,23 +1,50 @@
 {
-  "id": "stowe",
-  "name": "Stowe",
-  "region": "Vermont, USA",
-  "tz": "America/New_York",
-  "area_name": "Stowe Mountain Resort",
-  "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
-  "osm_bbox": [
-    -72.835,
-    44.497,
-    -72.725,
-    44.563
-  ],
-  "dem_tiles": [
-    "x67y494"
-  ],
-  "skip_pois": [
-    "Stowe Mountain Resort"
-  ],
-  "two_way_lifts": [
-    "Over Easy Transfer Gondola"
-  ]
+ "id": "stowe",
+ "name": "Stowe",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Stowe Mountain Resort",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+ "osm_bbox": [
+  -72.835,
+  44.497,
+  -72.725,
+  44.563
+ ],
+ "dem_tiles": [
+  "x67y494"
+ ],
+ "skip_pois": [
+  "Stowe Mountain Resort"
+ ],
+ "two_way_lifts": [
+  "Over Easy Transfer Gondola"
+ ],
+ "way_names": {
+  "84506951": "Main Street Race"
+ },
+ "extra_trails": [
+  {
+   "name": "Football Fields",
+   "pts": [
+    [
+     -72.77787,
+     44.53825
+    ],
+    [
+     -72.7777,
+     44.53778
+    ],
+    [
+     -72.77754,
+     44.5373
+    ],
+    [
+     -72.77737,
+     44.53683
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Main Street Race is the race lane beside the Sensation Quad (the one of OpenStreetMap's two 'Main Street' lines nearer the lift). Football Fields is drawn from the trail map beside Lower Main Street: approximate."
 }

@@ -49,5 +49,8 @@
   "Village": 1,
   "Écureuils": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "not_runs": {
+  "Écureuils": "A children's play area (OpenStreetMap: 'Les Écureuils', piste type playground), not a run between lifts."
+ }
 }

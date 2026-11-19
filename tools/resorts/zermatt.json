@@ -3,7 +3,9 @@
  "name": "Zermatt – Cervinia",
  "region": "Valais, Switzerland / Aosta Valley, Italy",
  "tz": "Europe/Zurich",
- "two_way_lifts": ["Rote Nase"],
+ "two_way_lifts": [
+  "Rote Nase"
+ ],
  "two_way_lifts_note": "Hohtälli to Rote Nase is a nearly level shuttle cable car (3286 m to 3247 m): it carries skiers both ways.",
  "area_name": "Zermatt - Breuil-Cervinia",
  "terrain_source": "swisstopo swissALTI3D 2 m (Switzerland); TINITALY 10 m, INGV, CC BY 4.0 (Italy)",
@@ -130,5 +132,12 @@
    "Trockener Steg - Klein Matterhorn Glacier Ride (top)"
   ]
  ],
- "cell": 26
+ "cell": 26,
+ "way_names": {
+  "1044431731": "Howette",
+  "1459564618": "Howette",
+  "1461647517": "Murmelbodmen",
+  "436291242": "Umfahrung Kelle"
+ },
+ "names_note": "Matched by the numbers on the 2026-27 Cervino Ski Paradise map and its piste list: OpenStreetMap's no. 3 (named Riedweg) is Howette, no. 15b (named Tufternkumme) is Murmelbodmen, and the unnamed run that leaves Kelle and rejoins lower down is Umfahrung Kelle (29a on the list; OSM puts 29a on Kelle's lower part)."
 }
