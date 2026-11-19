@@ -149,7 +149,7 @@ mountains also have a few dead-end runs listed in their build's connectivity rep
 
 ## Runs on the resort's list but not yet on the map (2026-11-19)
 
-`python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 21 remain. The rest
+`python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 19 remain. The rest
 were found under another name (`rename`, `way_names`, `split_ways`, `same_as`), explained as not separate runs
 (`not_runs`: lift numbers misread, area names, play areas, backcountry gates), or drawn by hand (`extra_trails`,
 marked `traced`, approximate: placed from the trail map between neighbouring runs on aerial photos).
