@@ -371,6 +371,7 @@ def main():
         if t.get("_traced"):
             trails[-1]["traced"] = True   # not in OpenStreetMap: drawn by hand from the trail map
         trail_ways.append(nd)
+    trails, trail_ways = drop_duplicates(trails, trail_ways, elev)
 
     # ---- lifts
     lift_out = []
@@ -798,6 +799,89 @@ def main():
         print("outlined areas drawn down the middle:", ", ".join(loops))
     print(f"trails {len(trails)} areas {len(areas)} lifts {len(lift_out)} buildings {len(buildings)} pois {len(pois)} "
           f"parks {len(parks)} nodes {len(G.pts)} edges {len(edges)} slow {sum(T['slow'] for T in trails)}")
+
+
+def drop_duplicates(trails, ways, elev, tol=12.0):
+    """OpenStreetMap often maps one run twice: two ways along the same line (one drawn each way, a piste
+    mapped on top of the road it follows, an old and a new version). Drawn together they look like a double
+    line. Going from the longest run down, a run that lies along a run already kept with the same name (or
+    has no name of its own) is left out when most of it is covered, and cut back to the part that is not when
+    only part of it is. The kept run takes the harder rating of the two. Each removal is printed for review."""
+    from shapely.geometry import Point
+    order = sorted(range(len(trails)), key=lambda i: (not trails[i]["name"], -trails[i]["len"]))
+    kept, out_ways, dropped, trimmed = [], {}, [], []
+    for i in order:
+        t, nd = trails[i], ways[i]
+        key = _dkey(t["name"]) if t["name"] else None
+        same = [k for k in kept if key is None or (k["name"] and _dkey(k["name"]) == key)]
+        a = t["_line"]
+        near = [k for k in same if k["_line"].distance(a) < tol]
+        if near and a.length > 0:
+            n = max(2, int(a.length // 5))
+            cov = [min(k["_line"].distance(a.interpolate(j / (n - 1), normalized=True)) for k in near) < tol
+                   for j in range(n)]
+            f = sum(cov) / n
+            if f >= 0.75:
+                for k in near:
+                    if k["_line"].distance(a) < tol:
+                        k["d"] = max(k["d"], t["d"])
+                        if not k["name"]:
+                            k["name"] = t["name"]
+                        break
+                dropped.append(t["name"] or "unnamed")
+                continue
+            if f >= 0.3:
+                pts = list(a.coords)
+                vc = [min(k["_line"].distance(Point(p)) for k in near) < tol for p in pts]
+                runs, s = [], None
+                for j, c in enumerate(vc + [True]):
+                    if not c and s is None:
+                        s = j
+                    elif c and s is not None:
+                        runs.append((s, j - 1))
+                        s = None
+                if len(runs) == 1:
+                    s, e = runs[0]
+                    s, e = max(0, s - 1), min(len(pts) - 1, e + 1)
+                    if e > s:
+                        sub = LineString(pts[s:e + 1])
+                        if sub.length >= 40 and nd and len(nd) == len(pts):
+                            t = dict(t, _line=sub, len=round(sub.length), pts=flat(_densify(pts[s:e + 1])),
+                                     top=round(elev(*pts[s])), bot=round(elev(*pts[e])))
+                            nd = nd[s:e + 1]
+                            trimmed.append(t["name"] or "unnamed")
+                        elif sub.length < 40:
+                            dropped.append(t["name"] or "unnamed")
+                            continue
+        kept.append(t)
+        out_ways[id(t)] = nd
+    kept.sort(key=lambda t: t["id"])
+    new_ways = [out_ways[id(t)] for t in kept]
+    for j, t in enumerate(kept):
+        t["id"] = j
+    if dropped or trimmed:
+        print(f"duplicate runs left out ({len(dropped)}): {', '.join(sorted(dropped))}")
+        print(f"duplicate parts cut off ({len(trimmed)}): {', '.join(sorted(trimmed))}")
+    return kept, new_ways
+
+
+def _dkey(name):
+    """A run's name for spotting duplicates: no accents, no leading article, "St." read as Saint
+    (OpenStreetMap has both "Emile Allais" and "Émile Allais", "Ours" and "Les Ours")."""
+    import unicodedata
+    s = unicodedata.normalize("NFKD", name or "").encode("ascii", "ignore").decode().lower()
+    s = re.sub(r"^(?:(?:les|le|la|the|der|die|das)\s+|l')", "", s.strip())
+    s = re.sub(r"\bst\b\.?\s*", "saint", s)
+    return re.sub(r"[^a-z0-9]+", "", s)
+
+
+def _densify(pts, step=10.0):
+    out = [pts[0]]
+    for a, b in zip(pts, pts[1:]):
+        n = max(1, int(math.ceil(math.dist(a, b) / step)))
+        for k in range(1, n + 1):
+            out.append((a[0] + (b[0] - a[0]) * k / n, a[1] + (b[1] - a[1]) * k / n))
+    return out
 
 
 def _nkey(name):

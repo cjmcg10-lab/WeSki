@@ -174,6 +174,23 @@ Completeness work (2026-11-18): the goal is that every run on the resort's own l
   nearest run or lift end (450 m for bowls, 250 m for lines; ski across if level or above, walk if not); and finally
   joins every run whose top no lift reaches to the nearest reachable point (ski 400 m, walk 250 m). Each join is
   printed ("joined automatically", "cut-off runs joined") for review. A run counts as reachable only if its top is.
+- More config keys (2026-11-19): `split_ways` {way id: [[lon, lat], "first part name", "rest name"]} cuts one OSM way
+  where its name changes (empty name keeps the way's own); `as_runs` [way ids] draws an untagged track or path as a run;
+  `way_names` also fixes a run OSM names wrongly (Zermatt's no. 3 "Riedweg" is Howette). In the official json,
+  `not_runs` is a dict of name → explanation (lift numbers misread as runs, area names such as Heavenly's Killebrew
+  Canyon, play areas, backcountry gates).
+- Glades and short runs drawn between two mapped runs: the scratch helper `mid.py <id> <A> <B> f0 f1 [w]` gives the
+  line between runs A and B; a run beside a lift is the lift line offset 30-45 m. Both are approximate.
+- Duplicate lines (2026-11-19): `build_data.py` `drop_duplicates` leaves out a run that lies along a longer run with
+  the same name (or has no name), and cuts a partly overlapping one back to its own part; the kept run takes the harder
+  rating. It prints "duplicate runs left out" and "duplicate parts cut off". Before it, about 440 run pairs overlapped
+  across the 50 mountains, mostly OSM mapping one run as two ways.
+- Still missing after the 2026-11-19 pass (no source placed them): Stratton "Stevek" (new, not on any map found),
+  Sugarbush "Rob Roy" (Mt. Ellen), Zermatt Paradise (10), Mittelritz (30) and Platte (31, orange ski routes below
+  Hohtälli), Pre de Veau-Pirovano; SkiWelt 8, La Plagne Croes and Jarsey, Tignes Combe du Géant and Les Champions,
+  Geto C4. The Cervino map is `cervinia-api.devtherocks.it/wp-content/uploads/2026/11/Ski-Map-Cervino-Ski-Paradise-26-27.pdf`
+  (its piste list with numbers is an image: render it with pdftoppm). OnTheSnow pages link small trail-map images
+  (cdn.bfldr.com, a web-fetch agent can save them): enough for big labels, too small for small ones.
 - Config `links` take a third element `"hike"`: `["<lift> (top)", "trail:X", "hike"]` walks from the lift end to the
   top of X (both ways), for hike-to terrain (Keystone's bowls, Park City's Jupiter and Pinecone ridges, Whiteface's
   Slides). Directions show it as a walk.
