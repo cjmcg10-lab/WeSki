@@ -37,6 +37,7 @@ ap.add_argument("--write", action="store_true"); ap.add_argument("--range", type
 ap.add_argument("--cache", default=os.environ.get("ALIGN_CACHE", "/tmp/align-cache"))
 ap.add_argument("--mpp", type=float, default=1.0, help="photo metres per pixel")
 ap.add_argument("--json", default=None, help="write per-run results here")
+ap.add_argument("--shift", action="store_true", help="test whether the whole map is shifted against the photo, then stop")
 ap.add_argument("--widths", action="store_true", help="save the measured widths to tools/widths/<id>.json (used by build_zones.py)")
 ap.add_argument("--debug", default=None, help="save a picture per run in this folder (photo, drawn line red, found line cyan)")
 A = ap.parse_args()
@@ -314,6 +315,8 @@ def near(ua, p, d):
 trails = R["trails"]
 if A.only == "traced": sel = [t for t in trails if t.get("traced")]
 elif A.only == "all": sel = [t for t in trails if not t.get("glade") and t["len"] >= 150]
+elif A.only.startswith("osm:"):
+    ids = set(A.only[4:].split(",")); sel = [t for t in trails if str(t["osm"]) in ids]
 else:
     names = set(A.only.split(",")); sel = [t for t in trails if t["name"] in names]
 
@@ -330,6 +333,23 @@ samp = np.array(samp)
 if not len(samp): raise SystemExit("no photos for this area")
 THR = (otsu(samp[:, 0]), otsu(samp[:, 1]))
 print(f"{A.rid}: {len(sel)} runs, {len(cells)} photo cells, brightness threshold {THR[0]:.0f}, texture threshold {THR[1]:.1f}")
+
+if A.shift:
+    # Sample every run every 20 m; for each whole-map shift, the share of samples on open ground. A map traced
+    # from offset imagery shows a clear best shift away from (0, 0).
+    S = []
+    for t in sel:
+        xy, _ = resample(t["pts"], 20); S += [tuple(p) for p in xy]
+    S = np.array(S)
+    best = {}
+    for dx in range(-60, 61, 6):
+        for dy in range(-60, 61, 6):
+            v = [raw(*ll(x + dx, y + dy)) for x, y in S]
+            o = [1.0 if (q[0] > THR[0] and q[1] < THR[1]) else 0.0 for q in v if q]
+            best[(dx, dy)] = float(np.mean(o)) if o else 0
+    (bx, by), bv = max(best.items(), key=lambda kv: kv[1])
+    print(f"SHIFT {A.rid}: on open ground with no shift {best[(0, 0)]:.3f}; best shift x {bx} m, y {by} m: {bv:.3f} ({len(S)} samples)")
+    raise SystemExit
 
 results = []
 for t in sel:

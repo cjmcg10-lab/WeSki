@@ -76,6 +76,24 @@ def main():
         ways[k] = (wid, nd[:j + 1], dict(tags, **({"name": n1, "piste:name": n1} if n1 else {})))
         ways.append((str(20_000_000_000 + int(wid)), nd[j:], dict(tags, **({"name": n2, "piste:name": n2} if n2 else {}))))
 
+    # "way_pts" moves an OpenStreetMap run that is drawn off its real line (checked on aerial photos with
+    # tools/align_trails.py): {way id: [[lon, lat], ...] in the way's own order}. The way keeps its first and
+    # last node, so it stays joined where it was; only the points between are replaced.
+    for wid, pts in cfg.get("way_pts", {}).items():
+        k = next((i for i, w in enumerate(ways) if w[0] == wid), None)
+        if k is None:
+            print(f"way_pts: way {wid} not in the extract"); continue
+        _, nd, tags = ways[k]
+        a, b = nodes[nd[0]], nodes[nd[-1]]
+        mid = []
+        for j, (lon, lat) in enumerate(pts):
+            p = tf.transform(lon, lat)
+            if math.dist(p, a) < 15 or math.dist(p, b) < 15: continue
+            nid = f"w{wid}_{j}"; nodes[nid] = p; mid.append(nid)
+        if mid and math.dist(nodes[mid[0]], a) > math.dist(nodes[mid[0]], b):
+            mid.reverse()
+        ways[k] = (wid, [nd[0]] + mid + [nd[-1]], dict(tags, _moved="yes"))
+
     # Mountain railways and funiculars that work as ski lifts but are mapped as railways
     # (Zermatt's Gornergrat Bahn): the config gives each one as a line of [lon, lat] points.
     rail_adj = None
