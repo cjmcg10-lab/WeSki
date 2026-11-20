@@ -7,6 +7,8 @@
   "compatibility_date": "2026-10-01",
   "workers_dev": true,
   "preview_urls": false,
+  // The app's own address (builtbyroger.app is in the owner's Cloudflare account). The workers.dev address keeps working.
+  "routes": [{ "pattern": "skiwithme.builtbyroger.app", "custom_domain": true }],
   "assets": {
     "directory": "dist",
     "binding": "ASSETS",
@@ -30,7 +32,7 @@
   "vars": {
     "PAYWALL": "off",
     "WEATHER": "open-meteo",
-    "MAIL_FROM": "",
+    "MAIL_FROM": "SkiWithMe <signin@builtbyroger.app>",
     "PADDLE_ENV": "sandbox",
     "PADDLE_CLIENT_TOKEN": "",
     "PADDLE_PRICES": "{}"

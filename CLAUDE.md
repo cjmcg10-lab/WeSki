@@ -64,8 +64,11 @@ session needs that the README does not: the rules, the state of the work, and wh
   2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
 - **Price:** free map everywhere; Day $2.99, Week $3.99, Season $19.99 a year, Crew Season $34.99 a year for 4
-  (set 2026-11-21 to undercut Slopes and Ski Tracks; see `docs/PAID_TIER.md`). Owner's company: Built by Roger LLC,
-  contact hello@builtbyroger.app, domain builtbyroger.app (registered at Cloudflare). skiwithme.app belongs to someone else.
+  (set 2026-11-21 to undercut Slopes and Ski Tracks; see `docs/PAID_TIER.md`). Owner's company: Built By Roger LLC
+  (exact registered name), a Connecticut LLC; the terms use Connecticut law. Contact hello@builtbyroger.app, domain
+  builtbyroger.app (registered at Cloudflare). skiwithme.app belongs to someone else. The app's address is
+  https://skiwithme.builtbyroger.app (custom domain in `wrangler.assets.jsonc` `routes`, owner's choice 2026-11-20); the
+  workers.dev address still works. Phone storage (saved days, favourites) is per address, so the two do not share it.
 - **Logo:** replaced by the owner on 2026-11-17 with a new image: three skiers in helmets and goggles (blue, white,
   orange) in front of three snowy peaks, with a white S-shaped run and blue and orange slopes, on dark navy. The original
   upload is `design/logo-original.png`; `design/logo.png` is the rounded square cropped out and made square (squeezed

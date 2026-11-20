@@ -4,7 +4,7 @@ An installable web app for ski resorts: a low-poly 3D mountain built from real
 LiDAR terrain, a one-tap 2D map, private friend groups with live GPS, directions that reroute as
 people move, run stats with playback, and full offline use.
 
-**Live app:** https://skiwithme.cjmcg10.workers.dev
+**Live app:** https://skiwithme.builtbyroger.app (also https://skiwithme.cjmcg10.workers.dev)
 
 ## What's in it
 
