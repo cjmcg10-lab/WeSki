@@ -42,7 +42,7 @@ describe('uphill tolerance', () => {
   it('keeps every route within the climb cap, and each level allows at least what the one below does', () => {
     let seed = 11;
     const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    const named = resort.trails.filter((t) => t.name && t.len > 250);
+    const named = resort.trails.filter((t) => t.name && !t.hide && t.len > 250);
     const pick = () => { const t = named[Math.floor(rnd() * named.length)]; const p = pointAlong(t.pts, rnd() * lineLength(t.pts)); return { x: p[0], y: p[1] }; };
     for (let i = 0; i < 40; i++) {
       const a = pick(), b = pick(), cost = {};

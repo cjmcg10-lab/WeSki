@@ -49,6 +49,11 @@ describe('every built resort', () => {
         const cut = resort.trails.filter((t) => t.ok && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
         expect(cut).toEqual([]);
       }
+      // existence check (tools/verify_exists.py): every run shown is on the resort's list, confirmed by hand,
+      // or a linking piece; anything hidden says why
+      expect(resort.sources.checked).toBeTruthy();
+      for (const t of resort.trails) if (t.hide) expect(typeof t.hide).toBe('string');
+      for (const l of resort.lifts) if (l.hide) expect(typeof l.hide).toBe('string');
       // zones: only known kinds, with geometry inside the map
       const kinds = ['slow', 'family', 'race', 'park', 'extreme', 'free'];
       for (const t of resort.trails) if (t.z) expect(kinds).toContain(t.z);
@@ -61,4 +66,18 @@ describe('every built resort', () => {
       for (const e of resort.graph.edges) if (e.k === 'l' && !e.bi) expect(resort.graph.nodes[e.b][2]).toBeGreaterThan(resort.graph.nodes[e.a][2]);
     });
   }
+});
+
+describe('existence check', () => {
+  it('Sunday River: the Merrill Hill II chair and the runs not on the resort map are hidden', () => {
+    const { resort } = loadResort('sunday-river');
+    expect(resort.lifts.find((l) => l.name === 'Merrill Hill II').hide).toBeTruthy();
+    expect(resort.lifts.find((l) => l.name === 'Merrill Hill Triple').hide).toBeFalsy();
+    expect(resort.trails.find((t) => t.name === 'Brilliant').hide).toBeTruthy();
+    expect(resort.trails.find((t) => t.osm === 1259470011).hide).toBeTruthy();
+    for (const n of ['Spectra', 'Prism', 'Double Refraction']) expect(resort.trails.find((t) => t.name === n).hide).toBeFalsy();
+    const router = new Router(resort);
+    const hidden = new Set(resort.trails.flatMap((t, i) => (t.hide ? [i] : [])));
+    expect(router.edges.some((e) => e.k === 'p' && hidden.has(e.r))).toBe(false);
+  });
 });

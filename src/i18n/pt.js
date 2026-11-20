@@ -142,4 +142,5 @@ export default {
   629: 'Caminha {0} fora da pista até {1}', 630: 'Caminha {0} fora da pista até ao destino', 631: 'caminha {0} fora da pista até {1}', 632: 'caminha {0} fora da pista até ao destino', 633: 'Trajetos a pé (fora das pistas ou por um caminho)', 634: 'a pé, fora das pistas', 635: 'Afastar',
   636: 'Posição', 637: 'Regular', 638: 'Goofy', 639: 'Regular: pé esquerdo à frente. Goofy: pé direito à frente.',
   640: 'Coloque o telemóvel na vertical', 641: 'O SkiWithMe foi feito para usar o telemóvel na vertical.',
+  642: 'Clareiras e pistas entre árvores (traços longos)', 643: 'Borda de uma pista larga (contorno pontilhado fino, da mesma cor da pista)', 644: 'Trecho de ligação: sem nome na lista de pistas da estância',
 };

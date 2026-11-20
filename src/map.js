@@ -185,9 +185,10 @@ export class SkiMap {
           if (Math.hypot(i * cell - x, j * cell - y) <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v);
         }
     };
-    for (const t of this.resort.trails) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], t.glade ? 16 : t.d === 0 ? 30 : 25, t.glade ? 0.4 : 1);
+    for (const t of this.resort.trails) if (!t.hide) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], t.glade ? 16 : t.d === 0 ? 30 : 25, t.glade ? 0.4 : 1);
     for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 30, 1);
     for (const l of this.resort.lifts) {
+      if (l.hide) continue;
       const n = Math.ceil(l.len / 12);
       for (let k = 0; k <= n; k++) {
         const f = k / n, x = l.pts[0] + (l.pts[l.pts.length - 2] - l.pts[0]) * f, y = l.pts[1] + (l.pts[l.pts.length - 1] - l.pts[1]) * f;
@@ -225,6 +226,7 @@ export class SkiMap {
       }
     };
     for (const t of this.resort.trails) {
+      if (t.hide) continue;
       const z = t.z || (t.slow ? 'slow' : null);
       if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 30, CODE[z], z === 'free' || z === 'extreme' ? 1 : 0);
     }
@@ -381,11 +383,22 @@ export class SkiMap {
     const casing = [], shut = [];
     const byStyle = {};
     for (const t of R.trails) {
+      if (t.hide) continue;       // not on the resort's own map (tools/verify_exists.py)
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
       if (!t.glade) this.segs(t.pts, 2.7, casing);
       this.segs(t.pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
     }
-    for (const a of R.areas) this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (byStyle[cls(R, a) + 'g'] ||= []));
+    // Outlines of wide slopes (OpenStreetMap piste areas): a thin dotted edge in the colour of the run of the same
+    // name, so they never read as a separate run or a glade. Left out when that run is not on the resort's map.
+    const runOf = new Map();
+    for (const t of R.trails) if (t.name && (!runOf.has(t.name) || runOf.get(t.name).hide)) runOf.set(t.name, t);
+    const edges = {};
+    for (const a of R.areas) {
+      const t = a.name && runOf.get(a.name);
+      if (t?.hide || (a.name && closed.has('t' + t?.id))) continue;
+      this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (edges[cls(R, t || a)] ||= []));
+    }
+    for (const [c, pos] of Object.entries(edges)) G.add(this.fatLine(pos, scheme(R).colors[+c], 1.6, { order: 4, dash: [3, 6], opacity: 0.75 }));
     G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
     for (const [key, pos] of Object.entries(byStyle)) {
       const glade = key.endsWith('g');
@@ -395,12 +408,12 @@ export class SkiMap {
     this.scene.add(G);
     // label anchors: one per trail name (longest segment)
     const best = new Map();
-    for (const t of R.trails) if (t.name && (!best.has(t.name) || best.get(t.name).len < t.len)) best.set(t.name, t);
+    for (const t of R.trails) if (t.name && !t.hide && (!best.has(t.name) || best.get(t.name).len < t.len)) best.set(t.name, t);
     this.trailLabels = [...best.values()].map((t) => {
       const i = Math.floor(t.pts.length / 4) * 2;
       return { t, p: this.world(t.pts[i], t.pts[i + 1], 14) };
     });
-    for (const a of R.areas) if (a.name) this.trailLabels.push({ t: { name: a.name, d: a.d, id: -1, len: 400 }, p: this.world(a.pts[0], a.pts[1], 14) });
+    for (const a of R.areas) if (a.name && !best.has(a.name) && !runOf.get(a.name)?.hide) this.trailLabels.push({ t: { name: a.name, d: a.d, id: -1, len: 400 }, p: this.world(a.pts[0], a.pts[1], 14) });
     this.parkLabels = [];
     const seen = new Set();
     for (const p of [...R.parks.map((q) => ({ ...q, kind: 'park' })), ...(R.zones || [])]) if (!seen.has(p.kind + p.name)) {
@@ -426,6 +439,7 @@ export class SkiMap {
       carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 6, red: 2.5 },
     };
     for (const l of R.lifts) {
+      if (l.hide) continue;
       if (l.kind === 'train' || l.kind === 'funicular') { this.liftPaths.push(this.buildRail(l, rail)); continue; }
       const K0 = SPEC[l.kind] || SPEC.chair;
       // T-bars, platters (button lifts) and rope tows each get their own hanger

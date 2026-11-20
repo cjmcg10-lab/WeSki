@@ -30,6 +30,18 @@ resort"). The owner does not need to run them; this list is also how to see what
 - [ ] No run left with a guessed rating (`u`) that the resort actually rates.
 - [ ] Runs that change rating part way down given the harder rating for the whole run.
 
+### 3b. Does it exist? (added 2026-11-20: nothing goes on the map that the resort does not show)
+- [ ] `python3 tools/verify_exists.py <id> <osm> --list` run after `build_zones.py` (it must be re-run after every
+      `build_zones.py`). Read every "run hidden" and "lift to review" line.
+- [ ] Every run the resort shows but the list missed (an inset, a terrain-park area, a second map page) added to
+      `tools/official/<id>.json`: with a rating under `runs`, or under `confirm` {name: where it was seen} for park
+      terrain and runs whose rating cannot be read. Mount Snow's Carinthia and Sunbrook were missed this way.
+- [ ] Anything OpenStreetMap shows that the resort does not (a lift built for future terrain, a run cut for homes,
+      an off-piste line) listed under `hide` {name: reason with the source} in the official json.
+- [ ] Every "lift to review" checked against the resort's map or lift list (skiresort.com lift pages work by curl).
+      A real public lift stays; one the resort does not show goes under `hide`.
+- [ ] `npm test` passes (it fails if hiding cut a lift off from the rest of the mountain).
+
 ### 4. Map accuracy
 - [ ] `tools/audit.py --list` shows no run missing inside the resort boundary.
 - [ ] Every lift on the resort's lift list is on the map, with the right kind (chair, gondola, cable car,

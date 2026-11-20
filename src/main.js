@@ -77,6 +77,8 @@ const S = {
   favs: new Set(prefs.get('favorites', [])), favOnly: false, nearMe: null,
   player: null,
 };
+// local test runs only (screenshot scripts in tools/dev): never set on the live site
+if (location.hostname === "127.0.0.1" || location.hostname === "localhost") window.weski = S;
 prefs.set('profile', S.profile);
 
 function randomId() {
@@ -1138,7 +1140,7 @@ function onMapTap(ev) {
 function zonesCard() {
   const R = S.resort, have = {};
   const add = (k, name) => { (have[k] ||= new Set()); if (name) have[k].add(name); };
-  for (const t of R.trails) { const z = t.z || (t.slow ? 'slow' : null); if (z) add(z, t.name); }
+  for (const t of R.trails) if (!t.hide) { const z = t.z || (t.slow ? 'slow' : null); if (z) add(z, t.name); }
   for (const p of R.parks) add('park', p.name);
   for (const z of R.zones || []) add(z.kind, z.name);
   const rows = Object.keys(ZONES).filter((k) => have[k]).map((k) => {
@@ -1159,6 +1161,7 @@ function describeSpot(x, y, acc) {
   if (best) {
     bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
     if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
+    if (best.t.unl) bits.push('Connecting piece: not named on the resort’s trail list');
     const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;
     const tz = best.t.z || (best.t.slow ? 'slow' : null);
     if (tz) bits.push(tag(tz));
@@ -1547,12 +1550,12 @@ function closedNames() {
 function sheetClosures() {
   const q = (S.closureQ || '').toLowerCase();
   const names = new Map();
-  for (const t of S.resort.trails) if (t.name) { const e = names.get(t.name) || { d: t.d, c: t.c, ids: [] }; e.ids.push('t' + t.id); names.set(t.name, e); }
+  for (const t of S.resort.trails) if (t.name && !t.hide) { const e = names.get(t.name) || { d: t.d, c: t.c, ids: [] }; e.ids.push('t' + t.id); names.set(t.name, e); }
   const row = (name, ids, badge) => {
     const on = ids.every((i) => S.closures.has(i));
     return `<div class="list-item"><div class="grow t" style="font-weight:600">${badge} ${esc(name)}</div><span class="sub">${on ? 'Closed' : 'Open'}</span><label class="switch"><input type="checkbox" data-closure="${ids.join(',')}" ${on ? 'checked' : ''} /><i></i></label></div>`;
   };
-  const lifts = S.resort.lifts.filter((l) => l.name.toLowerCase().includes(q)).map((l) => row(l.name, ['l' + l.id], `<span style="color:${COLORS.lift}">↑</span>`)).join('');
+  const lifts = S.resort.lifts.filter((l) => !l.hide && l.name.toLowerCase().includes(q)).map((l) => row(l.name, ['l' + l.id], `<span style="color:${COLORS.lift}">↑</span>`)).join('');
   const trails = [...names.entries()].filter(([n]) => n.toLowerCase().includes(q)).sort((a, b) => a[0].localeCompare(b[0])).map(([n, e]) => row(n, e.ids, `<span class="${runCss(S.resort, e)}">${runSym(S.resort, e)}</span>`)).join('');
   return ['Confirmed closures', `<input class="field" id="f-closure-q" placeholder="Search lifts and trails" value="${esc(S.closureQ || '')}" autocomplete="off" />
     <p class="note">Switch on anything you have confirmed is closed (lift board, patrol, rope). ${S.group ? 'Shared with your group.' : ''}</p>
@@ -1566,7 +1569,7 @@ function sheetLegend() {
   const ic = (c, ch, label) => `<div class="legend-row"><div class="sw"><div class="ic" style="background:${c}">${ch}</div></div><span>${label}</span></div>`;
   return ['Map legend', `<div class="card"><h3>Trail difficulty</h3>
       ${classesUsed(S.resort).map((c) => line(sc.colors[c], sc.legend[c], false, `<b class="${sc.css[c]}">${sc.syms[c]}</b>`)).join('')}
-      ${line(sc.colors[1], 'Glades (dashed trail)', true)}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
+      ${line(sc.colors[1], 'Glades and tree runs (long dashes)', true)}${S.resort.areas?.length ? `<div class="legend-row"><div class="sw"><div class="ln" style="height:2px;background:repeating-linear-gradient(90deg, ${sc.colors[1]} 0 3px, transparent 3px 8px)"></div></div><span>${t('Edge of a wide slope (thin dotted outline, same colour as its run)')}</span></div>` : ''}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
     ${zonesCard()}
     <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.walk, 'Directions on foot (off the trails or along a walkway)')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
@@ -1581,9 +1584,9 @@ function searchIndex() {
   const items = [];
   for (const p of S.resort.pois) if (p.name) items.push({ k: 'poi', v: p.id, name: p.name, sub: POI_KIND[p.kind] || 'Place', badge: '<span class="sbadge poi">⌂</span>' });
   const runs = new Map();
-  for (const t of S.resort.trails) if (t.name) { const e = runs.get(t.name) || { ids: [], d: t.d, c: t.c, u: t.u, bb: t.bb }; e.ids.push(t.id); runs.set(t.name, e); }
+  for (const t of S.resort.trails) if (t.name && !t.hide) { const e = runs.get(t.name) || { ids: [], d: t.d, c: t.c, u: t.u, bb: t.bb }; e.ids.push(t.id); runs.set(t.name, e); }
   for (const [name, e] of runs) items.push({ k: 'trail', v: e.ids.join(','), name, sub: 'Run · ' + levelName(S.resort, e.d), badge: `<span class="sbadge ${runCss(S.resort, e)}">${runSym(S.resort, e)}</span>` });
-  for (const l of S.resort.lifts) if (l.name) items.push({ k: 'lift', v: l.id, name: l.name, sub: 'Lift', badge: `<span class="sbadge" style="color:${COLORS.lift}">↑</span>` });
+  for (const l of S.resort.lifts) if (l.name && !l.hide) items.push({ k: 'lift', v: l.id, name: l.name, sub: 'Lift', badge: `<span class="sbadge" style="color:${COLORS.lift}">↑</span>` });
   items.sort((a, b) => a.name.localeCompare(b.name));
   S.searchIdx = { id: S.place.id, items };
   return items;

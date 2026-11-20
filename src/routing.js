@@ -90,7 +90,11 @@ export class Router {
     this.geo = geo;
     this.nodes = resort.graph.nodes.map((n) => n.slice());
     this.edges = [];
-    for (const e of resort.graph.edges) this._addPieces(e);
+    for (const e of resort.graph.edges) {
+      // runs and lifts that are not on the resort's own map are never used in directions
+      if ((e.k === 'p' && resort.trails[e.r]?.hide) || (e.k === 'l' && resort.lifts[e.r]?.hide)) continue;
+      this._addPieces(e);
+    }
     if (geo) this._addCrossings();
     this.out = this.nodes.map(() => []);
     this.edges.forEach((e, i) => {

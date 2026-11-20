@@ -142,4 +142,5 @@ export default {
   629: 'Cammina {0} fuori pista fino a {1}', 630: 'Cammina {0} fuori pista fino all’arrivo', 631: 'cammina {0} fuori pista fino a {1}', 632: 'cammina {0} fuori pista fino all’arrivo', 633: 'Tratti a piedi (fuori pista o su un sentiero)', 634: 'a piedi, fuori pista', 635: 'Riduci zoom',
   636: 'Posizione', 637: 'Regular', 638: 'Goofy', 639: 'Regular: piede sinistro avanti. Goofy: piede destro avanti.',
   640: 'Tieni il telefono in verticale', 641: 'SkiWithMe è pensato per il telefono in verticale.',
+  642: 'Piste nel bosco e glade (trattini lunghi)', 643: 'Bordo di una pista larga (sottile contorno a puntini, dello stesso colore della pista)', 644: 'Tratto di collegamento: senza nome nell’elenco piste del comprensorio',
 };

@@ -57,5 +57,32 @@
  "blue_black": [],
  "not_runs": {
   "Outpost": "Read from the trail map by mistake: Outpost is chairlift #10 on the North Face (red lift label), already on the map as a lift."
+ },
+ "confirm": {
+  "Upper Fool's Gold": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Lower Fool's Gold": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Nitro": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "The Farm": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "The Junkyard": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Iron Run": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Inferno": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Narrow Gauge": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Prospector": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Mineshaft": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Tunnel Vision": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Rusty Nail": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "The Gulch": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Grommet": "Carinthia freestyle terrain (orange) on the 2025-26 trail map; terrain parks carry no rating",
+  "Thanks Walt": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Big Dipper": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Little Dipper": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Moon Walk": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Moon Beam": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Cloud Nine": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Sunspot": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Shooting Star": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Milky Way": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "One Small Step": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
+  "Dark Side of the Moon": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)"
  }
 }

@@ -37,6 +37,7 @@ export function trailAt(resort, x, y, { acc = 10, prev = null } = {}) {
   for (const a of resort.areas || []) if (a.name && a.pts.length >= 6 && inside(a.pts, x, y)) outlined.add(a.name);
   let best = null, kept = null;
   for (const t of resort.trails) {
+    if (t.hide) continue;
     const n = nearestOnLine(t.pts, x, y);
     const half = halfWidth(t);
     const out = t.name && outlined.has(t.name);

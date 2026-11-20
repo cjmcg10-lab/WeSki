@@ -142,4 +142,5 @@ export default {
   629: 'Marche {0} hors piste jusqu’à {1}', 630: 'Marche {0} hors piste jusqu’à l’arrivée', 631: 'marche {0} hors piste jusqu’à {1}', 632: 'marche {0} hors piste jusqu’à l’arrivée', 633: 'Itinéraire à pied (hors des pistes ou sur un chemin)', 634: 'à pied, hors des pistes', 635: 'Dézoomer',
   636: 'Position', 637: 'Regular', 638: 'Goofy', 639: 'Regular : pied gauche devant. Goofy : pied droit devant.',
   640: 'Tenez votre téléphone droit', 641: 'SkiWithMe est conçu pour un téléphone tenu à la verticale.',
+  642: 'Sous-bois et pistes en forêt (longs tirets)', 643: 'Bord d’une piste large (fin contour pointillé, de la couleur de sa piste)', 644: 'Tronçon de liaison : sans nom sur la liste des pistes de la station',
 };

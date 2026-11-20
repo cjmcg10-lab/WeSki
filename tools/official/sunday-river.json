@@ -145,5 +145,9 @@
  "blue_black": [],
  "not_runs": {
   "iCaramba!": "The resort lists the whole run and also its upper and lower parts; both parts are on the map."
+ },
+ "hide": {
+  "Merrill Hill II": "a real chairlift (built 2023) that rises from land being developed for future trails and homes; it is not on Sunday River's trail map (liftblog.com, 2023)",
+  "Brilliant": "mapped in OpenStreetMap beside Spectra on Merrill Hill, but not on Sunday River's trail map or trail list"
  }
 }

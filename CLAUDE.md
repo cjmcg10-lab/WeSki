@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (82 tests; the resort tests load every built map).
+- Run `npm test` before every push (110 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -91,6 +91,7 @@ The order matters. Every step is in `tools/`.
 5. `python3 tools/build_zones.py tools/resorts/<id>.json <osm> public/data/<id>` (zones, ratings, piste colours,
    treeline, trims loose run ends, applies official ratings). Re-runnable at any time without terrain.
 6. `python3 tools/build_index.py public/data` and `python3 tools/build_globe.py public/data`.
+6b. Existence: `python3 tools/verify_exists.py <id> <osm> --list` (after every `build_zones.py`; see below).
 7. Check: `python3 tools/audit.py tools/resorts/<id>.json <osm> public/data/<id> --list`, then `npm test`,
    then look at it in a browser (`tools/dev/zshot.js` takes screenshots against a local `wrangler dev`).
 
@@ -330,6 +331,31 @@ Full pass at all 50 (2026-11-20, second half):
   and Fantasy Ridge (the photo shows them on their strips; ridge runs), Pine Cone Ridge (hike), Heavenly Sky Chute (no
   safe fit), Zermatt's small rises, SkiWelt 87a (its fit is the Almbahn line).
 - `tools/dev/fmt_config.py` rewrites configs with each [lon, lat] on one line; run it after any tool writes a config.
+
+## Existence check (2026-11-20)
+
+The owner found a lift and runs at Sunday River (Merrill Hill II and runs toward it) that are not on the resort's map.
+Rule since then: **nothing is shown that the resort itself does not show.** `tools/verify_exists.py <id> <osm>` runs
+after `build_zones.py` and marks `hide: reason` on runs and lifts in resort.json; the app leaves hidden ones off the
+map, out of search, labels, on-trail detection and directions (lift tracking still knows them). Rules:
+- a run on the resort's list (`ok`) or under `confirm` in the official json is shown;
+- an unlisted run is shown only as a linking piece (`unl`): its group of touching unlisted pieces joins listed runs or
+  lifts at two separate places, or ends at a shown lift's bottom station, or is a park joined at one place. The app's
+  run card says "Connecting piece: not named on the resort's trail list". Everything else unlisted is hidden;
+- unnamed OSM runs tagged backcountry, and anything private or ski-touring, are hidden;
+- `hide` {name: reason} in the official json hides by hand (Sunday River: Merrill Hill II, a real 2023 chair built
+  for future terrain and homes, per liftblog.com; Brilliant);
+- lifts are never hidden by geometry: those that fail "a listed run starts at the top and listed terrain reaches the
+  bottom" are printed as "lift to review". All 122 flagged on 2026-11-20 were checked by hand and are real public lifts
+  (gondolas from town, glacier and beginner lifts, Saalbach's lifts whose runs match by number only).
+Result on 2026-11-20: 143 run pieces (49 named) and 2 lifts hidden across the 50. Mount Snow's official list had
+missed Carinthia (all terrain parks) and the Sunbrook inset; they are now under `confirm`. Named unlisted runs still
+shown as links (about 450 over 300 m, most of them in Europe, where OSM names pieces differently) are the next review
+list: `grep unl` in each resort.json.
+
+Dashed lines: glades and tree runs are long dashes; the outline of a wide slope (an OSM piste area) is a thin dotted
+edge in the colour of the run of the same name (it used to share the glade dash and its own, sometimes different,
+rating). Both are in the map legend.
 
 ## Walking off the trails (2026-11-18)
 
