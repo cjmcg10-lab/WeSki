@@ -12,10 +12,10 @@
 
 export const PLANS = {
   // id: what the pass is called, how long one purchase lasts (null = while the subscription is paid), seats
-  day: { name: 'Day Pass', price: 3.99, days: 1, seats: 1, renews: false },
-  week: { name: 'Week Pass', price: 5.99, days: 7, seats: 1, renews: false },
-  season: { name: 'Season Pass', price: 24.99, days: null, seats: 1, renews: true },
-  crew: { name: 'Crew Season Pass', price: 39.99, days: null, seats: 4, renews: true },
+  day: { name: 'Day Pass', price: 2.99, days: 1, seats: 1, renews: false },
+  week: { name: 'Week Pass', price: 3.99, days: 7, seats: 1, renews: false },
+  season: { name: 'Season Pass', price: 19.99, days: null, seats: 1, renews: true },
+  crew: { name: 'Crew Season Pass', price: 34.99, days: null, seats: 4, renews: true },
 };
 export const TRIAL_HOURS = 24;               // one free day per account
 export const MAX_SESSIONS = 3;               // signed-in phones per account; the oldest is signed out

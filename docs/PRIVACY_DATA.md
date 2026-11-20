@@ -13,11 +13,17 @@ Written 2026-11-20. The public version is `public/legal/privacy.html`; keep both
 ## Map help (opt-in, "Help improve the maps")
 
 On the phone (`flushContrib` and `daySummary` in `src/main.js`):
+- Asked once, the first time location is turned on (`askMapHelp`): two buttons, "Yes, help improve the maps" (the
+  main button) and "No thanks". Not pre-ticked: a pre-ticked box is not valid consent in the EU and UK, and several US
+  state laws (Colorado, Connecticut and others) require an active opt-in for precise location. Also in More.
 - Switching on stores the time (`prefs contrib`); only days started after it are ever sent.
 - Sent the day after a ski day (never the same day), once per mountain and day, for the mountain that is open.
-- The first and last 300 m of the day's track are cut (home, car, lodging).
-- Lift rides are skipped. Each other point becomes either the run it is on (`trailAt`, run id on that map build) or a
-  20 m square in the map's local grid if it is off the shown runs.
+- Only points that look like skiing are used: tracker state "skiing" (not lift, not idle), speed 2.5 to 40 m/s, inside
+  the map's terrain, not within 70 m of a lodge, car park, restaurant or service point nor within 30 m of any building.
+  That removes home, car, lodging and lift lines wherever they fall in the day (a fixed 300 m trim at each end did not:
+  a day can start on the summit or end mid-run).
+- Each kept point becomes the run it is on (`trailAt`, run id on that map build), or, if it is off the shown runs and
+  going downhill, a 20 m square in the map's local grid.
 - Body: `{resort, key (random 128 bits, new each upload), day, runs: [ids], cells: [[i, j]]}`. No times or order.
 
 On the server (`ResortLog` Durable Object, one per resort, `worker/stores.js`; rules in `worker/evidence.js`):

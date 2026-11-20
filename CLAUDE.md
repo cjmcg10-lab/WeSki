@@ -63,7 +63,9 @@ session needs that the README does not: the rules, the state of the work, and wh
   trademark registers and found the name clear. The trademark is to be filed as SKIWITHME, one word (owner's decision,
   2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
-- **Price:** free map everywhere; $24.99 a year, $5.99 a week, $39.99 group plan.
+- **Price:** free map everywhere; Day $2.99, Week $3.99, Season $19.99 a year, Crew Season $34.99 a year for 4
+  (set 2026-11-21 to undercut Slopes and Ski Tracks; see `docs/PAID_TIER.md`). Owner's company: Built by Roger LLC,
+  contact hello@builtbyroger.app, domain builtbyroger.app (registered at Cloudflare). skiwithme.app belongs to someone else.
 - **Logo:** replaced by the owner on 2026-11-17 with a new image: three skiers in helmets and goggles (blue, white,
   orange) in front of three snowy peaks, with a white S-shaped run and blue and orange slopes, on dark navy. The original
   upload is `design/logo-original.png`; `design/logo.png` is the rounded square cropped out and made square (squeezed
@@ -420,7 +422,7 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 (what skier data is collected and how it is stored). In short:
 - Switch `PAYWALL` in both wrangler configs; `"off"` until the owner's Resend and Paddle accounts exist. With it off,
   everything is free and the pass screen says "free during the preview".
-- Plans (`PLANS` in `worker/accounts.js`): Day $3.99, Week $5.99, Season $24.99/yr, Crew Season $39.99/yr (4 seats),
+- Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $3.99, Season $19.99/yr, Crew Season $34.99/yr (4 seats),
   one free day per account. Paid: directions and meeting points, creating groups, full history (latest day free).
 - Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
   (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
@@ -428,9 +430,11 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 - Sign-in: email with a 6-digit code (needed: an emailed link opens Safari, which does not share sign-ins with the
   home-screen app) or link. Durable Objects `Accounts` (one, SQLite) and `ResortLog` (one per resort) in
   `worker/stores.js`, migration tag v2. The phone side is `src/account.js` and the `pass` sheet in `src/main.js`.
-- Opt-in "Help improve the maps" (More → Privacy & map help) sends the day after each ski day a summary: run ids and
-  20 m squares off the shown runs, ends trimmed 300 m, no time or identity; server keeps counts, publishes only >= 5
-  ski days (`/api/heat/<id>`). "Report a map mistake" (pin sheet, or Privacy & map help) → `/api/reports`, public list
+- Opt-in "Help improve the maps", asked once when location is first turned on (active choice, never pre-ticked: the
+  law requires that) and in More → Privacy & map help, sends the day after each ski day a summary: run ids and 20 m
+  squares off the shown runs, only from stretches that look like skiing (not lifts, standing, lodges, car parks), no
+  time or identity; server keeps counts, publishes only >= 5
+  ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
   at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
 - First-run "Before you ski" safety notice (`prefs safetyAccepted`). Legal pages in `public/legal/` (terms, privacy,
   refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the contact address and

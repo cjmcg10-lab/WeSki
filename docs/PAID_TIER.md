@@ -21,16 +21,20 @@ for, and both need our server, so they can be enforced. Joining stays free so on
 
 | Plan | Price | Length | Notes |
 | --- | --- | --- | --- |
-| Day Pass | $3.99 | 24 hours from purchase | one-time |
-| Week Pass | $5.99 | 7 days from purchase | one-time, the ski-trip pass |
-| Season Pass | $24.99 / year | one year, renews | the main plan |
-| Crew Season Pass | $39.99 / year | one year, renews | buyer plus 3 friends' emails |
+| Day Pass | $2.99 | 24 hours from purchase | one-time |
+| Week Pass | $3.99 | 7 days from purchase | one-time, the ski-trip pass |
+| Season Pass | $19.99 / year | one year, renews | the main plan |
+| Crew Season Pass | $34.99 / year | one year, renews | buyer plus 3 friends' emails |
 | Free day | $0 | 24 hours | once per account |
 
-No monthly plan: skiing is seasonal, and a monthly plan invites "subscribe for one month a year". Market looked at on
-2026-11-20 (recheck the exact prices before launch): Slopes sells a yearly Premium and a day pass, Ski Tracks is a small
-one-time purchase with fewer features, and other ski-map apps charge roughly $20–40 a year. $24.99 a year sits just under
-the best-known yearly premium plans, and the day and week passes catch people who ski a few days a year. The constants are `PLANS` in `worker/accounts.js`; prices in Paddle must
+No monthly plan: skiing is seasonal. Prices set 2026-11-21 after checking competitors (US App Store and their sites):
+Slopes Plus $34.99/yr (family $59.99, up to 6), single day pass $3.99, 7 day passes $11.99; Ski Tracks $4.99/week or
+$49.99/yr (from a competitor's comparison page, 2026-11-12; the App Store page refused the fetch). Ours undercut by:
+Day $2.99 (25% under Slopes' $3.99), Week $3.99 (20% under Ski Tracks' $4.99 weekly, 67% under Slopes' 7 passes),
+Season $19.99 (43% under Slopes Plus, 60% under Ski Tracks yearly), Crew $34.99 for 4 (42% under Slopes' family plan,
+which covers 6). Slopes' free version tracks and saves days with basic stats, so tracking stays free here too.
+Paddle takes 5% + 50 cents: about 22% of a $2.99 sale and 18% of $3.99, and it asks for custom terms on prices under
+$10, so confirm with Paddle before launch. The constants are `PLANS` in `worker/accounts.js`; prices in Paddle must
 match.
 
 ## How the pass is enforced (and what cannot be)

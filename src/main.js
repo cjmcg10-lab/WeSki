@@ -707,6 +707,7 @@ function renderInstall() {
 /** Shown when tracking starts (unless switched off): the screen has to stay on, pocket mode helps. */
 function trackNotice() {
   if (prefs.get('trackNoteOff', false)) return;
+  if ($('#modal .maphelp') && !$('#modal').classList.contains('hidden')) { S.noteAfterAsk = true; return; }
   $('#modal').innerHTML = `<div class="modal-box"><button class="x" data-act="modal-cancel" aria-label="Close">✕</button>
     <h2>Keep SkiWithMe open</h2>
     <p>Tracking only runs while the app is open on screen. If the phone locks or you switch apps, tracking pauses until you come back.</p>
@@ -763,7 +764,23 @@ function fpsReadout() {
 }
 
 function ensureLocation() {
-  if (!S.loc.active) S.loc.start();
+  if (S.loc.active) return;
+  // The first time location is turned on, ask once (an active choice, never pre-ticked) whether to help the maps.
+  if (!S.testMode && prefs.get('contribAsked', null) == null) { askMapHelp(); return; }
+  S.loc.start();
+}
+
+function askMapHelp() {
+  if ($('#modal .maphelp')) return;
+  $('#modal').innerHTML = `<div class="modal-box maphelp">
+    <h2>Turning on your location</h2>
+    <p>SkiWithMe uses your location on this phone to show where you are, which run you are on, directions and your stats. It stays on your phone.</p>
+    <h3 style="margin:14px 0 4px">Help improve the maps?</h3>
+    <p class="sub">After each ski day, send which runs you skied and the spots you skied off the mapped runs. Never your track, times, speed or who you are, and nothing from lodges, car parks or lifts. Change it any time in More → Privacy &amp; map help.</p>
+    <button class="btn" data-act="maphelp" data-v="1">Yes, help improve the maps</button>
+    <button class="btn alt" data-act="maphelp" data-v="0">No thanks</button>
+    <p class="note" style="text-align:center"><a href="/legal/privacy.html" target="_blank">Privacy policy</a></p></div>`;
+  $('#modal').classList.remove('hidden');
 }
 
 let lock = null;
@@ -1620,7 +1637,7 @@ function sheetPrivacy() {
   return ['Privacy & map help', `
     <div class="card"><div class="rowf"><div class="grow"><h4 style="margin:0">Help improve the maps</h4><div class="sub">After each ski day, send which runs you skied and which spots off the mapped runs you crossed. Never your track, times or speed, and never who you are.</div></div><label class="switch"><input type="checkbox" id="f-contrib" ${prefs.get('contrib', null) ? 'checked' : ''} /><i></i></label></div>
       ${S.learn?.contrib ? '' : '<button class="learn" data-act="learn" data-k="contrib">How it works<i>›</i></button>'}
-      ${S.learn?.contrib ? '<p class="learn-text">Off unless you switch it on. The phone cuts the first and last 300 m of your day (often your car or your lodging), then sends a summary of the rest the day after: the run numbers you skied and the 20 m squares off the mapped runs you passed through. There is no account, device number or time on it. Our server only adds up counts, and a square or run is used only once at least 5 different ski days reached it, so one person’s day cannot be picked out. We use the counts to find runs missing from the map and lines drawn in the wrong place. Switching it off stops it at once.</p>' : ''}</div>
+      ${S.learn?.contrib ? '<p class="learn-text">Off unless you switch it on. The day after a ski day, the phone sends a summary of the parts that look like skiing: moving at ski speed on the mountain, not on a lift, not standing still, and not in or near lodges, other buildings or car parks. It lists the run numbers you skied and the 20 m squares off the mapped runs you skied through. There is no account, device number or time on it. Our server only adds up counts, and a square or run is used only once at least 5 different ski days reached it, so one person’s day cannot be picked out. We use the counts to find runs missing from the map and lines drawn in the wrong place. Switching it off stops it at once.</p>' : ''}</div>
     <div class="card"><h4>Report a map mistake</h4><p class="sub">A run missing or in the wrong place, a wrong rating, a run that does not exist. Drop a pin on the spot first (tap the map), then report it from the pin.</p><button class="btn alt" data-act="report-open">Report a mistake</button></div>
     <div class="card"><h4>Your data</h4><p class="sub">Your ski days, settings and favorites stay on this phone. Group locations pass through our server only while you share them and are not stored after the group ends. Read the full privacy policy for what is kept and for how long.</p>
       <p class="foot" style="text-align:left"><a href="/legal/privacy.html" target="_blank">Privacy policy</a> · <a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/credits.html" target="_blank">Map and data credits</a></p></div>
@@ -1674,20 +1691,31 @@ async function flushContrib() {
   }
 }
 
-/** Runs skied and 20 m squares crossed off the mapped runs, leaving out the first and last 300 m. */
+/** Runs skied and 20 m squares skied off the mapped runs. Only what looks like skiing counts: moving at ski speed on the
+ *  ground the map covers, not on a lift, not standing still, and not in or near lodges, other buildings or car parks.
+ *  That leaves out home, the car, the lodge and the lift line, wherever in the day they come. */
 function daySummary(P, runs, cells) {
-  const d = [0];
-  for (let i = 1; i < P.length; i++) d.push(d[i - 1] + (P[i][5] ? 0 : Math.hypot(P[i][1] - P[i - 1][1], P[i][2] - P[i - 1][2])));
-  const end = d[d.length - 1];
+  const R = S.resort, near = [];
+  for (const p of R.pois || []) if (['lodge', 'parking', 'food', 'service', 'shelter'].includes(p.kind)) near.push([p.x, p.y, 70]);
+  for (const b of R.buildings || []) {
+    const q = b.pts; let cx = 0, cy = 0, r = 0;
+    for (let k = 0; k < q.length; k += 2) { cx += q[k]; cy += q[k + 1]; }
+    cx /= q.length / 2; cy /= q.length / 2;
+    for (let k = 0; k < q.length; k += 2) r = Math.max(r, Math.hypot(q[k] - cx, q[k + 1] - cy));
+    near.push([cx, cy, r + 30]);
+  }
+  const blocked = (x, y) => near.some(([bx, by, r]) => Math.abs(x - bx) < r && Math.abs(y - by) < r && Math.hypot(x - bx, y - by) < r);
   let prev = null;
-  for (let i = 0; i < P.length; i++) {
-    if (d[i] < 300 || end - d[i] < 300) continue;
-    const [, x, y, , st] = P[i];
-    if (st === ST.LIFT) { prev = null; continue; }
-    const on = trailAt(S.resort, x, y, { prev });
+  for (let i = 1; i < P.length - 1; i++) {
+    const a = P[i - 1], p = P[i], c = P[i + 1];
+    const [, x, y, z, st] = p;
+    if (st !== ST.SKI || p[5] || c[5] || !S.geo.inBounds(x, y)) { prev = null; continue; }
+    const dt = (c[0] - a[0]) / 1000, v = dt > 0 ? Math.hypot(c[1] - a[1], c[2] - a[2]) / dt : 0;
+    if (v < 2.5 || v > 40 || blocked(x, y)) { prev = null; continue; }   // standing, walking, or a GPS jump
+    const on = trailAt(R, x, y, { prev });
     prev = on?.t || null;
     if (on) runs.add(on.t.id);
-    else cells.add(`${Math.floor(x / 20)},${Math.floor(y / 20)}`);
+    else if (c[3] - a[3] < 1) cells.add(`${Math.floor(x / 20)},${Math.floor(y / 20)}`);  // off the runs: only while going downhill
   }
 }
 
@@ -2013,7 +2041,7 @@ function onInput(e) {
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
   else if (t.id === 'f-contrib' && e.type === 'change') {
     // the switch-on time is kept so only days skied after it are ever sent
-    prefs.set('contrib', t.checked ? Date.now() : null);
+    prefs.set('contrib', t.checked ? Date.now() : null); prefs.set('contribAsked', Date.now());
     toast(t.checked ? 'Thank you. Your next ski days will help improve the maps.' : 'Map help is off. Nothing more will be sent.');
     renderSheet();
   }
@@ -2080,6 +2108,17 @@ async function onClick(e) {
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
+    case 'maphelp': {
+      const yes = d.v === '1';
+      prefs.set('contribAsked', Date.now());
+      prefs.set('contrib', yes ? Date.now() : null);
+      $('#modal').classList.add('hidden');
+      if (yes) toast('Thank you. Your next ski days will help improve the maps.');
+      S.loc.start();
+      if (S.noteAfterAsk) { S.noteAfterAsk = false; trackNotice(); }
+      if (S.sheet === 'privacy') renderSheet();
+      break;
+    }
     case 'install-os': S.installOs = d.v; renderInstall(); break;
     case 'install-now': installEvt?.prompt(); installEvt = null; $('#modal').classList.add('hidden'); break;
     case 'track-pocket': $('#modal').classList.add('hidden'); closeSheet(); setPocket(true); break;
@@ -2131,6 +2170,12 @@ async function onClick(e) {
       toast(r.ok ? 'Crew saved.' : (r.error || 'Could not save the crew.')); renderSheet(); break;
     }
     case 'report-open': S.reportKind = null; openSheet('report'); break;
+    case 'report-fab':
+      S.reportKind = null;
+      if (!S.pin && S.me) openSheet('report');
+      else if (S.pin) openSheet('report');
+      else toast('Tap the map where the mistake is, then tap this button again (or “Report a map mistake here” on the pin).', 5000);
+      break;
     case 'report-kind': S.reportKind = d.v; renderSheet(); break;
     case 'report-send': {
       const p = S.pin || S.me, on = p && trailAt(S.resort, p.x, p.y);

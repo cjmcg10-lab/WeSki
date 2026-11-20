@@ -3,8 +3,8 @@
 // Privacy (see docs/PRIVACY_DATA.md and the privacy policy):
 // - Only people who switch on "Help improve the maps" send anything, once per ski day, after the day ends.
 // - The phone sends a summary, never a track: which runs were skied (run numbers on that map) and which 20 m squares
-//   off the known runs were crossed. No times, no order, no speed, no account, no device id. The first and last
-//   300 m of the day are cut on the phone. A one-day random key lets the server drop a duplicate upload; it is kept
+//   off the known runs were skied through. No times, no order, no speed, no account, no device id. Only stretches
+//   that look like skiing are used (ski speed, on the map, not on a lift, away from lodges, buildings and car parks). A one-day random key lets the server drop a duplicate upload; it is kept
 //   three days and cannot be linked to the next day's key.
 // - The server only adds counts. A square or run is published (and used) only once at least K different ski days
 //   reached it, so no single person's day can be read back.
