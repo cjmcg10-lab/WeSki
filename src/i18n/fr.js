@@ -141,4 +141,5 @@ export default {
   627: '{0} descentes enregistrées dans l’Historique.', 628: '1 descente enregistrée dans l’Historique.',
   629: 'Marche {0} hors piste jusqu’à {1}', 630: 'Marche {0} hors piste jusqu’à l’arrivée', 631: 'marche {0} hors piste jusqu’à {1}', 632: 'marche {0} hors piste jusqu’à l’arrivée', 633: 'Itinéraire à pied (hors des pistes ou sur un chemin)', 634: 'à pied, hors des pistes', 635: 'Dézoomer',
   636: 'Position', 637: 'Regular', 638: 'Goofy', 639: 'Regular : pied gauche devant. Goofy : pied droit devant.',
+  640: 'Tenez votre téléphone droit', 641: 'SkiWithMe est conçu pour un téléphone tenu à la verticale.',
 };

@@ -596,3 +596,27 @@ img.thumb.photo { object-fit: cover; background: #23415f; }
   display: grid; place-items: center; padding: 0; border: 1px solid rgba(255, 255, 255, .35); background: rgba(6, 22, 44, .78); color: #fff;
   box-shadow: 0 4px 14px rgba(0, 0, 0, .45); transition: opacity .3s; }
 .globe-out.hidden, #start.focus .globe-out, #start.fade .globe-out { opacity: 0; pointer-events: none; }
+
+/* ---- Phone shape everywhere (2026-11-20) ----
+   The app is made for a phone held upright. A phone turned sideways gets a "turn your phone upright" screen
+   (iPhones cannot lock a web page's orientation). A computer or tablet shows the app as a phone-sized column in the
+   middle of the window; main.js sets --app-h to the column's height. */
+#rotate { display: none; }
+@media (orientation: landscape) and (max-height: 540px) and (pointer: coarse) {
+  #rotate { display: flex; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; text-align: center;
+    background: radial-gradient(circle at 50% 35%, #12324f, #010c1b 70%); color: #e8f1fa; padding: 24px; }
+  #rotate div { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 320px; }
+  #rotate svg { color: #3fd0c0; animation: rot-hint 2.4s ease-in-out infinite; }
+  #rotate b { font-size: 20px; }
+  #rotate span { font-size: 15px; opacity: .8; }
+  #app { visibility: hidden; }
+}
+@keyframes rot-hint { 0%, 30% { transform: rotate(-90deg); } 60%, 100% { transform: rotate(0deg); } }
+@media (min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine) {
+  html, body { background: radial-gradient(ellipse at 50% 30%, #163a5c 0%, #071a2e 55%, #010c1b 100%); }
+  #app { top: 50%; left: 50%; right: auto; width: min(430px, calc(var(--app-h) * .5)); transform: translate(-50%, -50%);
+    border-radius: 34px; box-shadow: 0 0 0 1px rgba(255,255,255,.08), 0 24px 70px rgba(0,0,0,.55); }
+  #toast { max-width: 88%; }
+  .resort-btn { max-width: calc(min(430px, var(--app-h) * .5) * .46); }
+}
+

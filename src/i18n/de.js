@@ -141,4 +141,5 @@ export default {
   627: '{0} Abfahrten im Verlauf gespeichert.', 628: '1 Abfahrt im Verlauf gespeichert.',
   629: 'Geh {0} abseits der Piste bis {1}', 630: 'Geh {0} abseits der Piste bis zum Ziel', 631: 'geh {0} abseits der Piste bis {1}', 632: 'geh {0} abseits der Piste bis zum Ziel', 633: 'Wege zu Fuß (abseits der Pisten oder auf einem Weg)', 634: 'zu Fuß, abseits der Pisten', 635: 'Herauszoomen',
   636: 'Stellung', 637: 'Regular', 638: 'Goofy', 639: 'Regular: linker Fuß vorne. Goofy: rechter Fuß vorne.',
+  640: 'Halte dein Handy aufrecht', 641: 'SkiWithMe ist für das hochkant gehaltene Handy gemacht.',
 };

@@ -969,7 +969,8 @@ export class SkiMap {
     const el = this.renderer.domElement, ptrs = new Map();
     let last = null;
     const state = () => {
-      const p = [...ptrs.values()];
+      // positions relative to the map, which is not at the window's corner on a computer
+      const r = el.getBoundingClientRect(), p = [...ptrs.values()].map((q) => ({ x: q.x - r.left, y: q.y - r.top }));
       if (p.length === 1) return { x: p[0].x, y: p[0].y, d: 0 };
       return { x: (p[0].x + p[1].x) / 2, y: (p[0].y + p[1].y) / 2, d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) };
     };

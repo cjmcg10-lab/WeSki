@@ -647,4 +647,5 @@ export default {
   627: 'Saved {0} runs to History.', 628: 'Saved 1 run to History.',
   629: 'Walk {0} off the trail to {1}', 630: 'Walk {0} off the trail to the finish', 631: 'walk {0} off the trail to {1}', 632: 'walk {0} off the trail to the finish', 633: 'Directions on foot (off the trails or along a walkway)', 634: 'on foot, off the trails', 635: 'Zoom out',
   636: 'Stance', 637: 'Regular', 638: 'Goofy', 639: 'Regular: left foot forward. Goofy: right foot forward.',
+  640: 'Turn your phone upright', 641: 'SkiWithMe is made for holding your phone upright.',
 };

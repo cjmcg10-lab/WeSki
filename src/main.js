@@ -33,11 +33,17 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
  * viewport that is one status bar shorter than the screen, which left an unused strip at
  * the bottom; in that mode the real height is the screen's.
  */
+// On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
+const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
 function fitScreen() {
   const portrait = window.innerHeight >= window.innerWidth;
-  const h = navigator.standalone === true && portrait ? Math.max(window.innerHeight, screen.height) : window.innerHeight;
+  const h = COLUMN.matches ? Math.min(window.innerHeight - 32, 932)
+    : navigator.standalone === true && portrait ? Math.max(window.innerHeight, screen.height) : window.innerHeight;
   document.documentElement.style.setProperty('--app-h', h + 'px');
 }
+COLUMN.addEventListener?.('change', fitScreen);
+// Turned sideways, a phone shows "turn your phone upright" (iPhones cannot lock the page upright).
+screen.orientation?.lock?.('portrait').catch(() => {});
 fitScreen();
 window.addEventListener('resize', fitScreen);
 window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));

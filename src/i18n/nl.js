@@ -141,4 +141,5 @@ export default {
   627: '{0} afdalingen opgeslagen in Geschiedenis.', 628: '1 afdaling opgeslagen in Geschiedenis.',
   629: 'Loop {0} naast de piste naar {1}', 630: 'Loop {0} naast de piste naar de bestemming', 631: 'loop {0} naast de piste naar {1}', 632: 'loop {0} naast de piste naar de bestemming', 633: 'Te voet (naast de pistes of over een pad)', 634: 'te voet, naast de pistes', 635: 'Uitzoomen',
   636: 'Stand', 637: 'Regular', 638: 'Goofy', 639: 'Regular: linkervoet voor. Goofy: rechtervoet voor.',
+  640: 'Houd je telefoon rechtop', 641: 'SkiWithMe is gemaakt voor een rechtop gehouden telefoon.',
 };
