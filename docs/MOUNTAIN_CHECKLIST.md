@@ -39,6 +39,9 @@ resort"). The owner does not need to run them; this list is also how to see what
 - [ ] Lodges, base areas, restaurants, ticket offices and car parks have the right names.
 - [ ] Night-skiing runs marked, if the resort has any.
 - [ ] Glades and terrain parks show correctly.
+- [ ] Lines checked against aerial photos: `python3 tools/align_trails.py <id> <naip|swiss|ign|at|gsi> --only all`
+      for the OpenStreetMap runs and `--only traced --write` for runs drawn by hand (see "Line accuracy" below).
+      Look at the `--debug` pictures for every run it moved or flagged.
 
 ### 5. Looks and content
 - [ ] A real photo of the mountain (free licence, ideally winter, showing the slopes) in `public/photos/`
@@ -149,18 +152,18 @@ mountains also have a few dead-end runs listed in their build's connectivity rep
 
 ## Runs on the resort's list but not yet on the map (2026-11-19)
 
-`python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 19 remain. The rest
+`python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 11 remain (2026-11-20). The rest
 were found under another name (`rename`, `way_names`, `split_ways`, `same_as`), explained as not separate runs
 (`not_runs`: lift numbers misread, area names, play areas, backcountry gates), or drawn by hand (`extra_trails`,
 marked `traced`, approximate: placed from the trail map between neighbouring runs on aerial photos).
 
 | Mountain | Still missing | Notes |
 | --- | --- | --- |
-| SkiWelt | 8 | 100c, 11, 30a, 33, 34, 42a, Red Viper Skimovie Strecke, Verbindung Dorf |
+| SkiWelt | 0 | 2026-11-20, from the 2025-26 map the owner uploaded: 33 (practice slope at Itter) drawn; the other seven are not on that map and are explained in `not_runs` |
 | Zermatt | 4 | Paradise (10), Mittelritz (30), Platte (31), Pre de Veau-Pirovano; 30 and 31 are orange ski routes below Hohtälli on the Cervino map |
 | La Plagne | 2 | Croes, Jarsey |
 | Tignes | 2 | Combe du Géant, Les Champions |
-| Stratton | 1 | Stevek (double black, new: not on any map found) |
-| Sugarbush | 1 | Rob Roy (Mt. Ellen, blue) |
+| Stratton | 0 | "Stevek" is Stevek's Competition Arena on the 2026-27 map (an area, `not_runs`) |
+| Sugarbush | 0 | Rob Roy drawn on Mt. Ellen from the uploaded 2025-26 map (approximate) |
 | Geto Kogen | 1 | C4 |
 | Saalbach | 104 numbers | the resort lists runs by number only; OpenStreetMap carries a number on few runs. Those runs keep OpenStreetMap's rating. A colour comparison with the resort's own drawn runs found about 40 places to look at by eye |

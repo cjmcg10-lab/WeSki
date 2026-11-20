@@ -307,5 +307,14 @@ if official:
 R["sources"].pop("zones", None)
 if src:
     R["sources"]["zones"] = "; ".join(src)
+# Run widths measured on aerial photos (tools/align_trails.py --widths): the app counts the whole
+# width as "on the run". Keyed by OSM way id, or "name:<run>" for runs drawn by hand.
+wf = os.path.join(os.path.dirname(os.path.abspath(__file__)), "widths", f"{R['id']}.json")
+if os.path.exists(wf):
+    widths = json.load(open(wf)); nw = 0
+    for T in R["trails"]:
+        w = widths.get(str(T.get("osm"))) or widths.get(f"name:{T['name']}")
+        if w: T["w"] = w; nw += 1
+    count["run widths from photos"] = nw
 json.dump(R, open(f"{out}/resort.json", "w"), separators=(",", ":"), ensure_ascii=False)
 print(R["id"], count)

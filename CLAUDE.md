@@ -281,6 +281,28 @@ exists in the owner's Cloudflare account at the old address, frozen at the last 
 separate group rooms. The owner can delete it in the Cloudflare dashboard, or a session can turn it into a redirect if
 asked. The icons show the owner's logo.
 
+## Line accuracy: aerial photo check (2026-11-20)
+
+`tools/align_trails.py <id> <naip|swiss|ign|at|gsi>` looks across every run every 10 m on aerial photos (USGS NAIP
+Plus for the USA; NAIP's plain service timed out, and its ArcGIS export widens the box unless the picture has the box's
+shape in degrees, which once shifted every photo by up to 200 m), marks open ground (light, smooth) against forest
+(dark, textured), and follows the middle of the cut strip down the run (Viterbi path, smooth, prefers staying near the
+drawn line; any strip counts the same, so a wide slope next door does not win). Reports how far the drawn line is from
+the strip and the run's width. Options: `--only traced|all|names`, `--test` (moves each line 50/100/150 m sideways and
+measures how well it comes back), `--debug DIR` (picture per run: photo, open ground green, other runs yellow, drawn
+line red, found line cyan), `--write` (moves hand-drawn `extra_trails` in the config), `--widths` (saves widths to
+`tools/widths/<id>.json`; `build_zones.py` puts them on the runs as `w`; the app's "on this run" check uses them).
+Photo cells are cached in `$ALIGN_CACHE`.
+- Safety rules for `--write`: only with clear evidence (strip found on 60% of the run, forest on both sides); never
+  more than 70 m (beyond that it can be the neighbouring run); never onto a strip that is already another mapped run;
+  never for glades or tree runs (their nearby strips are other runs).
+- Measured: OpenStreetMap runs at Stowe sit 2 to 11 m from the middle of their strip. A line moved 50 m comes back to
+  within about 5 to 20 m; at 100 to 150 m in a dense trail network it can latch onto a neighbour.
+- Limits: above the treeline, on open bowls and in glades there is no strip, so nothing is checked there (reported as
+  weak evidence). The photo is summer and may predate a new run. The 1 m terrain we use is bare earth (trees removed),
+  so it shows cut runs only faintly; a first-return LiDAR surface would show them like the photo but needs point-cloud
+  tools that are not installed (pip is blocked).
+
 ## Walking off the trails (2026-11-18)
 
 Directions can now start or end off the trail network: to a building, a dropped pin or a friend standing off a run.
