@@ -272,5 +272,14 @@
   "73 Hochfeld I - Schwoich": "Schwoich: a separate village lift area (Hochfeld) reached by road, outside this map",
   "73 Hochfeld II - Schwoich": "Schwoich: a separate village lift area (Hochfeld) reached by road, outside this map",
   "74 Übungslift Hochfeld": "Schwoich: a separate village lift area (Hochfeld) reached by road, outside this map"
+ },
+ "not_runs": {
+  "100c Umfahrung Steilhang": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it.",
+  "30a Kleine Salve": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it.",
+  "34 Mittererwies mit Verbindung zur Salvistabahn": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it.",
+  "42a Gipfel-Hangbrücke": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it.",
+  "Red Viper Skimovie Strecke": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it. (a filmed speed track, not a separate run)",
+  "Verbindung Dorf": "Not drawn on the resort's 2025-26 printed piste map (uploaded by the owner); the resort's online list shows it as closed. Add it if a later map shows it.",
+  "11 Umfahrung Marast": "A bypass of run 11 (Choralpe to Westendorf); the 2025-26 map draws run 11 only, with no separate bypass line."
  }
 }

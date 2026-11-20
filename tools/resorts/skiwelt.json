@@ -6,5 +6,33 @@
  "terrain_source": "BEV Austria ALS DTM 1 m (CC BY 4.0)",
  "building_range": 150,
  "poi_range": 120,
- "area_name": "SkiWelt Wilder Kaiser Brixental"
+ "area_name": "SkiWelt Wilder Kaiser Brixental",
+ "extra_trails": [
+  {
+   "name": "33 Übungslift Salvista",
+   "pts": [
+    [
+     12.16749,
+     47.48274
+    ],
+    [
+     12.1663,
+     47.48322
+    ],
+    [
+     12.16511,
+     47.48369
+    ],
+    [
+     12.16393,
+     47.48416
+    ],
+    [
+     12.16274,
+     47.48463
+    ]
+   ]
+  }
+ ],
+ "extra_note_33": "33 Übungslift Salvista: the practice slope beside the Salvista T-bar at Itter (lift 33 on the 2025-26 map), drawn 35 m beside the lift; approximate."
 }

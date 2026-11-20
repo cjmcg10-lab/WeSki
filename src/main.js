@@ -1,6 +1,7 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
+import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
 import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
@@ -1146,9 +1147,8 @@ function zonesCard() {
   return `<div class="card"><h3>Zones (painted on the snow)</h3>${rows.join('')}${lit}<p class="note">${src} Signs and ropes on the mountain always win.</p></div>`;
 }
 
-function describeSpot(x, y) {
-  let best = null;
-  for (const t of S.resort.trails) { const n = nearestOnLine(t.pts, x, y); if (n.d < 45 && (!best || n.d < best.d)) best = { d: n.d, t }; }
+function describeSpot(x, y, acc) {
+  const best = trailAt(S.resort, x, y, { acc });
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
     bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
@@ -1311,6 +1311,7 @@ function sheetCustomize() {
   const p = S.profile, L = parseLook(p.avatar);
   return ['Customize rider', `<div class="rider-stage big"><div id="av-preview" class="av-preview" title="Tap to wave"></div><p class="sub">Drag your rider to turn them round, tap to wave. Your group sees this look on the map.</p></div>
     <div class="card"><h3>Ride</h3><div class="seg"><button data-act="look" data-k="ride" data-v="ski" class="${L.ride === 'ski' ? 'on' : ''}">Skier</button><button data-act="look" data-k="ride" data-v="board" class="${L.ride === 'board' ? 'on' : ''}">Snowboarder</button></div>
+      ${L.ride === 'board' ? `<h3 style="margin-top:14px">Stance</h3><div class="seg"><button data-act="look" data-k="stance" data-v="0" class="${L.stance ? '' : 'on'}">Regular</button><button data-act="look" data-k="stance" data-v="1" class="${L.stance ? 'on' : ''}">Goofy</button></div><p class="sub">Regular: left foot forward. Goofy: right foot forward.</p>` : ''}
       <h3 style="margin-top:14px">Build</h3><div class="seg"><button data-act="look" data-k="who" data-v="boy" class="${L.who === 'boy' ? 'on' : ''}">Square jacket</button><button data-act="look" data-k="who" data-v="girl" class="${L.who === 'girl' ? 'on' : ''}">Fitted jacket</button></div>
       <h3 style="margin-top:14px">Skin tone</h3>${sw('skin', SKIN, L.skin)}</div>
     <div class="card"><h3>Headwear</h3>${chips('head', HEADS, L.head)}<h3 style="margin-top:14px">Hat or helmet color</h3>${sw('hat', HAT_COLORS, L.hat, p.color)}
@@ -1627,7 +1628,7 @@ function sheetPlace(ev) {
   if (ev.type === 'friend') {
     const f = friends().find((m) => m.id === ev.id);
     if (!f) return [t('Friend'), '<p class="sub">No longer in the group.</p>', true];
-    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${riderPic(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
+    return [f.name, `<div class="rowf"><div class="dot" style="width:48px;height:48px;border-radius:50%;background:${f.color}22;display:grid;place-items:center">${riderPic(f.avatar, f.color)}</div><div class="grow"><div class="sub ${f.stale ? 'warn-ink' : ''}">${!f.sharing ? 'Sharing paused' : f.stale ? 'Location is stale' : 'Live'} · last updated ${fmtAge(f.age)}</div><div class="sub">${describeSpot(f.x, f.y, f.acc)}</div></div></div><button class="btn go" data-act="nav-friend" data-id="${f.id}">Directions to ${esc(f.name)}</button>`, true];
   }
   if (ev.type === 'meet') {
     const m = S.map.meet;

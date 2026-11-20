@@ -140,4 +140,5 @@ export default {
   619: '{0}, USA', 620: '{0}, Frankreich', 621: '{0}, Schweiz', 622: '{0}, Österreich', 623: '{0}, Japan', 624: '{0}, Kanada', 625: 'Frankreich', 626: '{0}, Schweiz / {1}, Italien',
   627: '{0} Abfahrten im Verlauf gespeichert.', 628: '1 Abfahrt im Verlauf gespeichert.',
   629: 'Geh {0} abseits der Piste bis {1}', 630: 'Geh {0} abseits der Piste bis zum Ziel', 631: 'geh {0} abseits der Piste bis {1}', 632: 'geh {0} abseits der Piste bis zum Ziel', 633: 'Wege zu Fuß (abseits der Pisten oder auf einem Weg)', 634: 'zu Fuß, abseits der Pisten', 635: 'Herauszoomen',
+  636: 'Stellung', 637: 'Regular', 638: 'Goofy', 639: 'Regular: linker Fuß vorne. Goofy: rechter Fuß vorne.',
 };

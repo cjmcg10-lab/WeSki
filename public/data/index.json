@@ -538,10 +538,10 @@
   "baseLon": 12.16252,
   "top": 1825,
   "base": 626,
-  "trails": 162,
+  "trails": 163,
   "lifts": 76,
   "zones": true,
-  "bytes": 2793585
+  "bytes": 2796475
  },
  {
   "id": "smugglers-notch",
@@ -618,10 +618,10 @@
   "baseLon": -72.89959,
   "top": 1238,
   "base": 461,
-  "trails": 131,
+  "trails": 132,
   "lifts": 18,
   "zones": false,
-  "bytes": 744615
+  "bytes": 747095
  },
  {
   "id": "sugarloaf",

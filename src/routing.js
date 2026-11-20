@@ -1,6 +1,7 @@
 // Directions over the verified network: trails (downhill, or a short way back up), lifts,
 // walking connections and short cut-acrosses between neighbouring trails. Honors the skier's maximum difficulty and confirmed closures.
 import { nearestOnLine, lineLength, sliceLine } from './geo.js';
+import { halfWidth } from './ontrail.js';
 
 export const DIFF_NAMES = ['Green', 'Blue', 'Black', 'Double black'];
 const SKI_SPEED = [6, 8, 7, 5];     // m/s by difficulty (harder terrain is skied slower)
@@ -269,9 +270,11 @@ export class Router {
     if (!all.length) return [];
     const out = [all[0]], seen = new Set([this._trailKey(all[0].e)]);
     for (const s of all) {
-      if (s.d > near || out.length >= 6) break;
+      if (s.d > near + 40 || out.length >= 6) break;
       const k = this._trailKey(s.e);
       if (this.edges[s.e].k !== 'p' || seen.has(k)) continue;
+      // a wide run reaches further than its centre line: anywhere across it can be started on
+      if (s.d > (near && Math.max(near, halfWidth(this.resort.trails[this.edges[s.e].r] || {}) + 15))) continue;
       seen.add(k);
       out.push(s);
     }

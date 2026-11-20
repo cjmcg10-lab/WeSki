@@ -140,4 +140,5 @@ export default {
   619: '{0}, EUA', 620: '{0}, França', 621: '{0}, Suíça', 622: '{0}, Áustria', 623: '{0}, Japão', 624: '{0}, Canadá', 625: 'França', 626: '{0}, Suíça / {1}, Itália',
   627: '{0} descidas guardadas no Histórico.', 628: '1 descida guardada no Histórico.',
   629: 'Caminha {0} fora da pista até {1}', 630: 'Caminha {0} fora da pista até ao destino', 631: 'caminha {0} fora da pista até {1}', 632: 'caminha {0} fora da pista até ao destino', 633: 'Trajetos a pé (fora das pistas ou por um caminho)', 634: 'a pé, fora das pistas', 635: 'Afastar',
+  636: 'Posição', 637: 'Regular', 638: 'Goofy', 639: 'Regular: pé esquerdo à frente. Goofy: pé direito à frente.',
 };

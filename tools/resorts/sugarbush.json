@@ -1,21 +1,53 @@
 {
-  "id": "sugarbush",
-  "name": "Sugarbush",
-  "region": "Vermont, USA",
-  "tz": "America/New_York",
-  "area_name": "Sugarbush Resort",
-  "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
-  "osm_bbox": [
-    -72.975,
-    44.105,
-    -72.845,
-    44.215
-  ],
-  "dem_tiles": [
-    "x66y489",
-    "x66y490"
-  ],
-  "skip_pois": [
-    "Sugarbush Resort"
-  ]
+ "id": "sugarbush",
+ "name": "Sugarbush",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "area_name": "Sugarbush Resort",
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM, VT_Statewide_A23 (public domain)",
+ "osm_bbox": [
+  -72.975,
+  44.105,
+  -72.845,
+  44.215
+ ],
+ "dem_tiles": [
+  "x66y489",
+  "x66y490"
+ ],
+ "skip_pois": [
+  "Sugarbush Resort"
+ ],
+ "extra_trails": [
+  {
+   "name": "Rob Roy",
+   "pts": [
+    [
+     -72.92204,
+     44.16486
+    ],
+    [
+     -72.92167,
+     44.16516
+    ],
+    [
+     -72.92131,
+     44.16546
+    ],
+    [
+     -72.92093,
+     44.16576
+    ],
+    [
+     -72.92054,
+     44.16605
+    ],
+    [
+     -72.92018,
+     44.16635
+    ]
+   ]
+  }
+ ],
+ "extra_note": "Rob Roy (Mt. Ellen, between Lower Rim Run and Lookin' Good down to Glen House) is drawn from the 2025-26 trail map the owner uploaded."
 }

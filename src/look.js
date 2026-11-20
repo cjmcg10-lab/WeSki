@@ -1,6 +1,7 @@
 // What a rider looks like. Stored in the profile's `avatar` string so it travels to the group
 // unchanged: "<who>-<ride>~<code>", e.g. "girl-board~k1h2t3a3c0g1p0q2b0n1". The part before "~"
 // is the old four-way avatar (still understood everywhere); the code adds the customisation.
+// s: snowboard stance, 0 regular (left foot forward, the default), 1 goofy (right foot forward).
 
 export const SKIN = ['#f6d5b8', '#eec29c', '#d9a273', '#b57a4f', '#8a5634', '#5e3a22'];
 export const HAIR_COLORS = ['#2b1d14', '#6b4226', '#a8461f', '#e0bd72', '#141414', '#b9b9b9'];
@@ -18,14 +19,14 @@ export const CHARACTERS = [
   ['boy-ski', 'Skier 1'], ['girl-ski', 'Skier 2'], ['boy-board', 'Snowboarder 1'], ['girl-board', 'Snowboarder 2'],
 ];
 
-const KEYS = ['k', 'h', 't', 'a', 'c', 'g', 'p', 'q', 'b', 'n'];
-const NAMES = { k: 'skin', h: 'head', t: 'hat', a: 'hair', c: 'hairColor', g: 'lens', p: 'pants', q: 'gear', b: 'pack', n: 'gaiter' };
-const SIZES = { k: SKIN.length, h: HEADS.length, t: HAT_COLORS.length, a: HAIRS.length, c: HAIR_COLORS.length, g: LENS.length, p: PANTS.length, q: GEAR.length, b: 2, n: 2 };
+const KEYS = ['k', 'h', 't', 'a', 'c', 'g', 'p', 'q', 'b', 'n', 's'];
+const NAMES = { k: 'skin', h: 'head', t: 'hat', a: 'hair', c: 'hairColor', g: 'lens', p: 'pants', q: 'gear', b: 'pack', n: 'gaiter', s: 'stance' };
+const SIZES = { k: SKIN.length, h: HEADS.length, t: HAT_COLORS.length, a: HAIRS.length, c: HAIR_COLORS.length, g: LENS.length, p: PANTS.length, q: GEAR.length, b: 2, n: 2, s: 2 };
 
 /** Default look for one of the four characters (and for anything older than customisation). */
 export function defaults(who, ride) {
   const girl = who === 'girl';
-  return { who, ride, skin: girl ? 0 : 1, head: 0, hat: 0, hair: girl ? 3 : 1, hairColor: girl ? 1 : 0, lens: girl ? 4 : 0, pants: 0, gear: 0, pack: girl ? 0 : 1, gaiter: 0 };
+  return { who, ride, skin: girl ? 0 : 1, head: 0, hat: 0, hair: girl ? 3 : 1, hairColor: girl ? 1 : 0, lens: girl ? 4 : 0, pants: 0, gear: 0, pack: girl ? 0 : 1, gaiter: 0, stance: 0 };
 }
 
 /** avatar string -> look object (unknown or damaged parts fall back to the defaults). */

@@ -153,8 +153,9 @@ export function makeAvatar(avatar, color, pose = 'stand') {
   shoulder.add(arm);
   body.add(shoulder);
   // Sideways stance: the rider stands across the board, which keeps pointing downhill.
+  // Regular rides left foot forward (chest to the left of travel), goofy right foot forward.
   // (Sitting, everyone faces forward.)
-  const stance = board && !sit ? Math.PI / 2 : 0;
+  const stance = board && !sit ? (L.stance ? Math.PI / 2 : -Math.PI / 2) : 0;
   body.rotation.y = stance;
   const rig = new THREE.Group();
   rig.add(new THREE.Mesh(mergeGeometries(gear), vcMat()), body);
