@@ -12,7 +12,7 @@ import { Geo, pointAlong, lineLength, nearestOnLine } from '../src/geo.js';
 const args = process.argv.slice(2);
 const flag = (k) => { const i = args.indexOf(k); if (i < 0) return false; args.splice(i, 1); return true; };
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
-const WRITE = flag('--write'), PIC = opt('--pic', null), CORR = +opt('--corridor', 180);
+const WRITE = flag('--write'), TRIM = flag('--trim'), PIC = opt('--pic', null), CORR = +opt('--corridor', 180);
 const [id, list] = args;
 const resort = JSON.parse(readFileSync(`public/data/${id}/resort.json`, 'utf8'));
 const buf = readFileSync(`public/data/${id}/terrain.bin`);
@@ -29,12 +29,27 @@ function climbOf(pts) {
   return c;
 }
 
+// --trim: a hand-drawn run whose end was put across a gully or over a rise keeps only the part from its
+// highest point down to the lowest point after it (the build joins the new end to the nearest run)
+function trimmed(pts) {
+  const L = lineLength(pts), s = [];
+  for (let d = 0; d <= L; d += 10) { const p = pointAlong(pts, d); s.push([p[0], p[1], geo.elev(p[0], p[1])]); }
+  let hi = 0; for (let i = 1; i < s.length; i++) if (s[i][2] > s[hi][2]) hi = i;
+  let lo = hi; for (let i = hi + 1; i < s.length; i++) if (s[i][2] < s[lo][2]) lo = i;
+  if (hi === 0 && lo === s.length - 1) return pts;
+  const out = [];
+  for (let i = hi; i <= lo; i += 2) out.push(s[i][0], s[i][1]);
+  if ((lo - hi) % 2) out.push(s[lo][0], s[lo][1]);
+  return out;
+}
+
 function fit(t) {
   let pts = t.pts.slice();
   const n = pts.length;
   if (geo.elev(pts[0], pts[1]) < geo.elev(pts[n - 2], pts[n - 1])) {   // work from the top
     const r = []; for (let i = n - 2; i >= 0; i -= 2) r.push(pts[i], pts[i + 1]); pts = r;
   }
+  if (TRIM && t.traced) pts = trimmed(pts);
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   for (let i = 0; i < pts.length; i += 2) { x0 = Math.min(x0, pts[i]); x1 = Math.max(x1, pts[i]); y0 = Math.min(y0, pts[i + 1]); y1 = Math.max(y1, pts[i + 1]); }
   x0 -= CORR; y0 -= CORR; x1 += CORR; y1 += CORR;
@@ -125,16 +140,27 @@ for (const t of resort.trails.filter((u) => want.has(String(u.osm)))) {
   const before = climbOf(t.pts), r = fit(t);
   if (!r) { console.log(`${t.name} (${t.osm}): no downhill line found within ${CORR} m`); continue; }
   const after = climbOf(r.pts);
+  // the fitted line may have slid into another mapped run's gully: then it is that run, not this one
+  let on = 0, tot = 0, who = {};
+  for (let i = 0; i < r.pts.length; i += 2) {
+    tot++;
+    for (const u of resort.trails) {
+      if (u === t || (u.name && u.name === t.name)) continue;
+      if (nearestOnLine(u.pts, r.pts[i], r.pts[i + 1]).d < 20) { on++; who[u.name || '#'] = (who[u.name || '#'] || 0) + 1; break; }
+    }
+  }
+  const taken = on >= 0.4 * tot ? Object.keys(who).sort((a, b) => who[b] - who[a])[0] : null;
+  if (taken) console.log(`  the fitted line follows the mapped run ${taken} for ${Math.round(100 * on / tot)}% of its length: not written`);
   console.log(`${t.name}${t.traced ? ' [traced]' : ''} (${t.osm}): climbs ${before.toFixed(0)} m -> ${after.toFixed(0)} m; moved ${r.shift.toFixed(0)} m on average, ${r.max.toFixed(0)} m at most`);
   if (PIC) picture(t, r);
-  if (!WRITE || after >= before) continue;
+  if (!WRITE || after >= before || taken) continue;
   const ll = []; for (let i = 0; i < r.pts.length; i += 2) { const [lat, lon] = geo.toLatLon(r.pts[i], r.pts[i + 1]); ll.push([+lon.toFixed(5), +lat.toFixed(5)]); }
   if (t.traced) {
     const k = t.osm - 9e9, e = cfg.extra_trails[k];
     if (!e || e.name !== t.name) { console.log('  not written: extra_trails entry not found'); continue; }
     e.pts = ll; e.fitted = `terrain: never climbs, moved ${r.shift.toFixed(0)} m on average`;
   } else {
-    cfg.way_pts = cfg.way_pts || {}; cfg.way_pts[String(t.osm)] = ll;
+    cfg.way_pts = cfg.way_pts || {}; cfg.way_pts[String(t.osm)] = { pts: ll, len: Math.round(lineLength(t.pts)), why: `terrain: the drawn line climbs ${before.toFixed(0)} m` };
   }
   changed++;
 }

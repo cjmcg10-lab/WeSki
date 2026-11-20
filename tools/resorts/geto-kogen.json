@@ -21,5 +21,7 @@
  "rename": {
   "No. 1 Pait LIft": "No. 1 Pair Lift"
  },
- "base_link": 300
+ "base_link": 300,
+ "shift_m": [12, 3],
+ "shift_note": "OpenStreetMap lines here sit beside the cut runs on aerial photos (tools/align_trails.py --shift, 2026-11-20): the whole map is moved this many metres east and north"
 }

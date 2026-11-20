@@ -28,13 +28,29 @@
  },
  "split_ways": {
   "191569240": [
-   [
-    -106.35,
-    39.6024
-   ],
+   [-106.35, 39.6024],
    "Headwall Ridge",
    ""
   ]
  },
- "names_note": "From the 2026-27 trail map: OpenStreetMap's 'Slalom Alley' beside the Golden Peak T-bar is the map's GS Alley; 'Chopstix' from the Orient Express top into Poppyfields is Gillett's Dream; the lower part of Lodgepole below the Avanti lift is Lodgepole Gulch; the top of Headwall along the ridge is Headwall Ridge (split by eye, within about 150 m)."
+ "names_note": "From the 2026-27 trail map: OpenStreetMap's 'Slalom Alley' beside the Golden Peak T-bar is the map's GS Alley; 'Chopstix' from the Orient Express top into Poppyfields is Gillett's Dream; the lower part of Lodgepole below the Avanti lift is Lodgepole Gulch; the top of Headwall along the ridge is Headwall Ridge (split by eye, within about 150 m).",
+ "way_pts": {
+  "191567788": {
+   "pts": [
+    [-106.35851, 39.590281],
+    [-106.358802, 39.590427],
+    [-106.358953, 39.590571],
+    [-106.35916, 39.590837],
+    [-106.359361, 39.590986],
+    [-106.359749, 39.591074],
+    [-106.360171, 39.591051],
+    [-106.36045, 39.591027],
+    [-106.360839, 39.590936],
+    [-106.361064, 39.590837],
+    [-106.361341, 39.590627]
+   ],
+   "len": 266,
+   "why": "naip photo: drawn 19.6 m beside the cut run"
+  }
+ }
 }

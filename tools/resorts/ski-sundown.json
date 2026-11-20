@@ -19,23 +19,13 @@
   {
    "name": "Loop",
    "pts": [
-    [
-     -72.9457,
-     41.883
-    ],
-    [
-     -72.9459,
-     41.8834
-    ],
-    [
-     -72.9462,
-     41.8837
-    ],
-    [
-     -72.94645,
-     41.88385
-    ]
+    [-72.9457, 41.883],
+    [-72.9459, 41.8834],
+    [-72.9462, 41.8837],
+    [-72.94645, 41.88385]
    ]
   }
- ]
+ ],
+ "shift_m": [-12, -3],
+ "shift_note": "OpenStreetMap lines here sit beside the cut runs on aerial photos (tools/align_trails.py --shift, 2026-11-20): the whole map is moved this many metres east and north"
 }

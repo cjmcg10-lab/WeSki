@@ -41,7 +41,9 @@ resort"). The owner does not need to run them; this list is also how to see what
 - [ ] Glades and terrain parks show correctly.
 - [ ] Lines checked against aerial photos: `python3 tools/align_trails.py <id> <naip|swiss|ign|at|gsi> --only all`
       for the OpenStreetMap runs and `--only traced --write` for runs drawn by hand (see "Line accuracy" below).
-      Look at the `--debug` pictures for every run it moved or flagged.
+      Look at the `--debug` pictures for every run it moved or flagged. Also `--shift` (whole map offset; set
+      `shift_m` when the best shift is over 6 m and clearly better), and `node tools/check_downhill.mjs <id>` (no run
+      may climb; fix with `node tools/fit_terrain.mjs`).
 
 ### 5. Looks and content
 - [ ] A real photo of the mountain (free licence, ideally winter, showing the slopes) in `public/photos/`

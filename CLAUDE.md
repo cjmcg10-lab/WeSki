@@ -303,6 +303,34 @@ Photo cells are cached in `$ALIGN_CACHE`.
   so it shows cut runs only faintly; a first-return LiDAR surface would show them like the photo but needs point-cloud
   tools that are not installed (pip is blocked).
 
+Full pass at all 50 (2026-11-20, second half):
+- **Whole-map offset.** `align_trails.py <id> <src> --shift` (OpenStreetMap runs only) tries every shift up to 36 m and
+  reports the share of run points on open ground. Ten maps sat clearly beside their cut runs and now carry `shift_m`
+  [east, north] in the config (`build_data.py` moves every OSM point; config lon/lat points are not moved): Bretton Woods
+  [15,-3], Loon [15,0], Mohawk [-18,3], Pats Peak [-15,3], Ragged [-15,0], Bolton [-12,3], Ski Sundown [-12,-3],
+  Geto [12,3], Cannon [0,9], Hunter [-6,9]. Median distance from the strip after: 2-6 m (before 3-15 m). Shifts of 6 m
+  or less were left alone (within the photos' own accuracy). Bolton's terrain file had to be padded (it is made from the
+  built extent, which the shift widened).
+- **Single runs.** `--write --osm` puts a corrected OSM line in the config as `way_pts` {way id: {pts, len, why}};
+  `build_data.py` keeps the way's end nodes and refuses if the way's length no longer matches. `--force ids` for runs
+  checked by eye beyond 70 m. Of 83 flagged runs, 16 were clearly drawn in forest beside their strip and were moved
+  (Brundage Centennial Lane and To Bear, Catamount Toni Matt, Copper Iron Mask, La Plagne Dérochoir, Mammoth Ralphie's,
+  The Wall, Center Bowl, Mount Snow Pat's Pitch, Pizol Prodboden, Stratton Main Line, Sugarbush Lower Moonshine, Vail Sun
+  Up Catwalk, Windham Upper Wall ST, plus hand-drawn Hunter Gramercy Park, Mad Box, Bucky's Run, Madison Square and
+  Ragged Home Run). The rest are open bowls, meadows (Austria), sagebrush (Park City's open south faces are not runs:
+  never move Park City lines onto open ground), or above the treeline, and were left alone. Vail Cloud 9 - Lower was
+  moved and put back (the moved line climbed). Breckenridge Goodbye Girl's strip turned out to be Mach 1: left alone.
+- **Downhill check.** `node tools/check_downhill.mjs [ids] [--json out]` walks every run from its higher end on the
+  built terrain and lists runs climbing more than 12 m. `node tools/fit_terrain.mjs <id> <osm ids> [--trim] [--write]
+  [--pic DIR]` finds the nearest line that never climbs (shortest path on 5 m cells, climbing costs a lot); `--trim`
+  cuts a hand-drawn run to its highest point and the lowest point after it; it refuses a line that slides onto another
+  mapped run. Fitted: Keystone's eight hand-drawn Outback and bowl runs (The Windows had started 120 m below its gate),
+  Copper Boulderado, Mammoth Reds Lake Run, Park City The Chutes and Lite's Out, and OSM Cannon The Saddle, Tignes
+  Génépy and Vallons de la Sache, Zermatt Hohtälli. Still listed (12 to 40 m, left alone): Park City One Hundred Turns
+  and Fantasy Ridge (the photo shows them on their strips; ridge runs), Pine Cone Ridge (hike), Heavenly Sky Chute (no
+  safe fit), Zermatt's small rises, SkiWelt 87a (its fit is the Almbahn line).
+- `tools/dev/fmt_config.py` rewrites configs with each [lon, lat] on one line; run it after any tool writes a config.
+
 ## Walking off the trails (2026-11-18)
 
 Directions can now start or end off the trail network: to a building, a dropped pin or a friend standing off a run.

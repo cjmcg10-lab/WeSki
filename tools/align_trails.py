@@ -33,7 +33,9 @@ CAP = 25.0       # half-width counted at most this much (a wide slope is not "mo
 ap = argparse.ArgumentParser()
 ap.add_argument("rid"); ap.add_argument("src")
 ap.add_argument("--only", default="traced"); ap.add_argument("--test", action="store_true")
-ap.add_argument("--write", action="store_true"); ap.add_argument("--range", type=float, default=160)
+ap.add_argument("--write", action="store_true"); ap.add_argument("--osm", action="store_true", help="with --write: also move OpenStreetMap runs (way_pts in the config)")
+ap.add_argument("--force", default="", help="with --write --osm: osm ids checked by eye, written even if more than 70 m away")
+ap.add_argument("--range", type=float, default=160)
 ap.add_argument("--cache", default=os.environ.get("ALIGN_CACHE", "/tmp/align-cache"))
 ap.add_argument("--mpp", type=float, default=1.0, help="photo metres per pixel")
 ap.add_argument("--json", default=None, help="write per-run results here")
@@ -337,13 +339,15 @@ print(f"{A.rid}: {len(sel)} runs, {len(cells)} photo cells, brightness threshold
 if A.shift:
     # Sample every run every 20 m; for each whole-map shift, the share of samples on open ground. A map traced
     # from offset imagery shows a clear best shift away from (0, 0).
+    # only OpenStreetMap runs: hand-drawn runs were traced on the terrain, which is in its true position
     S = []
     for t in sel:
+        if t.get("traced"): continue
         xy, _ = resample(t["pts"], 20); S += [tuple(p) for p in xy]
     S = np.array(S)
     best = {}
-    for dx in range(-60, 61, 6):
-        for dy in range(-60, 61, 6):
+    for dx in range(-36, 37, 3):
+        for dy in range(-36, 37, 3):
             v = [raw(*ll(x + dx, y + dy)) for x, y in S]
             o = [1.0 if (q[0] > THR[0] and q[1] < THR[1]) else 0.0 for q in v if q]
             best[(dx, dy)] = float(np.mean(o)) if o else 0
@@ -418,9 +422,23 @@ if A.write:
         e["pts"] = new; e["aligned"] = f"{A.src} photo, moved {row['mean_off']} m on average"
         n += 1
         print(f"  wrote {t['name']}: moved {row['mean_off']} m on average")
-    if n:
+    m = 0
+    force = set(A.force.split(",")) - {""}
+    for t, r, row in results if A.osm else []:
+        if row["traced"] or not row["good"] or row["taken"] or row["tree"] or row["mean_off"] < 10: continue
+        if row["max_off"] > 70 and str(t["osm"]) not in force:
+            print(f"  NOT written {t['name']} ({t['osm']}): {row['max_off']} m away at most; check the picture, then --force"); continue
+        if t["osm"] >= 9e9:   # parts made by the build (split ways, joins) are not OpenStreetMap ways
+            print(f"  NOT written {t['name']} ({t['osm']}): not an OpenStreetMap way"); continue
+        xy = r["xy"]
+        idx = np.linspace(0, len(xy) - 1, min(len(xy), max(4, int(t["len"] // 25) + 1))).round().astype(int)
+        cfg.setdefault("way_pts", {})[str(t["osm"])] = {"pts": [[round(c, 6) for c in ll(*xy[i])] for i in idx], "len": round(t["len"]),
+                                                        "why": f"{A.src} photo: drawn {row['mean_off']} m beside the cut run"}
+        m += 1
+        print(f"  wrote {t['name']} ({t['osm']}): moved {row['mean_off']} m on average")
+    if n or m:
         json.dump(cfg, open(cfgf, "w"), ensure_ascii=False, indent=1); open(cfgf, "a").write("\n")
-    print(f"{n} traced runs corrected in {cfgf}")
+    print(f"{n} traced runs and {m} OpenStreetMap runs corrected in {cfgf}")
 
 if A.widths:
     wf = f"{ROOT}/tools/widths/{A.rid}.json"; os.makedirs(os.path.dirname(wf), exist_ok=True)

@@ -46,45 +46,45 @@
   {
    "name": "Abfahrt Zanuz",
    "pts": [
-    [
-     9.442,
-     46.9815
-    ],
-    [
-     9.447,
-     46.9831
-    ],
-    [
-     9.452,
-     46.985
-    ],
-    [
-     9.4555,
-     46.986
-    ],
-    [
-     9.4574,
-     46.9858
-    ]
+    [9.442, 46.9815],
+    [9.447, 46.9831],
+    [9.452, 46.985],
+    [9.4555, 46.986],
+    [9.4574, 46.9858]
    ]
   },
   {
    "name": "Trainingspiste Schwamm",
    "pts": [
-    [
-     9.454,
-     46.9876
-    ],
-    [
-     9.456,
-     46.9884
-    ],
-    [
-     9.4589,
-     46.98875
-    ]
+    [9.454, 46.9876],
+    [9.456, 46.9884],
+    [9.4589, 46.98875]
    ]
   }
  ],
- "extra_note": "Names follow the resort's own interactive map (infosnow.ch, map 59a), whose drawn pistes carry the report's numbers: OpenStreetMap's 'Trainingsstrecke' is drawn there as 17 Adler Piste, its '17 Vreni Schneider Run' as the lower Adler Piste, '25', '6b' and 'Skiroute 36' as 25, 6b and 36, 'Abfahrtsroute Gaffia' as 34 Couloir, the two upper 'Valeis' branches as 19 Soldanella (from the Gaffia chair) and 10 Twärchamm (from the SAC lift), and the upper 'Mittelsäss' as 9 Waldweg. Abfahrt Zanuz (a ski route) and Trainingspiste Schwamm are not in OpenStreetMap and were traced from the resort's map and swisstopo aerial photos (within about 150 m)."
+ "extra_note": "Names follow the resort's own interactive map (infosnow.ch, map 59a), whose drawn pistes carry the report's numbers: OpenStreetMap's 'Trainingsstrecke' is drawn there as 17 Adler Piste, its '17 Vreni Schneider Run' as the lower Adler Piste, '25', '6b' and 'Skiroute 36' as 25, 6b and 36, 'Abfahrtsroute Gaffia' as 34 Couloir, the two upper 'Valeis' branches as 19 Soldanella (from the Gaffia chair) and 10 Twärchamm (from the SAC lift), and the upper 'Mittelsäss' as 9 Waldweg. Abfahrt Zanuz (a ski route) and Trainingspiste Schwamm are not in OpenStreetMap and were traced from the resort's map and swisstopo aerial photos (within about 150 m).",
+ "way_pts": {
+  "659550772": {
+   "pts": [
+    [9.465176, 46.9889],
+    [9.465413, 46.98888],
+    [9.465704, 46.989026],
+    [9.46586, 46.989134],
+    [9.466109, 46.989317],
+    [9.466266, 46.989451],
+    [9.466506, 46.989645],
+    [9.466661, 46.989782],
+    [9.466898, 46.989988],
+    [9.46706, 46.99013],
+    [9.467297, 46.990336],
+    [9.467447, 46.990466],
+    [9.467633, 46.990636],
+    [9.467704, 46.990725],
+    [9.467741, 46.990904],
+    [9.467566, 46.990849]
+   ],
+   "len": 377,
+   "why": "swiss photo: drawn 27.9 m beside the cut run"
+  }
+ }
 }

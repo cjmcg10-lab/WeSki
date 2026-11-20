@@ -79,11 +79,27 @@ def main():
     # "way_pts" moves an OpenStreetMap run that is drawn off its real line (checked on aerial photos with
     # tools/align_trails.py): {way id: [[lon, lat], ...] in the way's own order}. The way keeps its first and
     # last node, so it stays joined where it was; only the points between are replaced.
+    # "shift_m" [dx, dy] moves every OpenStreetMap point of the resort by that many metres east and north: for a
+    # map traced from offset imagery, found by tools/align_trails.py --shift (the whole network sits beside the cut
+    # runs on aerial photos). Everything given in the config as lon/lat (way_pts, extra runs and lifts) is already
+    # in the photos' true position and is not moved; split_ways points above are matched before the shift.
+    sdx, sdy = cfg.get("shift_m", [0, 0])
+    if sdx or sdy:
+        for i, (x, y) in nodes.items():
+            nodes[i] = (x + sdx, y + sdy)
+        print(f"whole map shifted {sdx} m east, {sdy} m north (shift_m)")
     for wid, pts in cfg.get("way_pts", {}).items():
         k = next((i for i, w in enumerate(ways) if w[0] == wid), None)
         if k is None:
             print(f"way_pts: way {wid} not in the extract"); continue
         _, nd, tags = ways[k]
+        if isinstance(pts, dict):
+            # {"pts": [...], "len": metres}: the line was measured on a run of this length; if the way is much
+            # longer or shorter (split, joined or redrawn in OpenStreetMap since), the points do not fit it
+            wl = sum(math.dist(nodes[p], nodes[q]) for p, q in zip(nd, nd[1:]))
+            if abs(wl - pts["len"]) > 0.25 * pts["len"] + 30:
+                print(f"way_pts: way {wid} is {wl:.0f} m long, the corrected line was for {pts['len']} m: left as it is"); continue
+            pts = pts["pts"]
         a, b = nodes[nd[0]], nodes[nd[-1]]
         mid = []
         for j, (lon, lat) in enumerate(pts):

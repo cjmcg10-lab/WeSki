@@ -20,16 +20,16 @@
   "name": "Bolton Valley",
   "region": "Vermont, USA",
   "tz": "America/New_York",
-  "lat": 44.41488,
-  "lon": -72.83417,
-  "baseLat": 44.41054,
-  "baseLon": -72.86404,
-  "top": 950,
-  "base": 476,
+  "lat": 44.41491,
+  "lon": -72.83432,
+  "baseLat": 44.41057,
+  "baseLon": -72.86419,
+  "top": 949,
+  "base": 475,
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 347708
+  "bytes": 348641
  },
  {
   "id": "breckenridge",
@@ -52,16 +52,16 @@
   "name": "Bretton Woods",
   "region": "New Hampshire, USA",
   "tz": "America/New_York",
-  "lat": 44.24329,
-  "lon": -71.47086,
-  "baseLat": 44.25969,
-  "baseLon": -71.46169,
+  "lat": 44.24327,
+  "lon": -71.47067,
+  "baseLat": 44.25967,
+  "baseLon": -71.4615,
   "top": 912,
-  "base": 485,
+  "base": 484,
   "trails": 105,
   "lifts": 9,
   "zones": false,
-  "bytes": 434281
+  "bytes": 433800
  },
  {
   "id": "brundage",
@@ -77,7 +77,7 @@
   "trails": 77,
   "lifts": 6,
   "zones": false,
-  "bytes": 437297
+  "bytes": 440417
  },
  {
   "id": "burke",
@@ -100,16 +100,16 @@
   "name": "Cannon Mountain",
   "region": "New Hampshire, USA",
   "tz": "America/New_York",
-  "lat": 44.15762,
+  "lat": 44.1577,
   "lon": -71.69918,
-  "baseLat": 44.17921,
+  "baseLat": 44.17929,
   "baseLon": -71.711,
-  "top": 1231,
+  "top": 1230,
   "base": 574,
   "trails": 102,
   "lifts": 9,
   "zones": false,
-  "bytes": 446157
+  "bytes": 447274
  },
  {
   "id": "catamount",
@@ -125,7 +125,7 @@
   "trails": 46,
   "lifts": 7,
   "zones": false,
-  "bytes": 229537
+  "bytes": 230148
  },
  {
   "id": "copper-mountain",
@@ -141,23 +141,23 @@
   "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 965711
+  "bytes": 966041
  },
  {
   "id": "geto-kogen",
   "name": "Geto Kogen",
   "region": "Iwate, Japan",
   "tz": "Asia/Tokyo",
-  "lat": 39.23175,
-  "lon": 140.88754,
-  "baseLat": 39.23741,
-  "baseLon": 140.90566,
-  "top": 1063,
+  "lat": 39.23178,
+  "lon": 140.88768,
+  "baseLat": 39.23743,
+  "baseLon": 140.9058,
+  "top": 1059,
   "base": 636,
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174374
+  "bytes": 174734
  },
  {
   "id": "heavenly",
@@ -180,16 +180,16 @@
   "name": "Hunter Mountain",
   "region": "New York, USA",
   "tz": "America/New_York",
-  "lat": 42.20053,
-  "lon": -74.2303,
-  "baseLat": 42.20423,
-  "baseLon": -74.20621,
-  "top": 968,
+  "lat": 42.20062,
+  "lon": -74.23037,
+  "baseLat": 42.20431,
+  "baseLon": -74.20628,
+  "top": 969,
   "base": 501,
   "trails": 68,
   "lifts": 11,
   "zones": true,
-  "bytes": 467290
+  "bytes": 468884
  },
  {
   "id": "jay-peak",
@@ -221,7 +221,7 @@
   "trails": 154,
   "lifts": 20,
   "zones": true,
-  "bytes": 1190495
+  "bytes": 1189387
  },
  {
   "id": "killington",
@@ -253,7 +253,7 @@
   "trails": 162,
   "lifts": 85,
   "zones": true,
-  "bytes": 2753432
+  "bytes": 2753576
  },
  {
   "id": "les-arcs",
@@ -292,16 +292,16 @@
   "name": "Loon Mountain",
   "region": "New Hampshire, USA",
   "tz": "America/New_York",
-  "lat": 44.03505,
-  "lon": -71.61992,
-  "baseLat": 44.04821,
-  "baseLon": -71.65407,
-  "top": 928,
+  "lat": 44.03506,
+  "lon": -71.61973,
+  "baseLat": 44.04822,
+  "baseLon": -71.65389,
+  "top": 927,
   "base": 263,
   "trails": 76,
   "lifts": 12,
   "zones": false,
-  "bytes": 537565
+  "bytes": 537572
  },
  {
   "id": "magic-mountain",
@@ -333,23 +333,23 @@
   "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1087595
+  "bytes": 1090971
  },
  {
   "id": "mohawk-mountain",
   "name": "Mohawk Mountain",
   "region": "Connecticut, USA",
   "tz": "America/New_York",
-  "lat": 41.83214,
+  "lat": 41.8321,
   "lon": -73.30711,
-  "baseLat": 41.83679,
-  "baseLon": -73.31541,
+  "baseLat": 41.83682,
+  "baseLon": -73.31563,
   "top": 456,
   "base": 279,
   "trails": 28,
   "lifts": 7,
   "zones": false,
-  "bytes": 150393
+  "bytes": 150362
  },
  {
   "id": "mount-snow",
@@ -365,7 +365,7 @@
   "trails": 89,
   "lifts": 19,
   "zones": false,
-  "bytes": 550168
+  "bytes": 551711
  },
  {
   "id": "mount-southington",
@@ -413,23 +413,23 @@
   "trails": 352,
   "lifts": 41,
   "zones": true,
-  "bytes": 2360722
+  "bytes": 2360083
  },
  {
   "id": "pats-peak",
   "name": "Pats Peak",
   "region": "New Hampshire, USA",
   "tz": "America/New_York",
-  "lat": 43.15187,
-  "lon": -71.79723,
-  "baseLat": 43.16323,
-  "baseLon": -71.79601,
-  "top": 412,
-  "base": 177,
+  "lat": 43.15189,
+  "lon": -71.79742,
+  "baseLat": 43.16325,
+  "baseLon": -71.7962,
+  "top": 413,
+  "base": 178,
   "trails": 36,
   "lifts": 11,
   "zones": false,
-  "bytes": 249513
+  "bytes": 249511
  },
  {
   "id": "pizol",
@@ -445,7 +445,7 @@
   "trails": 39,
   "lifts": 13,
   "zones": true,
-  "bytes": 866161
+  "bytes": 867745
  },
  {
   "id": "powder-ridge",
@@ -468,16 +468,16 @@
   "name": "Ragged Mountain",
   "region": "New Hampshire, USA",
   "tz": "America/New_York",
-  "lat": 43.47249,
-  "lon": -71.84497,
+  "lat": 43.47232,
+  "lon": -71.84525,
   "baseLat": 43.48501,
-  "baseLon": -71.84373,
-  "top": 673,
-  "base": 337,
+  "baseLon": -71.84392,
+  "top": 675,
+  "base": 338,
   "trails": 56,
   "lifts": 5,
   "zones": false,
-  "bytes": 304607
+  "bytes": 304693
  },
  {
   "id": "saalbach",
@@ -493,7 +493,7 @@
   "trails": 100,
   "lifts": 81,
   "zones": true,
-  "bytes": 2488202
+  "bytes": 2488999
  },
  {
   "id": "saddleback",
@@ -516,16 +516,16 @@
   "name": "Ski Sundown",
   "region": "Connecticut, USA",
   "tz": "America/New_York",
-  "lat": 41.88179,
-  "lon": -72.93978,
-  "baseLat": 41.88418,
-  "baseLon": -72.94591,
+  "lat": 41.88177,
+  "lon": -72.93993,
+  "baseLat": 41.88415,
+  "baseLon": -72.94606,
   "top": 322,
   "base": 153,
   "trails": 17,
   "lifts": 5,
   "zones": false,
-  "bytes": 131075
+  "bytes": 131278
  },
  {
   "id": "skiwelt",
@@ -605,7 +605,7 @@
   "trails": 117,
   "lifts": 17,
   "zones": false,
-  "bytes": 808047
+  "bytes": 808987
  },
  {
   "id": "sugarbush",
@@ -621,7 +621,7 @@
   "trails": 132,
   "lifts": 18,
   "zones": false,
-  "bytes": 747476
+  "bytes": 748193
  },
  {
   "id": "sugarloaf",
@@ -669,7 +669,7 @@
   "trails": 181,
   "lifts": 78,
   "zones": true,
-  "bytes": 2816144
+  "bytes": 2819686
  },
  {
   "id": "vail",
@@ -685,7 +685,7 @@
   "trails": 219,
   "lifts": 32,
   "zones": false,
-  "bytes": 1779241
+  "bytes": 1780042
  },
  {
   "id": "val-thorens",
@@ -765,7 +765,7 @@
   "trails": 56,
   "lifts": 10,
   "zones": true,
-  "bytes": 357036
+  "bytes": 358007
  },
  {
   "id": "winter-park",
@@ -797,6 +797,6 @@
   "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 2822956
+  "bytes": 2821144
  }
 ]

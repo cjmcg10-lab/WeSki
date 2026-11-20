@@ -15,5 +15,7 @@
  "skip_pois": [
   "Loon Mountain",
   "Loon Mountain Resort"
- ]
+ ],
+ "shift_m": [15, 0],
+ "shift_note": "OpenStreetMap lines here sit beside the cut runs on aerial photos (tools/align_trails.py --shift, 2026-11-20): the whole map is moved this many metres east and north"
 }
