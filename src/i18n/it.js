@@ -143,4 +143,5 @@ export default {
   636: 'Posizione', 637: 'Regular', 638: 'Goofy', 639: 'Regular: piede sinistro avanti. Goofy: piede destro avanti.',
   640: 'Tieni il telefono in verticale', 641: 'SkiWithMe è pensato per il telefono in verticale.',
   642: 'Piste nel bosco e glade (trattini lunghi)', 643: 'Bordo di una pista larga (sottile contorno a puntini, dello stesso colore della pista)', 644: 'Tratto di collegamento: senza nome nell’elenco piste del comprensorio',
+  645: 'Sbiadita: pista non presente nella mappa del comprensorio (difficoltà non confermata)', 646: 'Non presente nella mappa piste del comprensorio: difficoltà non confermata, forse non battuta né sorvegliata', 647: 'Piste non presenti nella mappa del comprensorio', 648: 'Usale nelle indicazioni. Possono essere non battute e non sorvegliate.',
 };

@@ -59,6 +59,7 @@ const S = {
   units: prefs.get('units', 'imperial'),
   crumbsOn: prefs.get('crumbsOn', false), crumbScope: 'session',
   maxDiff: prefs.get('maxDiff', 2),
+  unofficial: prefs.get('unofficial', false),
   uphill: prefs.get('uphill', 'normal'),   // uphill tolerance for directions: low | normal | high
   voice: prefs.get('voice', false),        // spoken directions
   closures: new Set(),
@@ -968,7 +969,7 @@ function setClosures(set, share = true) {
 }
 
 // ---------- navigation
-const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill });
+const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill, unofficial: S.unofficial });
 
 function startNav(target) {
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
@@ -1162,6 +1163,7 @@ function describeSpot(x, y, acc) {
     bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
     if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
     if (best.t.unl) bits.push('Connecting piece: not named on the resort’s trail list');
+    if (best.t.unof) bits.push('Not on the resort’s trail map: rating unconfirmed, may be ungroomed or unpatrolled');
     const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;
     const tz = best.t.z || (best.t.slow ? 'slow' : null);
     if (tz) bits.push(tag(tz));
@@ -1519,6 +1521,7 @@ function sheetRoutePrefs() {
       <p class="note" style="font-size:14.5px">Prefer routes within this level. Harder terrain may be unavoidable; warnings appear.</p></div>
     <div class="card"><h3>Uphill tolerance</h3><div class="seg">${Object.entries(TOLERANCE).filter(([k]) => k !== 'none').map(([k, t]) => `<button data-act="uphill" data-v="${k}" class="${S.uphill === k ? 'on' : ''}">${t.label}</button>`).join('')}</div>
       <p class="note" style="font-size:14.5px">${UPHILL_TEXT[S.uphill]}</p></div>
+    <div class="card"><div class="rowf"><div class="grow"><h4 style="margin:0">Runs not on the resort map</h4><div class="sub">Use them in directions. They can be ungroomed and unpatrolled.</div></div><label class="switch"><input type="checkbox" id="f-unofficial" ${S.unofficial ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><div class="rowf" style="gap:14px">${ICON.mic}<div class="grow"><h4 style="margin:0">Spoken directions</h4></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div></div>
     <div class="card"><div class="rowf" style="gap:14px">${ICON.ban}<div class="grow"><h4 style="margin:0">Closures</h4><div class="sub">Manage marked closures.</div></div><button class="btn sm" data-act="open-closures">Edit</button></div></div>
     <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
@@ -1569,7 +1572,7 @@ function sheetLegend() {
   const ic = (c, ch, label) => `<div class="legend-row"><div class="sw"><div class="ic" style="background:${c}">${ch}</div></div><span>${label}</span></div>`;
   return ['Map legend', `<div class="card"><h3>Trail difficulty</h3>
       ${classesUsed(S.resort).map((c) => line(sc.colors[c], sc.legend[c], false, `<b class="${sc.css[c]}">${sc.syms[c]}</b>`)).join('')}
-      ${line(sc.colors[1], 'Glades and tree runs (long dashes)', true)}${S.resort.areas?.length ? `<div class="legend-row"><div class="sw"><div class="ln" style="height:2px;background:repeating-linear-gradient(90deg, ${sc.colors[1]} 0 3px, transparent 3px 8px)"></div></div><span>${t('Edge of a wide slope (thin dotted outline, same colour as its run)')}</span></div>` : ''}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
+      ${line(sc.colors[1], 'Glades and tree runs (long dashes)', true)}${S.resort.areas?.length ? `<div class="legend-row"><div class="sw"><div class="ln" style="height:2px;background:repeating-linear-gradient(90deg, ${sc.colors[1]} 0 3px, transparent 3px 8px)"></div></div><span>${t('Edge of a wide slope (thin dotted outline, same colour as its run)')}</span></div>` : ''}${S.resort.trails.some((x) => x.unof) ? `<div class="legend-row"><div class="sw"><div class="ln" style="background:${sc.colors[1]};opacity:.45"></div></div><span>${t('Faded: a run not on the resort’s trail map (rating unconfirmed)')}</span></div>` : ''}${line(COLORS.closed, 'Marked closed (grey dashed)', true)}</div>
     ${zonesCard()}
     <div class="card"><h3>Lifts &amp; routes</h3>${line(COLORS.lift, `Lift (one ${sc.liftWord} line per lift)`)}${line(COLORS.route, 'Your directions')}${line(COLORS.walk, 'Directions on foot (off the trails or along a walkway)')}${line(COLORS.track, 'Replay (grey = lift ride)')}<div class="legend-row"><div class="sw"><span class="crumb"></span></div><span>My tracks</span></div></div>
     <div class="card"><h3>Places &amp; people</h3>${ic('#14365f', 'L', 'Lodge / hotel')}${ic(COLORS.lift, '↑', 'Lift base')}${ic('#c7641a', 'F', 'Food &amp; drink')}${ic('#59636e', '•', 'Services')}${ic('#5d6875', '▲', 'Summit')}
@@ -1830,6 +1833,7 @@ function onInput(e) {
   else if (t.dataset.look && e.type === 'change') setLook(t.dataset.look, t.checked ? 1 : 0);
   else if (t.id === 'f-tracknote' && e.type === 'change') prefs.set('trackNoteOff', t.checked);
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
+  else if (t.id === 'f-unofficial' && e.type === 'change') { S.unofficial = t.checked; prefs.set('unofficial', S.unofficial); if (S.nav) recalcNav(true); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
   else if (t.id === 'f-test' && e.type === 'change') {

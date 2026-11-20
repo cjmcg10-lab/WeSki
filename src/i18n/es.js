@@ -143,4 +143,5 @@ export default {
   636: 'Postura', 637: 'Regular', 638: 'Goofy', 639: 'Regular: pie izquierdo delante. Goofy: pie derecho delante.',
   640: 'Pon el teléfono en vertical', 641: 'SkiWithMe está hecho para usar el teléfono en vertical.',
   642: 'Bosques y pistas entre árboles (trazos largos)', 643: 'Borde de una pista ancha (contorno punteado fino, del mismo color que su pista)', 644: 'Tramo de enlace: sin nombre en la lista de pistas de la estación',
+  645: 'Atenuada: pista que no figura en el mapa de la estación (dificultad sin confirmar)', 646: 'No figura en el mapa de pistas de la estación: dificultad sin confirmar, puede no estar pisada ni vigilada', 647: 'Pistas fuera del mapa de la estación', 648: 'Usarlas en las indicaciones. Pueden no estar pisadas ni vigiladas.',
 };

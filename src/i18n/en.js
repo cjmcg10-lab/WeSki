@@ -649,4 +649,5 @@ export default {
   636: 'Stance', 637: 'Regular', 638: 'Goofy', 639: 'Regular: left foot forward. Goofy: right foot forward.',
   640: 'Turn your phone upright', 641: 'SkiWithMe is made for holding your phone upright.',
   642: 'Glades and tree runs (long dashes)', 643: 'Edge of a wide slope (thin dotted outline, same colour as its run)', 644: 'Connecting piece: not named on the resort’s trail list',
+  645: 'Faded: a run not on the resort’s trail map (rating unconfirmed)', 646: 'Not on the resort’s trail map: rating unconfirmed, may be ungroomed or unpatrolled', 647: 'Runs not on the resort map', 648: 'Use them in directions. They can be ungroomed and unpatrolled.',
 };

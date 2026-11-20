@@ -382,12 +382,16 @@ export class SkiMap {
     const R = this.resort, closed = this.closed;
     const casing = [], shut = [];
     const byStyle = {};
+    const faded = {};
     for (const t of R.trails) {
-      if (t.hide) continue;       // not on the resort's own map (tools/verify_exists.py)
+      if (t.hide) continue;       // not open to the public (tools/verify_exists.py)
       if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
+      // a real run the resort's map leaves off: drawn faded, without the white edge
+      if (t.unof) { this.segs(t.pts, 3.2, (faded[cls(R, t)] ||= [])); continue; }
       if (!t.glade) this.segs(t.pts, 2.7, casing);
       this.segs(t.pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
     }
+    for (const [c, pos] of Object.entries(faded)) G.add(this.fatLine(pos, scheme(R).colors[+c], 2.4, { order: 4, opacity: 0.45 }));
     // Outlines of wide slopes (OpenStreetMap piste areas): a thin dotted edge in the colour of the run of the same
     // name, so they never read as a separate run or a glade. Left out when that run is not on the resort's map.
     const runOf = new Map();

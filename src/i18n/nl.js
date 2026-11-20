@@ -143,4 +143,5 @@ export default {
   636: 'Stand', 637: 'Regular', 638: 'Goofy', 639: 'Regular: linkervoet voor. Goofy: rechtervoet voor.',
   640: 'Houd je telefoon rechtop', 641: 'SkiWithMe is gemaakt voor een rechtop gehouden telefoon.',
   642: 'Bospistes en glades (lange streepjes)', 643: 'Rand van een brede piste (dunne stippellijn in de kleur van die piste)', 644: 'Verbindingsstuk: niet bij naam op de pistelijst van het skigebied',
+  645: 'Vervaagd: piste die niet op de pistekaart staat (moeilijkheid onbevestigd)', 646: 'Niet op de pistekaart van het skigebied: moeilijkheid onbevestigd, mogelijk niet geprepareerd of bewaakt', 647: 'Pistes die niet op de pistekaart staan', 648: 'Gebruik ze in routebeschrijvingen. Ze kunnen ongeprepareerd en onbewaakt zijn.',
 };

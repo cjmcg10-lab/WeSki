@@ -197,6 +197,8 @@ export class Router {
   blocked(e, opts) {
     if (e.k === 'p' && opts.closed?.has('t' + e.r)) return 'closed';
     if (e.k === 'l' && opts.closed?.has('l' + e.r)) return 'closed';
+    // runs not on the resort's own map (often ungroomed, unpatrolled) only when the skier asks for them
+    if (e.k === 'p' && !opts.unofficial && this.resort.trails[e.r]?.unof) return 'unofficial';
     return null;
   }
 

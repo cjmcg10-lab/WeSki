@@ -143,4 +143,5 @@ export default {
   636: 'Stellung', 637: 'Regular', 638: 'Goofy', 639: 'Regular: linker Fuß vorne. Goofy: rechter Fuß vorne.',
   640: 'Halte dein Handy aufrecht', 641: 'SkiWithMe ist für das hochkant gehaltene Handy gemacht.',
   642: 'Waldabfahrten und Glades (lange Striche)', 643: 'Rand einer breiten Piste (feine gepunktete Linie in der Farbe ihrer Piste)', 644: 'Verbindungsstück: nicht namentlich auf der Pistenliste des Skigebiets',
+  645: 'Blass: Abfahrt, die nicht auf dem Pistenplan steht (Schwierigkeit unbestätigt)', 646: 'Nicht auf dem Pistenplan des Skigebiets: Schwierigkeit unbestätigt, evtl. nicht präpariert und nicht gesichert', 647: 'Abfahrten, die nicht auf dem Pistenplan stehen', 648: 'In der Wegführung verwenden. Sie können unpräpariert und ungesichert sein.',
 };

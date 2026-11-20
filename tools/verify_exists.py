@@ -69,7 +69,7 @@ def tag_reason(f):
 
 
 for f in R["trails"] + R["lifts"]:
-    f.pop("hide", None); f.pop("unl", None); f.pop("review", None)
+    f.pop("hide", None); f.pop("unl", None); f.pop("unof", None); f.pop("review", None)
 
 T, L = R["trails"], R["lifts"]
 # 1. runs that are never shown
@@ -139,7 +139,7 @@ for i, a in enumerate(un):
 groups = {}
 for t in un:
     groups.setdefault(find(id(t)), []).append(t)
-nkept = nhid = 0
+nkept = nhid = nunof = 0
 for g in groups.values():
     places = []
     for t in g:
@@ -157,14 +157,19 @@ for g in groups.values():
     for t in g:
         if keep:
             t["unl"] = 1; nkept += 1
+        elif t["name"]:
+            # A named run the resort does not list is often real (a tree run, a run the map leaves off). It stays on
+            # the map, faded and labelled, and directions avoid it unless the skier asks; tools/evidence.py decides
+            # from photos, GPS tracks and snow reports whether it is real (shown) or should be hidden.
+            t["unof"] = 1; nunof += 1
         else:
-            t["hide"] = "not on the resort's list and leads nowhere on it" if places else "not on the resort's list and not joined to it"
+            t["hide"] = "unnamed piece, not on the resort's list, leads nowhere on it" if places else "unnamed piece, not on the resort's list, not joined to it"
             nhid += 1
 
 hid_t = [t for t in T if t.get("hide")]
 hid_l = [l for l in L if l.get("hide")]
 rev_l = [(l, l.pop("review")) for l in L if l.get("review")]
-summ = {"runs": len(T), "listed": len(listed), "unlisted links kept": nkept, "runs hidden": len(hid_t),
+summ = {"runs": len(T), "listed": len(listed), "unlisted links kept": nkept, "unofficial shown": nunof, "runs hidden": len(hid_t),
         "lifts": len(L), "lifts hidden": len(hid_l), "lifts to review": len(rev_l)}
 R.setdefault("sources", {})["checked"] = (f"every run and lift checked against the resort's own list: "
                                           f"{len(hid_t)} runs and {len(hid_l)} lifts not shown")

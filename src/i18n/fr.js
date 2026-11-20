@@ -143,4 +143,5 @@ export default {
   636: 'Position', 637: 'Regular', 638: 'Goofy', 639: 'Regular : pied gauche devant. Goofy : pied droit devant.',
   640: 'Tenez votre téléphone droit', 641: 'SkiWithMe est conçu pour un téléphone tenu à la verticale.',
   642: 'Sous-bois et pistes en forêt (longs tirets)', 643: 'Bord d’une piste large (fin contour pointillé, de la couleur de sa piste)', 644: 'Tronçon de liaison : sans nom sur la liste des pistes de la station',
+  645: 'Estompée : piste absente du plan de la station (niveau non confirmé)', 646: 'Absente du plan des pistes de la station : niveau non confirmé, peut-être non damée ni sécurisée', 647: 'Pistes absentes du plan de la station', 648: 'Les utiliser dans les itinéraires. Elles peuvent être non damées et non sécurisées.',
 };
