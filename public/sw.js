@@ -28,6 +28,20 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
+    if (/\/graph\.json$/.test(url.pathname)) {
+      // Directions data (part of the pass): ask the server first, so an ended pass ends here too;
+      // use the saved copy only with no signal.
+      try {
+        const res = await fetch(req);
+        if (res.ok) cache.put(url.pathname, res.clone());
+        else if (res.status === 402) await cache.delete(url.pathname);
+        return res;
+      } catch (e) {
+        const hit = await cache.match(url.pathname);
+        if (hit) return hit;
+        throw e;
+      }
+    }
     if (RESORT_DATA.test(url.pathname)) {
       // Resort maps: answer from the phone straight away if we have it, and refresh the copy
       // in the background when online, so the map opens offline and still picks up updates.
@@ -36,12 +50,13 @@ self.addEventListener('fetch', (event) => {
       if (hit) { fresh.catch(() => {}); return hit; }
       return fresh;
     }
-    const hit = await cache.match(req.mode === 'navigate' ? '/' : req, { ignoreSearch: true });
+    const page = req.mode === 'navigate' && !url.pathname.startsWith('/legal/');   // the legal pages are pages of their own
+    const hit = await cache.match(page ? '/' : req, { ignoreSearch: true });
     if (hit) return hit;
     try {
       return await fetch(req);
     } catch (e) {
-      if (req.mode === 'navigate') { const shell = await cache.match('/'); if (shell) return shell; }
+      if (page) { const shell = await cache.match('/'); if (shell) return shell; }
       throw e;
     }
   })());

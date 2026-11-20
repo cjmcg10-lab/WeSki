@@ -11,11 +11,29 @@
     "directory": "dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*"]
+    "run_worker_first": ["/api/*", "/data/*"]
   },
   "durable_objects": {
-    "bindings": [{ "name": "GROUPS", "class_name": "GroupRoom" }]
+    "bindings": [
+      { "name": "GROUPS", "class_name": "GroupRoom" },
+      { "name": "ACCOUNTS", "class_name": "Accounts" },
+      { "name": "RESORTLOG", "class_name": "ResortLog" }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GroupRoom"] }],
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["GroupRoom"] },
+    { "tag": "v2", "new_sqlite_classes": ["Accounts", "ResortLog"] }
+  ],
+  // Launch switches. PAYWALL "on" makes groups (creating), directions and the 7-day forecast need a pass.
+  // Secrets (set by the owner in the Cloudflare dashboard, never in this file): RESEND_API_KEY,
+  // PADDLE_WEBHOOK_SECRET. See docs/PAID_TIER.md.
+  "vars": {
+    "PAYWALL": "off",
+    "WEATHER": "open-meteo",
+    "MAIL_FROM": "",
+    "PADDLE_ENV": "sandbox",
+    "PADDLE_CLIENT_TOKEN": "",
+    "PADDLE_PRICES": "{}"
+  },
   "observability": { "enabled": true }
 }

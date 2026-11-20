@@ -620,3 +620,19 @@ img.thumb.photo { object-fit: cover; background: #23415f; }
   .resort-btn { max-width: calc(min(430px, var(--app-h) * .5) * .46); }
 }
 
+
+/* SkiWithMe Pass, map help, reports (2026-11-20) */
+.cols2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.cols2 h4 { margin: 0 0 6px; }
+.ticks { list-style: none; padding: 0; margin: 0; font-size: 14.5px; }
+.ticks li { position: relative; padding-left: 20px; margin: 5px 0; }
+.ticks li::before { content: '✓'; position: absolute; left: 0; color: var(--muted); font-weight: 700; }
+.ticks.plus li::before { color: var(--teal); }
+.plan { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--edge2); }
+.plan:last-of-type { border-bottom: 0; }
+.plan.best b { color: var(--teal); }
+.plan .price { font-weight: 800; font-size: 17px; white-space: nowrap; }
+.plan .btn.sm { width: auto; margin: 0; padding: 8px 14px; }
+textarea.field { resize: vertical; font: inherit; }
+.foot a, .txt a, .sub a, .card p a { color: var(--teal); }
+@media (max-width: 360px) { .cols2 { grid-template-columns: 1fr; } }

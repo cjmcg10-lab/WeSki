@@ -3,6 +3,9 @@
 import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
+import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
+import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+export { Accounts, ResortLog } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/;
@@ -10,10 +13,127 @@ const CODE_RE = /^[A-Z2-9]{6}$/;
 const json = (data, status = 200) =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 
+const paywallOn = (env) => env.PAYWALL === 'on';
+const accounts = (env) => env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main'));
+const resortLog = (env, id) => env.RESORTLOG.get(env.RESORTLOG.idFromName(id));
+const session = (request) => sessionFromCookie(request.headers.get('cookie'));
+// a rough, daily-changing key for rate limits: the address itself is never stored
+const ipKey = async (request) => (await sha256((request.headers.get('cf-connecting-ip') || '') + new Date().toISOString().slice(0, 10))).slice(0, 16);
+const readJson = async (request, max = 200000) => {
+  const raw = await request.text();
+  if (raw.length > max) return null;
+  try { return JSON.parse(raw); } catch { return null; }
+};
+const priceMap = (env) => { try { return JSON.parse(env.PADDLE_PRICES || '{}'); } catch { return {}; } }; // {price id: plan}
+
+/** Paid features that live on the server check the pass here, on every request. */
+async function passOk(request, env) {
+  if (!paywallOn(env)) return true;
+  return accounts(env).hasPass(session(request));
+}
+
+async function api(request, env, url) {
+  const path = url.pathname, method = request.method;
+  // state-changing requests must come from the app's own pages (cookies are SameSite=Lax as well)
+  if (method === 'POST' && path !== '/api/paddle/webhook') {
+    const origin = request.headers.get('origin');
+    if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
+  }
+  if (path === '/api/config' && method === 'GET') {
+    const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));
+    return json({
+      paywall: paywallOn(env), signIn: !!(env.RESEND_API_KEY && env.MAIL_FROM),
+      paddle: env.PADDLE_CLIENT_TOKEN ? { token: env.PADDLE_CLIENT_TOKEN, env: env.PADDLE_ENV || 'sandbox', prices } : null,
+      plans: PLANS,
+    });
+  }
+  if (path === '/api/auth/start' && method === 'POST') {
+    const b = await readJson(request, 2000), email = normEmail(b?.email);
+    if (!EMAIL_RE.test(email)) return json({ error: 'Enter a valid email address' }, 400);
+    if (!env.RESEND_API_KEY || !env.MAIL_FROM) return json({ error: 'Sign-in is not open yet' }, 503);
+    const login = await accounts(env).startLogin(email, await ipKey(request));
+    if (!login) return json({ error: 'Too many sign-in emails. Try again in an hour.' }, 429);
+    const mail = signInEmail(`${url.origin}/api/auth/finish?t=${login.token}`, login.code);
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST', headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ from: env.MAIL_FROM, to: [email], subject: mail.subject, text: mail.text, html: mail.html }),
+    });
+    if (!res.ok) return json({ error: 'The email could not be sent. Try again in a moment.' }, 502);
+    return json({ ok: true });
+  }
+  if (path === '/api/auth/finish' && method === 'GET') {
+    const t = url.searchParams.get('t') || '';
+    const out = /^[0-9a-f]{64}$/.test(t) ? await accounts(env).finishLogin(t, request.headers.get('user-agent')) : null;
+    const headers = { location: out ? '/?signedin=1' : '/?signin=expired', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' };
+    if (out) headers['set-cookie'] = sessionCookie(out.session, Math.floor(SESSION_TTL_MS / 1000));
+    return new Response(null, { status: 302, headers });
+  }
+  if (path === '/api/auth/code' && method === 'POST') {
+    const b = await readJson(request, 2000), email = normEmail(b?.email), code = String(b?.code || '').replace(/\D/g, '');
+    if (!EMAIL_RE.test(email) || code.length !== 6) return json({ error: 'Enter the 6-digit code from the email' }, 400);
+    const out = await accounts(env).finishCode(email, code, request.headers.get('user-agent'));
+    if (!out) return json({ error: 'That code is wrong or has expired. After five wrong tries, ask for a new email.' }, 401);
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store', 'set-cookie': sessionCookie(out.session, Math.floor(SESSION_TTL_MS / 1000)) } });
+  }
+  if (path === '/api/me' && method === 'GET') {
+    const me = await accounts(env).me(session(request));
+    return json(me ? { signedIn: true, ...me, paywall: paywallOn(env) } : { signedIn: false, paywall: paywallOn(env) });
+  }
+  if (path === '/api/auth/signout' && method === 'POST') {
+    await accounts(env).signOut(session(request));
+    return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie('', 0) } });
+  }
+  if (path === '/api/account/delete' && method === 'POST') {
+    const ok = await accounts(env).deleteAccount(session(request));
+    return new Response(JSON.stringify({ ok }), { status: ok ? 200 : 401, headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie('', 0) } });
+  }
+  if (path === '/api/trial' && method === 'POST') {
+    const r = await accounts(env).startTrial(session(request));
+    return json(r, r.ok ? 200 : r.error === 'signed_out' ? 401 : 409);
+  }
+  if (path === '/api/crew' && method === 'POST') {
+    const b = await readJson(request, 4000);
+    const r = await accounts(env).setCrew(session(request), Array.isArray(b?.emails) ? b.emails.map(String) : []);
+    return json(r, r.ok ? 200 : 403);
+  }
+  if (path === '/api/paddle/webhook' && method === 'POST') {
+    const raw = await request.text();
+    if (!(await verifyPaddle(request.headers.get('paddle-signature'), raw, env.PADDLE_WEBHOOK_SECRET))) return json({ error: 'Bad signature' }, 401);
+    let ev;
+    try { ev = JSON.parse(raw); } catch { return json({ error: 'Bad body' }, 400); }
+    await accounts(env).applyPurchase(ev.event_id || ev.notification_id, purchaseFromEvent(ev, priceMap(env)));
+    return json({ ok: true });
+  }
+  if (path === '/api/contrib' && method === 'POST') {
+    const s = cleanSummary(await readJson(request));
+    if (s.error) return json({ error: s.error }, 400);
+    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request)));
+  }
+  const heat = path.match(/^\/api\/heat\/([a-z0-9-]{2,40})$/);
+  if (heat && method === 'GET') return json(await resortLog(env, heat[1]).heat());
+  if (path === '/api/reports' && method === 'POST') {
+    const r = cleanReport(await readJson(request, 4000));
+    if (r.error) return json({ error: r.error }, 400);
+    const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request));
+    return json(out, out.ok ? 200 : 429);
+  }
+  const reps = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})$/);
+  if (reps && method === 'GET') return json(await resortLog(env, reps[1]).reports());
+  return null;
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // directions data is part of the paid tier: served only with a pass when the paywall is on
+    const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
+    if (graph && !(await passOk(request, env))) return json({ error: 'pass_required' }, 402);
+    if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/groups')) {
+      const res = await api(request, env, url);
+      if (res) return res;
+    }
     if (url.pathname === '/api/groups' && request.method === 'POST') {
+      if (!(await passOk(request, env))) return json({ error: 'pass_required', message: 'Creating a group needs a pass. Joining a friend\'s group is free.' }, 402);
       for (let attempt = 0; attempt < 5; attempt++) {
         const bytes = crypto.getRandomValues(new Uint8Array(6));
         const code = [...bytes].map((b) => ALPHABET[b % ALPHABET.length]).join('');

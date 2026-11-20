@@ -18,6 +18,7 @@ import { parseLook, lookString, CHARACTERS, SKIN, HAIR_COLORS, LENS, HAT_COLORS,
 import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { placeTr } from './placenames.js';
+import * as acct from './account.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -78,8 +79,6 @@ const S = {
   favs: new Set(prefs.get('favorites', [])), favOnly: false, nearMe: null,
   player: null,
 };
-// local test runs only (screenshot scripts in tools/dev): never set on the live site
-if (location.hostname === "127.0.0.1" || location.hostname === "localhost") window.weski = S;
 prefs.set('profile', S.profile);
 
 function randomId() {
@@ -175,7 +174,8 @@ function initMap(id) {
     S.place = pl;
     S.resort = resort;
     S.geo = new Geo(resort, new Uint16Array(buf));
-    S.router = new Router(resort, S.geo);
+    S.router = null; S.graphLocked = false;
+    S.graphP = loadGraph(id);
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
@@ -197,7 +197,40 @@ function initMap(id) {
     if (S.crumbsOn) { startCrumbs(); loadHistory(); }
     if (!ticking) { ticking = true; setInterval(tick, 1000); }
     window.skiwithme = S; // handy for debugging from the Safari console
+    flushContrib().catch(() => {});
+    if (!prefs.get('safetyAccepted', null)) setTimeout(() => { if (!S.sheet) openSheet('safety'); }, 600);
   })().catch((e) => { if (mapId === id) { mapP = null; mapId = null; } throw e; }));
+}
+
+/** Directions data. Part of the pass: the server sends it only to a phone signed in with a pass. */
+async function loadGraph(id) {
+  const R = S.resort;
+  if (R.graph) { S.router = new Router(R, S.geo); return; }        // local preview: the map file still holds it
+  try {
+    const r = await fetch(`/data/${id}/graph.json`, { credentials: 'same-origin' });
+    if (r.status === 402) { S.router = null; S.graphLocked = true; return; }
+    if (!r.ok) throw new Error(String(r.status));
+    const graph = await r.json();
+    if (S.resort !== R) return;                                       // another mountain was opened meanwhile
+    S.router = new Router({ ...R, graph }, S.geo); S.graphLocked = false;
+  } catch { S.router = null; }
+}
+
+/** Paid feature check on this phone. The server checks again for the parts that matter. */
+async function needRouter() {
+  if (!S.router) await S.graphP;
+  if (!S.router && !S.graphLocked) { S.graphP = loadGraph(S.place.id); await S.graphP; }
+  if (S.router) return true;
+  if (S.graphLocked) openSheet('pass', 'directions');
+  else toast('Directions could not load. Check your connection and try again.');
+  return false;
+}
+
+/** After signing in or out, or buying: ask the server again and reload what the pass unlocks. */
+async function afterPassChange() {
+  await acct.refreshMe();
+  if (S.resort && (!S.router || !acct.hasPass())) { S.graphP = loadGraph(S.place.id); await S.graphP; }
+  if (S.nav && !S.router) endNav();
 }
 
 function bootFailed(e) {
@@ -217,6 +250,15 @@ function hideSplash() {
 
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
+  acct.loadConfig().then(() => acct.refreshMe()).then(() => { if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  {
+    const q = new URLSearchParams(location.search);
+    if (q.has('signedin') || q.has('signin')) {
+      toast(q.has('signedin') ? 'Signed in.' : 'That sign-in link has expired or was used. Ask for a new one.', 5000);
+      q.delete('signedin'); q.delete('signin');
+      history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : ''));
+    }
+  }
   setTimeout(maybeInstallGuide, 1800);
   // Straight to the map when rejoining a group (you're mid-ski-day) or when asked to skip.
   const saved = prefs.get('group', null), q = new URLSearchParams(location.search);
@@ -971,7 +1013,8 @@ function setClosures(set, share = true) {
 // ---------- navigation
 const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill, unofficial: S.unofficial });
 
-function startNav(target) {
+async function startNav(target) {
+  if (!(await needRouter())) return;
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
   guide.reset();
   ensureLocation(); wakeLock();
@@ -1001,7 +1044,7 @@ function navDest() {
 /** Recompute the route. Runs whenever I move, my friend moves, or limits/closures change. */
 function recalcNav(force = false) {
   const nav = S.nav;
-  if (!nav) return;
+  if (!nav || !S.router) return;
   const now = Date.now();
   if (!force && now - nav.lastCalc < 1500) return;
   nav.lastCalc = now;
@@ -1111,7 +1154,8 @@ function recordRoute(name, r) {
 }
 
 /** Offer a shared meeting point both people can reach, and share it with the group. */
-function proposeMeet() {
+async function proposeMeet() {
+  if (!(await needRouter())) return;
   const f = S.nav?.target.type === 'friend' ? friends().find((m) => m.id === S.nav.target.id) : null;
   const me = S.me && S.router.snap(S.me.x, S.me.y) ? { x: S.me.x, y: S.me.y } : null;
   const fr = f?.has && S.router.snap(f.x, f.y) ? { x: f.x, y: f.y } : null;
@@ -1249,7 +1293,7 @@ function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
@@ -1263,7 +1307,7 @@ function closeSheet() {
 
 function renderSheet() {
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = S.sheetTitle === title && S.sheetLang === getLang();
   S.sheetTitle = title; S.sheetLang = getLang();
@@ -1287,6 +1331,8 @@ function renderSheet() {
 const ICON = {
   route: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="19" r="2.500"/><circle cx="18" cy="5" r="2.500"/><path d="M8.500 19H15a3.500 3.500 0 0 0 0-7H9a3.500 3.500 0 0 1 0-7h6.500"/></svg>',
   map: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 6.500 9 4l6 2.500L21 4v13.500L15 20l-6-2.500L3 20z"/><path d="M9 4v13.500M15 6.500V20"/></svg>',
+  ticket: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.500A1.500 1.500 0 0 1 4.500 6h15A1.500 1.500 0 0 1 21 7.500V10a2 2 0 0 0 0 4v2.500a1.500 1.500 0 0 1-1.500 1.500h-15A1.500 1.500 0 0 1 3 16.500V14a2 2 0 0 0 0-4z"/><path d="M14.500 6v12" stroke-dasharray="2 2.500"/></svg>',
+  lock: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="10.500" width="14" height="10" rx="2"/><path d="M8 10.500V8a4 4 0 0 1 8 0v2.500"/></svg>',
   gear: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3.200"/><path d="M12 2.500v3M12 18.500v3M2.500 12h3M18.500 12h3M5.300 5.300l2.100 2.100M16.600 16.600l2.100 2.100M5.300 18.700l2.100-2.100M16.600 7.400l2.100-2.100"/></svg>',
   mtn: '<svg viewBox="0 0 32 20" width="40" height="25" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round" style="vertical-align:-6px;margin-right:12px"><path d="M1 19 11 6l5 6 4-4 11 11z"/><path d="M8 10l3 2 2-2"/></svg>',
   share: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M8 7l4-4 4 4"/><path d="M8 10H6a1.500 1.500 0 0 0-1.500 1.500v8A1.500 1.500 0 0 0 6 21h12a1.500 1.500 0 0 0 1.500-1.500v-8A1.500 1.500 0 0 0 18 10h-2"/></svg>',
@@ -1463,8 +1509,11 @@ function sheetHistory() {
       ${S.tracker ? '<button class="btn" data-act="tab" data-tab="track">Tracking now: see live stats</button>' : '<button class="btn" data-act="hist-start">Start tracking</button>'}
       <p class="foot">Saved on this phone • Available offline</p></div>${looseHtml}${elsewhere}`];
   }
-  return ['Your ski days', `${list.map((s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}
-    ${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
+  const locked = !acct.hasPass() && list.length > 1;
+  const shown = locked ? list.slice(0, 1) : list;
+  const lockCard = locked ? `<div class="card"><p style="margin-top:0">${list.length - 1 === 1 ? '1 more ski day is saved on this phone.' : t('{0} more ski days are saved on this phone.', list.length - 1)}</p><p class="sub">The latest day is free. Your full history and replays are part of the SkiWithMe Pass.</p><button class="btn" data-act="open-sheet" data-s="pass">See the pass</button></div>` : '';
+  return ['Your ski days', `${shown.map((s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}
+    ${lockCard}${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
 }
 async function loadHistory() {
   // History, replay and tracks are per mountain: a recording only makes sense on the map it was made on.
@@ -1500,7 +1549,9 @@ function routeRow(r, id, i) {
 function sheetMore() {
   const off = prefs.get(pkey('offline'), null), n = closedNames();
   const src = S.resort.sources;
+  const me = acct.account();
   return ['More', `
+    <div class="card"><button class="row-link" data-act="open-sheet" data-s="pass">${ICON.ticket}<div class="grow">SkiWithMe Pass<small>${acct.config().paywall ? (me?.signedIn ? passStatus(me) : 'Sign in, plans and prices') : 'Free during the preview · plans and prices'}</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="routeprefs">${ICON.route}<div class="grow">Route preferences<small>Hardest trail: ${esc(levelName(S.resort, S.maxDiff))} · Uphill: ${esc(TOLERANCE[S.uphill].label)}</small></div><span class="chev">›</span></button></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Spoken directions</h4><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div>
       <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep screen on for directions • Use Pocket mode while riding.</span></div></div>
@@ -1508,10 +1559,136 @@ function sheetMore() {
     <div class="card"><h4>Offline map</h4><div id="offline-box">${off ? `<p class="ok-text" style="font-size:17px;margin:4px 0 2px">✓ ${esc(S.place.name)} saved</p><p class="sub" style="margin:0 0 4px 22px">${(off.bytes / 1048576).toFixed(1)} MB • ${fmtDate(off.at)}</p>` : `<p class="sub">Download the whole ${esc(S.place.name)} map (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal.</p>`}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
     <div class="card"><h4>Language</h4><select class="field" id="f-lang" translate="no" style="margin:6px 0 8px">${LANGS.map(([k, n]) => `<option value="${k}" ${getLang() === k ? 'selected' : ''}>${n}</option>`).join('')}</select><div class="sub">Words in the app, spoken directions, and the meaning of foreign place names on the map (shown in brackets under the real name).</div></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
+    <div class="card"><button class="row-link" data-act="open-sheet" data-s="privacy">${ICON.lock}<div class="grow">Privacy &amp; map help<small>${prefs.get('contrib', null) ? 'Helping improve the maps' : 'Help improve the maps, report a mistake'}</small></div><span class="chev">›</span></button></div>
     <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
     <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
-    <div class="card"><h4>Map credits</h4><div class="icon-row">${ICON.layers}<div class="txt">Terrain: ${esc(src.terrain)}.<br>Trails, lifts, buildings, places: ${esc(src.map)}.${src.zones ? `<br>Zones: ${esc(src.zones)}.` : ''}</div></div></div>
+    <div class="card"><h4>Map credits</h4><div class="icon-row">${ICON.layers}<div class="txt">Terrain: ${esc(src.terrain)}.<br>Trails, lifts, buildings, places: ${esc(src.map)}.${src.zones ? `<br>Zones: ${esc(src.zones)}.` : ''}<br><a href="/legal/credits.html" target="_blank">All credits and licences</a></div></div></div>
     <div class="card"><div class="icon-row">${ICON.shield}<div class="txt">Not an official ${esc(S.place.name)} product. Closures are user-marked, not a live resort feed. Follow mountain signs, ropes and ski patrol.</div></div></div>`];
+}
+
+// ---------- SkiWithMe Pass (paid tier), sign-in, map help, reports, safety notice
+const PLAN_TEXT = { day: '24 hours from when you buy it', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
+const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Track today’s ski day'];
+const PASS_LIST = ['Turn-by-turn directions, spoken too', 'Meeting points both people can reach', 'Create your own groups', 'Your full history of ski days and replays'];
+const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short', day: 'numeric', year: 'numeric' });
+
+function passStatus(me) {
+  const p = me?.pass;
+  if (!p?.active) return me?.trialUsed ? 'No pass. Your free day has been used.' : 'No pass yet.';
+  const name = p.trial ? 'Free day' : (acct.config().plans?.[p.plan]?.name || 'Pass');
+  return `${p.member ? t('Crew member') + ' · ' : ''}${t(name)} · ${t('until {0}', `${fmtDay(p.ends)} ${fmtClock(p.ends)}`)}`;
+}
+
+function sheetPass(why) {
+  const c = acct.config(), me = acct.account(), P = c.plans || {};
+  const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: 'Your full history and replays are part of the SkiWithMe Pass.' }[why];
+  const open = !c.paywall;
+  let who;
+  if (me?.signedIn) {
+    const own = (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
+    who = `<div class="card"><h4>Your account</h4><p class="sub" translate="no">${esc(me.email)}</p><p class="${me.pass?.active ? 'ok-text' : 'sub'}">${passStatus(me)}</p>
+      ${own ? `<label class="lbl">Your crew (up to 3 friends’ emails)</label>${[0, 1, 2].map((i) => `<input class="field" id="f-crew${i}" type="email" autocomplete="off" placeholder="friend@example.com" value="${esc(me.crew?.[i] || '')}" />`).join('')}<button class="btn alt" data-act="crew-save">Save crew</button><p class="note">Each friend signs in with that email to use the pass.</p>` : ''}
+      <button class="btn alt" data-act="signout">Sign out</button>
+      <button class="learn" data-act="acct-delete-ask">Delete my account</button>
+      ${S.askDelete ? '<p class="note">This deletes your account, sign-ins, crew list and pass on our server, and any pass ends. Cancel a renewing Season Pass first, from the link in your Paddle receipt. Paddle keeps its payment records as the law requires. Ski days saved on this phone stay on this phone.</p><button class="btn danger" data-act="acct-delete">Delete my account</button>' : ''}</div>`;
+  } else if (!c.signIn) {
+    who = '<div class="card"><h4>Sign in</h4><p class="sub">Accounts open with the paid launch. Until then everything is free.</p></div>';
+  } else if (S.signin?.sent) {
+    who = `<div class="card"><h4>Check your email</h4><p class="sub">${t('We sent a 6-digit code to {0}. It works for 15 minutes.', esc(S.signin.email))}</p>
+      <input class="field code" id="f-signcode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
+      <button class="btn" data-act="signin-code">Sign in</button><button class="learn" data-act="signin-again">Use a different email</button></div>`;
+  } else {
+    who = `<div class="card"><h4>Sign in</h4><p class="sub">With your email: no password. Your pass then works on up to 3 phones.</p>
+      <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
+      <button class="btn" data-act="signin-start">Email me a code</button></div>`;
+  }
+  const canBuy = me?.signedIn && c.paddle;
+  const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="price">$${p.price.toFixed(2)}</div>
+    ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div>`).join('');
+  const trial = me?.signedIn && !me.trialUsed && !me.pass?.active ? '<button class="btn alt" data-act="trial">Try a free day</button>' : '';
+  return ['SkiWithMe Pass', `
+    ${reason ? `<div class="card"><p style="margin:0">${reason}</p></div>` : ''}
+    ${open ? '<div class="card"><p class="ok-text" style="margin:0">Everything is free while SkiWithMe is in preview.</p></div>' : ''}
+    <div class="card"><div class="cols2"><div><h4>Free</h4><ul class="ticks">${FREE_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div><div><h4>With a pass</h4><ul class="ticks plus">${PASS_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div></div></div>
+    ${who}
+    <div class="card"><h4>Plans</h4>${plans}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : c.paddle ? 'Sign in first, so the pass is saved to your account.' : 'Payments open with the paid launch.'}</p></div>
+    <p class="foot"><a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/privacy.html" target="_blank">Privacy</a> · <a href="/legal/refunds.html" target="_blank">Refunds</a></p>`];
+}
+
+// ---------- help improve the maps (opt-in) and reports
+function sheetPrivacy() {
+  return ['Privacy & map help', `
+    <div class="card"><div class="rowf"><div class="grow"><h4 style="margin:0">Help improve the maps</h4><div class="sub">After each ski day, send which runs you skied and which spots off the mapped runs you crossed. Never your track, times or speed, and never who you are.</div></div><label class="switch"><input type="checkbox" id="f-contrib" ${prefs.get('contrib', null) ? 'checked' : ''} /><i></i></label></div>
+      ${S.learn?.contrib ? '' : '<button class="learn" data-act="learn" data-k="contrib">How it works<i>›</i></button>'}
+      ${S.learn?.contrib ? '<p class="learn-text">Off unless you switch it on. The phone cuts the first and last 300 m of your day (often your car or your lodging), then sends a summary of the rest the day after: the run numbers you skied and the 20 m squares off the mapped runs you passed through. There is no account, device number or time on it. Our server only adds up counts, and a square or run is used only once at least 5 different ski days reached it, so one person’s day cannot be picked out. We use the counts to find runs missing from the map and lines drawn in the wrong place. Switching it off stops it at once.</p>' : ''}</div>
+    <div class="card"><h4>Report a map mistake</h4><p class="sub">A run missing or in the wrong place, a wrong rating, a run that does not exist. Drop a pin on the spot first (tap the map), then report it from the pin.</p><button class="btn alt" data-act="report-open">Report a mistake</button></div>
+    <div class="card"><h4>Your data</h4><p class="sub">Your ski days, settings and favorites stay on this phone. Group locations pass through our server only while you share them and are not stored after the group ends. Read the full privacy policy for what is kept and for how long.</p>
+      <p class="foot" style="text-align:left"><a href="/legal/privacy.html" target="_blank">Privacy policy</a> · <a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/credits.html" target="_blank">Map and data credits</a></p></div>
+    <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
+}
+
+const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'This run does not exist'], ['wrong_rating', 'Wrong rating'], ['wrong_place', 'Drawn in the wrong place'], ['closed_for_good', 'Closed for good'], ['other', 'Something else']];
+function sheetReport() {
+  const p = S.pin || S.me;
+  if (!p) return ['Report a map mistake', '<div class="card"><p class="sub">Tap the map where the mistake is to drop a pin, then choose “Report a map mistake” on the pin.</p></div>'];
+  const on = trailAt(S.resort, p.x, p.y);
+  const kind = S.reportKind || 'wrong_place';
+  return ['Report a map mistake', `<div class="card"><p class="sub">${S.pin ? t('At the pin') : t('Where you are')}${on ? ` · ${t('On {0}', esc(on.t.name || t('a connecting run')))}` : ''}</p>
+    <div class="seg wrap">${REPORT_KINDS.map(([k, n]) => `<button data-act="report-kind" data-v="${k}" class="${kind === k ? 'on' : ''}">${n}</button>`).join('')}</div>
+    <label class="lbl">What is wrong? (optional)</label><textarea class="field" id="f-report" maxlength="500" rows="3" placeholder="For example: the run turns left here, at the trees"></textarea>
+    <button class="btn" data-act="report-send">Send report</button>
+    <p class="note">Reports are public notes on the map, so leave out your name and contact details. We check every report against the resort’s map and aerial photos before changing anything.</p></div>`];
+}
+
+function sheetSafety() {
+  return ['Before you ski', `<div class="card"><p>SkiWithMe is a guide, not a safety device. Maps, ratings, closures and directions can be wrong or out of date, and GPS can be off by tens of metres.</p>
+    <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
+    <p class="sub"><a href="/legal/terms.html" target="_blank">By continuing you agree to the Terms of Use.</a></p>
+    <button class="btn" data-act="safety-ok">I understand</button></div>`];
+}
+
+/** One summary per ski day, sent the day after, only for days skied after switching map help on. */
+async function flushContrib() {
+  const since = prefs.get('contrib', null);
+  if (!since || !S.resort || !navigator.onLine) return;
+  const today = new Date().toLocaleDateString('en-CA');
+  const done = new Set(prefs.get('contribDone', []));
+  let all = [];
+  try { all = await sessions.list(); } catch { return; }
+  const byDay = new Map();
+  for (const s of all) {
+    if (s.active || resortOf(s) !== S.place.id || s.start < since || !s.points?.length) continue;
+    const day = new Date(s.start).toLocaleDateString('en-CA');
+    if (day >= today || done.has(`${S.place.id}:${day}`)) continue;
+    (byDay.get(day) || byDay.set(day, []).get(day)).push(s);
+  }
+  for (const [day, list] of byDay) {
+    const runs = new Set(), cells = new Set();
+    for (const s of list) daySummary(s.points, runs, cells);
+    const key = [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
+    const body = { resort: S.place.id, key, day, runs: [...runs].slice(0, 400), cells: [...cells].slice(0, 6000).map((c) => c.split(',').map(Number)) };
+    const r = await fetch('/api/contrib', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
+    if (!r || (!r.ok && r.status !== 400)) return;            // offline or busy: try again next time
+    done.add(`${S.place.id}:${day}`);
+    prefs.set('contribDone', [...done].slice(-400));
+  }
+}
+
+/** Runs skied and 20 m squares crossed off the mapped runs, leaving out the first and last 300 m. */
+function daySummary(P, runs, cells) {
+  const d = [0];
+  for (let i = 1; i < P.length; i++) d.push(d[i - 1] + (P[i][5] ? 0 : Math.hypot(P[i][1] - P[i - 1][1], P[i][2] - P[i - 1][2])));
+  const end = d[d.length - 1];
+  let prev = null;
+  for (let i = 0; i < P.length; i++) {
+    if (d[i] < 300 || end - d[i] < 300) continue;
+    const [, x, y, , st] = P[i];
+    if (st === ST.LIFT) { prev = null; continue; }
+    const on = trailAt(S.resort, x, y, { prev });
+    prev = on?.t || null;
+    if (on) runs.add(on.t.id);
+    else cells.add(`${Math.floor(x / 20)},${Math.floor(y / 20)}`);
+  }
 }
 
 const UPHILL_TEXT = { low: 'Only an easy skate or a step or two up; otherwise directions take the downhill way round.', normal: 'Allows short climbs when they save time.', high: 'Accepts a real sidestep or short boot-pack to avoid a lap.' };
@@ -1652,7 +1829,8 @@ function sheetPlace(ev) {
   return [p.name || t('Dropped pin'), `${pm ? `<p class="means" translate="no">(${esc(pm)})</p>` : ''}<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions</button>
     ${S.group ? '<button class="btn alt" data-act="meet-here">Make this the group meeting point</button>' : ''}
     ${S.testMode ? '<button class="btn alt" data-act="sim-here">Put me here (test mode)</button>' : ''}
-    <button class="btn alt" data-act="remove-pin">Remove pin</button>`, true];
+    <button class="btn alt" data-act="remove-pin">Remove pin</button>
+    <button class="learn" data-act="report-open">Report a map mistake here</button>`, true];
 }
 
 function sheetSteps() {
@@ -1795,7 +1973,7 @@ async function downloadOffline() {
   const box = $('#offline-box');
   try {
     // the app itself plus this mountain's map
-    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', 'terrain.bin', 'surround.bin'].map((f) => `/data/${S.place.id}/${f}`));
+    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', 'terrain.bin', 'surround.bin', ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
     const cache = await caches.open('weski-map');
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
@@ -1833,6 +2011,12 @@ function onInput(e) {
   else if (t.dataset.look && e.type === 'change') setLook(t.dataset.look, t.checked ? 1 : 0);
   else if (t.id === 'f-tracknote' && e.type === 'change') prefs.set('trackNoteOff', t.checked);
   else if (t.id === 'f-voice' && e.type === 'change') { setVoice(t.checked); renderSheet(); }
+  else if (t.id === 'f-contrib' && e.type === 'change') {
+    // the switch-on time is kept so only days skied after it are ever sent
+    prefs.set('contrib', t.checked ? Date.now() : null);
+    toast(t.checked ? 'Thank you. Your next ski days will help improve the maps.' : 'Map help is off. Nothing more will be sent.');
+    renderSheet();
+  }
   else if (t.id === 'f-unofficial' && e.type === 'change') { S.unofficial = t.checked; prefs.set('unofficial', S.unofficial); if (S.nav) recalcNav(true); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
@@ -1911,9 +2095,57 @@ async function onClick(e) {
     case 'avatar': saveProfile({ avatar: d.v }); break;                 // a character: starts from its own look
     case 'color': saveProfile({ color: d.v }); break;
     case 'look': setLook(d.k, d.v); break;
+    case 'signin-start': {
+      const email = ($('#f-email').value || '').trim();
+      b.disabled = true;
+      const r = await acct.startSignIn(email).catch(() => ({ error: 'Check your connection and try again.' }));
+      if (r.ok) S.signin = { email, sent: true }; else { toast(r.error || 'Could not send the email.'); S.signin = { email }; }
+      renderSheet(); break;
+    }
+    case 'signin-again': S.signin = { email: S.signin?.email }; renderSheet(); break;
+    case 'signin-code': {
+      b.disabled = true;
+      const r = await acct.finishSignIn(S.signin.email, ($('#f-signcode').value || '').trim()).catch(() => ({ error: 'Check your connection and try again.' }));
+      if (r.ok) { S.signin = null; toast('Signed in.'); await afterPassChange(); } else { toast(r.error || 'That code did not work.'); b.disabled = false; }
+      renderSheet(); break;
+    }
+    case 'signout': await acct.signOut().catch(() => {}); await afterPassChange(); renderSheet(); break;
+    case 'acct-delete-ask': S.askDelete = !S.askDelete; renderSheet(); break;
+    case 'acct-delete': {
+      const r = await acct.deleteAccount().catch(() => ({}));
+      toast(r.ok ? 'Your account was deleted.' : 'Could not delete the account. Check your connection.');
+      S.askDelete = false; await afterPassChange(); renderSheet(); break;
+    }
+    case 'trial': {
+      const r = await acct.startTrial().catch(() => ({}));
+      toast(r.ok ? 'Your free day has started: 24 hours of everything.' : 'The free day could not start.');
+      await afterPassChange(); renderSheet(); break;
+    }
+    case 'buy':
+      try { await acct.checkout(d.plan, async (ok) => { toast(ok ? 'Thank you! Your pass is on.' : 'Payment received. Your pass will appear in a minute.'); await afterPassChange(); renderSheet(); }); }
+      catch (err) { toast(err.message); }
+      break;
+    case 'crew-save': {
+      const emails = [0, 1, 2].map((i) => ($(`#f-crew${i}`)?.value || '').trim()).filter(Boolean);
+      const r = await acct.setCrew(emails).catch(() => ({}));
+      toast(r.ok ? 'Crew saved.' : (r.error || 'Could not save the crew.')); renderSheet(); break;
+    }
+    case 'report-open': S.reportKind = null; openSheet('report'); break;
+    case 'report-kind': S.reportKind = d.v; renderSheet(); break;
+    case 'report-send': {
+      const p = S.pin || S.me, on = p && trailAt(S.resort, p.x, p.y);
+      if (!p) break;
+      b.disabled = true;
+      const body = { resort: S.place.id, kind: S.reportKind || 'wrong_place', x: p.x, y: p.y, ref: on ? String(on.t.osm || on.t.id) : '', name: on?.t.name || '', text: $('#f-report').value || '' };
+      const r = await fetch('/api/reports', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
+      toast(r?.ok ? 'Thank you. The report was sent.' : r?.status === 429 ? 'Too many reports today. Try again tomorrow.' : 'Could not send. Check your connection.');
+      if (r?.ok) closeSheet(); else b.disabled = false;
+      break;
+    }
+    case 'safety-ok': prefs.set('safetyAccepted', Date.now()); closeSheet(); break;
     case 'create-group':
       b.disabled = true;
-      try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { toast(err.message); b.disabled = false; }
+      try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { b.disabled = false; if (err.pass) openSheet('pass', 'group'); else toast(err.message); }
       break;
     case 'join-group': {
       const code = ($('#f-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');

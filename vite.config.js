@@ -11,6 +11,17 @@ function swManifest() {
     apply: 'build',
     closeBundle() {
       const dist = 'dist';
+      // Directions data is part of the paid pass: move each resort's routing graph out of resort.json into
+      // graph.json, which the Worker serves only to a signed-in phone with a pass (when the paywall is on).
+      for (const id of readdirSync(join(dist, 'data'))) {
+        const f = join(dist, 'data', id, 'resort.json');
+        let R;
+        try { R = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+        if (!R.graph) continue;
+        writeFileSync(join(dist, 'data', id, 'graph.json'), JSON.stringify(R.graph));
+        delete R.graph;
+        writeFileSync(f, JSON.stringify(R));
+      }
       const files = [];
       const walk = (d) => {
         for (const f of readdirSync(d)) {

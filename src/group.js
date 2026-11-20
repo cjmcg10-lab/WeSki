@@ -1,6 +1,7 @@
 // Client for a private group room (WebSocket to the Cloudflare Durable Object).
 export async function createGroup() {
   const res = await fetch('/api/groups', { method: 'POST' });
+  if (res.status === 402) { const e = new Error('Creating a group needs a pass. Joining a friend\'s group is free.'); e.pass = true; throw e; }
   if (!res.ok) throw new Error('Could not create a group. Check your connection.');
   return (await res.json()).code;
 }

@@ -1,0 +1,80 @@
+# SkiWithMe Pass: the paid tier
+
+Written 2026-11-20. The switch `PAYWALL` in both wrangler configs is `"off"` until launch: everything is free and the
+pass screen says so. Turning it `"on"` (after the owner's accounts are set up) enforces everything below.
+
+## Free and paid
+
+| Free (everyone, no account) | SkiWithMe Pass |
+| --- | --- |
+| 3D map of every mountain, offline download | Turn-by-turn directions, spoken directions |
+| Your position and the run you are on | Meeting points both people can reach |
+| Search, weather (today and 7 days), legend | Creating groups (joining a friend's group stays free) |
+| Joining a group and sharing locations | Full history of ski days and replays (the latest day stays free) |
+| Tracking today's ski day, stats | |
+| Report a map mistake, map help | |
+
+Why this split: the free map is what people tell friends about; directions and group creation are what a group pays
+for, and both need our server, so they can be enforced. Joining stays free so one paying friend brings the rest in.
+
+## Plans and prices
+
+| Plan | Price | Length | Notes |
+| --- | --- | --- | --- |
+| Day Pass | $3.99 | 24 hours from purchase | one-time |
+| Week Pass | $5.99 | 7 days from purchase | one-time, the ski-trip pass |
+| Season Pass | $24.99 / year | one year, renews | the main plan |
+| Crew Season Pass | $39.99 / year | one year, renews | buyer plus 3 friends' emails |
+| Free day | $0 | 24 hours | once per account |
+
+No monthly plan: skiing is seasonal, and a monthly plan invites "subscribe for one month a year". Market looked at on
+2026-11-20 (recheck the exact prices before launch): Slopes sells a yearly Premium and a day pass, Ski Tracks is a small
+one-time purchase with fewer features, and other ski-map apps charge roughly $20–40 a year. $24.99 a year sits just under
+the best-known yearly premium plans, and the day and week passes catch people who ski a few days a year. The constants are `PLANS` in `worker/accounts.js`; prices in Paddle must
+match.
+
+## How the pass is enforced (and what cannot be)
+
+- **Server-enforced (cannot be bypassed by editing the app):**
+  - Directions data. The build moves each resort's routing graph out of `resort.json` into `graph.json`
+    (`vite.config.js`). The Worker returns 402 for `/data/<id>/graph.json` unless the request carries a session cookie
+    of an account with an active pass. Without the graph the phone cannot compute routes.
+  - Creating groups (`POST /api/groups` returns 402).
+  - The pass itself: only Paddle's signed webhook (`/api/paddle/webhook`, HMAC-SHA256 over `ts:body`, 5-minute replay
+    window, each event applied once) creates purchases. The phone never tells the server it has paid.
+- **Phone-only (soft):** hiding older history days. The data is already on the phone; a determined person could edit
+  the app to show it. That is acceptable: it is their own data.
+- **Honest limits:** someone with a pass can save `graph.json` and pass it on, or keep using a downloaded copy offline
+  after the pass ends (the service worker asks the server first and deletes the copy on a 402, but cannot stop a copy
+  made by hand). OpenStreetMap's licence (ODbL) also means the derived map database must be offered on request
+  (`/legal/credits.html` says so). The paid value is the working, checked, up-to-date service, not secret data.
+
+Sign-in: email with a 6-digit code (also a link, for browsers). The code is needed because on iPhone a link in an
+email opens Safari, which does not share sign-ins with the app added to the home screen. Limits: 5 emails per address
+per hour, 20 per network per hour, 5 wrong codes end a code, 10 wrong codes per address per day. Sessions are a random
+256-bit cookie (`sw_session`, HttpOnly, Secure, SameSite=Lax); only its SHA-256 is stored; 3 phones per account; 180
+days unused signs out. All POSTs except the webhook must come from the app's own origin.
+
+Server pieces: `worker/accounts.js` (pure logic, tested in `tests/accounts.test.js`), `worker/stores.js` (`Accounts`
+Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, the `pass` sheet in `src/main.js`.
+
+## What the owner must do before turning the paywall on
+
+1. Form the LLC (recommended first; payments, trademark and terms in its name). Then put the company name and a
+   contact email into `public/legal/*.html` (search for "to be added before the paid launch").
+2. Buy a domain (about $10–12 a year) and point it at the Worker (Cloudflare dashboard: Workers → skiwithme → Domains).
+   Paddle reviews the website on a real domain, and sign-in email needs one.
+3. Resend (free up to 3,000 emails a month): create an account, verify the domain, create an API key. In Cloudflare
+   (Workers → skiwithme → Settings → Variables and secrets) add secret `RESEND_API_KEY`, and tell Claude the sender
+   address (for example `SkiWithMe <signin@yourdomain>`) for `MAIL_FROM`.
+4. Paddle: create the account (it reviews the business and site). Create four products/prices matching the table
+   (Season and Crew as yearly subscriptions). Create a notification destination for
+   `https://<domain>/api/paddle/webhook` with the events `transaction.completed`, `subscription.created`,
+   `subscription.updated`, `subscription.canceled`. Put its secret in Cloudflare as `PADDLE_WEBHOOK_SECRET`. Send
+   Claude the client-side token and the four price ids (these are not secret). Test in Paddle's sandbox first.
+5. Have a lawyer read the terms and privacy policy once (optional but recommended; Claude drafted them; they are
+   not legal advice). Decide the governing-law state.
+6. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
+
+Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
+plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).

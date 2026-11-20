@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SkiWithMe Credits</title>
+<link rel="stylesheet" href="/legal/legal.css" />
+</head>
+<body><main>
+<header><img src="/icons/icon-192.png" alt="" /><a href="/">SkiWithMe</a></header>
+<nav class="legal"><a href="/legal/terms.html">Terms</a><a href="/legal/privacy.html">Privacy</a><a href="/legal/refunds.html">Refunds</a><a href="/legal/credits.html">Credits</a></nav>
+<h1>Map and data credits</h1>
+<p class="updated">Last updated 20 November 2026</p>
+<p>SkiWithMe is built on open data. Thank you to everyone who makes it.</p>
+
+<h2>Trails, lifts, buildings and places</h2>
+<p>© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>. OpenStreetMap data is available under the
+<a href="https://opendatacommons.org/licenses/odbl/">Open Database License (ODbL)</a>. SkiWithMe’s map of each mountain,
+including its directions data, is a database made from OpenStreetMap data with corrections (positions checked against aerial
+photos, ratings from the resorts’ published trail lists, runs traced where missing). Under the ODbL, that database is available on
+request: write to the contact address below and we will send it, under the same licence.</p>
+
+<h2>Ratings</h2>
+<p>Run ratings are checked against each resort’s own published trail list or trail map. Trail names and ratings are facts published
+by the resorts; resort names belong to their owners. SkiWithMe is not affiliated with or endorsed by any resort.</p>
+
+<h2>Terrain</h2>
+<ul>
+<li>United States: U.S. Geological Survey, 3D Elevation Program (3DEP) 1 m LiDAR elevation models (public domain).</li>
+<li>Switzerland: swissALTI3D © swisstopo.</li>
+<li>Italy: TINITALY 10 m elevation model, INGV, CC BY 4.0.</li>
+<li>France: IGN RGE ALTI 1 m, Licence Ouverte / Open Licence.</li>
+<li>Austria: BEV / Austrian federal states ALS terrain model 1 m, CC BY 4.0.</li>
+<li>Japan: Geospatial Information Authority of Japan (GSI) elevation tiles.</li>
+<li>Surrounding terrain: Mapzen / AWS Terrain Tiles (including SRTM, USGS 3DEP and other public sources).</li>
+<li>Globe: Natural Earth (public domain); US state lines from the US Census Bureau (public domain).</li>
+<li>Line checks: aerial photos from the USDA National Agriculture Imagery Program (public domain), swisstopo SWISSIMAGE, IGN
+orthophotos, basemap.at and GSI, used to check positions; the photos are not shown in the app.</li>
+</ul>
+
+<h2>Weather</h2>
+<p id="wx">Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a>, CC BY 4.0.</p>
+
+<h2>Mountain photos</h2>
+<p>The photos on the mountain list come from Wikimedia Commons:</p>
+<ul id="photos"><li class="note">Loading…</li></ul>
+
+<h2>Software</h2>
+<p>three.js (MIT), Vite (MIT), Montserrat and Nunito Sans fonts (SIL Open Font License), and other open-source packages under their
+own licences.</p>
+
+<h2>Contact</h2>
+<p><b>Contact address to be added before the paid launch.</b></p>
+<script>
+fetch('/photos/credits.json').then((r) => r.json()).then((c) => {
+  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  document.getElementById('photos').innerHTML = Object.entries(c).map(([id, p]) => {
+    const file = String(p.title || '').replace(/^File:/, '');
+    return `<li>${esc(id.replace(/-/g, ' '))}: “<a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, '_'))}">${esc(file)}</a>” by ${esc(p.artist || 'unknown')}, ${esc(p.lic || '')}</li>`;
+  }).join('');
+}).catch(() => { document.getElementById('photos').innerHTML = '<li>See each photo on Wikimedia Commons.</li>'; });
+</script>
+</main></body></html>

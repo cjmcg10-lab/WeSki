@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (110 tests; the resort tests load every built map).
+- Run `npm test` before every push (117 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -414,6 +414,30 @@ were written by Claude, not checked by native speakers.
   (check which of the next ten are Alterra-owned) may work the same way: try
   `official_ratings.py fetch mtnpowder <resortId> <id>` with nearby ids before reading a map by hand.
 
+## Paid tier, accounts, privacy (built 2026-11-20)
+
+Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do list) and `docs/PRIVACY_DATA.md`
+(what skier data is collected and how it is stored). In short:
+- Switch `PAYWALL` in both wrangler configs; `"off"` until the owner's Resend and Paddle accounts exist. With it off,
+  everything is free and the pass screen says "free during the preview".
+- Plans (`PLANS` in `worker/accounts.js`): Day $3.99, Week $5.99, Season $24.99/yr, Crew Season $39.99/yr (4 seats),
+  one free day per account. Paid: directions and meeting points, creating groups, full history (latest day free).
+- Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
+  (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
+  signed webhook. History is a phone-only soft gate. `public/sw.js` fetches graph.json network-first and drops it on 402.
+- Sign-in: email with a 6-digit code (needed: an emailed link opens Safari, which does not share sign-ins with the
+  home-screen app) or link. Durable Objects `Accounts` (one, SQLite) and `ResortLog` (one per resort) in
+  `worker/stores.js`, migration tag v2. The phone side is `src/account.js` and the `pass` sheet in `src/main.js`.
+- Opt-in "Help improve the maps" (More → Privacy & map help) sends the day after each ski day a summary: run ids and
+  20 m squares off the shown runs, ends trimmed 300 m, no time or identity; server keeps counts, publishes only >= 5
+  ski days (`/api/heat/<id>`). "Report a map mistake" (pin sheet, or Privacy & map help) → `/api/reports`, public list
+  at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
+- First-run "Before you ski" safety notice (`prefs safetyAccepted`). Legal pages in `public/legal/` (terms, privacy,
+  refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the contact address and
+  company name are placeholders ("to be added before the paid launch"), and a lawyer's read is recommended.
+- `tools/evidence.py <id>` counts public OpenStreetMap GPS traces along each run (results in `tools/evidence/`).
+  Public traces are sparse (tens per resort); the app's own map-help counts are meant to become the main source.
+
 ## Paid web app: the plan in short
 
 The full plan is in the launch plan document. In order: one-page website; sign-in by email link; checkout
@@ -434,10 +458,10 @@ keys go in through the credential form, never chat.
 
 1. Rating check: all 50 done, including Val Thorens's Orelle side and the sixteen northeast mountains added on 2026-11-18.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
-3. Paid web app: sign-in by email link, checkout (Stripe or a seller-of-record service), paywall, manage-plan
-   screen, safety notice, terms, privacy policy, credits, a commercially licensed weather source
-   (Open-Meteo's free tier is non-commercial), "report a map mistake" button, add-to-home-screen guide,
-   one-page website.
+3. Paid web app: built 2026-11-20 and switched off (see "Paid tier, accounts, privacy"). Remaining: the owner's
+   accounts (LLC, domain, Resend, Paddle) and secrets, contact details in the legal pages, a commercially licensed
+   weather source (Open-Meteo's free tier is non-commercial; MET Norway is free with credit), the one-page website,
+   a report-review script, and a real purchase tested end to end.
 4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
    Berkshire East, Catamount, Ragged, Pats Peak), then Mohawk, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods,
