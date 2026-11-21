@@ -660,3 +660,19 @@ textarea.field { resize: vertical; font: inherit; }
 .upsell h2 { margin: 2px 32px 8px 0; }
 .upsell .btn { margin-top: 10px; }
 .upsell .learn { display: block; margin: 8px auto 4px; }
+
+/* sign-in button at the top right of the start panel */
+.start-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.start-head h2 { min-width: 0; }
+.acct-chip { flex: none; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; margin: 0 2px 10px 0; border-radius: 999px; border: 1.5px solid rgba(255,255,255,.35); background: rgba(255,255,255,.06); color: inherit; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.acct-chip.hidden { display: none; }
+.acct-chip.me { position: relative; width: 34px; padding: 0; justify-content: center; background: #1d4f7a; border-color: rgba(255,255,255,.4); }
+.acct-chip.me b { font-size: 15px; }
+.acct-chip.paid { border: 2.5px solid #2fd3b0; }
+.acct-chip.paid i { position: absolute; right: -6px; bottom: -5px; width: 17px; height: 17px; border-radius: 50%; background: #2fd3b0; color: #04221c; display: flex; align-items: center; justify-content: center; }
+.acct-chip.paid i .ico { width: 11px; height: 11px; }
+:root[data-theme="light"] .acct-chip { border-color: rgba(0,0,0,.25); background: rgba(0,0,0,.04); }
+:root[data-theme="light"] .acct-chip.me { background: #1d4f7a; color: #fff; }
+/* the pass panel opened from the start screen sits above it */
+#sheet.over-start { z-index: 50; bottom: 0; padding-bottom: var(--sab, 0px); }
+#start-panel .start-head h2 { font-size: clamp(19px, 5.6vw, 27px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

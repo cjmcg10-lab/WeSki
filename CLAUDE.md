@@ -444,6 +444,10 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
 - Paid buttons stay visible to free users with a small "Pass" badge (`passBadge`); tapping one opens a short pop-up
   (`upsell(why)` in `src/main.js`: free day, See plans, Not now). Nothing shows while `PAYWALL` is off.
+- Start screen: a "Sign in" button (account initial once signed in, teal ring with a pass) at the top right of the
+  "Find your mountain" panel opens the pass sheet above the start screen (`renderAcctChip`, `#sheet.over-start`).
+  Appearance & advanced has "Simulate free tier" (`acct.setSimFree`): the phone acts as if it had no pass, to try the
+  badges and pop-up. Paddle sandbox is connected (prices and test token in `wrangler.assets.jsonc`).
 - The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
   install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and
   `public/sw.js` leaves page loads of `/legal/` and `/about` to the network (answering them broke on that redirect).

@@ -66,6 +66,7 @@ const S = {
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
+  simFree: prefs.get('simFree', false),
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
   me: null,                 // {x, y, lat, lon, heading, acc, t}
@@ -287,7 +288,8 @@ function showConsent() {
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   if (!consentOk()) { hideSplash(); await showConsent(); }
-  acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  acct.setSimFree(S.simFree);
+  acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
     const q = new URLSearchParams(location.search);
     if (q.has('signedin') || q.has('signin')) {
@@ -1355,12 +1357,31 @@ function openSheet(name, arg) {
   renderChrome();
 }
 function closeSheet() {
+  $('#sheet').classList.remove('over-start');
   S.sheet = null; S.tab = 'map';
   $('#sheet').classList.add('hidden');
   renderChrome();
 }
 
+/** Sign-in button at the top right of the start panel: "Sign in", or the account's initial (teal ring with a pass). */
+function renderAcctChip() {
+  const el = $('#acct-chip'); if (!el) return;
+  const c = acct.config(), me = acct.account();
+  el.classList.toggle('hidden', !c.signIn && !me?.signedIn);
+  if (me?.signedIn) {
+    const paid = !!me.pass?.active && !acct.simulatingFree();
+    el.className = `acct-chip me${paid ? ' paid' : ''}`;
+    el.setAttribute('aria-label', paid ? t('Your account and SkiWithMe Pass') : t('Your account'));
+    el.innerHTML = `<b translate="no">${esc((me.email || '?')[0].toUpperCase())}</b>${paid ? `<i>${ICON.ticket}</i>` : ''}`;
+  } else {
+    el.className = `acct-chip${!c.signIn ? ' hidden' : ''}`;
+    el.removeAttribute('aria-label');
+    el.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8.500" r="3.800"/><path d="M4.500 20c1.200-3.800 4-5.600 7.500-5.600s6.300 1.800 7.500 5.600"/></svg><span>${t('Sign in')}</span>`;
+  }
+}
+
 function renderSheet() {
+  renderAcctChip();
   if (!S.sheet) return;
   const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
@@ -1662,7 +1683,7 @@ function upsell(why) {
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
   const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: 'Your full history and replays are part of the SkiWithMe Pass.' }[why];
-  const open = !c.paywall;
+  const open = !c.paywall && !acct.simulatingFree();
   let who;
   if (me?.signedIn) {
     const own = (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
@@ -1808,7 +1829,10 @@ function sheetAdvanced() {
       <div class="rowf"><div class="grow"><h4>120 fps motion</h4><div class="sub">Use up to 120 fps (if supported) for smoother motion.</div></div><label class="switch"><input type="checkbox" id="f-fps120" ${S.fps120 ? 'checked' : ''} /><i></i></label></div>
       ${L('fps120', 'Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.')}</div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Simulated location</h4>${S.testMode ? `<span class="pill sim" style="margin:2px 0 6px">${ICON.sim}Simulated location</span>` : ''}<div class="sub">${S.testMode ? 'Tap the map to place your simulated position.' : 'Try sharing and rerouting away from the mountain.'}</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div>
-      ${L('sim', 'Tap the map, then “Put me here”. Sharing, directions and tracking then use that spot instead of GPS. Turn this off to go back to real GPS.')}</div>
+      ${L('sim', 'Tap the map, then “Put me here”. Sharing, directions and tracking then use that spot instead of GPS. Turn this off to go back to real GPS.')}
+      <div class="divide"></div>
+      <div class="rowf"><div class="grow"><h4>Simulate free tier</h4><div class="sub">See the app as someone without a pass.</div></div><label class="switch"><input type="checkbox" id="f-simfree" ${S.simFree ? 'checked' : ''} /><i></i></label></div>
+      ${L('simfree', 'This phone acts as if it had no pass: paid buttons show the Pass badge and open the pass pop-up. Nothing is bought or changed on your account. Turn it off to go back.')}</div>
     <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
 }
 
@@ -2111,7 +2135,12 @@ function onInput(e) {
   else if (t.id === 'f-unofficial' && e.type === 'change') { S.unofficial = t.checked; prefs.set('unofficial', S.unofficial); if (S.nav) recalcNav(true); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
-  else if (t.id === 'f-test' && e.type === 'change') {
+  else if (t.id === 'f-simfree' && e.type === 'change') {
+    S.simFree = t.checked; prefs.set('simFree', S.simFree); acct.setSimFree(S.simFree);
+    if (S.simFree && S.nav && !['meet', 'friend'].includes(S.nav.target.type)) endNav();
+    toast(S.simFree ? 'Free tier simulation on: paid features now show the pass pop-up.' : 'Free tier simulation off.');
+    renderChrome(); renderSheet();
+  } else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
     if (!S.testMode) { S.me = null; S.map.setMe(null); if (S.tracker || S.sharing) S.loc.start(); }
@@ -2165,6 +2194,7 @@ async function onClick(e) {
     case 'start-hist': S.histOnly = !S.histOnly; if (S.histOnly) { S.favOnly = false; S.nearMe = null; S.allDays = null; } renderResortList(); break;
     case 'start-day': openDay(d.r, d.id); break;
     case 'start-join': startJoinAsk(); break;
+    case 'acct-chip': $('#sheet').classList.add('over-start'); openSheet('pass'); break;
     case 'start-join-go': startJoinGo(b); break;
     case 'go-group-mtn': goGroupMountain(d.code, d.id); break;
     case 'change-resort': askLeaveResort(); break;

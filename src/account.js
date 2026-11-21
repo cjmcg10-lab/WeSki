@@ -30,7 +30,12 @@ export const account = () => me;
 export const signedIn = () => !!me?.signedIn;
 
 /** Does this phone have the pass right now? (Only for what to show; the server checks again.) */
+let simFree = false;
+/** "Simulate free tier" in Appearance & advanced: this phone acts as if it had no pass (testing only). */
+export const setSimFree = (on) => { simFree = !!on; };
+export const simulatingFree = () => simFree;
 export function hasPass() {
+  if (simFree) return false;
   if (!config().paywall) return true;
   return !!me?.pass?.active;
 }
