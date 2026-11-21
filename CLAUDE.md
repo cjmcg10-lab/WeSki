@@ -510,6 +510,10 @@ keys go in through the credential form, never chat.
 
 ## What is next
 
+**Forecast section (planned 2026-11-21, free):** ski-day scores, a comparison calendar and worldwide resort search.
+Read `docs/FORECAST_PLAN.md` (plan, decisions, who works on what) and `docs/FORECAST_SPEC.md` (Connor's spec). Work is
+tracked in GitHub issue #1 with sub-issues #2 to #12. Claim an issue (assign yourself) before starting it.
+
 1. Rating check: all 50 done, including Val Thorens's Orelle side and the sixteen northeast mountains added on 2026-11-18.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: built 2026-11-20 and switched off (see "Paid tier, accounts, privacy"). Remaining: the owner's
