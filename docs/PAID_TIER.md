@@ -11,7 +11,7 @@ pass screen says so. Turning it `"on"` (after the owner's accounts are set up) e
 | Your position and the run you are on | Creating groups (joining a friend's group stays free) |
 | Search, weather (today and 7 days), legend | Full history of ski days and replays (the latest day stays free) |
 | Joining a group and sharing locations | |
-| Group meeting points and directions to them (owner's decision 2026-11-21) | |
+| Group meeting points; directions to a meeting point or to a friend in the group (owner, 2026-11-21) | |
 | Tracking today's ski day, stats | |
 | Report a map mistake, map help | |
 
@@ -38,6 +38,13 @@ Paddle takes 5% + 50 cents: about 22% of a $2.99 sale and 18% of $3.99, and it a
 $10, so confirm with Paddle before launch. The constants are `PLANS` in `worker/accounts.js`; prices in Paddle must
 match.
 
+## Terms agreement
+
+`showConsent` in `src/main.js`: a full screen before anything else (no close button, box must be ticked) until agreed.
+The phone keeps `prefs consent {v, at}`; it asks again when `TERMS_V` changes (keep it equal to the legal pages' date
+when the terms change), after 365 days, or when the record is missing. Signed-in accounts get a server record
+(`consents` table, `POST /api/consent`, synced by `acct.syncConsent`), shown in `/api/me` as `terms`.
+
 ## How the pass is enforced (and what cannot be)
 
 - **Server-enforced (cannot be bypassed by editing the app):**
@@ -45,9 +52,10 @@ match.
     (`vite.config.js`). The Worker returns 402 for `/data/<id>/graph.json` unless the request carries a session cookie
     of an account with an active pass. Without the graph the phone cannot compute routes.
   - Creating groups (`POST /api/groups` returns 402).
-  - Exception: `graph.json?g=<group code>` is served to anyone in a group on that mountain (the room's `resort`), so
-    free members get meeting points. Every group was created by someone with a pass. The phone allows only meeting-point
-    routes in that case (`needRouter('meet')`); other directions with that copy are a phone-only soft gate.
+  - Exception: `graph.json?g=<group code>&m=<member id>` is served when that member id is in that group and the group
+    is on that mountain (`GroupRoom.isMember`), so free members get meeting points and directions to friends. Every
+    group was created by someone with a pass. The phone allows only those routes (`needRouter('group')`); directions
+    to places and pins with that copy are a phone-only gate, and leaving the group drops the copy.
   - The pass itself: only Paddle's signed webhook (`/api/paddle/webhook`, HMAC-SHA256 over `ts:body`, 5-minute replay
     window, each event applied once) creates purchases. The phone never tells the server it has paid.
 - **Phone-only (soft):** hiding older history days. The data is already on the phone; a determined person could edit

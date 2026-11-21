@@ -17,7 +17,16 @@ export class Accounts extends DurableObject {
       CREATE TABLE IF NOT EXISTS events (id TEXT PRIMARY KEY, at INTEGER);
       CREATE TABLE IF NOT EXISTS crew (owner TEXT, email TEXT, PRIMARY KEY (owner, email));
       CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER, until INTEGER);
+      CREATE TABLE IF NOT EXISTS consents (account TEXT, v TEXT, at INTEGER, PRIMARY KEY (account, v));
     `);
+  }
+
+  /** Record that the signed-in person agreed to terms version v (the phone sends it after sign-in and after agreeing). */
+  async recordConsent(session, v) {
+    const id = await this.accountFor(session);
+    if (!id || !/^[0-9-]{10}$/.test(String(v))) return false;
+    this.sql.exec('INSERT OR IGNORE INTO consents VALUES (?, ?, ?)', id, String(v), Date.now());
+    return true;
   }
 
   rows(q, ...a) { return [...this.sql.exec(q, ...a)]; }
@@ -108,6 +117,7 @@ export class Accounts extends DurableObject {
       purchases: own.map((p) => ({ plan: p.plan, status: p.status, ends: p.ends, renews: PLANS[p.plan]?.renews })),
       crew: this.rows('SELECT email FROM crew WHERE owner = ?', id).map((r) => r.email),
       devices: this.rows('SELECT created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id),
+      terms: this.rows('SELECT v, at FROM consents WHERE account = ? ORDER BY at', id),
     };
   }
 
@@ -155,7 +165,7 @@ export class Accounts extends DurableObject {
     const id = await this.accountFor(session);
     if (!id) return false;
     const acc = this.one('SELECT email FROM accounts WHERE id = ?', id);
-    for (const q of ['DELETE FROM sessions WHERE account = ?', 'DELETE FROM purchases WHERE account = ?', 'DELETE FROM crew WHERE owner = ?', 'DELETE FROM accounts WHERE id = ?']) this.sql.exec(q, id);
+    for (const q of ['DELETE FROM sessions WHERE account = ?', 'DELETE FROM purchases WHERE account = ?', 'DELETE FROM crew WHERE owner = ?', 'DELETE FROM consents WHERE account = ?', 'DELETE FROM accounts WHERE id = ?']) this.sql.exec(q, id);
     this.sql.exec('DELETE FROM crew WHERE email = ?', acc.email);
     return true;
   }

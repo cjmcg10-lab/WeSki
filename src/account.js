@@ -36,6 +36,12 @@ export function hasPass() {
 }
 
 export const startSignIn = (email) => post('/api/auth/start', { email });
+/** Keep a record on our server that this account agreed to terms version v (only when signed in). */
+export async function syncConsent(v) {
+  if (!me?.signedIn || !v || (me.terms || []).some((x) => x.v === v)) return;
+  const r = await post('/api/consent', { v });
+  if (r.ok) me.terms = [...(me.terms || []), { v, at: Date.now() }];
+}
 export const finishSignIn = async (email, code) => { const r = await post('/api/auth/code', { email, code }); if (r.ok) await refreshMe(); return r; };
 export const signOut = async () => { const r = await post('/api/auth/signout'); me = { signedIn: false, paywall: config().paywall }; return r; };
 export const deleteAccount = async () => { const r = await post('/api/account/delete'); if (r.ok) me = { signedIn: false, paywall: config().paywall }; return r; };

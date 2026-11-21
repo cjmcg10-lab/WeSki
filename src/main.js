@@ -198,7 +198,6 @@ function initMap(id) {
     if (!ticking) { ticking = true; setInterval(tick, 1000); }
     window.skiwithme = S; // handy for debugging from the Safari console
     flushContrib().catch(() => {});
-    if (!prefs.get('safetyAccepted', null)) setTimeout(() => { if (!S.sheet) openSheet('safety'); }, 600);
   })().catch((e) => { if (mapId === id) { mapP = null; mapId = null; } throw e; }));
 }
 
@@ -208,7 +207,7 @@ async function loadGraph(id) {
   if (R.graph) { S.router = new Router(R, S.geo); return; }        // local preview: the map file still holds it
   try {
     // a group member without a pass gets it through the group, for meeting points
-    const g = S.group?.code && !acct.hasPass() ? `?g=${encodeURIComponent(S.group.code)}` : '';
+    const g = S.group?.code && !acct.hasPass() ? `?g=${encodeURIComponent(S.group.code)}&m=${encodeURIComponent(S.profile.id)}` : '';
     const r = await fetch(`/data/${id}/graph.json${g}`, { credentials: 'same-origin' });
     if (r.status === 402) { S.router = null; S.graphLocked = true; return; }
     if (!r.ok) throw new Error(String(r.status));
@@ -219,9 +218,9 @@ async function loadGraph(id) {
 }
 
 /** Paid feature check on this phone. The server checks again for the parts that matter.
- *  kind 'meet': meeting points and directions to them, free for everyone in a group. */
+ *  kind 'group': meeting points and directions to them or to a friend, free for everyone in a group. */
 async function needRouter(kind) {
-  if (kind !== 'meet' && !acct.hasPass()) { openSheet('pass', 'directions'); return false; }
+  if (!(kind === 'group' && S.group) && !acct.hasPass()) { openSheet('pass', 'directions'); return false; }
   if (!S.router) await S.graphP;
   if (!S.router && (!S.graphLocked || S.group)) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.router) return true;
@@ -252,9 +251,43 @@ function hideSplash() {
   setTimeout(() => sp.remove(), 600);
 }
 
+// ---------- terms and safety agreement
+// Shown before anything else until agreed. Asked again when the terms change (TERMS_V, the date on the legal pages),
+// after a year, or whenever this phone has no record of it (cleared data, new phone, a browser that dropped it).
+const TERMS_V = '2026-11-21', CONSENT_MAX_MS = 365 * 864e5;
+function consentOk() {
+  const c = prefs.get('consent', null);
+  return !!c && c.v === TERMS_V && Date.now() - c.at < CONSENT_MAX_MS;
+}
+function showConsent() {
+  return new Promise((resolve) => {
+    const el = document.createElement('div');
+    el.id = 'consent';
+    el.innerHTML = `<div class="consent-box" role="dialog" aria-modal="true" aria-labelledby="consent-h">
+      <img src="/icons/icon-192.png" alt="" class="consent-logo" />
+      <h2 id="consent-h">Before you ski</h2>
+      <p>SkiWithMe is a guide, not a safety device. Maps, ratings, closures and directions can be wrong or out of date, and GPS can be off by tens of metres.</p>
+      <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
+      <p class="consent-links"><a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/privacy.html" target="_blank">Privacy policy</a></p>
+      <label class="consent-tick"><input type="checkbox" id="f-consent" /><span>I have read and agree to the Terms of Use and the Privacy Policy, including the assumption of risk.</span></label>
+      <button class="btn" id="consent-ok" disabled>I understand and agree</button></div>`;
+    document.body.appendChild(el);
+    const tick = el.querySelector('#f-consent'), ok = el.querySelector('#consent-ok');
+    tick.addEventListener('change', () => { ok.disabled = !tick.checked; });
+    ok.addEventListener('click', () => {
+      if (!tick.checked) return;
+      prefs.set('consent', { v: TERMS_V, at: Date.now() });
+      el.remove();
+      acct.syncConsent(TERMS_V).catch(() => {});
+      resolve();
+    });
+  });
+}
+
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
-  acct.loadConfig().then(() => acct.refreshMe()).then(() => { if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  if (!consentOk()) { hideSplash(); await showConsent(); }
+  acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
     const q = new URLSearchParams(location.search);
     if (q.has('signedin') || q.has('signin')) {
@@ -969,6 +1002,7 @@ async function leaveGroup(closeForAll) {
   if (closeForAll) { g.client.close(); return; } // server confirms with "closed" -> ended('closed')
   g.client.leave();
   S.group = null; S.sharing = false; prefs.set('group', null);
+  if (!acct.hasPass()) { if (S.nav) endNav(); S.router = null; S.graphLocked = false; S.graphP = Promise.resolve(); }
   S.map.setFriends([]); S.map.setMeet(null);
   if (S.nav && ['friend', 'meet'].includes(S.nav.target.type)) endNav();
   await endSession('You left the group.');
@@ -1035,7 +1069,7 @@ function setClosures(set, share = true) {
 const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill, unofficial: S.unofficial });
 
 async function startNav(target) {
-  if (!(await needRouter(target.type === 'meet' ? 'meet' : undefined))) return;
+  if (!(await needRouter(target.type === 'meet' || target.type === 'friend' ? 'group' : undefined))) return;
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
   guide.reset();
   ensureLocation(); wakeLock();
@@ -1176,7 +1210,7 @@ function recordRoute(name, r) {
 
 /** Offer a shared meeting point both people can reach, and share it with the group. */
 async function proposeMeet() {
-  if (!(await needRouter(S.group ? 'meet' : undefined))) return;
+  if (!(await needRouter('group'))) return;
   const f = S.nav?.target.type === 'friend' ? friends().find((m) => m.id === S.nav.target.id) : null;
   const me = S.me && S.router.snap(S.me.x, S.me.y) ? { x: S.me.x, y: S.me.y } : null;
   const fr = f?.has && S.router.snap(f.x, f.y) ? { x: f.x, y: f.y } : null;

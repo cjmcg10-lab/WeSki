@@ -185,4 +185,5 @@ export default {
   763: 'I pagamenti non sono ancora aperti.', 764: 'Impossibile aprire il pagamento. Controlla la connessione.',
   765: 'Attivare la posizione', 766: 'SkiWithMe usa la tua posizione su questo telefono per mostrare dove sei, su quale pista, le indicazioni e le statistiche. Resta sul tuo telefono.', 767: 'Aiuti a migliorare le mappe?', 768: 'Dopo ogni giornata, invia quali piste hai fatto e i punti in cui hai sciato fuori dalle piste della mappa. Mai la tua traccia, gli orari, la velocità o chi sei, e niente da rifugi, parcheggi o impianti. Puoi cambiarlo quando vuoi in Altro → Privacy e aiuto alla mappa.', 769: 'Sì, aiuta a migliorare le mappe', 770: 'No, grazie', 771: 'Tocca la mappa dove c’è l’errore, poi tocca di nuovo questo pulsante (o «Segnala qui un errore della mappa» sul segnaposto).',
   772: 'Punti d’incontro del gruppo, con indicazioni per arrivarci', 773: 'all’anno',
+  774: 'Ho letto e accetto i Termini d’uso e l’Informativa sulla privacy, compresa l’assunzione del rischio.', 775: 'Ho capito e accetto',
 };

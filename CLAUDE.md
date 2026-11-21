@@ -427,7 +427,7 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   everything is free and the pass screen says "free during the preview".
 - Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $3.99, Season $19.99/yr, Crew Season $34.99/yr (4 seats),
   one free day per account. Paid: directions, creating groups, full history (latest day free). Group meeting points
-  and directions to them are free for every group member (owner, 2026-11-21): `graph.json?g=<code>`.
+  and directions to them or to friends are free for every group member (owner, 2026-11-21): `graph.json?g=<code>&m=<id>`.
 - Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
   (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
   signed webhook. History is a phone-only soft gate. `public/sw.js` fetches graph.json network-first and drops it on 402.
@@ -440,7 +440,8 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   time or identity; server keeps counts, publishes only >= 5
   ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
   at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
-- First-run "Before you ski" safety notice (`prefs safetyAccepted`). Legal pages in `public/legal/` (terms, privacy,
+- "Before you ski" terms and safety agreement: a full screen that cannot be skipped (`showConsent`, `TERMS_V` in
+  `src/main.js`; see `docs/PAID_TIER.md`). Bump `TERMS_V` whenever the terms change. Legal pages in `public/legal/` (terms, privacy,
   refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the contact address and
   company name are placeholders ("to be added before the paid launch"), and a lawyer's read is recommended.
 - `tools/evidence.py <id>` counts public OpenStreetMap GPS traces along each run (results in `tools/evidence/`).

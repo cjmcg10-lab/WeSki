@@ -32,12 +32,11 @@ async function passOk(request, env) {
   return accounts(env).hasPass(session(request));
 }
 
-/** A request for a mountain's directions data from a member of a group on that mountain (`?g=CODE`). */
+/** A request for a mountain's directions data from a member of a group on that mountain (`?g=CODE&m=MEMBER`). */
 async function groupOk(url, env, resort) {
-  const code = (url.searchParams.get('g') || '').toUpperCase();
-  if (!CODE_RE.test(code)) return false;
-  const info = await env.GROUPS.get(env.GROUPS.idFromName(code)).info();
-  return !!info && info.resort === resort;
+  const code = (url.searchParams.get('g') || '').toUpperCase(), member = url.searchParams.get('m') || '';
+  if (!CODE_RE.test(code) || !/^[A-Za-z0-9_-]{8,40}$/.test(member)) return false;
+  return env.GROUPS.get(env.GROUPS.idFromName(code)).isMember(member, resort);
 }
 
 async function api(request, env, url) {
@@ -94,6 +93,11 @@ async function api(request, env, url) {
   if (path === '/api/account/delete' && method === 'POST') {
     const ok = await accounts(env).deleteAccount(session(request));
     return new Response(JSON.stringify({ ok }), { status: ok ? 200 : 401, headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie('', 0) } });
+  }
+  if (path === '/api/consent' && method === 'POST') {
+    const b = await readJson(request, 500);
+    const ok = await accounts(env).recordConsent(session(request), b?.v);
+    return json({ ok }, ok ? 200 : 401);
   }
   if (path === '/api/trial' && method === 'POST') {
     const r = await accounts(env).startTrial(session(request));
@@ -211,6 +215,12 @@ export class GroupRoom extends DurableObject {
     this.room = newRoom(code, Date.now());
     await this.save();
     return true;
+  }
+
+  /** Is this member id in the group, and is the group on this mountain? */
+  async isMember(member, resort) {
+    const room = await this.load();
+    return !!room && room.resort === resort && !!room.members[member];
   }
 
   /** The mountain this group is on (see roomInfo), or null when there is no such group. */
