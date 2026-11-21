@@ -676,3 +676,13 @@ textarea.field { resize: vertical; font: inherit; }
 /* the pass panel opened from the start screen sits above it */
 #sheet.over-start { z-index: 50; bottom: 0; padding-bottom: var(--sab, 0px); }
 #start-panel .start-head h2 { font-size: clamp(19px, 5.6vw, 27px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* buy without an account: the sign-in card asks for the email first */
+.card.buy-first { border-color: #2fd3b0; box-shadow: 0 0 0 2px rgba(47, 211, 176, .25); }
+/* terms, privacy and about pages shown over the app */
+#docview { position: fixed; inset: 0; z-index: 10001; display: flex; flex-direction: column; background: #071523; }
+#docview.hidden { display: none; }
+#docview .doc-bar { flex: none; display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top) + 8px) 12px 8px; background: #010c1b; border-bottom: 1px solid rgba(255,255,255,.12); color: #e8f1fa; }
+#docview .doc-back { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 16px 0 10px; border-radius: 12px; border: 0; background: #2fd3b0; color: #04221c; font: inherit; font-size: 17px; font-weight: 800; cursor: pointer; }
+#docview .doc-title { flex: 1; min-width: 0; font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: .85; }
+#docview iframe { flex: 1; width: 100%; border: 0; background: #fff; }

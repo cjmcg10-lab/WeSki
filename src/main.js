@@ -702,6 +702,32 @@ onLangChange(() => {
   if (S.map) { renderChrome(); S.map.overlayDirty = true; }
 });
 document.addEventListener('click', onClick);
+// Legal pages and the About page open in a viewer over the app (an installed app has no browser Back button),
+// so Back returns to exactly where the person was: same map, same group, same panel.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[href]');
+  if (!a || e.defaultPrevented || e.metaKey || e.ctrlKey) return;
+  const u = new URL(a.href, location.href);
+  if (u.origin !== location.origin || !/^\/(legal\/|about)/.test(u.pathname)) return;
+  e.preventDefault();
+  openDoc(u.pathname + u.hash);
+}, true);
+function openDoc(href) {
+  let v = $('#docview');
+  if (!v) {
+    v = document.createElement('div'); v.id = 'docview';
+    v.innerHTML = `<div class="doc-bar"><button class="doc-back" data-doc="close"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>${t('Back')}</button><span class="doc-title"></span></div><iframe title=""></iframe>`;
+    document.body.appendChild(v);
+    v.querySelector('[data-doc="close"]').addEventListener('click', closeDoc);
+    v.querySelector('iframe').addEventListener('load', () => { try { v.querySelector('.doc-title').textContent = v.querySelector('iframe').contentDocument.title.replace(/^SkiWithMe:?\s*/, ''); } catch { /* ignore */ } });
+  }
+  v.querySelector('.doc-title').textContent = '';
+  v.querySelector('iframe').src = href;
+  v.classList.remove('hidden');
+}
+function closeDoc() { $('#docview')?.classList.add('hidden'); }
+// the pages ask to close the viewer (their own "Back to the app" link, or a link to the app itself)
+window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data === 'skiwithme:close-doc') closeDoc(); });
 // Pull panels down by their grab bar: the mountain list shrinks (the globe grows into the space),
 // every other panel closes.
 dragPanel($('#start-panel'), { zone: 70, offset: () => ($('#start-panel').classList.contains('mini') ? miniShift() : 0),
@@ -1358,6 +1384,7 @@ function openSheet(name, arg) {
 }
 function closeSheet() {
   $('#sheet').classList.remove('over-start');
+  S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
   $('#sheet').classList.add('hidden');
   renderChrome();
@@ -1680,6 +1707,19 @@ function upsell(why) {
   $('#modal').classList.remove('hidden');
 }
 
+/** Buy a plan. Without an account, first ask for the email (sign-in makes the account), then open checkout. */
+async function buyPlan(plan) {
+  if (!acct.signedIn()) {
+    S.buyAfter = plan; renderSheet();
+    const card = $('#signin-card');
+    card?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => ($('#f-email') || $('#f-signcode'))?.focus(), 350);
+    return;
+  }
+  try { await acct.checkout(plan, async (ok) => { toast(ok ? 'Thank you! Your pass is on.' : 'Payment received. Your pass will appear in a minute.'); await afterPassChange(); renderSheet(); }); }
+  catch (err) { toast(err.message); }
+}
+
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
   const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: 'Your full history and replays are part of the SkiWithMe Pass.' }[why];
@@ -1699,11 +1739,12 @@ function sheetPass(why) {
       <input class="field code" id="f-signcode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" />
       <button class="btn" data-act="signin-code">Sign in</button><button class="learn" data-act="signin-again">Use a different email</button></div>`;
   } else {
-    who = `<div class="card"><h4>Sign in</h4><p class="sub">With your email: no password. Your pass then works on up to 3 phones.</p>
+    const want = S.buyAfter && P[S.buyAfter];
+    who = `<div class="card${want ? ' buy-first' : ''}" id="signin-card"><h4>${want ? 'Create your account or sign in' : 'Sign in'}</h4><p class="sub">${want ? t('To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.', esc(want.name)) : 'With your email: no password. Your pass then works on up to 3 phones.'}</p>
       <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
-  const canBuy = me?.signedIn && c.paddle;
+  const canBuy = !!c.paddle;
   const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">$${p.price.toFixed(2)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
     ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div></div>`).join('');
   const trial = me?.signedIn && !me.trialUsed && !me.pass?.active ? '<button class="btn alt" data-act="trial">Try a free day</button>' : '';
@@ -1712,7 +1753,7 @@ function sheetPass(why) {
     ${open ? '<div class="card"><p class="ok-text" style="margin:0">Everything is free while SkiWithMe is in preview.</p></div>' : ''}
     <div class="card"><div class="cols2"><div><h4>Free</h4><ul class="ticks">${FREE_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div><div><h4>With a pass</h4><ul class="ticks plus">${PASS_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div></div></div>
     ${who}
-    <div class="card"><h4>Plans</h4>${plans}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : c.paddle ? 'Sign in first, so the pass is saved to your account.' : 'Payments open with the paid launch.'}</p></div>
+    <div class="card"><h4>Plans</h4>${plans}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : 'Payments open with the paid launch.'}</p></div>
     <p class="foot"><a href="/about" target="_blank">About</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy</a> · <a href="/legal/refunds" target="_blank">Refunds</a></p>`];
 }
 
@@ -2246,7 +2287,9 @@ async function onClick(e) {
       b.disabled = true;
       const r = await acct.finishSignIn(S.signin.email, ($('#f-signcode').value || '').trim()).catch(() => ({ error: 'Check your connection and try again.' }));
       if (r.ok) { S.signin = null; toast('Signed in.'); await afterPassChange(); } else { toast(r.error || 'That code did not work.'); b.disabled = false; }
-      renderSheet(); break;
+      renderSheet();
+      if (r.ok && S.buyAfter) { const plan = S.buyAfter; S.buyAfter = null; renderSheet(); buyPlan(plan); }
+      break;
     }
     case 'signout': await acct.signOut().catch(() => {}); await afterPassChange(); renderSheet(); break;
     case 'acct-delete-ask': S.askDelete = !S.askDelete; renderSheet(); break;
@@ -2260,10 +2303,7 @@ async function onClick(e) {
       toast(r.ok ? 'Your free day has started: 24 hours of everything.' : 'The free day could not start.');
       await afterPassChange(); renderSheet(); break;
     }
-    case 'buy':
-      try { await acct.checkout(d.plan, async (ok) => { toast(ok ? 'Thank you! Your pass is on.' : 'Payment received. Your pass will appear in a minute.'); await afterPassChange(); renderSheet(); }); }
-      catch (err) { toast(err.message); }
-      break;
+    case 'buy': buyPlan(d.plan); break;
     case 'crew-save': {
       const emails = [0, 1, 2].map((i) => ($(`#f-crew${i}`)?.value || '').trim()).filter(Boolean);
       const r = await acct.setCrew(emails).catch(() => ({}));

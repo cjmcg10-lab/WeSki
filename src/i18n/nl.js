@@ -189,4 +189,6 @@ export default {
   776: 'Route overal op de berg', 777: 'Stap-voor-stap en gesproken route naar elke piste, lift, hut of speld, over pistes van jouw niveau.', 778: 'Maak je eigen groep', 779: 'Maak een groep, deel de code en zie iedereen op de kaart. Vrienden doen gratis mee.', 780: 'Je hele skidaggeschiedenis', 781: 'Alle opgeslagen skidagen, met herhalingen en statistieken.', 782: 'Pas', 783: 'Onderdeel van de SkiWithMe Pass', 784: 'Dagpas {0} · Seizoenspas {1} per jaar', 785: 'Log in en probeer een gratis dag', 786: 'Bekijk abonnementen', 787: 'Niet nu',
   788: 'Over',
   789: 'Gratis versie nabootsen', 790: 'Zie de app zoals iemand zonder pas.', 791: 'Deze telefoon doet alsof hij geen pas heeft: betaalde knoppen tonen het Pas-label en openen het pasvenster. Er wordt niets gekocht of aan je account veranderd. Zet uit om terug te gaan.', 792: 'Gratis versie nabootsen aan: betaalde functies tonen nu het pasvenster.', 793: 'Gratis versie nabootsen uit.', 794: 'Je account', 795: 'Je account en SkiWithMe Pass',
+  796: 'Maak je account of log in', 797: 'Om de {0} te kopen, vul je e-mail in. We sturen een code van 6 cijfers, geen wachtwoord. Daarna opent de betaling.',
+  798: 'Terug',
 };

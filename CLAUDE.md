@@ -448,6 +448,11 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   "Find your mountain" panel opens the pass sheet above the start screen (`renderAcctChip`, `#sheet.over-start`).
   Appearance & advanced has "Simulate free tier" (`acct.setSimFree`): the phone acts as if it had no pass, to try the
   badges and pop-up. Paddle sandbox is connected (prices and test token in `wrangler.assets.jsonc`).
+- Buy buttons show to everyone once Paddle is connected; without an account, Buy highlights the sign-in card
+  ("Create your account or sign in") and opens checkout for that plan right after the code (`buyPlan`, `S.buyAfter`).
+- Links to `/legal/*` and `/about` inside the app open in a viewer over the app (`openDoc`, `#docview`, big Back
+  button), so the map, group and panel stay as they were. The pages load `/legal/back.js`: inside the viewer they hide
+  their own "Back to the app" bar and a link to the app closes the viewer; opened on their own they show the bar.
 - The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
   install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and
   `public/sw.js` leaves page loads of `/legal/` and `/about` to the network (answering them broke on that redirect).

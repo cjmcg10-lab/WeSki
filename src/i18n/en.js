@@ -695,4 +695,6 @@ export default {
   776: 'Directions anywhere on the mountain', 777: 'Turn-by-turn and spoken directions to any run, lift, lodge or dropped pin, along runs at your level.', 778: 'Create your own group', 779: 'Start a group, share the code and see everyone on the map. Friends join free.', 780: 'Your full ski-day history', 781: 'Every ski day you have saved, with replays and stats.', 782: 'Pass', 783: 'Part of the SkiWithMe Pass', 784: 'Day Pass {0} · Season Pass {1} a year', 785: 'Sign in and try a free day', 786: 'See plans', 787: 'Not now',
   788: 'About',
   789: 'Simulate free tier', 790: 'See the app as someone without a pass.', 791: 'This phone acts as if it had no pass: paid buttons show the Pass badge and open the pass pop-up. Nothing is bought or changed on your account. Turn it off to go back.', 792: 'Free tier simulation on: paid features now show the pass pop-up.', 793: 'Free tier simulation off.', 794: 'Your account', 795: 'Your account and SkiWithMe Pass',
+  796: 'Create your account or sign in', 797: 'To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.',
+  798: 'Back',
 };

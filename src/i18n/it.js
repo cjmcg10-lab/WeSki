@@ -189,4 +189,6 @@ export default {
   776: 'Indicazioni ovunque sulla montagna', 777: 'Indicazioni passo passo e vocali verso qualsiasi pista, impianto, rifugio o segnaposto, su piste del tuo livello.', 778: 'Crea il tuo gruppo', 779: 'Crea un gruppo, condividi il codice e vedi tutti sulla mappa. Gli amici entrano gratis.', 780: 'Tutto lo storico delle giornate', 781: 'Tutte le giornate di sci salvate, con replay e statistiche.', 782: 'Pass', 783: 'Incluso nello SkiWithMe Pass', 784: 'Pass giornaliero {0} · Pass stagionale {1} all’anno', 785: 'Accedi e prova un giorno gratis', 786: 'Vedi i piani', 787: 'Non ora',
   788: 'Info',
   789: 'Simula la versione gratuita', 790: 'Vedi l’app come chi non ha un pass.', 791: 'Questo telefono si comporta come se non avesse un pass: i pulsanti a pagamento mostrano il badge Pass e aprono la finestra del pass. Nulla viene acquistato o modificato sul tuo account. Disattiva per tornare.', 792: 'Simulazione gratuita attiva: le funzioni a pagamento mostrano la finestra del pass.', 793: 'Simulazione gratuita disattivata.', 794: 'Il tuo account', 795: 'Il tuo account e SkiWithMe Pass',
+  796: 'Crea il tuo account o accedi', 797: 'Per acquistare il {0}, inserisci la tua email. Inviamo un codice di 6 cifre, senza password. Poi si apre il pagamento.',
+  798: 'Indietro',
 };

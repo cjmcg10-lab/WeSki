@@ -189,4 +189,6 @@ export default {
   776: 'Wegführung überall am Berg', 777: 'Schritt-für-Schritt- und Sprachführung zu jeder Piste, jedem Lift, jeder Hütte oder Stecknadel, über Pisten deines Niveaus.', 778: 'Eigene Gruppe erstellen', 779: 'Gruppe erstellen, Code teilen und alle auf der Karte sehen. Freunde treten kostenlos bei.', 780: 'Dein ganzer Skitag-Verlauf', 781: 'Alle gespeicherten Skitage, mit Wiedergabe und Statistik.', 782: 'Pass', 783: 'Teil des SkiWithMe Pass', 784: 'Tagespass {0} · Saisonpass {1} pro Jahr', 785: 'Anmelden und einen Tag gratis testen', 786: 'Tarife ansehen', 787: 'Nicht jetzt',
   788: 'Über',
   789: 'Kostenlose Version simulieren', 790: 'Die App so sehen wie jemand ohne Pass.', 791: 'Dieses Telefon verhält sich, als hätte es keinen Pass: Bezahlte Tasten zeigen das Pass-Abzeichen und öffnen das Pass-Fenster. Nichts wird gekauft oder am Konto geändert. Ausschalten, um zurückzukehren.', 792: 'Simulation der kostenlosen Version an: Bezahlfunktionen zeigen jetzt das Pass-Fenster.', 793: 'Simulation der kostenlosen Version aus.', 794: 'Dein Konto', 795: 'Dein Konto und SkiWithMe Pass',
+  796: 'Konto erstellen oder anmelden', 797: 'Um den {0} zu kaufen, gib deine E-Mail ein. Wir senden einen 6-stelligen Code, kein Passwort. Dann öffnet sich die Kasse.',
+  798: 'Zurück',
 };

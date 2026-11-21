@@ -17,3 +17,9 @@ th { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spa
 nav.legal { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 6px 0 0; font-size: 14.5px; }
 .box { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin: 12px 0; }
 @media (max-width: 520px) { table, thead, tbody, tr, th, td { display: block; } thead { display: none; } td { border: 0; padding: 2px 0; } tr { border-bottom: 1px solid var(--line); padding: 8px 0; } td:first-child { font-weight: 700; } }
+
+/* big "Back to the app" bar (an installed app has no browser Back button); hidden inside the app's own viewer */
+.backbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: calc(env(safe-area-inset-top) + 6px) 16px 6px; background: var(--accent); color: #fff; font-weight: 800; font-size: 18px; text-decoration: none; }
+.backbar span { font-size: 28px; line-height: 1; margin-top: -3px; }
+@media (prefers-color-scheme: dark) { .backbar { color: #04221c; } }
+.in-app .backbar { display: none; }
