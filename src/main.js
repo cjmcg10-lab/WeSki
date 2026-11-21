@@ -1623,8 +1623,8 @@ function sheetMore() {
 
 // ---------- SkiWithMe Pass (paid tier), sign-in, map help, reports, safety notice
 const PLAN_TEXT = { day: '24 hours from when you buy it', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
-const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Group meeting points, with directions there', 'Track today’s ski day'];
-const PASS_LIST = ['Turn-by-turn directions, spoken too', 'Create your own groups', 'Your full history of ski days and replays'];
+const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Group meeting points, with directions there or to friends', 'Track today’s ski day'];
+const PASS_LIST = ['Turn-by-turn and spoken directions anywhere on the mountain', 'Create your own groups', 'Your full history of ski days and replays'];
 const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short', day: 'numeric', year: 'numeric' });
 
 function passStatus(me) {

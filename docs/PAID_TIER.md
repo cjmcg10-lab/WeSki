@@ -7,7 +7,7 @@ pass screen says so. Turning it `"on"` (after the owner's accounts are set up) e
 
 | Free (everyone, no account) | SkiWithMe Pass |
 | --- | --- |
-| 3D map of every mountain, offline download | Turn-by-turn directions, spoken directions |
+| 3D map of every mountain, offline download | Turn-by-turn and spoken directions anywhere on the mountain |
 | Your position and the run you are on | Creating groups (joining a friend's group stays free) |
 | Search, weather (today and 7 days), legend | Full history of ski days and replays (the latest day stays free) |
 | Joining a group and sharing locations | |
