@@ -28,9 +28,11 @@ const TYPE = (f) => (f.endsWith('.json') ? 'application/json' : 'application/oct
 const cfg = JSON.parse(readFileSync(LIST, 'utf8'));
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'placeholder-the-proxy-adds-the-real-token';
 const AUTH = ['-H', `Authorization: Bearer ${TOKEN}`, '-A', 'weski-build'];
-const ACCOUNT = process.env.CLOUDFLARE_ACCOUNT_ID ||
-  JSON.parse(execFileSync('curl', ['-s', ...AUTH, 'https://api.cloudflare.com/client/v4/accounts']).toString()).result[0].id;
-const API = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/r2/buckets/${cfg.bucket}/objects`;
+// looked up only when the API is used (drop and status work offline)
+let api;
+const API = () => (api ||= `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID ||
+  JSON.parse(execFileSync('curl', ['-s', ...AUTH, 'https://api.cloudflare.com/client/v4/accounts']).toString()).result[0].id
+}/r2/buckets/${cfg.bucket}/objects`);
 
 async function curl(args, tries = 4) {
   for (let k = 1; ; k++) {
@@ -52,7 +54,7 @@ async function pool(jobs, n = 6) {
 }
 
 async function etags(id) {
-  const j = JSON.parse(await curl([`${API}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=50`]));
+  const j = JSON.parse(await curl([`${API()}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=50`]));
   return Object.fromEntries((j.result || []).map((o) => [o.key, o.etag]));
 }
 
@@ -72,7 +74,7 @@ async function push(id) {
     if (!existsSync(src)) return;
     const key = `data/${id}/${f}`;
     if (have[key] === createHash('md5').update(readFileSync(src)).digest('hex')) return;
-    const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API}/${key}`]));
+    const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API()}/${key}`]));
     if (!res.success) throw new Error(`${key}: ${JSON.stringify(res.errors)}`);
     sent++;
   }), 4);
@@ -89,7 +91,7 @@ async function pull(id) {
   const dir = join(DATA, id);
   const tmp = join(tmpdir(), `r2-pull-${id}`);
   mkdirSync(tmp, { recursive: true });
-  await pool(FILES.map((f) => () => curl(['-o', join(tmp, f), `${API}/data/${id}/${f}`])), 4);
+  await pool(FILES.map((f) => () => curl(['-o', join(tmp, f), `${API()}/data/${id}/${f}`])), 4);
   // put the graph back into resort.json, as the build tools write it
   const R = JSON.parse(readFileSync(join(tmp, 'resort.json'), 'utf8'));
   R.graph = JSON.parse(readFileSync(join(tmp, 'graph.json'), 'utf8'));
