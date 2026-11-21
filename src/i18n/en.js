@@ -690,4 +690,5 @@ export default {
   760: 'Help improve the maps, report a mistake', 761: 'All credits and licences', 762: 'Report a map mistake here',
   763: 'Payments are not open yet.', 764: 'Could not open checkout. Check your connection.',
   765: 'Turning on your location', 766: 'SkiWithMe uses your location on this phone to show where you are, which run you are on, directions and your stats. It stays on your phone.', 767: 'Help improve the maps?', 768: 'After each ski day, send which runs you skied and the spots you skied off the mapped runs. Never your track, times, speed or who you are, and nothing from lodges, car parks or lifts. Change it any time in More → Privacy & map help.', 769: 'Yes, help improve the maps', 770: 'No thanks', 771: 'Tap the map where the mistake is, then tap this button again (or “Report a map mistake here” on the pin).',
+  772: 'Group meeting points, with directions there', 773: 'a year',
 };

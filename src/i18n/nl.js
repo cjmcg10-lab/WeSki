@@ -184,4 +184,5 @@ export default {
   760: 'Help de kaarten verbeteren, meld een fout', 761: 'Alle bronnen en licenties', 762: 'Meld hier een kaartfout',
   763: 'Betalingen zijn nog niet open.', 764: 'Kon de betaling niet openen. Controleer je verbinding.',
   765: 'Je locatie aanzetten', 766: 'SkiWithMe gebruikt je locatie op deze telefoon om te laten zien waar je bent, op welke piste, de route en je statistieken. Hij blijft op je telefoon.', 767: 'Help je de kaarten verbeteren?', 768: 'Na elke skidag sturen welke pistes je reed en waar je buiten de pistes op de kaart skiede. Nooit je spoor, tijden, snelheid of wie je bent, en niets uit hutten, van parkeerplaatsen of liften. Altijd te wijzigen onder Meer → Privacy & kaarthulp.', 769: 'Ja, help de kaarten verbeteren', 770: 'Nee, bedankt', 771: 'Tik op de kaart waar de fout zit en tik dan nog eens op deze knop (of op „Meld hier een kaartfout” bij de speld).',
+  772: 'Ontmoetingspunten voor de groep, met de route ernaartoe', 773: 'per jaar',
 };

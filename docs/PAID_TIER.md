@@ -8,9 +8,10 @@ pass screen says so. Turning it `"on"` (after the owner's accounts are set up) e
 | Free (everyone, no account) | SkiWithMe Pass |
 | --- | --- |
 | 3D map of every mountain, offline download | Turn-by-turn directions, spoken directions |
-| Your position and the run you are on | Meeting points both people can reach |
-| Search, weather (today and 7 days), legend | Creating groups (joining a friend's group stays free) |
-| Joining a group and sharing locations | Full history of ski days and replays (the latest day stays free) |
+| Your position and the run you are on | Creating groups (joining a friend's group stays free) |
+| Search, weather (today and 7 days), legend | Full history of ski days and replays (the latest day stays free) |
+| Joining a group and sharing locations | |
+| Group meeting points and directions to them (owner's decision 2026-11-21) | |
 | Tracking today's ski day, stats | |
 | Report a map mistake, map help | |
 
@@ -44,6 +45,9 @@ match.
     (`vite.config.js`). The Worker returns 402 for `/data/<id>/graph.json` unless the request carries a session cookie
     of an account with an active pass. Without the graph the phone cannot compute routes.
   - Creating groups (`POST /api/groups` returns 402).
+  - Exception: `graph.json?g=<group code>` is served to anyone in a group on that mountain (the room's `resort`), so
+    free members get meeting points. Every group was created by someone with a pass. The phone allows only meeting-point
+    routes in that case (`needRouter('meet')`); other directions with that copy are a phone-only soft gate.
   - The pass itself: only Paddle's signed webhook (`/api/paddle/webhook`, HMAC-SHA256 over `ts:body`, 5-minute replay
     window, each event applied once) creates purchases. The phone never tells the server it has paid.
 - **Phone-only (soft):** hiding older history days. The data is already on the phone; a determined person could edit

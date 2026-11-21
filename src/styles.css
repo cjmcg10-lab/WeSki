@@ -631,8 +631,11 @@ img.thumb.photo { object-fit: cover; background: #23415f; }
 .plan { display: flex; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid var(--edge2); }
 .plan:last-of-type { border-bottom: 0; }
 .plan.best b { color: var(--teal); }
-.plan .price { font-weight: 800; font-size: 17px; white-space: nowrap; }
-.plan .btn.sm { width: auto; margin: 0; padding: 8px 14px; }
+.plan > .grow { flex: 1; min-width: 0; }
+.plan .pr { display: flex; flex-direction: column; align-items: flex-end; min-width: 84px; text-align: right; }
+.plan .price { font-weight: 800; font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.plan .per { font-size: 12px; opacity: .7; min-height: 14px; }
+.plan .btn.sm { width: auto; margin: 6px 0 0; padding: 8px 14px; }
 textarea.field { resize: vertical; font: inherit; }
 .foot a, .txt a, .sub a, .card p a { color: var(--teal); }
 @media (max-width: 360px) { .cols2 { grid-template-columns: 1fr; } }

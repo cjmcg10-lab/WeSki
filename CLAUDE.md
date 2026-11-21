@@ -426,7 +426,8 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 - Switch `PAYWALL` in both wrangler configs; `"off"` until the owner's Resend and Paddle accounts exist. With it off,
   everything is free and the pass screen says "free during the preview".
 - Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $3.99, Season $19.99/yr, Crew Season $34.99/yr (4 seats),
-  one free day per account. Paid: directions and meeting points, creating groups, full history (latest day free).
+  one free day per account. Paid: directions, creating groups, full history (latest day free). Group meeting points
+  and directions to them are free for every group member (owner, 2026-11-21): `graph.json?g=<code>`.
 - Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
   (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
   signed webhook. History is a phone-only soft gate. `public/sw.js` fetches graph.json network-first and drops it on 402.

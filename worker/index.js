@@ -32,6 +32,14 @@ async function passOk(request, env) {
   return accounts(env).hasPass(session(request));
 }
 
+/** A request for a mountain's directions data from a member of a group on that mountain (`?g=CODE`). */
+async function groupOk(url, env, resort) {
+  const code = (url.searchParams.get('g') || '').toUpperCase();
+  if (!CODE_RE.test(code)) return false;
+  const info = await env.GROUPS.get(env.GROUPS.idFromName(code)).info();
+  return !!info && info.resort === resort;
+}
+
 async function api(request, env, url) {
   const path = url.pathname, method = request.method;
   // state-changing requests must come from the app's own pages (cookies are SameSite=Lax as well)
@@ -127,7 +135,8 @@ export default {
     const url = new URL(request.url);
     // directions data is part of the paid tier: served only with a pass when the paywall is on
     const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
-    if (graph && !(await passOk(request, env))) return json({ error: 'pass_required' }, 402);
+    // Members of a group get it too, for meeting points (a group is only created with a pass, so someone paid).
+    if (graph && !(await passOk(request, env)) && !(await groupOk(url, env, graph[1]))) return json({ error: 'pass_required' }, 402);
     if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/groups')) {
       const res = await api(request, env, url);
       if (res) return res;

@@ -207,7 +207,9 @@ async function loadGraph(id) {
   const R = S.resort;
   if (R.graph) { S.router = new Router(R, S.geo); return; }        // local preview: the map file still holds it
   try {
-    const r = await fetch(`/data/${id}/graph.json`, { credentials: 'same-origin' });
+    // a group member without a pass gets it through the group, for meeting points
+    const g = S.group?.code && !acct.hasPass() ? `?g=${encodeURIComponent(S.group.code)}` : '';
+    const r = await fetch(`/data/${id}/graph.json${g}`, { credentials: 'same-origin' });
     if (r.status === 402) { S.router = null; S.graphLocked = true; return; }
     if (!r.ok) throw new Error(String(r.status));
     const graph = await r.json();
@@ -216,10 +218,12 @@ async function loadGraph(id) {
   } catch { S.router = null; }
 }
 
-/** Paid feature check on this phone. The server checks again for the parts that matter. */
-async function needRouter() {
+/** Paid feature check on this phone. The server checks again for the parts that matter.
+ *  kind 'meet': meeting points and directions to them, free for everyone in a group. */
+async function needRouter(kind) {
+  if (kind !== 'meet' && !acct.hasPass()) { openSheet('pass', 'directions'); return false; }
   if (!S.router) await S.graphP;
-  if (!S.router && !S.graphLocked) { S.graphP = loadGraph(S.place.id); await S.graphP; }
+  if (!S.router && (!S.graphLocked || S.group)) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.router) return true;
   if (S.graphLocked) openSheet('pass', 'directions');
   else toast('Directions could not load. Check your connection and try again.');
@@ -1031,7 +1035,7 @@ function setClosures(set, share = true) {
 const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill, unofficial: S.unofficial });
 
 async function startNav(target) {
-  if (!(await needRouter())) return;
+  if (!(await needRouter(target.type === 'meet' ? 'meet' : undefined))) return;
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
   guide.reset();
   ensureLocation(); wakeLock();
@@ -1172,7 +1176,7 @@ function recordRoute(name, r) {
 
 /** Offer a shared meeting point both people can reach, and share it with the group. */
 async function proposeMeet() {
-  if (!(await needRouter())) return;
+  if (!(await needRouter(S.group ? 'meet' : undefined))) return;
   const f = S.nav?.target.type === 'friend' ? friends().find((m) => m.id === S.nav.target.id) : null;
   const me = S.me && S.router.snap(S.me.x, S.me.y) ? { x: S.me.x, y: S.me.y } : null;
   const fr = f?.has && S.router.snap(f.x, f.y) ? { x: f.x, y: f.y } : null;
@@ -1585,8 +1589,8 @@ function sheetMore() {
 
 // ---------- SkiWithMe Pass (paid tier), sign-in, map help, reports, safety notice
 const PLAN_TEXT = { day: '24 hours from when you buy it', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
-const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Track today’s ski day'];
-const PASS_LIST = ['Turn-by-turn directions, spoken too', 'Meeting points both people can reach', 'Create your own groups', 'Your full history of ski days and replays'];
+const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Group meeting points, with directions there', 'Track today’s ski day'];
+const PASS_LIST = ['Turn-by-turn directions, spoken too', 'Create your own groups', 'Your full history of ski days and replays'];
 const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short', day: 'numeric', year: 'numeric' });
 
 function passStatus(me) {
@@ -1620,8 +1624,8 @@ function sheetPass(why) {
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
   const canBuy = me?.signedIn && c.paddle;
-  const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="price">$${p.price.toFixed(2)}</div>
-    ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div>`).join('');
+  const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">$${p.price.toFixed(2)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
+    ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div></div>`).join('');
   const trial = me?.signedIn && !me.trialUsed && !me.pass?.active ? '<button class="btn alt" data-act="trial">Try a free day</button>' : '';
   return ['SkiWithMe Pass', `
     ${reason ? `<div class="card"><p style="margin:0">${reason}</p></div>` : ''}

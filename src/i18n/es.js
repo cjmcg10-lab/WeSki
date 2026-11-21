@@ -184,4 +184,5 @@ export default {
   760: 'Ayuda a mejorar los mapas, informa de un error', 761: 'Todos los créditos y licencias', 762: 'Informar de un error del mapa aquí',
   763: 'Los pagos aún no están abiertos.', 764: 'No se pudo abrir el pago. Revisa tu conexión.',
   765: 'Activar tu ubicación', 766: 'SkiWithMe usa tu ubicación en este teléfono para mostrar dónde estás, en qué pista, las indicaciones y tus estadísticas. Se queda en tu teléfono.', 767: '¿Ayudas a mejorar los mapas?', 768: 'Después de cada día de esquí, envía qué pistas bajaste y los puntos que esquiaste fuera de las pistas del mapa. Nunca tu recorrido, horas, velocidad ni quién eres, y nada de refugios, aparcamientos o remontes. Cámbialo cuando quieras en Más → Privacidad y ayuda con el mapa.', 769: 'Sí, ayudar a mejorar los mapas', 770: 'No, gracias', 771: 'Toca el mapa donde está el error y vuelve a tocar este botón (o «Informar de un error del mapa aquí» en el marcador).',
+  772: 'Puntos de encuentro del grupo, con indicaciones para llegar', 773: 'al año',
 };

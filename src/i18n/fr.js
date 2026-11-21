@@ -184,4 +184,5 @@ export default {
   760: 'Aider à améliorer les cartes, signaler une erreur', 761: 'Tous les crédits et licences', 762: 'Signaler une erreur de carte ici',
   763: 'Les paiements ne sont pas encore ouverts.', 764: 'Impossible d’ouvrir le paiement. Vérifiez votre connexion.',
   765: 'Activer votre position', 766: 'SkiWithMe utilise votre position sur ce téléphone pour montrer où vous êtes, sur quelle piste, l’itinéraire et vos statistiques. Elle reste sur votre téléphone.', 767: 'Aider à améliorer les cartes ?', 768: 'Après chaque journée de ski, envoyer les pistes descendues et les endroits skiés hors des pistes de la carte. Jamais votre trace, vos heures, votre vitesse ni qui vous êtes, et rien des chalets, parkings ou remontées. Modifiable à tout moment dans Plus → Confidentialité et aide à la carte.', 769: 'Oui, aider à améliorer les cartes', 770: 'Non merci', 771: 'Touchez la carte à l’endroit de l’erreur, puis touchez à nouveau ce bouton (ou « Signaler une erreur de carte ici » sur l’épingle).',
+  772: 'Points de rendez-vous du groupe, avec l’itinéraire pour y aller', 773: 'par an',
 };
