@@ -52,6 +52,52 @@ Tested 2026-11-21: Powder Ridge from nothing to a full map in 32 s (terrain heig
 map, same counts); a rebuild from the existing map in 5 s, byte for byte the same; a scaffolded copy of
 Mohawk from a single point in 35 s.
 
+## Getting the whole resort, the first time (added 2026-11-21)
+
+The owner found Palisades Tahoe missing its Sherwood Express and Sherwood bowl, and the same checks then found
+Snowshoe missing its whole Silver Creek area. Two causes, both now handled by the pipeline itself:
+
+1. **Download box too small.** `new_resort.py` starts from one point. `pipeline.py` now downloads a margin of
+   1.5 km around the box, follows every run and lift joined to the resort on the ground (`tools/extent.py`: lines
+   within 150 m, 250 m for lifts, but never into another resort's named outline), and widens the download until
+   nothing joined to the resort reaches its edge. It writes the larger box into the config and the card says
+   "FOUND MORE" with the lifts it added.
+2. **Resort outline in OpenStreetMap incomplete or in several pieces.** `build_data.py` now keeps everything
+   joined to the resort, not only what is inside one outline; every outline with the resort's name counts, and
+   so does another outline when most of the lifts in it are on the resort's own lift list (Palisades has one
+   per valley).
+
+   **Neighbours are not merged.** Linked resorts touch on the ground (La Plagne and Les Arcs, Les Contamines and
+   Megève, Park City and Deer Valley's Empire Express). So the search only crosses a lift outside the outline
+   when its name is on the resort's lift list; any other lift stops it and is listed as "lifts joined on the
+   ground but not the resort's" (a neighbour, or a lift the list lacks: decide, then add it to `include_ways`).
+   Runs touching such a lift are not followed, runs are followed at most 4 steps away from a lift of the
+   resort, and a lift merely near the outline is not counted as inside it. Station platforms drawn as lines
+   are ignored.
+
+   **Older mountains:** `python3 tools/whole_check.py <ids>` runs the same search against a built map without
+   rebuilding, and lists lifts and listed runs joined to the resort but missing from the map. Run on all 50 on
+   2026-11-21, it found Pizol's gondola from Bad Ragaz, Val Thorens's Orelle gondola from the valley, four SkiWelt
+   Westendorf lifts (Fleidingbahn, Gampenkogel, Windauberg, KiWest) and two Champagny beginner lifts at La Plagne;
+   all were added with `include_ways` and rebuilt. Left out on purpose: Saalbach's Schanteilift (a separate
+   village drag lift reached only by a ski route) and Steamboat's Wildhorse Gondola (a village gondola not on
+   the resort's list). The box grows only when part of the resort lies outside it; when it does, the pipeline
+   downloads terrain again, so every config needs a `dem` source (added for La Plagne, Val Thorens, SkiWelt and
+   Saalbach).
+
+And one independent check, which catches what geometry cannot (an area reached only by shuttle):
+
+3. **The resort's own lift list.** Every official json needs `"lifts"`: from the resort feed
+   (`official_ratings.py lifts mtnpowder <n> <id>`, which also saves the feed's areas with their runs), or read
+   from the trail map (`Lift: <name>` lines in the notes; ask the cheap reader for them in the same pass). The
+   pipeline looks 6 km around for any listed chair or gondola the map lacks and adds it with everything joined
+   to it (config `include_ways`). The card then says "lifts on the resort's list: n of m on the map" and lists
+   any still missing; a missing chair means a missing area. Names that differ, or small lifts not in
+   OpenStreetMap, are explained in the official json under `lifts_explained`, never left unexplained. With feed
+   areas, the card also flags any area with half or more of its runs missing.
+
+A separate area reached by shuttle (Snowshoe's Silver Creek) goes in `isolated_lifts` with a note.
+
 ## Ratings: cheapest source first
 
 Stop at the first source that works:

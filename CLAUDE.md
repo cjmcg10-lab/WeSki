@@ -87,6 +87,16 @@ notes into the official ratings file. Ratings: typed sources first, then a cheap
 second look only where it disagrees with OpenStreetMap. **Map files live in Cloudflare R2** since 2026-11-21 (all but Jay Peak):
 run `node tools/maps_r2.mjs pull --all` first in any session that builds or tests maps; see "Map storage" in that doc.
 
+**Whole resort, first time (2026-11-21):** the pipeline widens the OpenStreetMap download until nothing joined to
+the resort reaches its edge (`tools/extent.py`), the build keeps everything joined to the resort even outside its
+OSM outline, and every official json carries the resort's `"lifts"` (feed, or read off the trail map); the card
+blocks on any listed chair or gondola missing from the map. Palisades had lost its Sherwood bowl and Snowshoe its
+Silver Creek area before this. The search never crosses into a neighbour: it passes a lift outside the outline only
+when the lift is on the resort's list. `tools/whole_check.py <ids>` checks built maps without rebuilding (run on all
+50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). The 40 older mountains
+with no `"lifts"` in their official json should get one (feed or map reading) so the check covers them fully.
+See "Getting the whole resort" in `docs/ADDING_MOUNTAINS.md`.
+
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
 mountain stands; update its row whenever a mountain is worked on.
 

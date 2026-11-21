@@ -181,6 +181,91 @@ def terrain_usa(b, out, log):
     return use[0]["project"] + (f" (gaps filled from {', '.join(g['project'] for g in use[1:])})" if len(use) > 1 else "")
 
 
+def whole_resort(rid, cfg, bbox, osm, opt, log, notes):
+    """Download OpenStreetMap around the resort, widening the box until nothing joined to the resort reaches its
+    edge (tools/extent.py), and until every lift on the resort's own list (official json "lifts") is found:
+    a lift the map lacks is looked for 6 km around and, when found, it and everything joined to it are added
+    (config "include_ways"). Returns True when the config's osm_bbox had to grow (the card says what was added)."""
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import extent
+    from official_ratings import missing_lifts
+    side = osm + ".box"
+    have = json.load(open(side)) if os.path.exists(osm) and os.path.exists(side) and not opt["fresh_osm"] else None
+
+    def fetch(b, path=osm):
+        span = max(b[2] - b[0], b[3] - b[1])
+        run([PY, "tools/dev/osmget.py", path, *map(str, b), str(max(2, math.ceil(span / 0.04)))], log)
+        if path == osm:
+            json.dump(b, open(side, "w"))
+        return b
+
+    def union(p, q):
+        return [min(p[0], q[0]), min(p[1], q[1]), max(p[2], q[2]), max(p[3], q[3])]
+
+    def grow(have):
+        for _ in range(6):
+            got = extent.check(osm, cfg)
+            need = got["bbox"]
+            if not need:
+                return have, got
+            inner = pad(have, -300)
+            if inner[0] <= need[0] and inner[1] <= need[1] and inner[2] >= need[2] and inner[3] >= need[3]:
+                return have, got
+            have = fetch(pad(union(have, need), 1500))
+        notes.append("the resort kept growing after six wider downloads: check its extent by hand")
+        return have, got
+
+    if have is None:
+        have = fetch(pad(bbox, 1500))  # a margin beyond the box, to see what continues past it
+    have, got = grow(have)
+    offp = f"{ROOT}/tools/official/{rid}.json"
+    offj = json.load(open(offp)) if os.path.exists(offp) else {}
+    listed = [n for n in offj.get("lifts", []) if n not in offj.get("lifts_explained", {})]
+    found_far = []
+    if listed and got["bbox"]:
+        feats, _ = extent.load(osm)
+        kept = [f["name"] for f in feats if f["lift"] and f["id"] in got["keep"] and f["name"]]
+        miss = missing_lifts(listed, kept)
+        if miss:
+            wide = osm[:-4] + ".wide.osm"
+            fetch(pad(have, 6000), wide)
+            wf, _ = extent.load(wide)
+            far = [f for f in wf if f["lift"] and f["name"] and f["id"] not in got["keep"]
+                   and missing_lifts(miss, [f["name"]]) != miss]
+            if far:
+                cfg["include_ways"] = sorted(set(cfg.get("include_ways", [])) | {f["id"] for f in far})
+                found_far = sorted({f["name"] for f in far})
+                pts = [p for f in far for p in f["pts"]]
+                have = fetch(pad(union(have, [min(p[0] for p in pts), min(p[1] for p in pts),
+                                              max(p[0] for p in pts), max(p[1] for p in pts)]), 1500))
+                have, got = grow(have)
+    need = got["bbox"]
+    if not need:
+        return False
+    old = cfg.get("osm_bbox") or bbox
+    # the box grows only when part of the resort lies outside it (not merely the margin around it)
+    raw = extent.extent(extent.load(osm)[0], got["keep"], margin_m=0)
+    bigger = raw[0] < old[0] or raw[1] < old[1] or raw[2] > old[2] or raw[3] > old[3]
+    if not (bigger or found_far):
+        return False
+    new = union(old, need)
+    path = f"{ROOT}/tools/resorts/{rid}.json"
+    disk = json.load(open(path))
+    if disk.get("area_bbox") == old:
+        disk["area_bbox"] = cfg["area_bbox"] = new
+    disk["osm_bbox"] = cfg["osm_bbox"] = new
+    if found_far:
+        disk["include_ways"] = cfg["include_ways"]
+    json.dump(disk, open(path, "w"), indent=1, ensure_ascii=False)
+    open(path, "a").write("\n")
+    subprocess.run([PY, "tools/dev/fmt_config.py", path], cwd=ROOT, capture_output=True)
+    before_lifts = set((snapshot(rid) or {}).get("lift_names", []))
+    lifts = sorted(set(n for n in got["added_lifts"] + found_far if n not in before_lifts))
+    notes.append(f"FOUND MORE: the resort reaches beyond its download box; the box was widened from {old} to {new}"
+                 + (f"; lifts added: {', '.join(lifts)}" if lifts else ""))
+    return bigger
+
+
 def terrain(rid, cfg, bbox, out, opt, log):
     if os.path.exists(out) and not opt["terrain"]:
         return "reused from the work folder"
@@ -241,8 +326,10 @@ def lift_ends_stuck(R):
     rs = {p["n"]: reach(p["n"]) for p in ends}
     nodes = {p["n"] for p in ends}
     hub = max(ends, key=lambda p: len(rs[p["n"]] & nodes))["n"]
-    return [p["name"] + ("" if p["n"] in rs[hub] else ": not reachable") + ("" if hub in rs[p["n"]] else ": no way back")
-            for p in ends if p["n"] not in rs[hub] or hub not in rs[p["n"]]]
+    flat = [R["lifts"][e["r"]]["name"] + ": does not climb" for e in g.get("edges", [])
+            if e["k"] == "l" and not e.get("bi") and g["nodes"][e["b"]][2] <= g["nodes"][e["a"]][2]]
+    return flat + [p["name"] + ("" if p["n"] in rs[hub] else ": not reachable") + ("" if hub in rs[p["n"]] else ": no way back")
+                   for p in ends if p["n"] not in rs[hub] or hub not in rs[p["n"]]]
 
 
 def card(rid, cfg, logs, before, terrain_note, notes):
@@ -264,6 +351,29 @@ def card(rid, cfg, logs, before, terrain_note, notes):
         if miss and int(miss.group(1)):
             add(False, f"{miss.group(1)} runs on the resort's list are not on the map",
                 miss.group(2)[:600] + " (draw them, or explain them in the official json: same_as / not_runs / elsewhere)")
+        off = json.load(open(off_path))
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        from official_ratings import missing_lifts, key, SURFACE_WORDS
+        if off.get("lifts"):
+            gone = [n for n in missing_lifts(off["lifts"], [l["name"] for l in R["lifts"] if not l.get("hide")])
+                    if n not in off.get("lifts_explained", {})]
+            big = [n for n in gone if not any(w in n.lower() for w in SURFACE_WORDS)]
+            small = [n for n in gone if n not in big]
+            add(not big, f"lifts on the resort's list: {len(off['lifts']) - len(gone)} of {len(off['lifts'])} on the map",
+                ("MISSING: " + ", ".join(big) + ". A missing chair or gondola usually means a missing area: find it "
+                 "before going live (not in OpenStreetMap: extra_lifts; removed by the resort: explain it in the official json "
+                 "under lifts_explained)" if big else "") + (f" Small lifts not on the map: {', '.join(small)}" if small else ""))
+        else:
+            add(False, "no lift list from the resort: put the trail map's lift names in the official json as \"lifts\"",
+                "without it a missing chair or area cannot be noticed (map_read.py notes: lines \"Lift: <name>\")")
+        if off.get("areas") and miss:
+            gone_runs = {key(n) for n in miss.group(2).split(", ")}
+            bad = []
+            for area, runs in off["areas"].items():
+                lost = [r for r in runs if key(r) in gone_runs]
+                if len(runs) >= 3 and len(lost) >= 0.5 * len(runs):
+                    bad.append(f"{area} ({len(lost)} of {len(runs)} runs missing)")
+            add(not bad, f"resort areas mostly missing from the map: {len(bad)}", "; ".join(bad))
     else:
         add(False, "ratings NOT checked: not ready to go live",
             "make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)")
@@ -355,9 +465,12 @@ def one(rid, opt):
     if in_r2 and not os.path.exists(f"{ROOT}/public/data/{rid}/resort.json"):
         run(["node", "tools/maps_r2.mjs", "pull", rid], log)
 
-    if not os.path.exists(osm) or opt["fresh_osm"]:
-        span = max(bbox[2] - bbox[0], bbox[3] - bbox[1])
-        run([PY, "tools/dev/osmget.py", osm, *map(str, bbox), str(max(2, math.ceil(span / 0.04)))], log)
+    grew = whole_resort(rid, cfg, bbox, osm, opt, log, notes)
+    if grew:
+        bbox = cfg["osm_bbox"]
+        if os.path.exists(dem):
+            os.remove(dem)  # the terrain must cover the larger area: download it again
+        opt = {**opt, "terrain": True}
     before = snapshot(rid)
     tnote = "not rebuilt (--checks-only)" if opt["checks_only"] else terrain(rid, cfg, bbox, dem, opt, log)
 

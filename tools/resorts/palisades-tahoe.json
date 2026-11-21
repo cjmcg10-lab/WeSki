@@ -4,15 +4,15 @@
  "region": "California, USA",
  "tz": "America/Los_Angeles",
  "area_bbox": [
-  -120.2946,
-  39.1535,
+  -120.2963,
+  39.1279,
   -120.208,
   39.2121
  ],
  "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
  "osm_bbox": [
-  -120.2946,
-  39.1535,
+  -120.2963,
+  39.1279,
   -120.208,
   39.2121
  ],
@@ -56,6 +56,14 @@
    "Summit Six (top)",
    "trail:Estelle Bowl",
    "hike"
+  ],
+  [
+   "trail:Sun Bowl",
+   "trail:Big Bend Bowl"
+  ],
+  [
+   "trail:Sun Bowl",
+   "trail:SP Bowl"
   ]
  ],
  "links_note": "Alpine Meadows: Beaver Bowl, Estelle Bowl and Idiot's Delight are reached along the ridge from the Summit Six top; OpenStreetMap has no traverse, so they are joined as walks (approximate)."

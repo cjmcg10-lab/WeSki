@@ -141,5 +141,20 @@
   "Bronco Terrain Park": "terrain park",
   "Eagle's Rest Terrain Park": "terrain park",
   "Antelope Flats Terrain Park": "terrain park"
- }
+ },
+ "lifts": [
+  "Aerial Tram",
+  "Après Vous Quad Chair",
+  "Bridger Gondola",
+  "Casper Quad Chair",
+  "Eagle's Rest Quad Chair",
+  "Marmot Double Chair",
+  "Moose Creek Quad Chair",
+  "Sublette Quad Chair",
+  "Sweetwater Gondola",
+  "Teewinot Quad Chair",
+  "Teton Quad Chair",
+  "Thunder Quad Chair",
+  "Union Pass Quad Chair"
+ ]
 }

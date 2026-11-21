@@ -7,8 +7,8 @@
  "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
  "osm_bbox": [
   6.6,
-  45.46,
-  6.78,
+  45.4483,
+  6.7829,
   45.6
  ],
  "building_range": 150,
@@ -50,5 +50,10 @@
    "len": 624,
    "why": "ign photo: drawn 54.0 m beside the cut run"
   }
+ },
+ "include_ways": [223966482, 1019781485],
+ "include_ways_note": "Lifts outside the OpenStreetMap outline that belong to the resort (found by tools/whole_check.py, 2026-11-21).",
+ "dem": {
+  "source": "ign"
  }
 }

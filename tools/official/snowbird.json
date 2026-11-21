@@ -187,5 +187,19 @@
   "Pipeline Bowl": "no symbol",
   "Baldy's Bowl": "no symbol",
   "Hamilton Cliffs": "no symbol"
- }
+ },
+ "lifts": [
+  "Aerial Tram",
+  "Baby Thunder Lift",
+  "Baldy",
+  "Chickadee Lift",
+  "Gad 2",
+  "Gadzoom",
+  "Little Cloud",
+  "Mid-Gad Lift",
+  "Mineral Basin",
+  "Peruvian",
+  "Thunder Tube",
+  "Wilbere"
+ ]
 }

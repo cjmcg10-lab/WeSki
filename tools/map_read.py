@@ -15,7 +15,8 @@
          Turns notes into tools/official/<id>.json. One run per line: "Run name | level".
          Levels: green, blue, bb (blue-black / blue with a diamond), black, double
                  (--colour for Europe and Japan: green, blue, red, black, route)
-         Lines starting with # are skipped; "Run name | ?" (unreadable) is listed for the second look. "Run name | skip | why" puts the name under not_runs.
+         "Lift: <name>" lines give the map's lifts (the card checks each is on our map: a missing chair means
+         a missing area). Lines starting with # are skipped; "Run name | ?" (unreadable) is listed for the second look. "Run name | skip | why" puts the name under not_runs.
          A run listed twice with different levels keeps the harder one and is reported.
 
   compare map_read.py compare <id> <osm extract>
@@ -100,10 +101,13 @@ def notes(a):
     if not src:
         raise SystemExit("--source is required (where the map came from: url, or 'uploaded by the owner')")
     table = COLOUR if "--colour" in a else LEVEL
-    runs, bb, notr, clash, unsure = {}, [], {}, [], []
+    runs, bb, notr, clash, unsure, lifts = {}, [], {}, [], [], []
     for raw in open(path, encoding="utf-8"):
         line = raw.strip()
         if not line or line.startswith("#"):
+            continue
+        if line.lower().startswith("lift:"):  # the map's lift names: the card checks every one is on our map
+            lifts.append(line[5:].strip())
             continue
         parts = [p.strip() for p in line.split("|")]
         if len(parts) < 2 or not parts[1]:
@@ -131,10 +135,12 @@ def notes(a):
         out["blue_black"] = sorted(bb)
     if notr:
         out["not_runs"] = notr
+    if lifts:
+        out["lifts"] = sorted(set(lifts))
     p = f"{HERE}/official/{rid}.json"
     if os.path.exists(p):
         old = json.load(open(p))
-        kept = [k for k in old if k not in ("source", "fetched", "runs", "blue_black", "scheme")]
+        kept = [k for k in old if k not in ("source", "fetched", "runs", "blue_black", "scheme") and not (k == "lifts" and lifts)]
         for k in kept:
             out[k] = {**old[k], **out[k]} if k == "not_runs" and k in out else old[k]
         if kept:

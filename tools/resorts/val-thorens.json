@@ -6,10 +6,10 @@
  "area_name": "Val Thorens",
  "terrain_source": "IGN France RGE ALTI 1 m elevation model (Licence Ouverte)",
  "osm_bbox": [
-  6.52,
-  45.25,
+  6.4958,
+  45.2005,
   6.63,
-  45.34
+  45.3479
  ],
  "building_range": 150,
  "poi_range": 120,
@@ -17,5 +17,14 @@
   "886535871",
   "1414319931",
   "1387581415"
- ]
+ ],
+ "include_ways": [1222284606, 1349553275],
+ "include_ways_note": "Lifts outside the OpenStreetMap outline that belong to the resort (found by tools/whole_check.py, 2026-11-21).",
+ "dem": {
+  "source": "ign"
+ },
+ "two_way_lifts": [
+  "Télécabine d'Orelle"
+ ],
+ "two_way_lifts_note": "Télécabine d'Orelle: gondola from Orelle in the valley; no run goes down to Orelle, so skiers ride it down."
 }

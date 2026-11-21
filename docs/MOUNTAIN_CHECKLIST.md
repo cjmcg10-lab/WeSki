@@ -49,6 +49,9 @@ the score card in `tools/cards/<id>.md` says which items still need a person. Se
 - [ ] `tools/audit.py --list` shows no run missing inside the resort boundary.
 - [ ] Every lift on the resort's lift list is on the map, with the right kind (chair, gondola, cable car,
       T-bar, platter, rope tow, carpet, train). No removed, planned or summer-only lifts.
+- [ ] The official json has the resort's `"lifts"`, and `python3 tools/whole_check.py <id>` reports nothing joined
+      to the resort on the ground that the map lacks (whole areas such as Palisades' Sherwood bowl, a gondola from
+      town) and no neighbour resort merged in.
 - [ ] Runs join where they really join: no runs stopping short of a junction, none running past it.
 - [ ] Directions work from the base to the top of every lift, and every run can be reached.
 - [ ] Lodges, base areas, restaurants, ticket offices and car parks have the right names.

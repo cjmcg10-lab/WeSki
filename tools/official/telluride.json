@@ -118,5 +118,28 @@
   "Beginner Park": "freestyle terrain",
   "Gold Hill closed area (Revelation side)": "closed on the map",
   "Closed area above Lift 6 / Misty Maiden": "closed on the map"
+ },
+ "lifts": [
+  "1 Chondola",
+  "10 Sunshine Express",
+  "11 Ute Park",
+  "12 Prospect Express",
+  "13 Linx",
+  "14 Gold Hill Express",
+  "15 Revelation Lift",
+  "2 Comp Hill Lift",
+  "4 Village Express",
+  "5 Polar Queen Express",
+  "6 Apex Lift",
+  "9 Plunge Lift",
+  "G1 Free Gondola",
+  "G2 Free Gondola",
+  "G3 Free Gondola"
+ ],
+ "lifts_explained": {
+  "13 Linx": "on the map as Lynx",
+  "G1 Free Gondola": "the free gondola: on the map as Gondola Line 1, Gondola Line 2 and Free Intercept Gondola",
+  "G2 Free Gondola": "see G1",
+  "G3 Free Gondola": "see G1"
  }
 }

@@ -10,10 +10,10 @@
   "baseLon": -111.63799,
   "top": 3371,
   "base": 2604,
-  "trails": 134,
+  "trails": 141,
   "lifts": 11,
   "zones": false,
-  "bytes": 730323
+  "bytes": 777064
  },
  {
   "id": "berkshire-east",
@@ -42,10 +42,10 @@
   "baseLon": -111.36752,
   "top": 3401,
   "base": 2077,
-  "trails": 320,
+  "trails": 324,
   "lifts": 43,
   "zones": false,
-  "bytes": 2297383
+  "bytes": 2328008
  },
  {
   "id": "bolton-valley",
@@ -180,16 +180,16 @@
   "name": "Crystal Mountain",
   "region": "Washington, USA",
   "tz": "America/Los_Angeles",
-  "lat": 46.92828,
-  "lon": -121.50472,
+  "lat": 46.91565,
+  "lon": -121.50395,
   "baseLat": 46.93567,
   "baseLon": -121.4749,
-  "top": 2124,
+  "top": 2125,
   "base": 1337,
   "trails": 137,
   "lifts": 11,
   "zones": false,
-  "bytes": 681284
+  "bytes": 681348
  },
  {
   "id": "deer-valley",
@@ -205,7 +205,7 @@
   "trails": 232,
   "lifts": 34,
   "zones": false,
-  "bytes": 1904082
+  "bytes": 1905087
  },
  {
   "id": "geto-kogen",
@@ -260,16 +260,16 @@
   "name": "Jackson Hole",
   "region": "Wyoming, USA",
   "tz": "America/Denver",
-  "lat": 43.59726,
-  "lon": -110.87076,
+  "lat": 43.58662,
+  "lon": -110.89142,
   "baseLat": 43.58754,
   "baseLon": -110.82789,
-  "top": 3175,
+  "top": 3226,
   "base": 1926,
-  "trails": 138,
+  "trails": 143,
   "lifts": 17,
   "zones": false,
-  "bytes": 1174784
+  "bytes": 1356385
  },
  {
   "id": "jay-peak",
@@ -329,11 +329,11 @@
   "baseLat": 45.55933,
   "baseLon": 6.73759,
   "top": 3056,
-  "base": 1211,
+  "base": 1210,
   "trails": 162,
-  "lifts": 85,
+  "lifts": 87,
   "zones": true,
-  "bytes": 2755161
+  "bytes": 2845130
  },
  {
   "id": "les-arcs",
@@ -490,10 +490,10 @@
   "baseLon": -120.22914,
   "top": 2741,
   "base": 1889,
-  "trails": 219,
-  "lifts": 43,
+  "trails": 264,
+  "lifts": 44,
   "zones": true,
-  "bytes": 1398892
+  "bytes": 1626883
  },
  {
   "id": "park-city",
@@ -534,14 +534,14 @@
   "tz": "Europe/Zurich",
   "lat": 46.97952,
   "lon": 9.42703,
-  "baseLat": 47.02891,
-  "baseLon": 9.43213,
+  "baseLat": 47.01718,
+  "baseLon": 9.47343,
   "top": 2249,
-  "base": 536,
+  "base": 489,
   "trails": 39,
-  "lifts": 13,
+  "lifts": 14,
   "zones": true,
-  "bytes": 868104
+  "bytes": 899776
  },
  {
   "id": "powder-ridge",
@@ -628,16 +628,16 @@
   "name": "SkiWelt",
   "region": "Tyrol, Austria",
   "tz": "Europe/Vienna",
-  "lat": 47.4651,
-  "lon": 12.20433,
+  "lat": 47.40282,
+  "lon": 12.24988,
   "baseLat": 47.44688,
   "baseLon": 12.16252,
-  "top": 1825,
+  "top": 1866,
   "base": 626,
-  "trails": 163,
-  "lifts": 76,
+  "trails": 174,
+  "lifts": 80,
   "zones": true,
-  "bytes": 2798675
+  "bytes": 3032126
  },
  {
   "id": "smugglers-notch",
@@ -666,26 +666,26 @@
   "baseLon": -111.67394,
   "top": 3463,
   "base": 2365,
-  "trails": 201,
+  "trails": 207,
   "lifts": 14,
   "zones": false,
-  "bytes": 939992
+  "bytes": 982157
  },
  {
   "id": "snowshoe",
   "name": "Snowshoe",
   "region": "West Virginia, USA",
   "tz": "America/New_York",
-  "lat": 38.40168,
-  "lon": -79.99264,
+  "lat": 38.4409,
+  "lon": -79.99894,
   "baseLat": 38.42347,
   "baseLon": -80.01598,
-  "top": 1458,
+  "top": 1468,
   "base": 994,
-  "trails": 43,
-  "lifts": 8,
+  "trails": 61,
+  "lifts": 13,
   "zones": true,
-  "bytes": 418634
+  "bytes": 600997
  },
  {
   "id": "solitude",
@@ -701,7 +701,7 @@
   "trails": 84,
   "lifts": 9,
   "zones": true,
-  "bytes": 573823
+  "bytes": 573821
  },
  {
   "id": "steamboat",
@@ -813,7 +813,7 @@
   "trails": 132,
   "lifts": 19,
   "zones": false,
-  "bytes": 1371983
+  "bytes": 1372149
  },
  {
   "id": "tignes-val-disere",
@@ -854,14 +854,14 @@
   "tz": "Europe/Paris",
   "lat": 45.25559,
   "lon": 6.59993,
-  "baseLat": 45.30293,
-  "baseLon": 6.5442,
-  "top": 3220,
-  "base": 1822,
-  "trails": 102,
-  "lifts": 32,
+  "baseLat": 45.20768,
+  "baseLon": 6.54615,
+  "top": 3219,
+  "base": 884,
+  "trails": 105,
+  "lifts": 34,
   "zones": true,
-  "bytes": 1568355
+  "bytes": 1848120
  },
  {
   "id": "wachusett",

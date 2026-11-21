@@ -243,9 +243,21 @@ def main():
         area = Polygon([tf.transform(x, y) for x, y in ((w_, s_), (e_, s_), (e_, n_), (w_, n_))]).buffer(cfg.get("area_buffer", 150))
     if cfg.get("area_name"):
         assert area is not None, f"no winter_sports area named {cfg['area_name']!r} in the OSM extract"
+    if cfg.get("area_name") or cfg.get("area_bbox"):
+        # tools/extent.py: what lies inside the outline (or box), plus every run and lift joined to it on the
+        # ground, except what is inside another resort's outline. An outline that leaves out part of the resort
+        # no longer drops that part (Palisades' Sherwood bowl, 2026-11-21).
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import extent
+        feats, areas = extent.load(osm_path)
+        keep, added = extent.resort(feats, areas, cfg)
         inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
-        pistes = [w for w in pistes if inside_area(w)]
-        lifts = [w for w in lifts if str(w[0]).startswith("x") or inside_area(w)]
+        ours = lambda w: str(w[0]).startswith("x") or int(w[0]) in keep or inside_area(w)
+        joined = sorted({w[2].get("name") or f"way {w[0]}" for w in lifts if not str(w[0]).startswith("x") and int(w[0]) in added and not inside_area(w)})
+        if joined:
+            print(f"lifts outside the outline but joined to the resort, kept: {', '.join(joined)}")
+        pistes = [w for w in pistes if ours(w)]
+        lifts = [w for w in lifts if ours(w)]
 
     if cfg.get("dem_only"):
         # a resort that runs over a border the elevation model stops at (Zermatt / Cervinia):

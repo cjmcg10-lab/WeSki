@@ -11,10 +11,10 @@
  ],
  "terrain_source": "USGS 3DEP: 1 m LiDAR (WA Eastern Cascades 2019) where it covers the area, the 10 m national elevation model elsewhere (public domain)",
  "osm_bbox": [
-  -121.5136,
-  46.9098,
+  -121.5179,
+  46.9021,
   -121.457,
-  46.9638
+  46.969
  ],
  "ratings_feed": {
   "mtnpowder": 80

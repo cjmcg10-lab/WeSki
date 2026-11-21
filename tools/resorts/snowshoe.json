@@ -10,7 +10,7 @@
   -80.0277,
   38.3921,
   -79.9737,
-  38.4324
+  38.4551
  ],
  "ratings_feed": {
   "mtnpowder": 2
@@ -18,5 +18,13 @@
  "rename": {
   "Crosscut": "Cross Cut",
   "Singletree": "Single Tree"
- }
+ },
+ "isolated_lifts": [
+  "Flying Eagle",
+  "Cascade",
+  "Mountaineer",
+  "Cubb Run",
+  "Magic carpet"
+ ],
+ "isolated_lifts_note": "Silver Creek, Snowshoe's separate area about 2 km north of the village, reached by the resort shuttle: no run joins it to the main mountain."
 }

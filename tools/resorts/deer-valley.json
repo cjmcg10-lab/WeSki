@@ -7,7 +7,7 @@
  "area_buffer": 300,
  "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
  "osm_bbox": [
-  -111.5381,
+  -111.5436,
   40.5729,
   -111.4264,
   40.6499

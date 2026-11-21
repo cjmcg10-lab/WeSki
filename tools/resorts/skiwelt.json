@@ -19,5 +19,31 @@
    ]
   }
  ],
- "extra_note_33": "33 Übungslift Salvista: the practice slope beside the Salvista T-bar at Itter (lift 33 on the 2025-26 map), drawn 35 m beside the lift; approximate."
+ "extra_note_33": "33 Übungslift Salvista: the practice slope beside the Salvista T-bar at Itter (lift 33 on the 2025-26 map), drawn 35 m beside the lift; approximate.",
+ "include_ways": [
+  4442612,
+  4442613,
+  4442833,
+  145634136
+ ],
+ "include_ways_note": "Lifts outside the OpenStreetMap outline that belong to the resort (found by tools/whole_check.py, 2026-11-21).",
+ "dem": {
+  "source": "cog",
+  "epsg": 32633,
+  "urls": [
+   "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2700000E4450000.tif",
+   "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2700000E4500000.tif",
+   "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2650000E4450000.tif"
+  ]
+ },
+ "osm_bbox": [
+  12.1496,
+  47.3809,
+  12.344773582747006,
+  47.5353
+ ],
+ "two_way_lifts": [
+  "Sonnenband"
+ ],
+ "two_way_lifts_note": "Sonnenband: a flat beginner conveyor, usable both ways."
 }

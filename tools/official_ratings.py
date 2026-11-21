@@ -2,6 +2,7 @@
 """Official trail ratings: fetch a resort's own published trail list, compare it with the built map.
 
   fetch    official_ratings.py fetch mtnpowder <resortId> <id>
+  lifts    official_ratings.py lifts mtnpowder <resortId> <id>   (adds the lift list and areas only)
            Saves tools/official/<id>.json from the feed behind the resort's own trail report.
            (Alterra resorts: Steamboat 6, Winter Park 5, Mammoth 60, Sugarbush 70.)
            For any other resort, write tools/official/<id>.json by hand from the resort's
@@ -51,6 +52,37 @@ def key(name):
     """Run names differ in small ways between sources: 'Arriba (Upper)' / 'Upper Arriba', & / and, apostrophes."""
     s = unnumbered(name).lower().replace("&", " and ").replace("’", "'").replace("'", "")
     return " ".join(sorted(t for t in re.split(r"[^a-z0-9]+", s) if t and t not in ("the", "trail", "run")))
+
+
+LIFT_WORDS = {"express", "chair", "chairlift", "lift", "gondola", "quad", "triple", "double", "high", "speed", "six",
+              "eight", "pack", "detachable", "the", "to", "chondola", "cabriolet", "tbar", "t", "bar", "platter", "poma",
+              "surface", "conveyor", "telemix", "and", "s"}
+SURFACE_WORDS = ("carpet", "conveyor", "tow", "rope", "handle", "platter", "poma", "t-bar", "tbar", "j-bar", "wonder")
+
+
+def lift_key(name):
+    s = re.sub(r"\(.*?\)", " ", name.lower()).replace("-", "").replace("&", " and ").replace("'", "").replace("’", "")
+    toks = [t for t in re.split(r"[^a-z0-9]+", s) if t and t not in LIFT_WORDS and not re.fullmatch(r"\d{1,2}|#\d+", t)]
+    return " ".join(toks)
+
+
+def missing_lifts(listed, on_map):
+    """The resort's lifts with no lift of a matching name on the map. Names differ ("Summit Express" / "Summit
+    Six", "Funitel" / "Gold Coast Funitel"), so words such as express, chair, quad and seat counts are ignored and
+    one name may contain the other."""
+    import difflib
+    keys = [lift_key(m) for m in on_map]
+    bare = {re.sub(r"[^a-z0-9]", "", m.lower()) for m in on_map}
+    out = []
+    for n in listed:
+        k = lift_key(n)
+        if not k or re.sub(r"[^a-z0-9]", "", n.lower()) in bare:
+            continue
+        hit = any(k == m or k.replace(" ", "") == m.replace(" ", "") or (m and (f" {k} " in f" {m} " or f" {m} " in f" {k} ")) or
+                  difflib.SequenceMatcher(None, k, m).ratio() >= 0.8 for m in keys)
+        if not hit:
+            out.append(n)
+    return out
 
 
 def loose(name):
@@ -137,6 +169,29 @@ def fetch_mtnpowder(resort_id, rid):
            "fetched": datetime.date.today().isoformat(), "runs": dict(sorted(runs.items())), "blue_black": sorted(bb)}
     json.dump(out, open(f"{HERE}/official/{rid}.json", "w"), indent=1, ensure_ascii=False)
     print(f"{rid}: {len(runs)} rated runs saved; not rated by the resort: {skipped}")
+    fetch_mtnpowder_lifts(resort_id, rid, j)
+
+
+def fetch_mtnpowder_lifts(resort_id, rid, j=None):
+    """Add the resort's own lift list and its areas (area: run names) to tools/official/<id>.json, keeping
+    everything else in the file. The pipeline's card compares them with the map: a lift or an area missing from
+    the map means part of the resort is missing (Palisades' Sherwood bowl, 2026-11-21)."""
+    if j is None:
+        url = f"https://mtnpowder.com/feed?resortId={resort_id}"
+        j = json.load(urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "weski-build"}), timeout=60))
+    p = f"{HERE}/official/{rid}.json"
+    off = json.load(open(p))
+    lifts, areas = [], {}
+    for a in j["MountainAreas"]:
+        lifts += [l["Name"].strip() for l in a.get("Lifts", []) if l.get("Name")]
+        tr = [t["Name"].strip() for t in a.get("Trails", []) if t.get("Name")]
+        if tr:
+            areas[a["Name"].strip()] = tr
+    off["lifts"] = sorted(set(lifts))
+    off["areas"] = areas
+    json.dump(off, open(p, "w"), indent=1, ensure_ascii=False)
+    open(p, "a").write("\n")
+    print(f"{rid}: {len(off['lifts'])} lifts and {len(areas)} areas from the resort feed")
 
 
 def check(rid):
@@ -195,6 +250,8 @@ def check(rid):
 if __name__ == "__main__":
     if sys.argv[1] == "fetch" and sys.argv[2] == "mtnpowder":
         fetch_mtnpowder(int(sys.argv[3]), sys.argv[4])
+    elif sys.argv[1] == "lifts" and sys.argv[2] == "mtnpowder":
+        fetch_mtnpowder_lifts(int(sys.argv[3]), sys.argv[4])
     elif sys.argv[1] == "check":
         check(sys.argv[2])
     else:

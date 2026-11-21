@@ -124,5 +124,21 @@
   "Supreme Access": "no symbol, access",
   "Race Course Saddle": "no symbol, area label",
   "Snake Pit": "permanently closed"
+ },
+ "lifts": [
+  "Big Griz",
+  "Collins",
+  "Little Griz",
+  "Lodge Tow",
+  "Rustler Lift",
+  "Snowpine Lift",
+  "Sugarloaf",
+  "Sunnyside",
+  "Supreme",
+  "Transfer Tow",
+  "Wildcat"
+ ],
+ "lifts_explained": {
+  "Big Griz": "beginner carpet at Albion base; OpenStreetMap names the two carpets Little GMZ and MG GMZ"
  }
 }

@@ -9,5 +9,13 @@
  "area_name": "Skicircus Saalbach-Hinterglemm Leogang Fieberbrunn",
  "isolated_lifts": [
   "Babylift Viehhofen"
- ]
+ ],
+ "dem": {
+  "source": "cog",
+  "epsg": 32633,
+  "urls": [
+   "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2700000E4500000.tif",
+   "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2650000E4500000.tif"
+  ]
+ }
 }
