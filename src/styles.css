@@ -651,3 +651,12 @@ textarea.field { resize: vertical; font: inherit; }
 .consent-tick { display: flex; gap: 12px; align-items: flex-start; margin: 14px 0 16px; padding: 12px; border: 1px solid rgba(255,255,255,.18); border-radius: 12px; font-size: 15px; line-height: 1.45; cursor: pointer; }
 .consent-tick input { width: 24px; height: 24px; flex: none; margin: 0; accent-color: #2fd3b0; }
 #consent .btn[disabled] { opacity: .45; }
+
+/* paid features: a small badge on the button, and the pop-up when tapped without a pass */
+.pass-badge { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: rgba(255,255,255,.18); vertical-align: middle; }
+.pass-badge .ico { width: 13px; height: 13px; }
+.upsell .kicker { display: flex; align-items: center; gap: 6px; margin: 0 0 4px; color: var(--teal, #2fd3b0); font-weight: 700; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.upsell .kicker .ico { width: 16px; height: 16px; }
+.upsell h2 { margin: 2px 32px 8px 0; }
+.upsell .btn { margin-top: 10px; }
+.upsell .learn { display: block; margin: 8px auto 4px; }

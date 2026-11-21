@@ -78,8 +78,8 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
 
 1. Form the LLC (recommended first; payments, trademark and terms in its name). Then put the company name and a
    contact email into `public/legal/*.html` (search for "to be added before the paid launch").
-2. Buy a domain (about $10–12 a year) and point it at the Worker (Cloudflare dashboard: Workers → skiwithme → Domains).
-   Paddle reviews the website on a real domain, and sign-in email needs one.
+2. (Done 2026-11-20) The app is at https://skiwithme.builtbyroger.app; the website Paddle reviews is
+   https://skiwithme.builtbyroger.app/about.
 3. Resend (free up to 3,000 emails a month): create an account, verify the domain, create an API key. In Cloudflare
    (Workers → skiwithme → Settings → Variables and secrets) add secret `RESEND_API_KEY`, and tell Claude the sender
    address (for example `SkiWithMe <signin@yourdomain>`) for `MAIL_FROM`.

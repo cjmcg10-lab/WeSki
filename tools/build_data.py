@@ -175,7 +175,10 @@ def main():
             nid = f"t{k}_{j}"
             nodes[nid] = tf.transform(lon, lat)
             ids.append(nid)
-        ways.append((wid, ids, {"piste:type": "downhill", "name": x["name"], "_traced": "yes"}))
+        tags = {"piste:type": "downhill", "name": x["name"], "_traced": "yes"}
+        if x.get("glade") or re.search(r"glade|woods|trees", x["name"], re.I):   # a glade: drawn dashed like other glades
+            tags["gladed"] = "yes"
+        ways.append((wid, ids, tags))
 
     # English names where the map has them (Japan), plus per-resort corrections from the config
     # "way_names" names one OpenStreetMap way: a run mapped as an upper and a lower way under one name, where

@@ -220,11 +220,11 @@ async function loadGraph(id) {
 /** Paid feature check on this phone. The server checks again for the parts that matter.
  *  kind 'group': meeting points and directions to them or to a friend, free for everyone in a group. */
 async function needRouter(kind) {
-  if (!(kind === 'group' && S.group) && !acct.hasPass()) { openSheet('pass', 'directions'); return false; }
+  if (!(kind === 'group' && S.group) && !acct.hasPass()) { upsell('directions'); return false; }
   if (!S.router) await S.graphP;
   if (!S.router && (!S.graphLocked || S.group)) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.router) return true;
-  if (S.graphLocked) openSheet('pass', 'directions');
+  if (S.graphLocked) upsell('directions');
   else toast('Directions could not load. Check your connection and try again.');
   return false;
 }
@@ -268,7 +268,7 @@ function showConsent() {
       <h2 id="consent-h">Before you ski</h2>
       <p>SkiWithMe is a guide, not a safety device. Maps, ratings, closures and directions can be wrong or out of date, and GPS can be off by tens of metres.</p>
       <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
-      <p class="consent-links"><a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/privacy.html" target="_blank">Privacy policy</a></p>
+      <p class="consent-links"><a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy policy</a></p>
       <label class="consent-tick"><input type="checkbox" id="f-consent" /><span>I have read and agree to the Terms of Use and the Privacy Policy, including the assumption of risk.</span></label>
       <button class="btn" id="consent-ok" disabled>I understand and agree</button></div>`;
     document.body.appendChild(el);
@@ -816,7 +816,7 @@ function askMapHelp() {
     <p class="sub">After each ski day, send which runs you skied and the spots you skied off the mapped runs. Never your track, times, speed or who you are, and nothing from lodges, car parks or lifts. Change it any time in More → Privacy &amp; map help.</p>
     <button class="btn" data-act="maphelp" data-v="1">Yes, help improve the maps</button>
     <button class="btn alt" data-act="maphelp" data-v="0">No thanks</button>
-    <p class="note" style="text-align:center"><a href="/legal/privacy.html" target="_blank">Privacy policy</a></p></div>`;
+    <p class="note" style="text-align:center"><a href="/legal/privacy" target="_blank">Privacy policy</a></p></div>`;
   $('#modal').classList.remove('hidden');
 }
 
@@ -1460,7 +1460,7 @@ function sheetGroup() {
   const g = S.group;
   if (!g) {
     return ['Group', `<div class="plain"><div class="sec-title">Profile <small>(optional)</small></div>${profileFields()}</div>
-      <div class="card"><h4>Create a private group</h4><p class="sub">Up to 20 people. Share the code with friends; nobody can see a location until that person turns sharing on.</p><button class="btn" data-act="create-group">Create Group</button><p class="note" style="text-align:center;margin-bottom:0">Only share your location when you choose.</p></div>
+      <div class="card"><h4>Create a private group</h4><p class="sub">Up to 20 people. Share the code with friends; nobody can see a location until that person turns sharing on.</p><button class="btn" data-act="create-group">Create Group${passBadge()}</button><p class="note" style="text-align:center;margin-bottom:0">Only share your location when you choose.</p></div>
       <div class="card"><h4>Join with a code</h4><input class="field code" id="f-code" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" /><button class="btn outline" data-act="join-group" style="margin-bottom:2px">Join Group</button></div>`];
   }
   const st = g.state, mine = st?.members.find((m) => m.id === S.profile.id);
@@ -1566,7 +1566,7 @@ function sheetHistory() {
   }
   const locked = !acct.hasPass() && list.length > 1;
   const shown = locked ? list.slice(0, 1) : list;
-  const lockCard = locked ? `<div class="card"><p style="margin-top:0">${list.length - 1 === 1 ? '1 more ski day is saved on this phone.' : t('{0} more ski days are saved on this phone.', list.length - 1)}</p><p class="sub">The latest day is free. Your full history and replays are part of the SkiWithMe Pass.</p><button class="btn" data-act="open-sheet" data-s="pass">See the pass</button></div>` : '';
+  const lockCard = locked ? `<div class="card"><p style="margin-top:0">${list.length - 1 === 1 ? '1 more ski day is saved on this phone.' : t('{0} more ski days are saved on this phone.', list.length - 1)}</p><p class="sub">The latest day is free. Your full history and replays are part of the SkiWithMe Pass.</p><button class="btn" data-act="up-plans" data-why="history">See the pass</button></div>` : '';
   return ['Your ski days', `${shown.map((s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}
     ${lockCard}${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
 }
@@ -1617,7 +1617,7 @@ function sheetMore() {
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="privacy">${ICON.lock}<div class="grow">Privacy &amp; map help<small>${prefs.get('contrib', null) ? 'Helping improve the maps' : 'Help improve the maps, report a mistake'}</small></div><span class="chev">›</span></button></div>
     <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
     <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
-    <div class="card"><h4>Map credits</h4><div class="icon-row">${ICON.layers}<div class="txt">Terrain: ${esc(src.terrain)}.<br>Trails, lifts, buildings, places: ${esc(src.map)}.${src.zones ? `<br>Zones: ${esc(src.zones)}.` : ''}<br><a href="/legal/credits.html" target="_blank">All credits and licences</a></div></div></div>
+    <div class="card"><h4>Map credits</h4><div class="icon-row">${ICON.layers}<div class="txt">Terrain: ${esc(src.terrain)}.<br>Trails, lifts, buildings, places: ${esc(src.map)}.${src.zones ? `<br>Zones: ${esc(src.zones)}.` : ''}<br><a href="/legal/credits" target="_blank">All credits and licences</a></div></div></div>
     <div class="card"><div class="icon-row">${ICON.shield}<div class="txt">Not an official ${esc(S.place.name)} product. Closures are user-marked, not a live resort feed. Follow mountain signs, ropes and ski patrol.</div></div></div>`];
 }
 
@@ -1632,6 +1632,31 @@ function passStatus(me) {
   if (!p?.active) return me?.trialUsed ? 'No pass. Your free day has been used.' : 'No pass yet.';
   const name = p.trial ? 'Free day' : (acct.config().plans?.[p.plan]?.name || 'Pass');
   return `${p.member ? t('Crew member') + ' · ' : ''}${t(name)} · ${t('until {0}', `${fmtDay(p.ends)} ${fmtClock(p.ends)}`)}`;
+}
+
+// Paid features stay visible to everyone; tapping one without a pass opens this short pop-up.
+const UPSELL = {
+  directions: ['Directions anywhere on the mountain', 'Turn-by-turn and spoken directions to any run, lift, lodge or dropped pin, along runs at your level.'],
+  group: ['Create your own group', 'Start a group, share the code and see everyone on the map. Friends join free.'],
+  history: ['Your full ski-day history', 'Every ski day you have saved, with replays and stats.'],
+};
+const passBadge = () => (acct.hasPass() ? '' : ` <span class="pass-badge">${ICON.ticket}${t('Pass')}</span>`);
+function upsell(why) {
+  const [title, text] = UPSELL[why] || UPSELL.directions;
+  const c = acct.config(), me = acct.account(), P = c.plans || {};
+  const price = (k) => (P[k] ? `$${P[k].price.toFixed(2)}` : '');
+  const trialLeft = !me?.trialUsed && !me?.pass?.active;
+  const trialBtn = !trialLeft ? '' : me?.signedIn
+    ? '<button class="btn" data-act="up-trial">Try a free day</button>'
+    : `<button class="btn" data-act="up-plans" data-why="${why}">Sign in and try a free day</button>`;
+  $('#modal').innerHTML = `<div class="modal-box upsell"><button class="x" data-act="modal-cancel" aria-label="Close">✕</button>
+    <p class="kicker">${ICON.ticket} ${t('Part of the SkiWithMe Pass')}</p>
+    <h2>${title}</h2><p>${text}</p>
+    ${P.day && P.season ? `<p class="sub">${t('Day Pass {0} · Season Pass {1} a year', price('day'), price('season'))}</p>` : ''}
+    ${trialBtn}
+    <button class="btn ${trialBtn ? 'alt' : ''}" data-act="up-plans" data-why="${why}">See plans</button>
+    <button class="learn" data-act="modal-cancel">Not now</button></div>`;
+  $('#modal').classList.remove('hidden');
 }
 
 function sheetPass(why) {
@@ -1667,7 +1692,7 @@ function sheetPass(why) {
     <div class="card"><div class="cols2"><div><h4>Free</h4><ul class="ticks">${FREE_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div><div><h4>With a pass</h4><ul class="ticks plus">${PASS_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div></div></div>
     ${who}
     <div class="card"><h4>Plans</h4>${plans}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : c.paddle ? 'Sign in first, so the pass is saved to your account.' : 'Payments open with the paid launch.'}</p></div>
-    <p class="foot"><a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/privacy.html" target="_blank">Privacy</a> · <a href="/legal/refunds.html" target="_blank">Refunds</a></p>`];
+    <p class="foot"><a href="/about" target="_blank">About</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy</a> · <a href="/legal/refunds" target="_blank">Refunds</a></p>`];
 }
 
 // ---------- help improve the maps (opt-in) and reports
@@ -1678,7 +1703,7 @@ function sheetPrivacy() {
       ${S.learn?.contrib ? '<p class="learn-text">Off unless you switch it on. The day after a ski day, the phone sends a summary of the parts that look like skiing: moving at ski speed on the mountain, not on a lift, not standing still, and not in or near lodges, other buildings or car parks. It lists the run numbers you skied and the 20 m squares off the mapped runs you skied through. There is no account, device number or time on it. Our server only adds up counts, and a square or run is used only once at least 5 different ski days reached it, so one person’s day cannot be picked out. We use the counts to find runs missing from the map and lines drawn in the wrong place. Switching it off stops it at once.</p>' : ''}</div>
     <div class="card"><h4>Report a map mistake</h4><p class="sub">A run missing or in the wrong place, a wrong rating, a run that does not exist. Drop a pin on the spot first (tap the map), then report it from the pin.</p><button class="btn alt" data-act="report-open">Report a mistake</button></div>
     <div class="card"><h4>Your data</h4><p class="sub">Your ski days, settings and favorites stay on this phone. Group locations pass through our server only while you share them and are not stored after the group ends. Read the full privacy policy for what is kept and for how long.</p>
-      <p class="foot" style="text-align:left"><a href="/legal/privacy.html" target="_blank">Privacy policy</a> · <a href="/legal/terms.html" target="_blank">Terms</a> · <a href="/legal/credits.html" target="_blank">Map and data credits</a></p></div>
+      <p class="foot" style="text-align:left"><a href="/legal/privacy" target="_blank">Privacy policy</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/credits" target="_blank">Map and data credits</a></p></div>
     <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
 }
 
@@ -1698,7 +1723,7 @@ function sheetReport() {
 function sheetSafety() {
   return ['Before you ski', `<div class="card"><p>SkiWithMe is a guide, not a safety device. Maps, ratings, closures and directions can be wrong or out of date, and GPS can be off by tens of metres.</p>
     <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
-    <p class="sub"><a href="/legal/terms.html" target="_blank">By continuing you agree to the Terms of Use.</a></p>
+    <p class="sub"><a href="/legal/terms" target="_blank">By continuing you agree to the Terms of Use.</a></p>
     <button class="btn" data-act="safety-ok">I understand</button></div>`];
 }
 
@@ -1878,7 +1903,7 @@ function sheetPlace(ev) {
     const p = S.resort.pois[ev.id];
     const kind = { lodge: 'Lodge', lift: 'Lift base', lifttop: 'Lift top', food: 'Food & drink', peak: 'Summit', service: 'Service', parking: 'Parking', shelter: 'Shelter' }[p.kind];
     const means = placeTr(p.name);
-    return [p.name, `${means ? `<p class="means" translate="no">(${esc(means)})</p>` : ''}<p class="sub">${kind} · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}</p><button class="btn go" data-act="nav-poi" data-id="${p.id}">Directions</button>`, true];
+    return [p.name, `${means ? `<p class="means" translate="no">(${esc(means)})</p>` : ''}<p class="sub">${kind} · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}</p><button class="btn go" data-act="nav-poi" data-id="${p.id}">Directions${passBadge()}</button>`, true];
   }
   if (ev.type === 'friend') {
     const f = friends().find((m) => m.id === ev.id);
@@ -1892,7 +1917,7 @@ function sheetPlace(ev) {
   const p = S.pin;
   const where = p.kind === 'trail' ? `Top of the run · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : p.kind === 'lift' ? `Bottom of the lift · Elevation ${fmtVert(S.geo.elev(p.x, p.y))}` : describeSpot(p.x, p.y);
   const pm = p.name && placeTr(p.name);
-  return [p.name || t('Dropped pin'), `${pm ? `<p class="means" translate="no">(${esc(pm)})</p>` : ''}<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions</button>
+  return [p.name || t('Dropped pin'), `${pm ? `<p class="means" translate="no">(${esc(pm)})</p>` : ''}<p class="sub">${where}</p><button class="btn go" data-act="nav-pin">Directions${passBadge()}</button>
     ${S.group ? '<button class="btn alt" data-act="meet-here">Make this the group meeting point</button>' : ''}
     ${S.testMode ? '<button class="btn alt" data-act="sim-here">Put me here (test mode)</button>' : ''}
     <button class="btn alt" data-act="remove-pin">Remove pin</button>
@@ -2146,6 +2171,13 @@ async function onClick(e) {
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
+    case 'up-plans': $('#modal').classList.add('hidden'); openSheet('pass', d.why); break;
+    case 'up-trial': {
+      $('#modal').classList.add('hidden');
+      const r = await acct.startTrial().catch(() => ({}));
+      toast(r.ok ? 'Your free day has started: 24 hours of everything.' : 'The free day could not start.');
+      await afterPassChange(); break;
+    }
     case 'maphelp': {
       const yes = d.v === '1';
       prefs.set('contribAsked', Date.now());
@@ -2227,8 +2259,9 @@ async function onClick(e) {
     }
     case 'safety-ok': prefs.set('safetyAccepted', Date.now()); closeSheet(); break;
     case 'create-group':
+      if (!acct.hasPass()) { upsell('group'); break; }
       b.disabled = true;
-      try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { b.disabled = false; if (err.pass) openSheet('pass', 'group'); else toast(err.message); }
+      try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { b.disabled = false; if (err.pass) upsell('group'); else toast(err.message); }
       break;
     case 'join-group': {
       const code = ($('#f-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');

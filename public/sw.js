@@ -26,6 +26,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   const req = event.request, url = new URL(req.url);
   if (req.method !== 'GET' || url.origin !== location.origin || url.pathname.startsWith('/api/')) return;
+  // The website and legal pages are pages of their own, straight from the server (answering them from here broke
+  // when the server redirects /legal/terms.html to /legal/terms).
+  if (req.mode === 'navigate' && /^\/(legal\/|about)/.test(url.pathname)) return;
   event.respondWith((async () => {
     const cache = await caches.open(CACHE);
     if (/\/graph\.json$/.test(url.pathname)) {
@@ -50,7 +53,7 @@ self.addEventListener('fetch', (event) => {
       if (hit) { fresh.catch(() => {}); return hit; }
       return fresh;
     }
-    const page = req.mode === 'navigate' && !url.pathname.startsWith('/legal/');   // the legal pages are pages of their own
+    const page = req.mode === 'navigate';
     const hit = await cache.match(page ? '/' : req, { ignoreSearch: true });
     if (hit) return hit;
     try {

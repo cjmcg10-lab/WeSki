@@ -410,6 +410,8 @@ were written by Claude, not checked by native speakers.
 - `audit.py` only counts a run as missing if it is inside the resort boundary (`area_name` in the config).
 - Outlined glades are drawn as a line from their highest to lowest point; loop trails get a longer reach (220 m) when
   joining the network.
+- Hand-drawn `extra_trails` that are glades need `"glade": true` (names with glade/woods/trees get it automatically),
+  or they draw as solid lines (fixed 2026-11-21 for Bretton Woods' Rosebrook glades and 14 others).
 - `build_zones.py` trims run ends that overshoot their last junction by up to 45 m. If the owner still reports
   overshoots, get the run name and look at that junction before changing the limit.
 - Known open items: Saddleback "Morning Glory" is not reachable from the base in the routing graph; Les Arcs has a
@@ -440,6 +442,11 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   time or identity; server keeps counts, publishes only >= 5
   ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
   at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
+- Paid buttons stay visible to free users with a small "Pass" badge (`passBadge`); tapping one opens a short pop-up
+  (`upsell(why)` in `src/main.js`: free day, See plans, Not now). Nothing shows while `PAYWALL` is off.
+- The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
+  install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and
+  `public/sw.js` leaves page loads of `/legal/` and `/about` to the network (answering them broke on that redirect).
 - "Before you ski" terms and safety agreement: a full screen that cannot be skipped (`showConsent`, `TERMS_V` in
   `src/main.js`; see `docs/PAID_TIER.md`). Bump `TERMS_V` whenever the terms change. Legal pages in `public/legal/` (terms, privacy,
   refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the contact address and
