@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (120 tests; the resort tests load every built map).
+- Run `npm test` before every push (124 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -78,6 +78,13 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Logo concepts page: https://claude.ai/artifact/R58WwJVZZNDCQLJAUZ2oLS
 
 ## Building and checking a resort
+
+**Start with `docs/ADDING_MOUNTAINS.md`** (2026-11-21): `tools/new_resort.py` writes a config from a name and a
+point, `tools/pipeline.py <id...>` runs every step below (US terrain downloaded automatically) and writes a score card
+(`tools/cards/<id>.md`) listing only what needs a look, `tools/map_read.py` cuts trail maps into tiles and turns reading
+notes into the official ratings file. Ratings: typed sources first, then a cheaper-model first reading with a close
+second look only where it disagrees with OpenStreetMap. Map files can live in Cloudflare R2 (`tools/maps_r2.mjs`,
+`public/data/r2.json`, `worker/maps.js`): built and switched off until the owner turns R2 on in the dashboard.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
 mountain stands; update its row whenever a mountain is worked on.
@@ -493,7 +500,7 @@ keys go in through the credential form, never chat.
 3. Paid web app: built 2026-11-20 and switched off (see "Paid tier, accounts, privacy"). Remaining: the owner's
    accounts (LLC, domain, Resend, Paddle) and secrets, contact details in the legal pages, the one-page website,
    a report-review script, and a real purchase tested end to end.
-4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
+4. Next US resorts (use `docs/ADDING_MOUNTAINS.md`; the owner asked on 2026-11-21 not to start them yet). Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
    Berkshire East, Catamount, Ragged, Pats Peak), then Mohawk, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods,
    Hunter, Windham and Wachusett. Small Connecticut hills have thin OpenStreetMap data (Southington mapped 9 of 14 runs;

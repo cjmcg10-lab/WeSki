@@ -5,6 +5,7 @@ import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+import { fromR2 } from './maps.js';
 import { weather } from './weather.js';
 export { Accounts, ResortLog } from './stores.js';
 
@@ -149,6 +150,8 @@ export default {
     const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
     // Members of a group get it too, for meeting points (a group is only created with a pass, so someone paid).
     if (graph && !(await passOk(request, env)) && !(await groupOk(url, env, graph[1]))) return json({ error: 'pass_required' }, 402);
+    const map = await fromR2(request, env, url);
+    if (map) return map;
     if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/groups')) {
       const res = await api(request, env, url);
       if (res) return res;

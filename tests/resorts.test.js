@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import { loadResort } from './helpers.js';
 import { Router } from '../src/routing.js';
 
@@ -9,7 +9,8 @@ describe('every built resort', () => {
   it('lists the expected mountains', () => {
     expect(index.map((r) => r.id).sort()).toEqual(['berkshire-east', 'bolton-valley', 'breckenridge', 'bretton-woods', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'geto-kogen', 'heavenly', 'hunter-mountain', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mohawk-mountain', 'mount-snow', 'mount-southington', 'okemo', 'park-city', 'pats-peak', 'pizol', 'powder-ridge', 'ragged', 'saalbach', 'saddleback', 'ski-sundown', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'wachusett', 'waterville-valley', 'whiteface', 'windham-mountain', 'winter-park', 'zermatt']);
   });
-  for (const entry of index) {
+  // resorts kept in R2 are only checked where they have been downloaded (node tools/maps_r2.mjs pull --all)
+  for (const entry of index.filter((e) => existsSync(`public/data/${e.id}/resort.json`))) {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
       const { resort, geo } = loadResort(entry.id);
       expect(resort.id).toBe(entry.id);

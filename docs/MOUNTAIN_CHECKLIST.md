@@ -9,6 +9,9 @@ resort"). The owner does not need to run them; this list is also how to see what
 
 ## New mountain
 
+`tools/new_resort.py` and `tools/pipeline.py` do sections 1, 2 and 3b and run the checks in 3 and 4 by themselves;
+the score card in `tools/cards/<id>.md` says which items still need a person. See `docs/ADDING_MOUNTAINS.md`.
+
 ### 1. Set up
 - [ ] Config file `tools/resorts/<id>.json`: name, region, country, map area (bounding box), the resort
       boundary name (`area_name`), and the rating scheme (North American or European colours).
