@@ -453,6 +453,7 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 - Links to `/legal/*` and `/about` inside the app open in a viewer over the app (`openDoc`, `#docview`, big Back
   button), so the map, group and panel stay as they were. The pages load `/legal/back.js`: inside the viewer they hide
   their own "Back to the app" bar and a link to the app closes the viewer; opened on their own they show the bar.
+- Owner accounts: Cloudflare secret `COMP_EMAILS` (comma-separated) = every paid feature, no end date, plus crew.
 - The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
   install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and
   `public/sw.js` leaves page loads of `/legal/` and `/about` to the network (answering them broke on that redirect).

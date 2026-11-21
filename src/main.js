@@ -1678,8 +1678,11 @@ const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short',
 function passStatus(me) {
   const p = me?.pass;
   if (!p?.active) return me?.trialUsed ? 'No pass. Your free day has been used.' : 'No pass yet.';
+  if (p.comp) return t('Owner pass: everything included, no end date');
   const name = p.trial ? 'Free day' : (acct.config().plans?.[p.plan]?.name || 'Pass');
-  return `${p.member ? t('Crew member') + ' · ' : ''}${t(name)} · ${t('until {0}', `${fmtDay(p.ends)} ${fmtClock(p.ends)}`)}`;
+  const end = p.until || p.ends;
+  if (p.member && end > Date.now() + 3650 * 864e5) return `${t('Crew member')} · ${t(name)}`;
+  return `${p.member ? t('Crew member') + ' · ' : ''}${t(name)} · ${t('until {0}', `${fmtDay(end)} ${fmtClock(end)}`)}`;
 }
 
 // Paid features stay visible to everyone; tapping one without a pass opens this short pop-up.
@@ -1726,7 +1729,7 @@ function sheetPass(why) {
   const open = !c.paywall && !acct.simulatingFree();
   let who;
   if (me?.signedIn) {
-    const own = (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
+    const own = me.pass?.comp || (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
     who = `<div class="card"><h4>Your account</h4><p class="sub" translate="no">${esc(me.email)}</p><p class="${me.pass?.active ? 'ok-text' : 'sub'}">${passStatus(me)}</p>
       ${own ? `<label class="lbl">Your crew (up to 3 friends’ emails)</label>${[0, 1, 2].map((i) => `<input class="field" id="f-crew${i}" type="email" autocomplete="off" placeholder="friend@example.com" value="${esc(me.crew?.[i] || '')}" />`).join('')}<button class="btn alt" data-act="crew-save">Save crew</button><p class="note">Each friend signs in with that email to use the pass.</p>` : ''}
       <button class="btn alt" data-act="signout">Sign out</button>

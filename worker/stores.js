@@ -104,6 +104,13 @@ export class Accounts extends DurableObject {
     return s.account;
   }
 
+  /** Owner accounts with every paid feature and no end date: the Cloudflare secret COMP_EMAILS, a comma-separated
+   *  list of emails (kept out of the code so no address is published). */
+  isComp(email) {
+    const list = String(this.env?.COMP_EMAILS || '').split(',').map((e) => normEmail(e)).filter(Boolean);
+    return !!email && list.includes(normEmail(email));
+  }
+
   /** {email, pass: entitlement, crew members, purchases} for the signed-in account, or null. */
   async me(session) {
     const id = await this.accountFor(session);
@@ -113,7 +120,10 @@ export class Accounts extends DurableObject {
     const crewOf = this.rows(`SELECT p.* FROM crew c JOIN purchases p ON p.account = c.owner WHERE c.email = ? AND p.plan = 'crew'`, acc.email);
     return {
       account: id, email: acc.email, trialUsed: !!acc.trial_used,
-      pass: entitlement(own, crewOf, acc.trial_until),
+      pass: this.isComp(acc.email) ? { active: true, plan: 'comp', until: 4102444800000, comp: true, trial: false }
+        : this.rows('SELECT a.email FROM crew c JOIN accounts a ON a.id = c.owner WHERE c.email = ?', acc.email).some((r) => this.isComp(r.email))
+          ? { active: true, plan: 'crew', until: 4102444800000, member: true, trial: false }
+          : entitlement(own, crewOf, acc.trial_until),
       purchases: own.map((p) => ({ plan: p.plan, status: p.status, ends: p.ends, renews: PLANS[p.plan]?.renews })),
       crew: this.rows('SELECT email FROM crew WHERE owner = ?', id).map((r) => r.email),
       devices: this.rows('SELECT created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id),
@@ -149,7 +159,8 @@ export class Accounts extends DurableObject {
     const id = await this.accountFor(session);
     if (!id) return { error: 'signed_out' };
     const own = this.rows(`SELECT * FROM purchases WHERE account = ? AND plan = 'crew'`, id);
-    if (!entitlement(own).active) return { error: 'no_crew_pass' };
+    const acc = this.one('SELECT email FROM accounts WHERE id = ?', id);
+    if (!entitlement(own).active && !this.isComp(acc?.email)) return { error: 'no_crew_pass' };
     const list = [...new Set(emails.map(normEmail).filter((e) => e.includes('@')))].slice(0, PLANS.crew.seats - 1);
     this.sql.exec('DELETE FROM crew WHERE owner = ?', id);
     for (const e of list) this.sql.exec('INSERT INTO crew VALUES (?, ?)', id, e);

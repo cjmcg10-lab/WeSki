@@ -191,4 +191,5 @@ export default {
   789: 'Simuler la version gratuite', 790: 'Voir l’app comme quelqu’un sans pass.', 791: 'Ce téléphone agit comme s’il n’avait pas de pass : les boutons payants affichent le badge Pass et ouvrent la fenêtre du pass. Rien n’est acheté ni modifié sur votre compte. Désactivez pour revenir.', 792: 'Simulation gratuite activée : les fonctions payantes affichent la fenêtre du pass.', 793: 'Simulation gratuite désactivée.', 794: 'Votre compte', 795: 'Votre compte et SkiWithMe Pass',
   796: 'Créez votre compte ou connectez-vous', 797: 'Pour acheter le {0}, entrez votre e-mail. Nous envoyons un code à 6 chiffres, sans mot de passe. Puis le paiement s’ouvre.',
   798: 'Retour',
+  799: 'Pass propriétaire : tout inclus, sans date de fin',
 };

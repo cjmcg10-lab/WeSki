@@ -191,4 +191,5 @@ export default {
   789: 'Gratis versie nabootsen', 790: 'Zie de app zoals iemand zonder pas.', 791: 'Deze telefoon doet alsof hij geen pas heeft: betaalde knoppen tonen het Pas-label en openen het pasvenster. Er wordt niets gekocht of aan je account veranderd. Zet uit om terug te gaan.', 792: 'Gratis versie nabootsen aan: betaalde functies tonen nu het pasvenster.', 793: 'Gratis versie nabootsen uit.', 794: 'Je account', 795: 'Je account en SkiWithMe Pass',
   796: 'Maak je account of log in', 797: 'Om de {0} te kopen, vul je e-mail in. We sturen een code van 6 cijfers, geen wachtwoord. Daarna opent de betaling.',
   798: 'Terug',
+  799: 'Eigenaarspas: alles inbegrepen, geen einddatum',
 };

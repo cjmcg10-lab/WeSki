@@ -94,3 +94,9 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
 
 Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
 plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).
+
+## Owner (comp) accounts
+
+`COMP_EMAILS` (Cloudflare secret, comma-separated emails) gives those accounts every paid feature with no end date
+(`Accounts.isComp` in `worker/stores.js`; `/api/me` shows `pass.comp`). They can also add up to 3 crew emails, who
+get the pass too. The emails stay out of the code and the repository.
