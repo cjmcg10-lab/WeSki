@@ -7,8 +7,11 @@ session needs that the README does not: the rules, the state of the work, and wh
 
 ## Rules for working here
 
-- Develop and push only on the branch the session names (`claude/...`). Pushing deploys: GitHub Actions
-  runs tests, builds, and deploys to https://skiwithme.cjmcg10.workers.dev. No pull requests unless asked.
+- **Follow `docs/DEVELOPMENT_PROCESS.md` (agreed 2026-11-21):** every change starts from a GitHub issue, is claimed,
+  built on its own `claude/...` branch, and reaches the deploy branch only through a pull request that passes the
+  "Checks" workflow and is reviewed by the other person (Zach or Connor). Never push straight to
+  `claude/ecstatic-hamilton-2gsp2q` or `main`: merging there deploys (GitHub Actions runs tests, builds, and deploys
+  to https://skiwithme.cjmcg10.workers.dev).
 - Never ask for secrets in chat. The Cloudflare token is a GitHub secret and an environment network secret.
 - Outside requests use the User-Agent `weski-build` and never carry the owner's name or email.
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
