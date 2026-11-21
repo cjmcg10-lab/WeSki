@@ -1,0 +1,22 @@
+{
+ "id": "snowshoe",
+ "name": "Snowshoe",
+ "region": "West Virginia, USA",
+ "tz": "America/New_York",
+ "area_name": "Snowshoe Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -80.0277,
+  38.3921,
+  -79.9737,
+  38.4324
+ ],
+ "ratings_feed": {
+  "mtnpowder": 2
+ },
+ "rename": {
+  "Crosscut": "Cross Cut",
+  "Singletree": "Single Tree"
+ }
+}

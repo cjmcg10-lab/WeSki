@@ -1,0 +1,26 @@
+{
+ "id": "solitude",
+ "name": "Solitude",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "area_name": "Solitude Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -111.6274,
+  40.5894,
+  -111.5808,
+  40.6373
+ ],
+ "ratings_feed": {
+  "mtnpowder": 65
+ },
+ "rename": {
+  "Altabird": "Alta Bird",
+  "Boundry Chutes": "Boundary Chutes",
+  "Challanger": "Challenger",
+  "Headwall Forrest": "Headwall Forest",
+  "Postcard": "Post Card",
+  "Wood Lawn": "Woodlawn"
+ }
+}

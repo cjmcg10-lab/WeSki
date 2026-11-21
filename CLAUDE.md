@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (124 tests; the resort tests load every built map).
+- Run `npm test` before every push (134 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -124,7 +124,7 @@ A wrong rating can send someone down a run above their level, so:
 - Runs with no rating anywhere are flagged `u` (guess). Directions count them one level harder.
   Blue-black runs (`bb`) count as half a level above blue.
 
-Status on 2026-11-18 (all 50 checked):
+Status on 2026-11-21 (all 60 checked):
 
 | Checked against the resort's list | Source |
 | --- | --- |
@@ -142,6 +142,8 @@ Status on 2026-11-18 (all 50 checked):
 | Les Contamines, La Plagne, Les Arcs (Paradiski map), Tignes – Val d'Isère, Val Thorens, Geto Kogen | official piste maps, line colours read by hand from tiles |
 | Zermatt – Cervinia | Cervino Ski Paradise PDF (cervinia-api.devtherocks.it, 45 MB, curl): coloured number badges classified by script, names from the map's printed piste list |
 | Saalbach, SkiWelt | Intermaps data behind the resorts' own interactive maps: `winter.intermaps.com/<map>/data?lang=de` (`saalbach_hinterglemm_leogang_fieberbrunn`, `skiwelt`): every slope with number, name and colour |
+| Palisades Tahoe, Deer Valley, Solitude, Crystal Mountain, Snowshoe (added 2026-11-21) | resort feeds, mtnpowder 61, 49, 65, 80, 2 |
+| Big Sky, Snowbird, Alta, Telluride, Jackson Hole (added 2026-11-21) | trail maps from skimap.org (`tools/skimap.py`), first reading by a cheaper model, second look at disagreements with OpenStreetMap (`map_read.py compare`). Jackson Hole's map has label colours only: black there means black, or double where OpenStreetMap says double |
 | Pizol | the resort's piste report on `www.infosnow.ch/~apgmontagne/?lang=de&id=47&tab=web-wi`: number, name and a colour icon (13 blue, 14 red, 15 black, 16 yellow = ski route) |
 
 Stowe (2026-27 map uploaded by the owner): unlabelled upper Spruce Peak runs take their black line colour, and glades
@@ -160,7 +162,9 @@ applying the official list, so taking a run off the list really undoes it; it al
 mtnpowder.com feed ids with trail lists (for future resorts): Stratton 1, Snowshoe 2, Blue 3, Tremblant 4, Winter Park 5,
 Steamboat 6, Deer Valley 49, Aspen 51-54, Eldora 56, Bear 57, Snow Summit 58, June 59, Mammoth 60, Palisades 61/62,
 Alta 63, Snowbird 64, Solitude 65, Brighton 66, Jackson Hole 67, Big Sky 68, Sugarbush 70, Lake Louise 74, Norquay 75,
-Sunshine 76, Revelstoke 77, Taos 78, Snoqualmie 79, Crystal 80. Weather only, no trail list: Killington 69, Loon 71,
+Sunshine 76, Revelstoke 77, Taos 78, Snoqualmie 79, Crystal 80. Checked 2026-11-21: only Palisades 61, Deer Valley 49, Solitude 65, Crystal 80, Snowshoe 2, Blue 3,
+Tremblant 4, June 59 and Bear 57 still return trail lists; Big Sky, Jackson, Aspen, Snowbird, Alta, Brighton, Taos, Eldora
+and Snoqualmie return weather only. Weather only, no trail list: Killington 69, Loon 71,
 Sugarloaf 72, Sunday River 73, Copper 55. Intermaps (`winter.intermaps.com`) serves many Alpine resorts' maps; a
 resort's map name is in its website's map embed.
 
@@ -501,13 +505,15 @@ keys go in through the credential form, never chat.
 3. Paid web app: built 2026-11-20 and switched off (see "Paid tier, accounts, privacy"). Remaining: the owner's
    accounts (LLC, domain, Resend, Paddle) and secrets, contact details in the legal pages, the one-page website,
    a report-review script, and a real purchase tested end to end.
-4. Next US resorts (use `docs/ADDING_MOUNTAINS.md`; the owner asked on 2026-11-21 not to start them yet). Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
+4. Next US resorts (use `docs/ADDING_MOUNTAINS.md`; batches of ten). Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,
    Berkshire East, Catamount, Ragged, Pats Peak), then Mohawk, Powder Ridge, Ski Sundown, Mount Southington, Bretton Woods,
    Hunter, Windham and Wachusett. Small Connecticut hills have thin OpenStreetMap data (Southington mapped 9 of 14 runs;
    the rest were traced by hand, see `extra_trails`);
-   the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Next: Palisades Tahoe, Big Sky, Jackson Hole, Aspen Snowmass, Beaver Creek,
-   Deer Valley, Snowbird and Alta, Northstar, Telluride.
+   the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Built 2026-11-21 with the new pipeline (the owner asked to work up toward 2,000+):
+   Palisades Tahoe, Deer Valley, Solitude, Crystal Mountain, Snowshoe, Big Sky, Jackson Hole, Snowbird, Alta, Telluride
+   (60 in all). Next: Aspen Snowmass, Beaver Creek, Northstar, Tremblant, Blue Mountain, Bear Mountain, June, Taos,
+   Brighton, Sun Valley.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.
 7. Open questions from the owner's phone: frame rate dropped from 120 to 30 fps at times; motion is now capped

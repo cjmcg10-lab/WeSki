@@ -119,9 +119,9 @@ def is_usa(cfg):
     return cfg.get("region", "").endswith("USA")
 
 
-def tnm_tiles(b):
-    """USGS 1 m DEM tiles over a bounding box, grouped by survey project, newest project first."""
-    q = urllib.parse.urlencode({"datasets": "Digital Elevation Model (DEM) 1 meter", "prodFormats": "GeoTIFF",
+def tnm_tiles(b, dataset="Digital Elevation Model (DEM) 1 meter"):
+    """USGS DEM tiles over a bounding box, grouped by survey project, newest project first."""
+    q = urllib.parse.urlencode({"datasets": dataset, "prodFormats": "GeoTIFF",
                                 "bbox": ",".join(f"{v:.5f}" for v in b), "max": 200})
     url = "https://tnmaccess.nationalmap.gov/api/v1/products?" + q
     for k in range(4):
@@ -135,8 +135,10 @@ def tnm_tiles(b):
     groups = {}
     for it in items:
         # "USGS 1 Meter 18 x67y459 CT_Statewide_C16" -> project CT_Statewide_C16
+        # older titles: "USGS one meter x73y434 CA NoCAL Wildfires B1 2018"
         m = re.match(r"USGS 1 Meter (\d+) x\d+y\d+ (.+)", it["title"])
-        proj = m.group(2) if m else it["title"]
+        old = re.match(r"USGS one meter x\d+y\d+ (.+)", it["title"], re.I)
+        proj = m.group(2) if m else old.group(1) if old else it["title"]
         g = groups.setdefault(proj, {"project": proj, "date": "", "tiles": []})
         g["date"] = max(g["date"], it.get("publicationDate") or "")
         bb = it["boundingBox"]
@@ -156,19 +158,27 @@ def coverage(tiles, b, n=24):
 
 
 def terrain_usa(b, out, log):
-    groups = tnm_tiles(b)
+    groups = [g for g in tnm_tiles(b)]
+    # the 10 m national model (1/3 arc-second) always comes last, to fill whatever the 1 m surveys leave empty
+    # (a survey's tiles can claim the area and still be mostly empty, as at Crystal Mountain)
+    if True:
+        coarse = tnm_tiles(b, "National Elevation Dataset (NED) 1/3 arc-second Current")
+        if coarse:  # one 1x1 degree tile per group: put them together as one source
+            groups.append({"project": "10 m national elevation model (1/3 arc-second)", "date": "",
+                           "tiles": [t for g in coarse for t in g["tiles"]]})
     if not groups:
-        raise StepFailed("no USGS 1 m terrain found for this area: give the config a \"dem\" source")
+        raise StepFailed("no USGS terrain found for this area: give the config a \"dem\" source")
     # the newest survey that covers the whole area on its own; otherwise newest first, the rest filling gaps
-    full = [g for g in groups if coverage(g["tiles"], b) >= 0.999]
-    use = [full[0]] if full else groups
+    # (tiles of one survey can be partly empty, so the other surveys always follow as gap fillers)
+    full = [g for g in groups if g["date"] and coverage(g["tiles"], b) >= 0.999]
+    use = ([full[0]] + [g for g in groups if g is not full[0]]) if full else groups
     urls = [t["url"] for g in use for t in g["tiles"]]
     zone = (use[0]["tiles"][0]["zone"] or int((b[0] + b[2]) / 2 + 180) // 6 + 1)
     with open(log, "a") as f:
         f.write("\nterrain surveys: " + ", ".join(f"{g['project']} ({g['date']}, {len(g['tiles'])} tiles, "
                                                   f"{coverage(g['tiles'], b) * 100:.0f}% cover)" for g in groups) + "\n")
     run([PY, "tools/fetch_dem.py", "cog", out, *map(str, b), str(26900 + zone), *urls], log)
-    return " and ".join(g["project"] for g in use)
+    return use[0]["project"] + (f" (gaps filled from {', '.join(g['project'] for g in use[1:])})" if len(use) > 1 else "")
 
 
 def terrain(rid, cfg, bbox, out, opt, log):
@@ -178,9 +188,9 @@ def terrain(rid, cfg, bbox, out, opt, log):
     if built and not opt["terrain"]:
         run([PY, "tools/dem_from_built.py", f"public/data/{rid}", out], log)
         return "rebuilt from the existing map (no download)"
-    b = pad(bbox, 700)
+    b = pad(bbox, 1500)  # build_data adds its own margin around everything in the extract
     if is_usa(cfg) and not cfg.get("dem"):
-        return "USGS 1 m LiDAR " + terrain_usa(b, out, log)
+        return "USGS " + terrain_usa(b, out, log)
     d = cfg.get("dem")
     if isinstance(d, list):  # older form: [source, west, south, east, north]
         d, b = {"source": d[0]}, [float(v) for v in d[1:5]]
@@ -205,6 +215,34 @@ def snapshot(rid):
             "lifts": len([l for l in R["lifts"] if not l.get("hide")]),
             "km": round(sum(t.get("len", 0) for t in shown) / 1000, 1),
             "lift_names": sorted(l["name"] for l in R["lifts"] if l.get("name"))}
+
+
+def lift_ends_stuck(R):
+    """Lift ends the routing cannot reach from, or get back to, the best-connected lift end (as tests/resorts.test.js checks)."""
+    g = R.get("graph") or {}
+    adj = {}
+    for e in g.get("edges", []):
+        adj.setdefault(e["a"], []).append(e["b"])
+        if e.get("bi"):
+            adj.setdefault(e["b"], []).append(e["a"])
+
+    def reach(s):
+        seen, st = {s}, [s]
+        while st:
+            for v in adj.get(st.pop(), []):
+                if v not in seen:
+                    seen.add(v)
+                    st.append(v)
+        return seen
+    skip = {R["lifts"][i]["name"] for i in R.get("isolated", [])} | {l["name"] for l in R["lifts"] if l.get("hide")}
+    ends = [p for p in R["pois"] if p["kind"] in ("lift", "lifttop") and p["name"].rsplit(" (", 1)[0] not in skip]
+    if not ends:
+        return []
+    rs = {p["n"]: reach(p["n"]) for p in ends}
+    nodes = {p["n"] for p in ends}
+    hub = max(ends, key=lambda p: len(rs[p["n"]] & nodes))["n"]
+    return [p["name"] + ("" if p["n"] in rs[hub] else ": not reachable") + ("" if hub in rs[p["n"]] else ": no way back")
+            for p in ends if p["n"] not in rs[hub] or hub not in rs[p["n"]]]
 
 
 def card(rid, cfg, logs, before, terrain_note, notes):
@@ -237,6 +275,10 @@ def card(rid, cfg, logs, before, terrain_note, notes):
     if m:
         a, b = int(m.group(2)), int(m.group(3))
         add(a == b, f"reachable from the base: {a} of {b} run pieces", "" if a == b else "not reachable: " + m.group(4)[:500])
+    stuck = lift_ends_stuck(R)
+    add(not stuck, f"{len(stuck)} lift ends cannot be reached or cannot get back to the rest (the tests fail on this)",
+        "; ".join(stuck)[:500] + (" (a one-way lift that carries skiers both ways: two_way_lifts; a lift top with no "
+                                  "run down: links; a private or club lift: isolated_lifts with a note)" if stuck else ""))
 
     joins = []
     for key in ("loose run ends joined automatically:", "cut-off runs joined to the nearest reachable point:"):

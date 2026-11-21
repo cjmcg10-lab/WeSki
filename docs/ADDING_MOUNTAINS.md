@@ -21,7 +21,12 @@ python3 tools/pipeline.py <id> [<id> ...]          # build + check + score card 
 python3 tools/map_read.py tiles <map.pdf|png> <dir> # cut a trail map into readable tiles
 python3 tools/map_read.py sheet <id> [--osm]        # list of run names to fill in
 python3 tools/map_read.py notes <id> <notes.txt> --source "<where the map came from>" [--colour]
+python3 tools/map_read.py compare <id> <osm>         # second pass: only the runs where reading and OSM disagree
+python3 tools/map_read.py names <id> [--write]      # spelling fixes and upper/lower parts, into the config
 python3 tools/pipeline.py <id>                      # again, after the ratings file exists
+python3 tools/skimap.py find "<State>" "<name>"     # find a resort's trail maps on skimap.org
+python3 tools/skimap.py maps <area id>              # its maps of the last two years, with captions
+python3 tools/skimap.py get <map id> <out file>
 ```
 
 - `new_resort.py` downloads OpenStreetMap around the point (a point on the mountain, from the resort's
@@ -37,6 +42,11 @@ python3 tools/pipeline.py <id>                      # again, after the ratings f
   official runs missing from the map, runs rated by guess, runs not reachable from the base, joins the build
   made by itself, hidden pieces, new lifts to review, runs that climb, audit flags, and fewer lifts or named
   runs than the previous build.
+
+US terrain fallbacks (learned on the 2026-11-21 batch): the newest survey that covers the whole box is used
+first, every other survey fills its gaps, and the 10 m national model (1/3 arc-second) is always last, so there
+are never holes. A 1 m tile can claim to cover the area and be mostly empty (Crystal Mountain: 70% of the area
+came from the 10 m model). When that happens, write it in the config's `terrain_source`.
 
 Tested 2026-11-21: Powder Ridge from nothing to a full map in 32 s (terrain heights within 0.5 m of the live
 map, same counts); a rebuild from the existing map in 5 s, byte for byte the same; a scaffolded copy of
@@ -66,12 +76,21 @@ Stop at the first source that works:
    `Name | green/blue/bb/black/double` (or `| skip | why`). Add any run on the map that is not on the sheet.
    Do not show it OpenStreetMap's ratings, so its reading stays independent.
 3. `map_read.py notes <id> notes.txt --source "..."` writes `tools/official/<id>.json`; run `pipeline.py <id>`.
-4. **Second pass, only the disagreements.** `official_ratings.py check <id>` lists `[rating]` lines where the
-   reading and OpenStreetMap differ, and official runs not found on the map. Only these are read again closely,
+4. **Second pass, only the disagreements.** `map_read.py compare <id> <osm>` lists the runs where the reading
+   and OpenStreetMap differ (it reads OpenStreetMap itself: after a build the map already carries the reading).
+   Check closely only the runs read *easier* than OpenStreetMap; a harder reading is kept (the safe side).
+   A helper subagent can cut the enlarged crops and a contact sheet; the main model looks at the sheet. Only these are read again closely,
    by the main model, on enlarged crops (`--dpi 500`, or crop the one tile). Where the two agree, the run is
    taken as right: two independent sources gave the same rating.
    Typically 5 to 15% of runs need the second look instead of all of them.
-5. Misspellings: a `rename` in the config. Then `pipeline.py <id>` once more.
+5. Misspellings and upper/lower parts: `map_read.py names <id>` prints suggestions, `--write` saves them. Read
+   the list first: a misreading in the notes ("Magam Annie's") must be fixed in the official json, not renamed
+   onto the map. Then `pipeline.py <id>` once more.
+
+Map choice: skimap.org's newest map for a resort is often a summer, bike or via ferrata map, or a planning
+figure. Pick the latest **winter trail map** (`skimap.py maps` shows captions). Some maps rate by label colour
+only (Jackson Hole): a black label means black or harder, so keep OpenStreetMap's double where it says double.
+Read the map's legend first (Telluride: two diamonds = expert only, EX = extreme).
 
 ## What is only done when the card asks for it
 
@@ -92,6 +111,24 @@ Stop at the first source that works:
 - Read the cards, not the logs. Open a log (`<work>/<id>.log`) only when a step failed or a card line needs
   the detail.
 - Expected pace: about 8 to 16 mountains per session including checks, more for feed resorts.
+- The card's "lift ends" line is the check the tests fail on: fix it before pushing. Usual causes: a village
+  gondola or base-to-base lift mapped one way (`two_way_lifts`), a lift top with no run down in OpenStreetMap
+  (`links`: lift top to the nearest run below, `"hike"` if it climbs), a club or private lift (`isolated_lifts`
+  with a note).
+
+### Measured on the 2026-11-21 batch (10 western and Snowshoe mountains)
+
+- Machine time: about 14 minutes for the first full build of all ten (OpenStreetMap and terrain downloads; most
+  of it terrain), about 2.5 minutes to rebuild all ten afterwards.
+- Ratings: five came from resort feeds with no reading at all (Palisades, Deer Valley, Solitude, Crystal,
+  Snowshoe). Five were read from skimap.org maps by the cheaper model (13 s to 3 min each). Of 786 runs read,
+  28 (3.6%) disagreed with OpenStreetMap; 18 read easier than OpenStreetMap were checked closely, and 9 of
+  those were corrected to the harder rating (the reader missed double diamonds at Telluride, Snowbird and
+  Big Sky; 2 more runs it had skipped were added). So the second look is necessary: skipping it would have
+  left 9 runs rated a level too easy.
+- What still took attention: lift connections (4 of 10 needed a config line), spelling and upper/lower matches,
+  and the runs the resort lists that OpenStreetMap lacks (6 to 114 per mountain), which are left for a later
+  tracing pass.
 
 ## The final check
 

@@ -1,0 +1,15 @@
+{
+ "id": "telluride",
+ "name": "Telluride",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "area_name": "Telluride Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -107.8749,
+  37.8756,
+  -107.8044,
+  37.948
+ ]
+}

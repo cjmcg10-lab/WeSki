@@ -1,5 +1,21 @@
 [
  {
+  "id": "alta",
+  "name": "Alta",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 40.56777,
+  "lon": -111.63837,
+  "baseLat": 40.58796,
+  "baseLon": -111.63799,
+  "top": 3371,
+  "base": 2604,
+  "trails": 134,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 730323
+ },
+ {
   "id": "berkshire-east",
   "name": "Berkshire East",
   "region": "Massachusetts, USA",
@@ -13,7 +29,23 @@
   "trails": 42,
   "lifts": 6,
   "zones": false,
-  "bytes": 252582
+  "bytes": 252696
+ },
+ {
+  "id": "big-sky",
+  "name": "Big Sky",
+  "region": "Montana, USA",
+  "tz": "America/Denver",
+  "lat": 45.27828,
+  "lon": -111.45056,
+  "baseLat": 45.2798,
+  "baseLon": -111.36752,
+  "top": 3401,
+  "base": 2077,
+  "trails": 320,
+  "lifts": 43,
+  "zones": false,
+  "bytes": 2297383
  },
  {
   "id": "bolton-valley",
@@ -29,7 +61,7 @@
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 348641
+  "bytes": 348874
  },
  {
   "id": "breckenridge",
@@ -45,7 +77,7 @@
   "trails": 213,
   "lifts": 35,
   "zones": true,
-  "bytes": 1637033
+  "bytes": 1637503
  },
  {
   "id": "bretton-woods",
@@ -61,7 +93,7 @@
   "trails": 105,
   "lifts": 9,
   "zones": false,
-  "bytes": 433800
+  "bytes": 434148
  },
  {
   "id": "brundage",
@@ -77,7 +109,7 @@
   "trails": 77,
   "lifts": 6,
   "zones": false,
-  "bytes": 440417
+  "bytes": 440784
  },
  {
   "id": "burke",
@@ -93,7 +125,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": true,
-  "bytes": 375738
+  "bytes": 376082
  },
  {
   "id": "cannon-mountain",
@@ -109,7 +141,7 @@
   "trails": 102,
   "lifts": 9,
   "zones": false,
-  "bytes": 447274
+  "bytes": 447483
  },
  {
   "id": "catamount",
@@ -125,7 +157,7 @@
   "trails": 46,
   "lifts": 7,
   "zones": false,
-  "bytes": 230148
+  "bytes": 230277
  },
  {
   "id": "copper-mountain",
@@ -141,7 +173,39 @@
   "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 966041
+  "bytes": 966195
+ },
+ {
+  "id": "crystal-mountain",
+  "name": "Crystal Mountain",
+  "region": "Washington, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 46.92828,
+  "lon": -121.50472,
+  "baseLat": 46.93567,
+  "baseLon": -121.4749,
+  "top": 2124,
+  "base": 1337,
+  "trails": 137,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 681284
+ },
+ {
+  "id": "deer-valley",
+  "name": "Deer Valley",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 40.61231,
+  "lon": -111.5341,
+  "baseLat": 40.61619,
+  "baseLon": -111.44075,
+  "top": 2954,
+  "base": 1964,
+  "trails": 232,
+  "lifts": 34,
+  "zones": false,
+  "bytes": 1904082
  },
  {
   "id": "geto-kogen",
@@ -157,7 +221,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174734
+  "bytes": 174841
  },
  {
   "id": "heavenly",
@@ -173,7 +237,7 @@
   "trails": 132,
   "lifts": 24,
   "zones": true,
-  "bytes": 1132906
+  "bytes": 1133428
  },
  {
   "id": "hunter-mountain",
@@ -189,7 +253,23 @@
   "trails": 68,
   "lifts": 11,
   "zones": true,
-  "bytes": 468884
+  "bytes": 469132
+ },
+ {
+  "id": "jackson-hole",
+  "name": "Jackson Hole",
+  "region": "Wyoming, USA",
+  "tz": "America/Denver",
+  "lat": 43.59726,
+  "lon": -110.87076,
+  "baseLat": 43.58754,
+  "baseLon": -110.82789,
+  "top": 3175,
+  "base": 1926,
+  "trails": 138,
+  "lifts": 17,
+  "zones": false,
+  "bytes": 1174784
  },
  {
   "id": "jay-peak",
@@ -205,7 +285,7 @@
   "trails": 91,
   "lifts": 9,
   "zones": true,
-  "bytes": 462834
+  "bytes": 463101
  },
  {
   "id": "keystone",
@@ -221,7 +301,7 @@
   "trails": 154,
   "lifts": 20,
   "zones": true,
-  "bytes": 1189387
+  "bytes": 1189865
  },
  {
   "id": "killington",
@@ -237,7 +317,7 @@
   "trails": 153,
   "lifts": 22,
   "zones": false,
-  "bytes": 1086072
+  "bytes": 1086561
  },
  {
   "id": "la-plagne",
@@ -253,7 +333,7 @@
   "trails": 162,
   "lifts": 85,
   "zones": true,
-  "bytes": 2753576
+  "bytes": 2755161
  },
  {
   "id": "les-arcs",
@@ -269,7 +349,7 @@
   "trails": 128,
   "lifts": 78,
   "zones": true,
-  "bytes": 2825015
+  "bytes": 2827181
  },
  {
   "id": "les-contamines",
@@ -285,7 +365,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1179212
+  "bytes": 1179511
  },
  {
   "id": "loon",
@@ -301,7 +381,7 @@
   "trails": 76,
   "lifts": 12,
   "zones": false,
-  "bytes": 537572
+  "bytes": 537783
  },
  {
   "id": "magic-mountain",
@@ -317,7 +397,7 @@
   "trails": 52,
   "lifts": 6,
   "zones": true,
-  "bytes": 273210
+  "bytes": 273980
  },
  {
   "id": "mammoth",
@@ -333,7 +413,7 @@
   "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1090971
+  "bytes": 1091578
  },
  {
   "id": "mohawk-mountain",
@@ -349,7 +429,7 @@
   "trails": 28,
   "lifts": 7,
   "zones": false,
-  "bytes": 150362
+  "bytes": 150470
  },
  {
   "id": "mount-snow",
@@ -365,7 +445,7 @@
   "trails": 89,
   "lifts": 19,
   "zones": false,
-  "bytes": 551711
+  "bytes": 552067
  },
  {
   "id": "mount-southington",
@@ -381,7 +461,7 @@
   "trails": 14,
   "lifts": 7,
   "zones": true,
-  "bytes": 143948
+  "bytes": 144117
  },
  {
   "id": "okemo",
@@ -397,7 +477,23 @@
   "trails": 122,
   "lifts": 21,
   "zones": true,
-  "bytes": 811650
+  "bytes": 811749
+ },
+ {
+  "id": "palisades-tahoe",
+  "name": "Palisades Tahoe",
+  "region": "California, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 39.19825,
+  "lon": -120.28697,
+  "baseLat": 39.19637,
+  "baseLon": -120.22914,
+  "top": 2741,
+  "base": 1889,
+  "trails": 219,
+  "lifts": 43,
+  "zones": true,
+  "bytes": 1398892
  },
  {
   "id": "park-city",
@@ -413,7 +509,7 @@
   "trails": 352,
   "lifts": 41,
   "zones": true,
-  "bytes": 2360083
+  "bytes": 2361270
  },
  {
   "id": "pats-peak",
@@ -429,7 +525,7 @@
   "trails": 36,
   "lifts": 11,
   "zones": false,
-  "bytes": 249511
+  "bytes": 249707
  },
  {
   "id": "pizol",
@@ -445,7 +541,7 @@
   "trails": 39,
   "lifts": 13,
   "zones": true,
-  "bytes": 867745
+  "bytes": 868104
  },
  {
   "id": "powder-ridge",
@@ -461,7 +557,7 @@
   "trails": 12,
   "lifts": 8,
   "zones": true,
-  "bytes": 122842
+  "bytes": 121934
  },
  {
   "id": "ragged",
@@ -477,7 +573,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": false,
-  "bytes": 304693
+  "bytes": 304856
  },
  {
   "id": "saalbach",
@@ -493,7 +589,7 @@
   "trails": 100,
   "lifts": 81,
   "zones": true,
-  "bytes": 2488999
+  "bytes": 2492252
  },
  {
   "id": "saddleback",
@@ -509,7 +605,7 @@
   "trails": 66,
   "lifts": 5,
   "zones": false,
-  "bytes": 396466
+  "bytes": 396707
  },
  {
   "id": "ski-sundown",
@@ -525,7 +621,7 @@
   "trails": 17,
   "lifts": 5,
   "zones": false,
-  "bytes": 131278
+  "bytes": 131377
  },
  {
   "id": "skiwelt",
@@ -541,7 +637,7 @@
   "trails": 163,
   "lifts": 76,
   "zones": true,
-  "bytes": 2796761
+  "bytes": 2798675
  },
  {
   "id": "smugglers-notch",
@@ -557,7 +653,55 @@
   "trails": 84,
   "lifts": 9,
   "zones": false,
-  "bytes": 499116
+  "bytes": 499642
+ },
+ {
+  "id": "snowbird",
+  "name": "Snowbird",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 40.55244,
+  "lon": -111.65656,
+  "baseLat": 40.57708,
+  "baseLon": -111.67394,
+  "top": 3463,
+  "base": 2365,
+  "trails": 201,
+  "lifts": 14,
+  "zones": false,
+  "bytes": 939992
+ },
+ {
+  "id": "snowshoe",
+  "name": "Snowshoe",
+  "region": "West Virginia, USA",
+  "tz": "America/New_York",
+  "lat": 38.40168,
+  "lon": -79.99264,
+  "baseLat": 38.42347,
+  "baseLon": -80.01598,
+  "top": 1458,
+  "base": 994,
+  "trails": 43,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 418634
+ },
+ {
+  "id": "solitude",
+  "name": "Solitude",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 40.59822,
+  "lon": -111.60997,
+  "baseLat": 40.62652,
+  "baseLon": -111.60207,
+  "top": 3185,
+  "base": 2438,
+  "trails": 84,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 573823
  },
  {
   "id": "steamboat",
@@ -573,7 +717,7 @@
   "trails": 195,
   "lifts": 23,
   "zones": true,
-  "bytes": 1162282
+  "bytes": 1162478
  },
  {
   "id": "stowe",
@@ -589,7 +733,7 @@
   "trails": 130,
   "lifts": 12,
   "zones": false,
-  "bytes": 773186
+  "bytes": 773581
  },
  {
   "id": "stratton",
@@ -605,7 +749,7 @@
   "trails": 117,
   "lifts": 17,
   "zones": false,
-  "bytes": 808987
+  "bytes": 809110
  },
  {
   "id": "sugarbush",
@@ -621,7 +765,7 @@
   "trails": 132,
   "lifts": 18,
   "zones": false,
-  "bytes": 748193
+  "bytes": 748536
  },
  {
   "id": "sugarloaf",
@@ -637,7 +781,7 @@
   "trails": 155,
   "lifts": 15,
   "zones": false,
-  "bytes": 973054
+  "bytes": 973461
  },
  {
   "id": "sunday-river",
@@ -653,7 +797,23 @@
   "trails": 137,
   "lifts": 20,
   "zones": false,
-  "bytes": 892778
+  "bytes": 893551
+ },
+ {
+  "id": "telluride",
+  "name": "Telluride",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 37.8841,
+  "lon": -107.82874,
+  "baseLat": 37.93716,
+  "baseLon": -107.82076,
+  "top": 4033,
+  "base": 2662,
+  "trails": 132,
+  "lifts": 19,
+  "zones": false,
+  "bytes": 1371983
  },
  {
   "id": "tignes-val-disere",
@@ -669,7 +829,7 @@
   "trails": 181,
   "lifts": 78,
   "zones": true,
-  "bytes": 2819686
+  "bytes": 2821138
  },
  {
   "id": "vail",
@@ -685,7 +845,7 @@
   "trails": 219,
   "lifts": 32,
   "zones": false,
-  "bytes": 1780042
+  "bytes": 1780509
  },
  {
   "id": "val-thorens",
@@ -701,7 +861,7 @@
   "trails": 102,
   "lifts": 32,
   "zones": true,
-  "bytes": 1567058
+  "bytes": 1568355
  },
  {
   "id": "wachusett",
@@ -717,7 +877,7 @@
   "trails": 27,
   "lifts": 8,
   "zones": false,
-  "bytes": 216162
+  "bytes": 216355
  },
  {
   "id": "waterville-valley",
@@ -733,7 +893,7 @@
   "trails": 68,
   "lifts": 10,
   "zones": false,
-  "bytes": 329546
+  "bytes": 329733
  },
  {
   "id": "whiteface",
@@ -749,7 +909,7 @@
   "trails": 100,
   "lifts": 11,
   "zones": false,
-  "bytes": 506018
+  "bytes": 506116
  },
  {
   "id": "windham-mountain",
@@ -765,7 +925,7 @@
   "trails": 56,
   "lifts": 10,
   "zones": true,
-  "bytes": 358007
+  "bytes": 358145
  },
  {
   "id": "winter-park",
@@ -781,7 +941,7 @@
   "trails": 186,
   "lifts": 25,
   "zones": true,
-  "bytes": 1120307
+  "bytes": 1120679
  },
  {
   "id": "zermatt",
@@ -797,6 +957,6 @@
   "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 2821144
+  "bytes": 2822716
  }
 ]

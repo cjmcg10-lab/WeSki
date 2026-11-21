@@ -7,7 +7,7 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['berkshire-east', 'bolton-valley', 'breckenridge', 'bretton-woods', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'geto-kogen', 'heavenly', 'hunter-mountain', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mohawk-mountain', 'mount-snow', 'mount-southington', 'okemo', 'park-city', 'pats-peak', 'pizol', 'powder-ridge', 'ragged', 'saalbach', 'saddleback', 'ski-sundown', 'skiwelt', 'smugglers-notch', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'tignes-val-disere', 'vail', 'val-thorens', 'wachusett', 'waterville-valley', 'whiteface', 'windham-mountain', 'winter-park', 'zermatt']);
+    expect(index.map((r) => r.id).sort()).toEqual(['alta', 'berkshire-east', 'big-sky', 'bolton-valley', 'breckenridge', 'bretton-woods', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'crystal-mountain', 'deer-valley', 'geto-kogen', 'heavenly', 'hunter-mountain', 'jackson-hole', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mohawk-mountain', 'mount-snow', 'mount-southington', 'okemo', 'palisades-tahoe', 'park-city', 'pats-peak', 'pizol', 'powder-ridge', 'ragged', 'saalbach', 'saddleback', 'ski-sundown', 'skiwelt', 'smugglers-notch', 'snowbird', 'snowshoe', 'solitude', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'telluride', 'tignes-val-disere', 'vail', 'val-thorens', 'wachusett', 'waterville-valley', 'whiteface', 'windham-mountain', 'winter-park', 'zermatt']);
   });
   // resorts kept in R2 are only checked where they have been downloaded (node tools/maps_r2.mjs pull --all)
   for (const entry of index.filter((e) => existsSync(`public/data/${e.id}/resort.json`))) {
@@ -22,7 +22,8 @@ describe('every built resort', () => {
       expect(Math.abs(geo.elev(x, y) - entry.top)).toBeLessThan(40);
       const router = new Router(resort, geo), all = { maxDiff: 3, closed: new Set() };
       // lifts that really do stand alone (a village beginner tow) are listed in the resort data
-      const alone = new Set((resort.isolated || []).flatMap((i) => [`${resort.lifts[i].name} (base)`, `${resort.lifts[i].name} (top)`]));
+      const lone = [...(resort.isolated || []), ...resort.lifts.flatMap((l, i) => (l.hide ? [i] : []))]; // hidden lifts are not shown or routed to
+      const alone = new Set(lone.flatMap((i) => [`${resort.lifts[i].name} (base)`, `${resort.lifts[i].name} (top)`]));
       const ends = resort.pois.filter((p) => (p.kind === 'lift' || p.kind === 'lifttop') && !alone.has(p.name));
       const bad = [];
       // Small resorts: every pair. Big ones (hundreds of lift ends): every end to and from two

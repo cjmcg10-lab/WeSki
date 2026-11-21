@@ -1,0 +1,62 @@
+{
+ "id": "palisades-tahoe",
+ "name": "Palisades Tahoe",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "area_bbox": [
+  -120.2946,
+  39.1535,
+  -120.208,
+  39.2121
+ ],
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -120.2946,
+  39.1535,
+  -120.208,
+  39.2121
+ ],
+ "ratings_feed": {
+  "mtnpowder": 61
+ },
+ "rename": {
+  "Atkinson's - 3rd": "Atkinson's - 3rd Tree",
+  "Hill's - 2nd": "Hill's - 2nd Tree",
+  "Light Tower": "Light Towers",
+  "Lower 40 Gully North": "Lower 40 Gully",
+  "Marillac's - 5th": "Marillac's - 5th Tree",
+  "Reuter's 6th": "Reuter's - 6th Tree",
+  "Standteiner's - 4th": "Standteiner's - 4th Tree",
+  "Tomlinson's - 1st": "Tomlinson's - 1st Tree",
+  "Water Fall Gully": "Waterfall Gully"
+ },
+ "two_way_lifts": [
+  "Base to Base Gondola"
+ ],
+ "links": [
+  [
+   "Alpine Bowl (top)",
+   "trail:D7"
+  ],
+  [
+   "Summit Six (top)",
+   "trail:D7"
+  ],
+  [
+   "Summit Six (top)",
+   "trail:Idiot's Delight",
+   "hike"
+  ],
+  [
+   "Summit Six (top)",
+   "trail:Beaver Bowl",
+   "hike"
+  ],
+  [
+   "Summit Six (top)",
+   "trail:Estelle Bowl",
+   "hike"
+  ]
+ ],
+ "links_note": "Alpine Meadows: Beaver Bowl, Estelle Bowl and Idiot's Delight are reached along the ridge from the Summit Six top; OpenStreetMap has no traverse, so they are joined as walks (approximate)."
+}

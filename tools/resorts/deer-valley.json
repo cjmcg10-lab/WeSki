@@ -1,0 +1,30 @@
+{
+ "id": "deer-valley",
+ "name": "Deer Valley",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "area_name": "Deer Valley Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -111.5381,
+  40.5729,
+  -111.4264,
+  40.6499
+ ],
+ "ratings_feed": {
+  "mtnpowder": 49
+ },
+ "rename": {
+  "Anchor Treess": "Anchor Trees",
+  "Blue Bell": "Bluebell",
+  "Cresent": "Crescent",
+  "Guardsman Glades": "Guardsman Glade",
+  "Lakeshore": "Lake Shore",
+  "Little Bdll": "Little Bell",
+  "Niagra": "Niagara",
+  "Non-Descript": "Nondescript",
+  "Persistence": "Persistance",
+  "Trillby": "Trilby"
+ }
+}

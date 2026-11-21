@@ -2,9 +2,9 @@
 """Start a new resort: write tools/resorts/<id>.json from a name and a point on the mountain.
 
 usage: python3 tools/new_resort.py <id> "<Name>" "<Region, Country>" <lon> <lat> [--tz Area/City]
-                                   [--feed mtnpowder:<n>] [--work DIR]
+                                   [--feed mtnpowder:<n>] [--km 8] [--work DIR]
 
-Downloads OpenStreetMap around the point (8 km box), finds the resort's winter-sports area
+Downloads OpenStreetMap around the point (8 km box; --km for big resorts), finds the resort's winter-sports area
 (the one containing the point, else the nearest), and sets area_name and a bounding box that
 covers the area and every run and lift in it. USA: the time zone follows from the state in
 the region. Then run:  python3 tools/pipeline.py <id>
@@ -40,11 +40,11 @@ def tz_for(region):
 
 def main():
     a = sys.argv[1:]
-    opt = {"tz": None, "feed": None, "work": os.environ.get("PIPE_WORK", "/tmp/weski-pipe")}
+    opt = {"tz": None, "feed": None, "km": "8", "work": os.environ.get("PIPE_WORK", "/tmp/weski-pipe")}
     pos = []
     i = 0
     while i < len(a):
-        if a[i] in ("--tz", "--feed", "--work"):
+        if a[i] in ("--tz", "--feed", "--work", "--km"):
             opt[a[i][2:]] = a[i + 1]; i += 2
         else:
             pos.append(a[i]); i += 1
@@ -60,10 +60,11 @@ def main():
 
     os.makedirs(opt["work"], exist_ok=True)
     osm = f"{opt['work']}/{rid}.seed.osm"
-    dy, dx = 4000 / 111320, 4000 / (111320 * math.cos(math.radians(lat)))
+    half = float(opt["km"]) * 500
+    dy, dx = half / 111320, half / (111320 * math.cos(math.radians(lat)))
     if not os.path.exists(osm):
         subprocess.run([sys.executable, f"{ROOT}/tools/dev/osmget.py", osm, str(lon - dx), str(lat - dy),
-                        str(lon + dx), str(lat + dy), "3"], check=True)
+                        str(lon + dx), str(lat + dy), str(max(3, round(float(opt["km"]) / 3)))], check=True)
     root = ET.parse(osm).getroot()
     nodes = {n.get("id"): (float(n.get("lon")), float(n.get("lat"))) for n in root.findall("node")}
     ways = {}

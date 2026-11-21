@@ -1,0 +1,15 @@
+{
+ "id": "jackson-hole",
+ "name": "Jackson Hole",
+ "region": "Wyoming, USA",
+ "tz": "America/Denver",
+ "area_name": "Jackson Hole Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -110.8872,
+  43.5707,
+  -110.8067,
+  43.6232
+ ]
+}

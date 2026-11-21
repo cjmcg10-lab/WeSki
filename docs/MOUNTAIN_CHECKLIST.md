@@ -156,8 +156,17 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Hunter Mountain | yes (2026-11-18) | yes (trail map, 400 dpi render) | no (only a snowless spring photo) | HP Poma lift added by hand (`extra_lifts`); twelve runs not in OpenStreetMap traced by hand (Macombs, Park Avenue, Park Avenue West, Bucky's Run, Gramercy Park, Madison Square, KMC Drive, Milky Way, The Milky Glades, Belt Parkway Bypass, Mad Box, Woodstock Glades); KMC Drive starts at the Kaatskill Mountain Club, which no run reaches |
 | Windham Mountain | yes (2026-11-18) | yes (trail map; "advanced" blue recorded as blue-black) | yes | What, Wooly Bear and a line through Whataride Glades traced by hand |
 | Wachusett | yes (2026-11-18) | yes (trail map) | yes | Polar Kids traced by hand; Lower Conifer renamed from OpenStreetMap's Lower Conifer Connection |
+| Jackson Hole | yes (2026-11-21, `pipeline.py`) | yes (trail map, skimap.org 37233: label colours only, so a black label is black, or double where OpenStreetMap says double) | yes | 6 listed runs not on the map |
+| Palisades Tahoe | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 61)) | no | 114 feed entries not on the map (gates, cliffs, named lines inside bowls: to sort into `not_runs`/`same_as`); Alpine Meadows' Beaver and Estelle bowls joined to Summit Six as walks (approximate); Base to Base Gondola two-way |
+| Deer Valley | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 49)) | no | 10 listed runs not on the map; upper/mid/lower parts rated as whole runs |
+| Solitude | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 65)) | no | 17 listed runs not on the map |
+| Crystal Mountain | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 80)) | no | terrain is 1 m LiDAR only in part, the rest the 10 m national model; Silver Basin joined to Chair 6 as a hike; 6 listed runs not on the map |
+| Snowshoe | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 2)) | no | 18 listed runs not on the map |
+| Big Sky | yes (2026-11-21, `pipeline.py`) | yes (2026-27 trail maps (skimap.org), cheaper-model reading plus second look at disagreements) | no | 33 listed runs not on the map; platters Tweener and Homer have no run from their tops (marked isolated: check whether they are public); One and Only gondola two-way; Rudy and Porcupine had no readable symbol |
+| Snowbird | yes (2026-11-21, `pipeline.py`) | yes (trail map (skimap.org), two-pass reading) | no | 16 listed runs not on the map; Westward Ho joined from Aggie's Alley |
+| Alta | yes (2026-11-21, `pipeline.py`) | yes (trail map (skimap.org), two-pass reading) | no | 11 listed runs not on the map |
+| Telluride | yes (2026-11-21, `pipeline.py`) | yes (2024 winter trail map (skimap.org), two-pass reading) | no | 15 listed runs not on the map; Revelation, Black Iron and Prospect bowls and Goat Path have no symbol on the map (OpenStreetMap rating kept) |
 | Tremblant | coming soon | no | yes | |
-| Jackson Hole | coming soon | no | yes | |
 | Whistler Blackcomb | coming soon | no | yes | |
 | Chamonix | coming soon | no | yes | |
 | Niseko | coming soon | no | no | |

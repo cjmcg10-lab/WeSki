@@ -1,0 +1,35 @@
+{
+ "id": "big-sky",
+ "name": "Big Sky",
+ "region": "Montana, USA",
+ "tz": "America/Denver",
+ "area_name": "Big Sky Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -111.4742,
+  45.2398,
+  -111.3472,
+  45.3278
+ ],
+ "rename": {
+  "Bone Crusher Hiking Area": "Bonecrusher Hiking Area",
+  "Jackrabbit": "Jack Rabbit",
+  "Lone Tree": "Lone Tree Face",
+  "Marshall": "Marshal",
+  "Meriwether Cuttoff": "Meriwether Cutoff",
+  "Pack Saddle Glades": "Pack Saddle",
+  "Parachute": "Parachute (A-Z)",
+  "Timberwolf": "Timber Wolf",
+  "Whitebark": "White Bark",
+  "Wolf Den": "Wolf's Den"
+ },
+ "two_way_lifts": [
+  "One and Only"
+ ],
+ "isolated_lifts": [
+  "Tweener",
+  "Homer"
+ ],
+ "isolated_lifts_note": "Two platters south-east of the Lewis and Clark area with no mapped run from their tops (OpenStreetMap 773673147, 773673148); likely private club lifts. Check against the resort's lift list."
+}

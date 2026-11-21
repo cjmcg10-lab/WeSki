@@ -1,0 +1,39 @@
+{
+ "id": "crystal-mountain",
+ "name": "Crystal Mountain",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "area_bbox": [
+  -121.5009,
+  46.9176,
+  -121.4483,
+  46.9536
+ ],
+ "terrain_source": "USGS 3DEP: 1 m LiDAR (WA Eastern Cascades 2019) where it covers the area, the 10 m national elevation model elsewhere (public domain)",
+ "osm_bbox": [
+  -121.5136,
+  46.9098,
+  -121.457,
+  46.9638
+ ],
+ "ratings_feed": {
+  "mtnpowder": 80
+ },
+ "rename": {
+  "Afterburn": "After Burn",
+  "Discovery Meadow": "Discover Meadow",
+  "Kelley's Gap Road": "Kelly's Gap Road",
+  "Left Angle": "Left Angle Trees",
+  "Lower Brand X Cliffs": "Lower Brand-X Cliff",
+  "Northway Bowl": "Northway",
+  "Right Angle Trees (Lower RA)": "Right Angle Trees",
+  "Side Burn": "Sideburn"
+ },
+ "links": [
+  [
+   "Chair 6 (top)",
+   "trail:Silver Basin",
+   "hike"
+  ]
+ ]
+}

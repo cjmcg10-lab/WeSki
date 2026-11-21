@@ -1,0 +1,26 @@
+{
+ "id": "snowbird",
+ "name": "Snowbird",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "area_name": "Snowbird",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP 1 m LiDAR DEM (public domain)",
+ "osm_bbox": [
+  -111.6899,
+  40.5408,
+  -111.6098,
+  40.5951
+ ],
+ "rename": {
+  "Almony Chutes": "Alimony Chutes",
+  "Luckey Boy": "Lucky Boy",
+  "Niagra": "Niagara"
+ },
+ "links": [
+  [
+   "trail:Aggie's Alley",
+   "trail:Westward Ho"
+  ]
+ ]
+}
