@@ -65,19 +65,20 @@ output shape, which #2 writes down first in `docs/FORECAST_SCORING.md`.
 
 ## How we avoid working on the same thing
 
+Follow `docs/DEVELOPMENT_PROCESS.md`. In short:
+
 1. **Claim before you start.** Assign the issue to yourself on GitHub (or comment "Taking this") before writing any
    code. An issue with an assignee belongs to that person; ask them before touching it.
 2. **One branch per issue**, started from the tip of `claude/ecstatic-hamilton-2gsp2q`, named
-   `claude/forecast-<issue number>-<short name>` (for example `claude/forecast-2-scoring`). When a Claude Code session
-   assigns its own branch name, mention the issue number in the commits instead.
-3. **Comment on the issue** with the branch name when you start and a short note when you stop, so the other person
-   can see where things are.
+   `claude/<issue number>-<short name>` (for example `claude/2-forecast-scoring`). Comment the branch name on the issue.
+3. **Pull request, checks, review.** Open a pull request with "Closes #N"; the Checks workflow must pass and the other
+   person reviews before it is merged.
 4. **Keep to the issue's files.** Shared files (`src/main.js`, `index.html`, `src/styles.css`, the language files)
    are where clashes happen: make small, focused changes there and merge the deploy branch into yours often.
 5. **Going live:** merging into `claude/ecstatic-hamilton-2gsp2q` (or `main`) deploys to the live site. Merge a phase
-   only when its "Releasable when" check passes and `npm test` passes.
+   only when its "Releasable when" check passes.
 6. **Starting a Claude Code session on an issue:** open the WeSki repository and say "Work on issue #N". The issue,
-   this file and `CLAUDE.md` contain everything the session needs.
+   this file, `docs/DEVELOPMENT_PROCESS.md` and `CLAUDE.md` contain everything the session needs.
 
 ## Acceptance test (from the spec)
 

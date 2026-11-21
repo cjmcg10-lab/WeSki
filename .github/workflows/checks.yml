@@ -1,0 +1,37 @@
+# Runs the tests and the build on every pull request, without deploying.
+# A pull request may only be merged once this passes (see docs/DEVELOPMENT_PROCESS.md).
+name: Checks
+
+on:
+  pull_request:
+    branches: [main, claude/ecstatic-hamilton-2gsp2q]
+  workflow_dispatch:
+
+concurrency:
+  group: checks-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # same as the deploy: R2 maps are downloaded so every mountain is tested (secrets are only available to
+      # pull requests from branches in this repository, not from forks)
+      - name: Download maps from R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node tools/maps_r2.mjs pull --all || echo "::warning::Could not download the R2 maps; their tests were skipped"
+      - run: npm test
+      - run: node tools/maps_r2.mjs drop
+      - run: npm run build:assets
