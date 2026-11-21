@@ -191,5 +191,7 @@ export default {
   789: 'Simular versão gratuita', 790: 'Veja o app como alguém sem passe.', 791: 'Este telefone age como se não tivesse passe: os botões pagos mostram o selo Passe e abrem a janela do passe. Nada é comprado ou alterado na sua conta. Desligue para voltar.', 792: 'Simulação gratuita ligada: recursos pagos agora mostram a janela do passe.', 793: 'Simulação gratuita desligada.', 794: 'Sua conta', 795: 'Sua conta e SkiWithMe Pass',
   796: 'Crie sua conta ou entre', 797: 'Para comprar o {0}, digite seu e-mail. Enviamos um código de 6 dígitos, sem senha. Depois o pagamento abre.',
   798: 'Voltar',
-  799: 'Passe do proprietário: tudo incluído, sem data de término',
+  799: 'Passe do proprietário',
+  800: 'Dados meteorológicos da MET Norway', 801: 'rajadas estimadas', 802: 'Tempo: Serviço Meteorológico Nacional dos EUA',
+  803: 'Nebulosidade',
 };

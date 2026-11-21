@@ -1,11 +1,9 @@
-// Ski weather from Open-Meteo (free, no API key). Two points are requested: summit and base,
-// each at its real elevation, because conditions differ a lot over 2,000 vertical feet.
+// Ski weather through our server (/api/weather): the US National Weather Service in the USA, MET Norway elsewhere,
+// both free for commercial use. Two points are requested: summit and base, each at its real elevation, because
+// conditions differ a lot over 2,000 vertical feet. The server returns Open-Meteo's field names and units.
 import { prefs } from './store.js';
 
 const CACHE_MS = 20 * 60 * 1000;
-const CURRENT = 'temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_gusts_10m,wind_direction_10m,cloud_cover,snow_depth,snowfall';
-const HOURLY = 'temperature_2m,apparent_temperature,snowfall,precipitation_probability,wind_speed_10m,wind_gusts_10m,weather_code,visibility,freezing_level_height';
-const DAILY = 'weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_min,snowfall_sum,rain_sum,precipitation_probability_max,wind_speed_10m_max,wind_gusts_10m_max,sunrise,sunset';
 
 /** WMO weather code -> [label, glyph] */
 export function describeCode(c) {
@@ -26,20 +24,16 @@ export function describeCode(c) {
  * summit/base is the raw Open-Meteo object (metric units: °C, cm snowfall, m/s wind, m depth).
  */
 export async function loadWeather(place, force = false) {
-  const key = 'weather:' + place.id;
+  const key = 'weather2:' + place.id;
   const hit = prefs.get(key, null);
   if (hit && !force && Date.now() - hit.at < CACHE_MS) return { ...hit, cached: true };
-  const url = 'https://api.open-meteo.com/v1/forecast'
-    + `?latitude=${place.lat},${place.baseLat ?? place.lat}&longitude=${place.lon},${place.baseLon ?? place.lon}`
-    + `&elevation=${Math.round(place.top)},${Math.round(place.base)}`
-    + `&current=${CURRENT}&hourly=${HOURLY}&daily=${DAILY}`
-    + `&timezone=${encodeURIComponent(place.tz)}&forecast_days=7&wind_speed_unit=ms`;
+  const url = `/api/weather?lat=${place.lat}&lon=${place.lon}&blat=${place.baseLat ?? place.lat}&blon=${place.baseLon ?? place.lon}`
+    + `&top=${Math.round(place.top)}&base=${Math.round(place.base)}&tz=${encodeURIComponent(place.tz)}`;
   try {
     const res = await fetch(url);
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.reason || 'Weather service error');
-    const [summit, base] = Array.isArray(data) ? data : [data, data];
-    const out = { at: Date.now(), summit, base };
+    const out = { at: Date.now(), source: data.source, summit: data.summit, base: data.base };
     prefs.set(key, out);
     return out;
   } catch (e) {

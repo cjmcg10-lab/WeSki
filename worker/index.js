@@ -5,6 +5,7 @@ import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+import { weather } from './weather.js';
 export { Accounts, ResortLog } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -45,6 +46,13 @@ async function api(request, env, url) {
   if (method === 'POST' && path !== '/api/paddle/webhook') {
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
+  }
+  if (path === '/api/weather' && method === 'GET') {
+    try {
+      const r = await weather(url);
+      if (r.error) return json({ error: r.error }, r.status);
+      return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=900' } });
+    } catch (e) { return json({ error: 'The weather service did not answer.' }, 502); }
   }
   if (path === '/api/config' && method === 'GET') {
     const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));

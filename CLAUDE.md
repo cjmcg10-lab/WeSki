@@ -14,7 +14,7 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (117 tests; the resort tests load every built map).
+- Run `npm test` before every push (120 tests; the resort tests load every built map).
 
 ## Starting a new session (read this first)
 
@@ -453,6 +453,12 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 - Links to `/legal/*` and `/about` inside the app open in a viewer over the app (`openDoc`, `#docview`, big Back
   button), so the map, group and panel stay as they were. The pages load `/legal/back.js`: inside the viewer they hide
   their own "Back to the app" bar and a link to the app closes the viewer; opened on their own they show the bar.
+- Weather (2026-11-21): `/api/weather` (`worker/weather.js`) asks the US National Weather Service (USA, public domain)
+  or MET Norway (elsewhere, CC BY 4.0, credit shown under the forecast) and returns Open-Meteo's field names, so
+  `src/main.js` reads it unchanged. Shared through Cloudflare's cache. NWS temperatures are corrected from the grid
+  cell's height to the summit and base; MET snowfall is worked out from precipitation and temperature, its gusts are
+  wind x 1.5 where it gives none; freezing level comes from the summit and base temperatures where NWS gives no snow
+  level. Snow depth is no longer shown (neither source has it). Open-Meteo is no longer used.
 - Owner accounts: Cloudflare secret `COMP_EMAILS` (comma-separated) = every paid feature, no end date, plus crew.
 - The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
   install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and
@@ -485,8 +491,7 @@ keys go in through the credential form, never chat.
 1. Rating check: all 50 done, including Val Thorens's Orelle side and the sixteen northeast mountains added on 2026-11-18.
 2. (Done) Rename to SkiWithMe and new icons. Remaining: the old `weski` Worker.
 3. Paid web app: built 2026-11-20 and switched off (see "Paid tier, accounts, privacy"). Remaining: the owner's
-   accounts (LLC, domain, Resend, Paddle) and secrets, contact details in the legal pages, a commercially licensed
-   weather source (Open-Meteo's free tier is non-commercial; MET Norway is free with credit), the one-page website,
+   accounts (LLC, domain, Resend, Paddle) and secrets, contact details in the legal pages, the one-page website,
    a report-review script, and a real purchase tested end to end.
 4. Next US resorts. Built on 2026-11-18: eight northeast ones (Killington, Sunday River, Sugarloaf, Okemo, Mount Snow,
    Stratton, Loon, Whiteface), then eight Indy Pass northeast ones (Waterville Valley, Bolton Valley, Burke, Magic Mountain,

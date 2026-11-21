@@ -697,5 +697,7 @@ export default {
   789: 'Simulate free tier', 790: 'See the app as someone without a pass.', 791: 'This phone acts as if it had no pass: paid buttons show the Pass badge and open the pass pop-up. Nothing is bought or changed on your account. Turn it off to go back.', 792: 'Free tier simulation on: paid features now show the pass pop-up.', 793: 'Free tier simulation off.', 794: 'Your account', 795: 'Your account and SkiWithMe Pass',
   796: 'Create your account or sign in', 797: 'To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.',
   798: 'Back',
-  799: 'Owner pass: everything included, no end date',
+  799: 'Owner pass',
+  800: 'Weather data from MET Norway', 801: 'gusts estimated', 802: 'Weather: US National Weather Service',
+  803: 'Cloud cover',
 };

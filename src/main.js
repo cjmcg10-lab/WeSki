@@ -1678,7 +1678,7 @@ const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short',
 function passStatus(me) {
   const p = me?.pass;
   if (!p?.active) return me?.trialUsed ? 'No pass. Your free day has been used.' : 'No pass yet.';
-  if (p.comp) return t('Owner pass: everything included, no end date');
+  if (p.comp) return t('Owner pass');
   const name = p.trial ? 'Free day' : (acct.config().plans?.[p.plan]?.name || 'Pass');
   const end = p.until || p.ends;
   if (p.member && end > Date.now() + 3650 * 864e5) return `${t('Crew member')} · ${t(name)}`;
@@ -2037,17 +2037,17 @@ function sheetWeather() {
   const cbox = (v, l) => `<div class="box cap"><b>${v}</b><span>${l}</span></div>`;
   const segs = `<div class="seg solid"><button data-act="wx-site" data-v="summit" class="${atBase ? '' : 'on'}">Summit</button><button data-act="wx-site" data-v="base" class="${atBase ? 'on' : ''}">Base</button></div>
     <div class="seg solid" style="margin-top:8px"><button data-act="wx-view" data-v="today" class="${week ? '' : 'on'}">Today</button><button data-act="wx-view" data-v="week" class="${week ? 'on' : ''}">7 days</button></div>`;
-  const foot = `<div class="wx-foot"><div class="grow"><b>${stale ? 'Saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''}</b>Summit ${fmtVert(S.place.top)} / Base ${fmtVert(S.place.base)}<br><a href="https://open-meteo.com/" target="_blank" rel="noopener">Weather by Open-Meteo</a></div><button class="btn" data-act="wx-refresh">${ICON.refresh} Refresh</button></div>`;
+  const foot = `<div class="wx-foot"><div class="grow"><b>${stale ? 'Saved ' : 'Updated '}${fmtClock(at)}${wx.loading ? ' · refreshing…' : ''}</b>Summit ${fmtVert(S.place.top)} / Base ${fmtVert(S.place.base)}<br>${wx.data.source === 'met' ? `<a href="https://api.met.no/" target="_blank" rel="noopener">${t('Weather data from MET Norway')}</a> · ${t('gusts estimated')}` : `<a href="https://www.weather.gov/" target="_blank" rel="noopener">${t('Weather: US National Weather Service')}</a>`}</div><button class="btn" data-act="wx-refresh">${ICON.refresh} Refresh</button></div>`;
   if (week) {
     const rows = d.time.map((t, i) => {
       const n = skiNotes(day(i), null, fmtSnow)[0];
-      return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${emo(describeCode(d.weather_code[i])[1])}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''} · ${d.precipitation_probability_max[i] ?? 0}% precip · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
+      return `<div class="wx-day"><b class="dn">${dayLabel(t, i)}</b><i>${emo(describeCode(d.weather_code[i])[1])}</i><span class="tt">${fmtTemp(d.temperature_2m_min[i])} / ${fmtTemp(d.temperature_2m_max[i])}</span><span class="sn ${d.snowfall_sum[i] >= 5 ? 'pow' : ''}">❄ ${fmtSnow(d.snowfall_sum[i] || 0)}</span><span class="wd">${fmtWind(d.wind_gusts_10m_max[i])} ${speedUnit()}</span><small class="${n[0]}">${esc(describeCode(d.weather_code[i])[0])}${d.rain_sum[i] >= 1 ? ' · rain' : ''}${d.precipitation_probability_max[i] != null ? ` · ${d.precipitation_probability_max[i]}% precip` : ''} · feels ${fmtTemp(d.apparent_temperature_min[i])} at coldest${n[0] !== 'good' || d.snowfall_sum[i] >= 5 ? ' · ' + esc(n[1].split(':')[0].split(' — ')[0]) : ''}</small></div>`;
     }).join('');
     return [T, `${segs}<div class="card"><h3>7-day ski forecast (${where})</h3><div class="wx-head"><span>Day</span><span>Low / High</span><span>Snow</span><span>Gust</span></div>${rows}</div>${foot}`];
   }
   const hours = h.time.slice(hi, hi + 12).map((t, k) => {
     const i = hi + k;
-    return `<div class="wx-hour"><span>${k === 0 ? 'Now' : hourLabel(t)}</span><i>${emo(describeCode(h.weather_code[i])[1])}</i><b>${fmtTemp(h.temperature_2m[i])}</b><small>${h.snowfall[i] > 0.05 ? '❄ ' + fmtSnow(h.snowfall[i]) : (h.precipitation_probability[i] ?? 0) + '%'}</small><small>${fmtWind(h.wind_gusts_10m[i])} ${speedUnit()}</small></div>`;
+    return `<div class="wx-hour"><span>${k === 0 ? 'Now' : hourLabel(t)}</span><i>${emo(describeCode(h.weather_code[i])[1])}</i><b>${fmtTemp(h.temperature_2m[i])}</b><small>${h.snowfall[i] > 0.05 ? '❄ ' + fmtSnow(h.snowfall[i]) : h.precipitation_probability[i] != null ? h.precipitation_probability[i] + '%' : '–'}</small><small>${fmtWind(h.wind_gusts_10m[i])} ${speedUnit()}</small></div>`;
   }).join('');
   const notes = skiNotes(day(0), { vis }, fmtSnow).map(([k, t]) => `<div class="wx-note ${k}">${esc(t)}</div>`).join('');
   const open = S.wxMore !== false;
@@ -2055,15 +2055,15 @@ function sheetWeather() {
     <div class="wx-hero"><div class="g">${emo(glyph)}</div><div><div class="t">${fmtTemp(c.temperature_2m)}${tUnit()}</div><div class="l">${label} · Feels like ${fmtTemp(c.apparent_temperature)}${tUnit()}</div><div class="l">${atBase ? 'Summit' : 'Base'} ${fmtTemp(other.current.temperature_2m)}${tUnit()} · today ${fmtTemp(d.temperature_2m_min[0])} to ${fmtTemp(d.temperature_2m_max[0])}</div></div></div>
     ${notes}
     <div class="boxes b3">
-      ${cbox(unitSplit(fmtSnow(d.snowfall_sum[0] || 0)), 'New snow')}${cbox(unitSplit(fmtSnow(next24)), 'Next 24 h')}${cbox(c.snow_depth != null ? unitSplit(fmtSnow(c.snow_depth * 100)) : '–', 'Snow depth')}
+      ${cbox(unitSplit(fmtSnow(d.snowfall_sum[0] || 0)), 'New snow')}${cbox(unitSplit(fmtSnow(next24)), 'Next 24 h')}${cbox(d.precipitation_probability_max[0] != null ? `${d.precipitation_probability_max[0]}<small>%</small>` : '–', 'Precip chance')}
       ${cbox(`${fmtWind(c.wind_speed_10m)}<small>${speedUnit()}</small>`, `Wind ${compass(c.wind_direction_10m)}`)}${cbox(`${fmtWind(c.wind_gusts_10m)}<small>${speedUnit()}</small>`, 'Gusts')}${cbox(`${fmtWind(d.wind_gusts_10m_max[0])}<small>${speedUnit()}</small>`, 'Peak gust today')}
     </div>
     <div class="wx-more ${open ? 'open' : ''}"><button data-act="wx-more">More conditions<i>⌄</i></button>${open ? `<div class="cols">
       <div><b>${vis != null ? (imp() ? `${(vis / 1609.34).toFixed(vis < 1609 ? 1 : 0)}<small>mi</small>` : `${(vis / 1000).toFixed(vis < 1000 ? 1 : 0)}<small>km</small>`) : '–'}</b><span>Visibility</span></div>
       <div><b>${frz != null ? unitSplit(fmtVert(frz)) : '–'}</b><span>Freezing level</span></div>
-      <div><b>${d.precipitation_probability_max[0] ?? 0}<small>%</small></b><span>Precip chance</span></div></div>` : ''}</div>
+      <div><b>${c.cloud_cover}<small>%</small></b><span>Cloud cover</span></div></div>` : ''}</div>
     <div class="card"><h3>Next 12 hours at the ${where} · temp, snow or precip chance, gusts</h3><div class="wx-hours">${hours}</div></div>
-    <p class="wx-sun">Sunrise ${hourLabelFull(d.sunrise[0])} · Sunset ${hourLabelFull(d.sunset[0])} · Cloud cover ${c.cloud_cover}%</p>
+    <p class="wx-sun">Sunrise ${hourLabelFull(d.sunrise[0])} · Sunset ${hourLabelFull(d.sunset[0])}</p>
     ${foot}`];
 }
 const hourLabelFull = (iso) => { const h = +iso.slice(11, 13); return `${h % 12 || 12}:${iso.slice(14, 16)} ${h < 12 ? 'am' : 'pm'}`; };
