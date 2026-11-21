@@ -34,8 +34,8 @@
     "WEATHER": "open-meteo",
     "MAIL_FROM": "SkiWithMe <signin@builtbyroger.app>",
     "PADDLE_ENV": "sandbox",
-    "PADDLE_CLIENT_TOKEN": "",
-    "PADDLE_PRICES": "{}"
+    "PADDLE_CLIENT_TOKEN": "test_03c17e15405c60d04760a656641",
+    "PADDLE_PRICES": "{\"pri_01m7xyhm3habdpnghh36ah1etv\":\"day\",\"pri_01m7xyk6z28t41kfe9d1n0qmqt\":\"week\",\"pri_01m7xyme122wvrre3pq6b8nawf\":\"season\",\"pri_01m7xyn989mnvsga49aqcd5729\":\"crew\"}"
   },
   "observability": { "enabled": true }
 }
