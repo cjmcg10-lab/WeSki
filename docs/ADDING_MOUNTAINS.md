@@ -100,25 +100,18 @@ line: reports arrive at `/api/reports/<id>`. Fix reported runs first in the next
 
 ## Map storage (Cloudflare R2)
 
-The repository holds every map today (about 47 MB for 50 mountains). Past roughly 150 mountains it would
-grow too large, so new mountains can live in Cloudflare R2 instead (10 GB free; the 50 current maps use
-under 50 MB). Everything is built and switched off:
+Since 2026-11-21 every mountain's map files live in Cloudflare R2 (bucket `skiwithme-maps`), except Jay Peak, which
+stays in git because the unit tests load it. 49 mountains used 46 MB (the free allowance is 10 GB storage,
+1 million writes and 10 million reads a month).
 
-- `public/data/r2.json` lists the mountains kept in R2 (empty now). The Worker (`worker/maps.js`) serves
-  `/data/<id>/...` for those from the bucket and everything else as before. Graph files keep the pass check.
-- `node tools/maps_r2.mjs setup | push <id...> | pull <id...> | pull --all | status` moves maps between this
-  folder and the bucket. `push` also lists the id in r2.json and stops git tracking the folder (it stays on
-  disk). `pipeline.py --r2` builds a mountain straight into R2; one already listed is downloaded first and
-  uploaded again after.
-- `build_index.py` keeps index entries for R2 mountains that are not downloaded; the resort tests check only
-  the mountains on disk (`pull --all` first to test everything). Jay Peak stays in git: the unit tests use it.
-
-To switch it on (once):
-1. The owner turns on R2 in the Cloudflare dashboard (Storage & Databases > R2; it may ask for a payment
-   card even for the free allowance). Until then the API answers "Please enable R2" (code 10042).
-2. A session runs `node tools/maps_r2.mjs setup` (creates the `skiwithme-maps` bucket).
-3. In `wrangler.assets.jsonc` add `"r2_buckets": [{ "binding": "MAPS", "bucket_name": "skiwithme-maps" }]`
-   and add `"/data/*"` to `assets.run_worker_first`, so requests for map files reach the Worker. Every map
-   file request then counts as a Worker request (100,000 a day free).
-4. Push the new mountains with `--r2`, commit, push. Existing mountains can move later with
-   `maps_r2.mjs push <id>` if the repository gets large; there is no need to move them now.
+- `public/data/r2.json` lists the mountains kept in R2. The Worker (`worker/maps.js`) serves `/data/<id>/...` for
+  those from the bucket (`MAPS` binding in `wrangler.assets.jsonc`; `"/data/*"` is in `run_worker_first`, so each
+  map file request counts as a Worker request: 100,000 a day free, about 25,000 mountain opens). Graph files keep
+  the pass check. `index.json` and the globe stay in git.
+- `node tools/maps_r2.mjs pull --all` **at the start of any session that builds or tests maps**: nothing outside the
+  repository survives a session, so the folders are not on disk until pulled (about half a minute). `push <id...>`
+  uploads (only files whose content changed), lists the id in r2.json and keeps the folder out of git;
+  `pipeline.py` does both for any mountain listed there, and `--r2` for a new one. `drop` deletes the local copies.
+- The deploy downloads every R2 map before `npm test`, so the tests still check every mountain, then drops them
+  before the app build. If the GitHub token cannot read R2 the deploy warns and tests only Jay Peak.
+- `build_index.py` keeps index entries for R2 mountains that are not downloaded.

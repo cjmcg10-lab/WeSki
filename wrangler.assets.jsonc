@@ -13,8 +13,12 @@
     "directory": "dist",
     "binding": "ASSETS",
     "not_found_handling": "single-page-application",
-    "run_worker_first": ["/api/*", "/data/*/graph.json"]
+    // "/data/*": map files of resorts kept in R2 (public/data/r2.json) are served by the Worker from MAPS;
+    // the rest pass straight through to the static files
+    "run_worker_first": ["/api/*", "/data/*"]
   },
+  // Resort map files (docs/ADDING_MOUNTAINS.md, "Map storage"). Free allowance: 10 GB, 1M writes, 10M reads a month.
+  "r2_buckets": [{ "binding": "MAPS", "bucket_name": "skiwithme-maps" }],
   "durable_objects": {
     "bindings": [
       { "name": "GROUPS", "class_name": "GroupRoom" },

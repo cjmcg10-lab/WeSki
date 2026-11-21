@@ -31,6 +31,7 @@ session needs that the README does not: the rules, the state of the work, and wh
   map sources the pipeline uses, `mtnpowder.com`, and the six Epic resort sites (which refuse automated clients anyway).
   A blocked host shows as a proxy refusal: request the exact host through the environment tools (the owner approves a
   prompt). Never ask for a secret in chat; use the credential request form.
+- **Map files are in Cloudflare R2, not git** (all but Jay Peak): `node tools/maps_r2.mjs pull --all` before map work.
 - **Nothing outside the repository survives a session.** OSM extracts (about 900 MB), terrain tiles, downloaded trail
   maps and screenshots lived in a scratch folder and are gone. Re-download only what a task needs: one resort's OSM
   extract takes a minute (`tools/dev/osmget.py`, bounding boxes in each `tools/resorts/<id>.json` and
@@ -83,8 +84,8 @@ session needs that the README does not: the rules, the state of the work, and wh
 point, `tools/pipeline.py <id...>` runs every step below (US terrain downloaded automatically) and writes a score card
 (`tools/cards/<id>.md`) listing only what needs a look, `tools/map_read.py` cuts trail maps into tiles and turns reading
 notes into the official ratings file. Ratings: typed sources first, then a cheaper-model first reading with a close
-second look only where it disagrees with OpenStreetMap. Map files can live in Cloudflare R2 (`tools/maps_r2.mjs`,
-`public/data/r2.json`, `worker/maps.js`): built and switched off until the owner turns R2 on in the dashboard.
+second look only where it disagrees with OpenStreetMap. **Map files live in Cloudflare R2** since 2026-11-21 (all but Jay Peak):
+run `node tools/maps_r2.mjs pull --all` first in any session that builds or tests maps; see "Map storage" in that doc.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
 mountain stands; update its row whenever a mountain is worked on.

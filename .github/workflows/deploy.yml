@@ -25,7 +25,16 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # maps kept in Cloudflare R2 are downloaded so the tests check every mountain; if the token cannot read
+      # R2 the tests still run, on the maps in the repository only
+      - name: Download maps from R2
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node tools/maps_r2.mjs pull --all || echo "::warning::Could not download the R2 maps; their tests were skipped"
       - run: npm test
+      # the app build leaves R2 maps out: the Worker serves them from the bucket
+      - run: node tools/maps_r2.mjs drop
       - run: npm run build:assets
       - name: Check Cloudflare secrets
         env:
