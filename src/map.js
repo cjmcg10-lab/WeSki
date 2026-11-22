@@ -234,7 +234,8 @@ export class SkiMap {
     const tw = Math.ceil(W / Math.max(cell / 2, Math.max(W, H) / 2048)), th = Math.ceil(H / Math.max(cell / 2, Math.max(W, H) / 2048));
     const sx = W / tw, sy = H / th, N = tw * th;
     const RW = Math.max(12, 2 * Math.max(sx, sy));                  // distance covered by the field each side of an edge
-    const snow = new Float32Array(N), glade = new Float32Array(N), zf = new Float32Array(N), zc = new Uint8Array(N);
+    const field = new Uint8Array(N * 4), zc = new Uint8Array(N);
+    for (let o = 3; o < field.length; o += 4) field[o] = 255;
     // field value: 0.5 on the edge `rad` from the line, 1 well inside, 0 well outside
     const stroke = (pts, rad, fn) => {
       const R = rad + RW;
@@ -253,16 +254,17 @@ export class SkiMap {
         }
       }
     };
-    const into = (A) => (o, f) => { if (f > A[o]) A[o] = f; };
+    const into = (ch) => (o, f) => { const v = f * 255; if (v > field[o * 4 + ch]) field[o * 4 + ch] = v; };
     const T = this.resort.trails.filter((t) => !t.hide);
-    for (const t of T) stroke(t.pts, t.glade ? 16 : t.d === 0 ? 30 : 25, into(t.glade ? glade : snow));
-    for (const b of this.resort.buildings) stroke([b.pts[0], b.pts[1]], 30, into(snow));
-    for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(glade));
+    for (const t of T) stroke(t.pts, t.glade ? 16 : t.d === 0 ? 30 : 25, into(t.glade ? 1 : 0));
+    for (const b of this.resort.buildings) stroke([b.pts[0], b.pts[1]], 30, into(0));
+    for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(1));
     // zones, by code; later codes win where zones overlap (as before). +16: may tint off the groomed snow
     const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
     const paint = (pts, rad, v, off) => stroke(pts, rad, (o, f) => {
       const cur = zc[o] & 15;
-      if (v > cur && f > 0.35) { zc[o] = v | (off ? 16 : 0); zf[o] = f; } else if (v === cur && f > zf[o]) zf[o] = f;
+      const fv = f * 255;
+      if (v > cur && f > 0.5) { zc[o] = v | (off ? 16 : 0); field[o * 4 + 2] = fv; } else if (v === cur && fv > field[o * 4 + 2]) field[o * 4 + 2] = fv;
     });
     for (const t of T) {
       const z = t.z || (t.slow ? 'slow' : null);
@@ -270,8 +272,6 @@ export class SkiMap {
     }
     for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind], 1);
     for (const p of this.resort.parks) paint(p.pts, 17, CODE.park, p.trail >= 0 ? 0 : 1);
-    const field = new Uint8Array(N * 4);
-    for (let o = 0; o < N; o++) { field[o * 4] = snow[o] * 255; field[o * 4 + 1] = glade[o] * 255; field[o * 4 + 2] = zf[o] * 255; field[o * 4 + 3] = 255; }
     const fieldTex = new THREE.DataTexture(field, tw, th, THREE.RGBAFormat);
     fieldTex.minFilter = THREE.LinearMipmapLinearFilter; fieldTex.magFilter = THREE.LinearFilter; fieldTex.generateMipmaps = true;
     fieldTex.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
@@ -306,10 +306,12 @@ uniform vec2 uOrigin, uSize;
 uniform float uTl, uCell;
 uniform vec3 cSnow, cGlade, cRock, cAlpine, cHigh, cMid, cLow, cZone[8];
 // crisp but anti-aliased edge where a field crosses 0.5
-float edgeOf(float f) { float w = max(fwidth(f) * 0.5, 0.002); return smoothstep(0.5 - w, 0.5 + w, f); }
+float edgeOf(float f, float fw) { float w = max(fw * 0.5, 0.002); return smoothstep(0.5 - w, 0.5 + w, f); }
 vec3 groundColour() {
   vec2 uv = vec2((vGPos.x + uOrigin.x) / uSize.x, (uOrigin.y - vGPos.z) / uSize.y);
   vec4 f = texture2D(uField, uv);
+  vec3 fw = fwidth(f.rgb);
+  float hu = (vGPos.x - vGPos.z) / 9.0, hw = fwidth(hu);
   float alt = vGPos.y;
   vec3 n = normalize(vGNrm);
   float relief = 1.2 * sqrt(max(0.0, 1.0 - n.y * n.y)) / max(n.y, 0.05);   // rise over run, as the old per-triangle measure
@@ -317,19 +319,19 @@ vec3 groundColour() {
   // forest bands by height, blended over ~40 m; alpine snow above the treeline; rock on steep ground
   vec3 c = alt > uTl - 260.0 ? mix(cHigh, cAlpine, smoothstep(uTl + 40.0, uTl + 80.0, alt))
                              : mix(mix(cLow, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
+  c = mix(c, alt > uTl + 60.0 ? cSnow : cGlade, edgeOf(f.g, fw.g));
   c = mix(c, cRock, smoothstep(-0.06, 0.06, relief - (alpine ? 0.7 : 0.95)));
-  c = mix(c, alt > uTl + 60.0 ? cSnow : cGlade, edgeOf(f.g));
-  float s = edgeOf(f.r);
+  float s = edgeOf(f.r, fw.r);
   c = mix(c, cSnow, s);
   uint code = texture(uZone, uv).r;
   uint zn = code & 15u;
   if (zn > 0u) {
-    float k = edgeOf(f.b) * ((code & 16u) > 0u ? 1.0 : s);
+    float k = edgeOf(f.b, fw.b) * ((code & 16u) > 0u ? 1.0 : s);
     if (zn <= 2u) {            // freeride and extreme terrain: diagonal hatching
-      float u = (vGPos.x - vGPos.z) / 9.0, w = min(fwidth(u) * 0.6, 0.2);   // a stripe every ~6 m
+      float u = hu, w = min(hw * 0.6, 0.2);   // a stripe every ~6 m
       float t = fract(u);
       // thin stripes up close; from far away (stripes below a pixel) an even lighter tint instead
-      k *= mix(smoothstep(0.6 - w, 0.6 + w, t) * (1.0 - smoothstep(0.95 - w, 0.95 + w, t)), 0.35, smoothstep(0.15, 0.4, fwidth(u)));
+      k *= mix(smoothstep(0.6 - w, 0.6 + w, t) * (1.0 - smoothstep(0.95 - w, 0.95 + w, t)), 0.35, smoothstep(0.15, 0.4, hw));
     }
     c = mix(c, cZone[zn - 1u], k);
   }
