@@ -95,7 +95,7 @@ export async function loadForecast(resort, force = false, loader = loadWeather, 
   const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
   const [w, status] = await Promise.all([loader(place, force, { allowStale: true }), quick]);
   const serverStale = !!w.stale && !w.error;
-  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation };
+  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation, alerts: w.alerts ?? [] };
   const history = peekHistory(place, now)?.data ?? undefined;
   return { resort: place, at: w.at, source: w.source, stale: !!w.stale, serverStale, weather, status, history, scored: scoreResort(place, weather, { now, at: w.at, status, history }) };
 }

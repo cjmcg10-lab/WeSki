@@ -391,4 +391,5 @@ export default {
   1213: 'Opinión sobre el día de esquí',
   1214: 'Después de un día de esquí guardado puedes puntuarlo de 1 a 5 y marcar cómo estuvo. Es opcional y se pregunta una vez por día. Solo se envían la montaña, la fecha, tu puntuación y las etiquetas. Sin nombre, cuenta, ubicación ni hora del día.',
   1215: 'Valorar {0} de 5',
+  1350: 'Alerta meteorológica: {0}.',
 };

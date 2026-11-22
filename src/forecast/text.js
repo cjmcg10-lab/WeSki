@@ -25,6 +25,7 @@ export const CODE_TEXT = {
   EX_RAIN_WHOLE_MOUNTAIN: 'Rain is likely across the whole mountain.',
   EX_LIFT_HOLD_CONFIRMED: 'The resort has confirmed {0} lift hold(s) for this day.',
   NT_OUT_OF_SEASON: 'This day is outside the resort’s published season.',
+  NT_WEATHER_ALERT: 'Weather alert: {0}.',
   CR_ONE_ESTIMATE: 'The weather service can’t tell the base and summit apart here.',
   CR_PARTIAL_SITES: 'Part of the day has a forecast for only the base or the summit.',
   CR_STALE: 'This forecast is {0} hours old, so conditions may have changed.',
@@ -87,7 +88,7 @@ export const fmtHourRange = (from, to) => `${fmtHour(from)}–${fmtHour(to)}`;
 export function codeText(item, fallback = 'No explanation is available for this day.') {
   const en = item && CODE_TEXT[item.code];
   if (!en) return t(fallback);
-  const params = (item.params ?? []).map((p) => (HOUR_PARAM.has(item.code) ? fmtHour(p) : Math.round(p)));
+  const params = (item.params ?? []).map((p) => (HOUR_PARAM.has(item.code) ? fmtHour(p) : typeof p === 'number' ? Math.round(p) : p));
   return t(en, ...params);
 }
 

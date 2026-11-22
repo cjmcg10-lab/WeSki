@@ -37,7 +37,7 @@ export async function loadWeather(place, force = false, { allowStale = false } =
     if (!res.ok || data.error) throw new Error(data.reason || 'Weather service error');
     const out = {
       at: Date.now(), source: data.source, summit: data.summit, base: data.base,
-      model: data.model, issuedAt: data.issuedAt, ageHours: data.ageHours, stale: data.stale, resolutionKm: data.resolutionKm, gridElevation: data.gridElevation,
+      model: data.model, issuedAt: data.issuedAt, ageHours: data.ageHours, stale: data.stale, resolutionKm: data.resolutionKm, gridElevation: data.gridElevation, alerts: data.alerts ?? [],
     };
     if (!data.stale) prefs.set(key, out);
     return out;
