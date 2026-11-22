@@ -866,4 +866,11 @@ export default {
   967: 'Too warm',
   968: 'No explanation is available for this day.',
   969: 'Tomorrow',
+  970: 'Summit height estimated',
+  971: 'Base height estimated',
+  972: 'Location approximate',
+  973: 'Forecast unavailable: no height data for this mountain.',
+  974: 'Forecast unavailable: no time zone data for this mountain.',
+  975: 'Search by mountain name, town or nickname.',
+  976: 'Also known as “{0}”',
 };

@@ -360,4 +360,11 @@ export default {
   967: 'Quente demais',
   968: 'Não há explicação disponível para este dia.',
   969: 'Amanhã',
+  970: 'Altitude do cume estimada',
+  971: 'Altitude da base estimada',
+  972: 'Localização aproximada',
+  973: 'Previsão indisponível: faltam dados de altitude desta montanha.',
+  974: 'Previsão indisponível: faltam dados de fuso horário desta montanha.',
+  975: 'Pesquise por nome da montanha, cidade ou apelido.',
+  976: 'Também conhecida como “{0}”',
 };

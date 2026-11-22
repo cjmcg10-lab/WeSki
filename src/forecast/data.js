@@ -1,6 +1,7 @@
 import { scoreForecast, roundHalfUp } from './score/index.js';
 import { loadWeather } from '../weather.js';
 import { prefs } from '../store.js';
+import { forecastPoints } from './catalog.js';
 import { loadResortStatus, statusToScoreOpts } from './status.js';
 
 const HOUR_MS = 3600e3;
@@ -75,12 +76,14 @@ export async function loadStatusSaved(resort, loader = loadResortStatus, now = D
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved, now = Date.now()) {
+  const place = forecastPoints(resort);
+  if (!place || !resort.tz) throw new Error('no height or time zone data');
   const saved = savedStatus(resort);
-  const statusP = statusLoader(resort);
+  const statusP = statusLoader(place);
   const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
-  const [w, status] = await Promise.all([loader(resort, force), quick]);
+  const [w, status] = await Promise.all([loader(place, force), quick]);
   const weather = { summit: w.summit, base: w.base };
-  return { resort, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(resort, weather, { now, at: w.at, status }) };
+  return { resort: place, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(place, weather, { now, at: w.at, status }) };
 }
 
 export function columnDates(forecasts, count = 7) {

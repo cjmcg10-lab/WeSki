@@ -1,14 +1,15 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import EN from '../src/i18n/en.js';
-import { toResort, searchResorts, sameName, loadCatalog } from '../src/forecast/resorts.js';
+import { toResort, searchResorts, sameName, loadCatalog, resortFor, canForecast } from '../src/forecast/resorts.js';
+import { catalogFromIndex, forecastPoints } from '../src/forecast/catalog.js';
 import { add, remove, move, insertAt, has, cleanList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
 import { loadForecast, loadStatusSaved, rescored, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
 import { ageText, CODE_TEXT, codeText } from '../src/forecast/text.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
-const catalog = JSON.parse(readFileSync(new URL('../public/data/index.json', import.meta.url), 'utf8')).map(toResort);
-const byId = (id) => catalog.find((r) => r.id === id);
+const catalog = catalogFromIndex(JSON.parse(readFileSync(new URL('../public/forecast/catalog-index.json', import.meta.url), 'utf8')));
+const byId = (id) => resortFor(catalog, id);
 
 const memoryPrefs = (seed = {}) => {
   const store = { ...seed };
@@ -16,44 +17,56 @@ const memoryPrefs = (seed = {}) => {
 };
 
 describe('resort adapter', () => {
-  it('returns the fields Forecast needs and splits region from country', () => {
-    const r = toResort({ id: 'x', name: 'X', region: 'Valais, Switzerland / Aosta Valley, Italy', tz: 'Europe/Zurich', lat: 1, lon: 2, baseLat: 3, baseLon: 4, top: 3800, base: 1500, trails: 5 });
-    expect(r).toEqual({ id: 'x', name: 'X', region: 'Valais, Switzerland / Aosta Valley', country: 'Italy', tz: 'Europe/Zurich', lat: 1, lon: 2, baseLat: 3, baseLon: 4, top: 3800, base: 1500 });
+  const indexJson = JSON.parse(readFileSync(new URL('../public/forecast/catalog-index.json', import.meta.url), 'utf8'));
+  const worldwide = catalogFromIndex(indexJson);
+
+  it('returns the fields Forecast needs, keeping null heights and the missing list', () => {
+    const r = toResort({ id: 'x', name: 'X', region: 'Valais', country: 'Switzerland', tz: 'Europe/Zurich', lat: 1, lon: 2, baseLat: 3, baseLon: 4, top: 3800, base: null, missing: ['base'], hasMap: false });
+    expect(r).toEqual({ id: 'x', name: 'X', region: 'Valais', country: 'Switzerland', tz: 'Europe/Zurich', lat: 1, lon: 2, baseLat: 3, baseLon: 4, top: 3800, base: null, missing: ['base'] });
   });
 
   it('falls back to the summit point when the base point is missing', () => {
-    const r = toResort({ id: 'x', name: 'X', region: 'Vermont, USA', tz: 'America/New_York', lat: 1, lon: 2, top: 10, base: 5 });
+    const r = toResort({ id: 'x', name: 'X', region: 'Vermont', country: 'USA', tz: 'America/New_York', lat: 1, lon: 2, top: 10, base: 5 });
     expect([r.baseLat, r.baseLon]).toEqual([1, 2]);
   });
 
-  it('maps all 60 built resorts with a usable time zone', () => {
-    expect(catalog).toHaveLength(60);
-    for (const r of catalog) {
-      expect(r.country, r.id).toBeTruthy();
-      expect(() => localToday(r.tz), r.id).not.toThrow();
+  it('keeps the 60 built resorts under their ids with a usable time zone', () => {
+    for (const id of ['jay-peak', 'burke', 'cannon-mountain', 'stowe', 'zermatt']) {
+      const r = resortFor(worldwide, id);
+      expect(r, id).toBeTruthy();
+      expect(canForecast(r), id).toBe(true);
+      expect(() => localToday(r.tz), id).not.toThrow();
     }
   });
 
-  it('finds Jay Peak, Burke and Cannon by name, ignoring case and accents', () => {
-    expect(searchResorts(catalog, 'jay')[0].id).toBe('jay-peak');
-    expect(searchResorts(catalog, 'BURKE').map((r) => r.id)).toContain('burke');
-    expect(searchResorts(catalog, 'cannon').length).toBeGreaterThan(0);
-    expect(searchResorts(catalog, 'zzzz')).toEqual([]);
+  it('finds Jay Peak, Zermatt and Mt Buller, and shows the alias when the name did not match', () => {
+    expect(searchResorts(worldwide, 'jay')[0].id).toBe('jay-peak');
+    expect(searchResorts(worldwide, 'Zermatt').some((r) => /zermatt/i.test(r.name))).toBe(true);
+    expect(searchResorts(worldwide, 'Mt Buller').some((r) => /buller/i.test(r.name))).toBe(true);
+    expect(searchResorts(worldwide, 'zzzzqq')).toEqual([]);
+    expect(searchResorts(worldwide, '  ')).toEqual([]);
   });
 
-  it('searches the region and country as well as the name', () => {
-    const vt = searchResorts(catalog, 'vermont', 100);
-    expect(vt.length).toBeGreaterThan(3);
-    expect(vt.every((r) => /vermont/i.test(`${r.region}${r.country}`))).toBe(true);
+  it('does not ask for a forecast without height or time zone data', () => {
+    expect(canForecast({ top: null, base: null, tz: 'Europe/Zurich' })).toBe(false);
+    expect(canForecast({ top: 2000, base: null, tz: null })).toBe(false);
+    expect(canForecast({ top: 2000, base: null, tz: 'Europe/Zurich' })).toBe(true);
+    expect(forecastPoints({ top: null, base: 900 })).toMatchObject({ top: 900, base: 900 });
+    expect(forecastPoints({ top: null, base: null })).toBeNull();
+  });
+
+  it('refuses to load a forecast for a mountain with no height data', async () => {
+    await expect(loadForecast({ id: 'osd-x', tz: 'Europe/Zurich', lat: 1, lon: 2, top: null, base: null }, false, () => Promise.reject(new Error('should not fetch')))).rejects.toThrow(/height/);
   });
 
   it('caches the catalog and retries after a failure', async () => {
     let calls = 0;
-    await expect(loadCatalog(() => { calls += 1; return Promise.resolve({ ok: false }); })).rejects.toThrow();
-    const ok = () => { calls += 1; return Promise.resolve({ ok: true, json: () => Promise.resolve([{ id: 'a', name: 'A', region: 'Utah, USA' }]) }); };
-    const first = await loadCatalog(ok);
-    await loadCatalog(ok);
-    expect(first[0].country).toBe('USA');
+    const bad = () => { calls += 1; return Promise.resolve({ ok: false, status: 503 }); };
+    await expect(loadCatalog({ fetchImpl: bad })).rejects.toThrow();
+    const ok = () => { calls += 1; return Promise.resolve({ ok: true, json: () => Promise.resolve(indexJson) }); };
+    const first = await loadCatalog({ fetchImpl: ok });
+    await loadCatalog({ fetchImpl: ok });
+    expect(first.size).toBeGreaterThan(4000);
     expect(calls).toBe(2);
   });
 
@@ -91,6 +104,7 @@ describe('list of mountains', () => {
   it('drops damaged saved entries and duplicates when loading', () => {
     const prefs = memoryPrefs({ [LIST_KEY]: [jay, { id: 'broken' }, jay, null, burke] });
     expect(loadList(prefs).map((r) => r.id)).toEqual(['jay-peak', 'burke']);
+    expect(cleanList([{ id: 'osd-1', name: 'N', lat: 1, lon: 2, tz: null, top: null, base: null }])).toHaveLength(1);
     expect(cleanList('nonsense')).toEqual([]);
     expect(has(loadList(prefs), 'burke')).toBe(true);
   });

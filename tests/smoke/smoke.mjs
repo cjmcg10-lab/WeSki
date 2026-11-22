@@ -73,6 +73,10 @@ try {
   await page.locator('.fc-empty').waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('.fc-empty [data-act="fc-add"]').click();
   await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
+  for (const [query, name] of [['Zermatt', 'Zermatt'], ['Mt Buller', 'Mount Buller']]) {
+    await page.locator('#fc-q').fill(query);
+    await page.locator('#fc-results .fc-res', { hasText: name }).first().waitFor({ state: 'visible', timeout: 15000 });
+  }
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }

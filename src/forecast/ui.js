@@ -1,7 +1,7 @@
 import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
-import { loadCatalog, searchResorts, sameName } from './resorts.js';
+import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
 import { VIEW_KEY, loadList, saveList, add, has, sortRows, topPickId } from './watchlist.js';
 import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
@@ -29,7 +29,10 @@ export function init(h) {
 
 const online = () => typeof navigator === 'undefined' || navigator.onLine !== false;
 const nameOf = (r) => (sameName(fc.list, r) ? `${r.name}, ${r.region}` : r.name);
-const place = (r) => [r.region, r.country].filter(Boolean).join(', ');
+const place = (r) => [r.region, r.country].filter(Boolean).join(' · ');
+const MISSING = { top: () => t('Summit height estimated'), base: () => t('Base height estimated'), points: () => t('Location approximate') };
+const missingNotes = (r) => (r.missing ?? []).map((k) => MISSING[k]?.()).filter(Boolean);
+const unavailableText = (r) => (hasHeights(r) ? t('Forecast unavailable: no time zone data for this mountain.') : t('Forecast unavailable: no height data for this mountain.'));
 const entry = (id) => fc.data.get(id) ?? { state: 'loading' };
 function current(resort) {
   const e = entry(resort.id);
@@ -74,6 +77,7 @@ function redraw() {
 }
 
 async function loadOne(resort, force) {
+  if (!canForecast(resort)) { setEntry(resort, { state: 'nodata' }); redraw(); return; }
   if (!fc.data.has(resort.id)) setEntry(resort, { state: 'loading' });
   try {
     const forecast = await loadForecast(resort, force);
@@ -163,6 +167,7 @@ function rowHtml(row, dates, topId) {
   const newTag = fc.flash?.id === resort.id && fc.flash.isNew ? `<span class="tag fc-new">${t('New')}</span>` : '';
   const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) ? ' old' : ''}">${ageText(ageHoursOf(row.forecast.at))}</small>` : '';
   const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.region)}</small>${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}</th>`;
+  if (e.state === 'nodata') return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(unavailableText(resort))}</span></td></tr>`;
   if (e.state === 'error') {
     const msg = online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.');
     return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(msg)}</span> <button class="btn sm alt" data-act="fc-retry" data-r="${esc(resort.id)}" aria-label="${esc(t('Try again: {0}', nameOf(resort)))}">${t('Try again')}</button></td></tr>`;
@@ -301,25 +306,29 @@ export function sheetDay(arg) {
   const step = (dir, d) => (d ? `<button class="btn sm alt" data-act="fc-step" data-dir="${dir}" data-r="${esc(resort.id)}" data-d="${d}" aria-label="${esc(t(dir === 'prev' ? 'Previous day, {0}' : 'Next day, {0}', fmtLongDate(d)))}">${dir === 'prev' ? `‹ ${esc(fmtWeekday(d))}` : `${esc(fmtWeekday(d))} ›`}</button>` : '<span></span>');
   const stepper = i >= 0 || forecast ? `<div class="fc-stepper" role="group" aria-label="${esc(t('Change day'))}">${step('prev', dates[i - 1])}${step('next', dates[i + 1])}</div>` : '';
   let body;
-  if (e.state === 'loading' && !forecast) body = `<div class="card"><span class="sk big"></span><span class="sk"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
+  if (e.state === 'nodata') body = `<div class="card"><p class="sub">${esc(unavailableText(resort))}</p></div>`;
+  else if (e.state === 'loading' && !forecast) body = `<div class="card"><span class="sk big"></span><span class="sk"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
   else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load this day. Check your connection and try again.') : t('This day isn’t saved on this device. It will load when you’re back online.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
   else body = dayBody(resort, forecast, dayOf(forecast, arg.date));
   const hours = forecast ? ageHoursOf(forecast.at) : 0;
   const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageText(hours)}</b>${isStale(hours) ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
   return [resort.name, `${back('fc-home', 'Forecast')}${offlineBanner()}
     <p class="fc-dateline"><b>${esc(fmtLongDate(arg.date))}</b><br><span class="sub">${esc(t('Times are local to the mountain ({0}).', resort.tz))}</span></p>
-    ${stepper}${body}${foot}`, false];
+    ${missingNotes(resort).map((n) => `<p class="fc-note">${esc(n)}</p>`).join('')}${stepper}${body}${foot}`, false];
 }
 
 // ---------- S3 add a mountain
 function resultsHtml() {
   if (fc.catalogError) return `<div class="card"><p class="sub">${t('Couldn’t load the list of mountains.')}</p><button class="btn alt" data-act="fc-catalog">${t('Try again')}</button></div>`;
   if (!fc.catalog) return `<p class="sub">${t('Loading…')}</p>`;
+  if (!fc.q.trim()) return `<p class="sub">${t('Search by mountain name, town or nickname.')}</p>`;
   const found = searchResorts(fc.catalog, fc.q);
   if (!found.length) return `<p class="sub">${esc(t('No mountain called “{0}” found.', fc.q))}</p>`;
-  const heading = fc.q.trim() ? '' : `<h3 class="fc-subhead">${t('SkiWithMe mountains')}</h3>`;
-  return `${heading}<ul class="fc-results" role="list">${found.map((r) => {
+  return `<ul class="fc-results" role="list">${found.map((r) => {
     const label = [r.name, r.region, r.country].filter(Boolean).join(', ');
+    const full = resortFor(fc.catalog, r.id);
+    const notes = full ? [...missingNotes(full), ...(canForecast(full) ? [] : [unavailableText(full)])] : [];
+    const alias = r.match && r.match.field !== 'name' ? `<small translate="no">${esc(t('Also known as “{0}”', r.match.text))}</small>` : '';
     const added = fc.added.includes(r.id), onList = has(fc.list, r.id) && !added;
     const control = onList
       ? `<span class="sub">${t('On your list')}</span><button class="btn sm alt" data-act="fc-show" data-r="${esc(r.id)}" aria-label="${esc(t('Show {0} on the calendar', label))}">${t('Show')}</button>`
@@ -327,7 +336,7 @@ function resultsHtml() {
         ? `<span class="sub">${t('Added')}</span><button class="btn sm alt" data-act="fc-unadd" data-r="${esc(r.id)}" aria-label="${esc(t('Remove {0}', label))}">${t('Remove')}</button>`
         : `<button class="btn sm" data-act="fc-doadd" data-r="${esc(r.id)}" aria-label="${esc(t('Add {0}', label))}">${t('Add')}</button>`;
     const failed = fc.saveFailed === r.id ? `<p class="fc-error" role="alert">${esc(t('Couldn’t save {0}. This device may be in private browsing or out of space.', r.name))} <button class="btn sm alt" data-act="fc-doadd" data-r="${esc(r.id)}">${esc(t('Try again: add {0}', r.name))}</button></p>` : '';
-    return `<li class="fc-res"><div class="grow"><b translate="no">${esc(r.name)}</b><small translate="no">${esc(place(r))}</small></div><div class="ctl">${control}</div>${failed}</li>`;
+    return `<li class="fc-res"><div class="grow"><b translate="no">${esc(r.name)}</b><small translate="no">${esc(place(r))}</small>${alias}${notes.map((n) => `<small class="fc-miss">${esc(n)}</small>`).join('')}</div><div class="ctl">${control}</div>${failed}</li>`;
   }).join('')}</ul>`;
 }
 
@@ -357,7 +366,7 @@ function persist() {
 }
 
 function addResort(id) {
-  const resort = fc.catalog?.find((r) => r.id === id);
+  const resort = fc.catalog ? resortFor(fc.catalog, id) : null;
   if (!resort) return;
   const next = add(fc.list, resort);
   const before = fc.list;

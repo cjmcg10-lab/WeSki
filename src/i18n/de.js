@@ -360,4 +360,11 @@ export default {
   967: 'Zu warm',
   968: 'Für diesen Tag gibt es keine Erklärung.',
   969: 'Morgen',
+  970: 'Gipfelhöhe geschätzt',
+  971: 'Basishöhe geschätzt',
+  972: 'Ungefährer Standort',
+  973: 'Vorhersage nicht verfügbar: Für diesen Berg fehlen Höhendaten.',
+  974: 'Vorhersage nicht verfügbar: Für diesen Berg fehlen Zeitzonendaten.',
+  975: 'Suche nach Bergname, Ort oder Spitzname.',
+  976: 'Auch bekannt als „{0}“',
 };

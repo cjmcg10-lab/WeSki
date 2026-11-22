@@ -360,4 +360,11 @@ export default {
   967: 'Te warm',
   968: 'Er is geen uitleg beschikbaar voor deze dag.',
   969: 'Morgen',
+  970: 'Hoogte van de top geschat',
+  971: 'Hoogte van de basis geschat',
+  972: 'Locatie bij benadering',
+  973: 'Voorspelling niet beschikbaar: geen hoogtegegevens voor deze berg.',
+  974: 'Voorspelling niet beschikbaar: geen tijdzonegegevens voor deze berg.',
+  975: 'Zoek op bergnaam, plaats of bijnaam.',
+  976: 'Ook bekend als “{0}”',
 };

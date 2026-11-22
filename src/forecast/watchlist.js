@@ -1,7 +1,7 @@
 export const LIST_KEY = 'fcList';
 export const VIEW_KEY = 'fcView';
 
-const REQUIRED = ['id', 'name', 'tz', 'lat', 'lon', 'top', 'base'];
+const REQUIRED = ['id', 'name', 'lat', 'lon'];
 const valid = (r) => r && REQUIRED.every((k) => r[k] != null);
 
 export function cleanList(raw) {
