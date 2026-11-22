@@ -31,7 +31,7 @@ function swManifest() {
             const url = '/' + relative(dist, p).replace(/\\/g, '/');
             // each resort's map (data/<id>/...) is fetched and cached when that resort is opened,
             // not up front: only the app shell, globe and resort list are precached
-            if (!/^\/data\/[^/]+\//.test(url)) files.push(url);
+            if (!/^\/(data\/[^/]+|forecast)\//.test(url)) files.push(url);
           }
         }
       };

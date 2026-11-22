@@ -1,0 +1,429 @@
+{
+ "v": 1,
+ "source": {
+  "name": "OpenSkiData / OpenSkiMap.org",
+  "url": "https://openskidata.org",
+  "licence": "ODbL 1.0 (OpenStreetMap contributors), Skimap.org",
+  "dataDate": "2026-11-21",
+  "elevationCheck": "Copernicus GLO-30",
+  "timeZones": "timezonefinder 9.2.0"
+ },
+ "fields": [
+  "id",
+  "name",
+  "aliases",
+  "towns",
+  "region",
+  "cc",
+  "lat",
+  "lon",
+  "baseLat",
+  "baseLon",
+  "top",
+  "base",
+  "tz",
+  "flags"
+ ],
+ "countries": {
+  "JP": "Japan",
+  "FR": "France",
+  "US": "United States",
+  "CA": "Canada",
+  "CL": "Chile",
+  "CZ": "Czechia",
+  "FI": "Finland",
+  "AU": "Australia",
+  "NO": "Norway",
+  "AR": "Argentina",
+  "CH": "Switzerland",
+  "NZ": "New Zealand",
+  "AT": "Austria"
+ },
+ "tz": [
+  "America/Argentina/Salta",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/New_York",
+  "America/Santiago",
+  "America/Toronto",
+  "Asia/Tokyo",
+  "Australia/Melbourne",
+  "Australia/Sydney",
+  "Europe/Helsinki",
+  "Europe/Oslo",
+  "Europe/Paris",
+  "Europe/Prague",
+  "Europe/Vienna",
+  "Europe/Zurich",
+  "Pacific/Auckland"
+ ],
+ "idAliases": {
+  "osd-2c88b829f47e39a1ec21f81e37abb7d5b668": "osd-24ab41e1438aff639aa8ef5ad91c3e187e2f",
+  "osd-320399283a80967e546c20333d2abd884201": "osd-6ff3d800655f463f2ea8d24980630b01000c",
+  "osd-e1a32fce69402dd1c018c22b0216990d0775": "jay-peak",
+  "osd-fc76f378a2f19efc5228c60d97c895dde82a": "zermatt"
+ },
+ "rows": [
+  [
+   "jay-peak",
+   "Jay Peak",
+   [
+    "Jay Peak Resort"
+   ],
+   [],
+   "Vermont",
+   "US",
+   44.9241,
+   -72.5262,
+   44.9359,
+   -72.5008,
+   1166,
+   560,
+   3,
+   8
+  ],
+  [
+   "zermatt",
+   "Zermatt – Cervinia",
+   [
+    "Breuil-Cervinia Ski Paradise",
+    "Zermatt - Breuil-Cervinia"
+   ],
+   [
+    "Zermatt"
+   ],
+   "Valais",
+   "CH",
+   45.9243,
+   7.7338,
+   45.8882,
+   7.624,
+   3874,
+   1558,
+   14,
+   8
+  ],
+  [
+   "osd-6509c4ab0514c35a94f1a436029ea69c8de5",
+   "Portillo",
+   [],
+   [],
+   "De Valparaiso",
+   "CL",
+   -32.8275,
+   -70.1192,
+   -32.8494,
+   -70.1365,
+   3346,
+   2578,
+   4,
+   0
+  ],
+  [
+   "osd-976d9a75995718d0e06985401b4909133169",
+   "The Remarkables Ski Area",
+   [],
+   [
+    "Kawarau Falls"
+   ],
+   "Otago Region",
+   "NZ",
+   -45.06,
+   168.8066,
+   -45.0533,
+   168.8153,
+   1986,
+   1607,
+   15,
+   0
+  ],
+  [
+   "osd-562a20a601646b66731b356f79d1bcdd26a6",
+   "Perisher",
+   [],
+   [
+    "Perisher Village"
+   ],
+   "New South Wales",
+   "AU",
+   -36.4092,
+   148.3868,
+   -36.379,
+   148.4073,
+   2037,
+   1604,
+   8,
+   0
+  ],
+  [
+   "osd-996de78b34e97c95d665d00cd0b668cfaee6",
+   "Cerro Catedral",
+   [],
+   [],
+   "Rio Negro",
+   "AR",
+   -41.1694,
+   -71.4864,
+   -41.1645,
+   -71.444,
+   2092,
+   1036,
+   0,
+   0
+  ],
+  [
+   "osd-0bd87c732c1cffdf2ef8743e9b73c520a67e",
+   "Skiareál Špindlerův Mlýn - Medvědín",
+   [],
+   [
+    "Lubawka Obszar Wiejski"
+   ],
+   "dolnoslaskie",
+   "CZ",
+   50.7414,
+   15.583,
+   50.7231,
+   15.5925,
+   1233,
+   693,
+   12,
+   0
+  ],
+  [
+   "osd-3121a78b5a889b6e66108a32e83893467493",
+   "Niseko Moiwa Ski Resort",
+   [
+    "ニセコモイワスキー場",
+    "ニセコモイワスキーリゾート"
+   ],
+   [],
+   "Hokkaido Prefecture",
+   "JP",
+   42.8623,
+   140.6327,
+   42.8491,
+   140.6285,
+   789,
+   340,
+   6,
+   0
+  ],
+  [
+   "osd-2badaaea50fcf2640ddea5311798bbd7e2c1",
+   "Hakuba Happo One",
+   [
+    "白馬八方尾根"
+   ],
+   [],
+   "Nagano Prefecture",
+   "JP",
+   36.697,
+   137.7993,
+   36.6983,
+   137.8388,
+   1827,
+   749,
+   6,
+   0
+  ],
+  [
+   "osd-001ec7c57bf7ee15d967293b14f9ba8dcf5c",
+   "Batawa",
+   [],
+   [
+    "Quinte West"
+   ],
+   "Ontario",
+   "CA",
+   44.177,
+   -77.6,
+   44.177,
+   -77.6,
+   null,
+   108,
+   5,
+   5
+  ],
+  [
+   "osd-15e2806f5f0f210d1ba7c60822a8133728aa",
+   "La Poya",
+   [
+    "Chamonix"
+   ],
+   [
+    "Vallorcine"
+   ],
+   "Haute-Savoie",
+   "FR",
+   46.0147,
+   6.9145,
+   46.0186,
+   6.9185,
+   1501,
+   1347,
+   11,
+   0
+  ],
+  [
+   "osd-c2fba992cc1711880d5f8d8ffa661f71eab9",
+   "Brévent/Flégère",
+   [
+    "Chamonix"
+   ],
+   [
+    "Chamonix"
+   ],
+   "Haute-Savoie",
+   "FR",
+   45.974,
+   6.8751,
+   45.9265,
+   6.8676,
+   2486,
+   1047,
+   11,
+   0
+  ],
+  [
+   "osd-02af76862bbc9a55d3685f3ef4d42e7a9f08",
+   "Cranor Hill Municipal Ski Hill",
+   [],
+   [],
+   "Colorado",
+   "US",
+   38.5838,
+   -106.8968,
+   38.5868,
+   -106.8957,
+   2494,
+   2397,
+   1,
+   0
+  ],
+  [
+   "osd-1fd29b021584344dd3b8f2960fe561faf357",
+   "Schladming Dachstein",
+   [],
+   [
+    "Schladming"
+   ],
+   "Styria",
+   "AT",
+   47.3738,
+   13.7784,
+   47.4115,
+   13.7796,
+   2004,
+   723,
+   13,
+   0
+  ],
+  [
+   "osd-6ff3d800655f463f2ea8d24980630b01000c",
+   "Levin hiihtokeskus",
+   [
+    "Levi Ski Resort",
+    "Levi"
+   ],
+   [
+    "Sirkka"
+   ],
+   "Lapland",
+   "FI",
+   67.7844,
+   24.8555,
+   67.7989,
+   24.8735,
+   530,
+   197,
+   9,
+   0
+  ],
+  [
+   "osd-24ab41e1438aff639aa8ef5ad91c3e187e2f",
+   "Trysil",
+   [],
+   [],
+   "Innlandet",
+   "NO",
+   61.3085,
+   12.1695,
+   61.3281,
+   12.2222,
+   1109,
+   407,
+   10,
+   0
+  ],
+  [
+   "osd-66e672470add74c3e6a2bd8d4c1bb07cc472",
+   "St. Anton/St. Christoph/Stuben",
+   [],
+   [
+    "St Anton am Arlberg"
+   ],
+   "Vorarlberg",
+   "AT",
+   47.1576,
+   10.213,
+   47.1347,
+   10.273,
+   2805,
+   1282,
+   13,
+   0
+  ],
+  [
+   "osd-6bf3bc3c072614f9516e18f26c1ad951ad14",
+   "St. Antönien",
+   [],
+   [
+    "St. Antönien"
+   ],
+   "Graubunden",
+   "CH",
+   46.9747,
+   9.7959,
+   46.9683,
+   9.8102,
+   1652,
+   1402,
+   14,
+   0
+  ],
+  [
+   "osd-fa08874099e7e3e2ae78ebd0e5a4c842d080",
+   "Mount Buller",
+   [],
+   [
+    "Mount Buller"
+   ],
+   "Victoria",
+   "AU",
+   -37.1441,
+   146.4282,
+   -37.1544,
+   146.4379,
+   1777,
+   1396,
+   7,
+   0
+  ],
+  [
+   "osd-effda1f2db54d33bc3770670cd4335bd56a4",
+   "Mt. Hood Meadows Ski Resort",
+   [],
+   [],
+   "Oregon",
+   "US",
+   45.3494,
+   -121.6818,
+   45.3255,
+   -121.6429,
+   2227,
+   1380,
+   2,
+   0
+  ]
+ ]
+}
