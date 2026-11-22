@@ -68,8 +68,11 @@ const AFTERNOON_WIND_DROP = 10;
 function rainExplanation(rows) {
   const wet = rows.filter((r) => [r.base, r.upper].some((s) => s && s.detail.rain > 0));
   if (!wet.length) return null;
-  const snowAbove = wet.some((r) => r.base && r.base.detail.rain > 0 && r.upper && r.upper.detail.rain === 0);
-  return { code: snowAbove ? 'EX_RAIN_AT_BASE' : 'EX_RAIN_WHOLE_MOUNTAIN', params: [] };
+  const summitWet = wet.some((r) => r.upper?.detail.rain > 0);
+  const baseWet = wet.some((r) => r.base?.detail.rain > 0);
+  if (summitWet || !baseWet || !wet.some((r) => r.upper)) return { code: 'EX_RAIN_WHOLE_MOUNTAIN', params: [] };
+  const snowAbove = wet.some((r) => r.base?.detail.rain > 0 && r.upper?.detail.snow > 0);
+  return { code: snowAbove ? 'EX_RAIN_AT_BASE' : 'EX_RAIN_AT_BASE_DRY', params: [] };
 }
 
 function gustsInAfternoon(rows) {

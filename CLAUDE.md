@@ -519,14 +519,14 @@ calendar of daily ski scores (mountains as rows, days as columns), an hourly day
 rerun the acceptance check (`node tests/acceptance/acceptance.mjs`, writes screenshots to the git-ignored
 `smoke-output/acceptance/`) and the known limits. The other pages are linked from it: `FORECAST_SCORING.md`,
 `FORECAST_HISTORY.md`, `FORECAST_SOURCES.md`, `FORECAST_SPEC.md`, `FORECAST_PLAN.md`. The engine is a pure module in
-`src/forecast/score/` (version 1.5.0); change `docs/FORECAST_SCORING.md` first, then bump `SCORING_VERSION`. Acceptance run
+`src/forecast/score/` (version 1.6.0); change `docs/FORECAST_SCORING.md` first, then bump `SCORING_VERSION`. Acceptance run
 on the live site on 2026-11-22: all five steps passed (Jay Peak, Burke and Cannon; then Sundown Mountain Resort, Zermatt
 and Mount Buller; a pin; 360 and 1280 px, light and dark). Nothing has been tested on a real phone. Translations are not
 native-checked. Mount Buller in November shows ordinary scores because no season data exists (#50).
 
 ## What is next
 
-**Forecast section: built (2026-11-22), free.** Issues #2 to #11 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
+**Forecast section: built (2026-11-22), free.** Issues #2 to #11, #15, #19 and #34 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
 Left: #17 (allow pinch-zoom, needs a real iPhone and both owners), #42 (Connor: `IP_SALT` secret, R2 `push --all`, optional
 `ARCHIVE_ADMIN_SECRET`), follow-up issues #50 (resorts out of season) and #51 (very cold days), and a season of archived
 forecasts plus skier feedback before the scores can be calibrated for real. Every merge to `main` also uploads a TestFlight

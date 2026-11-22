@@ -204,7 +204,16 @@ for (const cfg of CONFIGS) {
 }
 await browser.close();
 writeFileSync(`${OUT}/report.json`, JSON.stringify({ base: BASE, at: new Date().toISOString(), report }, null, 1));
-const bad = Object.entries(report).filter(([, v]) => v.fatal || v.errors?.length || v.layout?.some((l) => !l.doc || !l.sheet));
-console.log(`Acceptance run against ${BASE}: ${CONFIGS.length - bad.length}/${CONFIGS.length} configurations clean. Report: ${OUT}/report.json`);
-for (const [k, v] of bad) console.log(` - ${k}: ${v.fatal || ''} ${(v.errors || []).slice(0, 5).join(' | ')} ${JSON.stringify((v.layout || []).filter((l) => !l.doc || !l.sheet))}`);
+const checks = (v) => {
+  const s = v.steps || {};
+  return [
+    s.s2_emptyPromptAfterRemovingAll === false && 'no "Where should you ski?" prompt after removing every mountain',
+    s.s1_backSamePlace && !Object.values(s.s1_backSamePlace).every(Boolean) && `Back did not return to the same place: ${JSON.stringify(s.s1_backSamePlace)}`,
+    s.s2_rowsAfterReorder && s.s2_rowsAfterReload && s.s2_rowsAfterReorder.join() !== s.s2_rowsAfterReload.join() && 'row order changed through reload',
+  ].filter(Boolean);
+};
+const ran = Object.entries(report);
+const bad = ran.filter(([, v]) => v.fatal || v.errors?.length || v.layout?.some((l) => !l.doc || !l.sheet) || checks(v).length);
+console.log(`Acceptance run against ${BASE}: ${ran.length - bad.length}/${ran.length} configurations clean. Report: ${OUT}/report.json`);
+for (const [k, v] of bad) console.log(` - ${k}: ${v.fatal || ''} ${(v.errors || []).slice(0, 5).join(' | ')} ${JSON.stringify((v.layout || []).filter((l) => !l.doc || !l.sheet))} ${checks(v).join('; ')}`);
 process.exit(bad.length ? 1 : 0);

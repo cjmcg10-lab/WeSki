@@ -498,9 +498,19 @@ describe('review fixes', () => {
     expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
   });
 
-  it('wet base under a cold dry summit is rain at the base, not rain across the whole mountain', () => {
+  it('wet base under a cold dry summit says drier higher up, not rain across the whole mountain', () => {
     const d = only(makeWeather(dateOnly, () => ({ t: -13, code: 3 }), () => ({ t: 1, snow: 0.1, code: 68 })));
+    expect(d.explain.code).toBe('EX_RAIN_AT_BASE_DRY');
+  });
+
+  it('wet base under a snowing summit still says snow higher up', () => {
+    const d = only(makeWeather(dateOnly, () => ({ t: -8, snow: 0.5, code: 73 }), () => ({ t: 4, feels: 2, code: 63 })));
     expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
+  });
+
+  it('one rainy summit hour among base-only rain hours reads as rain across the whole mountain', () => {
+    const d = only(makeWeather(dateOnly, (h) => (h === 12 ? { t: 3, feels: 1, code: 63 } : { t: -13, code: 3 }), () => ({ t: 4, feels: 2, code: 63 })));
+    expect(d.explain.code).toBe('EX_RAIN_WHOLE_MOUNTAIN');
   });
 
   it('warm days are not called comfortable and not called cold', () => {

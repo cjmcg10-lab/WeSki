@@ -16,7 +16,7 @@ The whole section is free (owner decision, 2026-11-21). The map, groups and trac
 
 ## How a score is made
 
-Full rules: `docs/FORECAST_SCORING.md` (engine version 1.5.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
+Full rules: `docs/FORECAST_SCORING.md` (engine version 1.6.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
 
 1. Each hour is scored from 0 to 100 at the base and at the upper mountain from four parts: expected snow surface 45% (carried hour by hour from the last 48 to 72 hours: new snow, rain then refreeze, daytime softening, grooming), visibility 25%, wind 20%, temperature and precipitation comfort 10%.
 2. The hour score is the average of base and upper. If the source cannot tell them apart, one estimate is used and confidence drops. Summit wind and visibility are never invented.
@@ -75,7 +75,7 @@ node tests/acceptance/acceptance.mjs [site address]
 
 The expected local failure of `npm test` is the Sunday River map test, because the other maps live in R2 (`node tools/maps_r2.mjs pull --all` fixes it).
 
-`tests/acceptance/acceptance.mjs` drives the live site (default `https://skiwithme.builtbyroger.app`) with Playwright in four set-ups (360 px and 1280 px, light and dark): empty list, add Jay Peak, Burke and Cannon through search, sort, open a day and come back to the same place, remove all three, add Sundown Mountain Resort (a small Iowa hill), Zermatt and Mount Buller (Southern Hemisphere), reorder, reload, open each, plan a trip, add a pin by coordinates. It writes `smoke-output/acceptance/report.json` (every cell's text, the day views, console errors, horizontal-scroll checks) and 29 screenshots (calendar, day, add, trip, pin) beside it; the folder is git-ignored. It exits with an error when a page error, a failed request or a horizontal scroll appears. Change the three mountain names at the top of the script to try others. The live API can be checked with curl (User-Agent `weski-build`): `/api/weather?...&id=<id>`, `/api/history/<id>`, `/api/resort-status/<id>`.
+`tests/acceptance/acceptance.mjs` drives the live site (default `https://skiwithme.builtbyroger.app`) with Playwright in four set-ups (360 px and 1280 px, light and dark): empty list, add Jay Peak, Burke and Cannon through search, sort, open a day and come back to the same place, remove all three, add Sundown Mountain Resort (a small Iowa hill), Zermatt and Mount Buller (Southern Hemisphere), reorder, reload, open each, plan a trip, add a pin by coordinates. It writes `smoke-output/acceptance/report.json` (every cell's text, the day views, console errors, horizontal-scroll checks) and a set of screenshots (calendar, day, add, trip, pin) beside it; the folder is git-ignored. It exits with an error when a page error, a failed request or a horizontal scroll appears. Change the three mountain names at the top of the script to try others. The live API can be checked with curl (User-Agent `weski-build`): `/api/weather?...&id=<id>`, `/api/history/<id>`, `/api/resort-status/<id>`.
 
 ### What the 2026-11-22 acceptance run showed
 
@@ -91,7 +91,7 @@ Against main at 8d71ea4, live. Weather answers took about 0.6 s.
 
 Snow history: Sundown had observed hours (NWS), Zermatt and Buller had none (no observation source outside the USA), so their confidence is capped at Medium and the calendar says history is limited.
 
-Found and fixed in this pass (each has a test): the trip screen printed "undefined" instead of the score on each day tile (and in its spoken label); removing every mountain in Edit list and tapping Done left an empty calendar instead of the "Where should you ski?" prompt; a wet base under a dry, cold summit was explained as "Rain is likely across the whole mountain" (Zermatt, 23 November, summit -13 C).
+Found and fixed in this pass (each has a test): the trip screen printed "undefined" instead of the score on each day tile (and in its spoken label); removing every mountain in Edit list and tapping Done left an empty calendar instead of the "Where should you ski?" prompt; a wet base under a dry, cold summit was explained as "Rain is likely across the whole mountain" (Zermatt, 23 November, summit -13 C); it now says "Rain is likely at the base; drier higher up." (new code `EX_RAIN_AT_BASE_DRY`, engine 1.6.0).
 
 Filed for the owners: #50 (out-of-season resorts such as Mount Buller in November still get ordinary scores) and #51 (a -25 C summit still scores Epic).
 
