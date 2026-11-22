@@ -2,7 +2,14 @@ name: iPhone beta
 on:
   push:
     branches: [main]
-    paths-ignore: ['docs/**', '**/*.md', 'design/**']
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'ios-beta/**'
+      - 'package*.json'
+      - 'vite.config.js'
+      - '.github/workflows/ios-beta.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,19 +26,10 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - name: Test the ski app
-        run: |
-          npm ci
-          mkdir -p public/data/sunday-river
-          for file in resort.json graph.json terrain.bin; do
-            curl --fail --retry 3 --silent --show-error "https://skiwithme.builtbyroger.app/data/sunday-river/$file" -o "public/data/sunday-river/$file"
-          done
-          node --input-type=module -e 'import fs from "node:fs"; const dir="public/data/sunday-river/"; const resort=JSON.parse(fs.readFileSync(dir+"resort.json")); resort.graph=JSON.parse(fs.readFileSync(dir+"graph.json")); fs.writeFileSync(dir+"resort.json",JSON.stringify(resort));'
-          npm test
-          node tools/maps_r2.mjs drop
+      - run: npm ci
       - name: Package the free beta and configure Xcode
         run: |
-          npm install --prefix ios-beta --no-audit --no-fund
+          npm ci --prefix ios-beta --no-audit --no-fund
           node ios-beta/prepare.mjs
           npm run build:assets
           mv dist ios-beta/www
@@ -100,7 +98,8 @@ jobs:
           ssl="$(brew --prefix openssl@3)/bin/openssl"
           "$ssl" pkcs12 -legacy -in "$signing/input.p12" -passin env:CERT_PASSWORD -nodes -out "$signing/identity.pem"
           "$ssl" pkcs12 -export -legacy -in "$signing/identity.pem" -out "$signing/import.p12" -passout env:CERT_PASSWORD
-          security import "$signing/import.p12" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$keychain"
+          security import "$signing/import.p12" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -t cert -f pkcs12 -k "$keychain"
+          unset CERT CERT_PASSWORD PROFILE API_KEY
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keypass" "$keychain" >/dev/null
           security list-keychains -d user -s "$keychain" "$HOME/Library/Keychains/login.keychain-db"
           # Scope signing to the application target so Swift package resources use their own settings.

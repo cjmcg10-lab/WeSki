@@ -29,27 +29,48 @@ async function mapFile(path, data) {
 function mapResponse(bytes, json) {
   return new Response(bytes, {headers: {'content-type': json ? 'application/json' : 'application/octet-stream'}});
 }
+const requestTimeout = 10000;
+function requestBody(body) {
+  if (!body) return undefined;
+  try { return JSON.parse(body); } catch { return body; }
+}
+function etagOf(headers = {}) {
+  const key = Object.keys(headers).find(name => name.toLowerCase() === 'etag');
+  return key ? headers[key] : undefined;
+}
 window.fetch = async function(input, options = {}) {
   const url = new URL(input instanceof Request ? input.url : input, location.href);
   if (url.protocol !== location.protocol || url.host !== location.host) return bundledFetch(input, options);
   if (url.pathname.startsWith('/api/')) {
     const method = options.method || 'GET';
     const result = await CapacitorHttp.request({url: server + url.pathname + url.search, method,
-      headers: options.headers || {}, data: options.body ? JSON.parse(options.body) : undefined, responseType: 'json'});
+      headers: options.headers || {}, data: requestBody(options.body), responseType: 'json',
+      connectTimeout: requestTimeout, readTimeout: requestTimeout});
     return new Response(result.status === 204 ? null : JSON.stringify(result.data), {status: result.status, headers:{'content-type':'application/json'}});
   }
   const [, prefix, id, name] = url.pathname.split('/');
   if (prefix !== 'data' || !(await remoteMaps).has(id) || !['resort.json','graph.json','terrain.bin','surround.bin','terrain.z16','surround.z16'].includes(name)) return bundledFetch(input, options);
   const json = name.endsWith('.json');
-  if (options.cache !== 'reload') {
-    const hit = await mapFile(url.pathname);
-    if (hit) return mapResponse(hit, json);
+  const saved = await mapFile(url.pathname);
+  const savedBytes = saved?.bytes ?? saved;
+  const savedEtag = saved?.etag;
+  const headers = savedEtag && options.cache !== 'reload' ? {'If-None-Match': savedEtag} : {};
+  let result;
+  try {
+    result = await CapacitorHttp.get({url: server + url.pathname + url.search, headers, responseType: json ? 'json' : 'arraybuffer',
+      connectTimeout: requestTimeout, readTimeout: requestTimeout});
+  } catch (error) {
+    if (savedBytes) return mapResponse(savedBytes, json);
+    throw error;
   }
-  const result = await CapacitorHttp.get({url: server + url.pathname + url.search, responseType:json ? 'json' : 'arraybuffer'});
-  if (result.status !== 200) return new Response(null,{status:result.status});
+  if (result.status === 304 && savedBytes) return mapResponse(savedBytes, json);
+  if (result.status !== 200) {
+    if (savedBytes && result.status >= 500) return mapResponse(savedBytes, json);
+    return new Response(null,{status:result.status});
+  }
   const bytes = json ? new TextEncoder().encode(JSON.stringify(result.data)) :
     Uint8Array.from(atob(result.data), c => c.charCodeAt(0));
-  await mapFile(url.pathname, bytes);
+  await mapFile(url.pathname, {bytes, etag: etagOf(result.headers)});
   return mapResponse(bytes, json);
 };
 

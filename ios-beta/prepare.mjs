@@ -1,5 +1,5 @@
 // Adapt a clean checkout for a bundled beta. Only the temporary CI checkout is edited.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 function replace(path, before, after) {
   const text = readFileSync(path, 'utf8');
   if (text.split(before).length !== 2) throw Error('Review iOS integration at ' + path + ': ' + before);
@@ -18,4 +18,12 @@ replace('src/group.js','new WebSocket(`${proto}://${location.host}/api/groups/${
 replace('src/account.js','export const setSimFree = (on) => { simFree = !!on; };','export const setSimFree = () => { simFree = false; };');
 replace('src/account.js',"cfg = await get('/api/config');","cfg = { paywall: false, signIn: false, paddle: null, plans: {} };");
 replace('src/account.js','const c = config();',"throw new Error('Purchases are disabled in the free TestFlight beta.');");
-replace(main,readFileSync(main,'utf8').split('\n').find(line => line.includes('id="f-simfree"')),'');
+const mainLines = readFileSync(main, 'utf8').split('\n');
+const simLine = mainLines.findIndex(line => line.includes('id="f-simfree"'));
+if (simLine < 1 || !mainLines[simLine + 1].includes("L('simfree'")) throw Error('Review iOS integration at ' + main + ': f-simfree');
+replace(main, mainLines.slice(simLine - 1, simLine + 2).join('\n'), '    </div>');
+replace(main, "v.querySelector('iframe').src = href;", "v.querySelector('iframe').src = href.replace(/^(\\/(?:legal\\/[a-z]+|about))(?=$|#)/, '$1.html');");
+const withHtml = text => text.replace(/href="(\/legal\/[a-z]+|\/about)(#[^"]*)?"/g, 'href="$1.html$2"');
+for (const file of [...readdirSync('public/legal').filter(name => name.endsWith('.html')).map(name => 'public/legal/' + name), 'public/about.html']) {
+  writeFileSync(file, withHtml(readFileSync(file, 'utf8')));
+}

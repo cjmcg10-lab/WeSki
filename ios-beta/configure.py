@@ -13,7 +13,7 @@ info.update({
     "NSLocationAlwaysAndWhenInUseUsageDescription": "Keep recording runs and updating your group during an active ski session while your screen is locked.",
     "UIBackgroundModes": ["location"],
     "CFBundleShortVersionString": "1.0",
-    "CFBundleVersion": os.environ.get("GITHUB_RUN_NUMBER", "1"),
+    "CFBundleVersion": str(int(os.environ.get("GITHUB_RUN_NUMBER", "1")) * 10 + int(os.environ.get("GITHUB_RUN_ATTEMPT", "1"))),
     "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
 })
 plist.write_bytes(plistlib.dumps(info))

@@ -35,8 +35,9 @@ reaches the live site, and anyone can see where the work stands.
 
 ## iPhone app (TestFlight)
 
-- Every merge to `main` deploys the website and also uploads a new TestFlight build (about 15 minutes, the "iPhone beta"
-  workflow). Pull requests that only change `docs/`, Markdown files or `design/` do not trigger it.
+- Every merge to `main` deploys the website and also uploads a new TestFlight build (about 11-15 minutes, the "iPhone beta"
+  workflow). Only changes to the app (`src/`, `public/`, `index.html`, `ios-beta/`, `package*.json`, `vite.config.js`)
+  trigger it; worker, tools, tests and docs changes do not.
 - Internal testers get the new build in TestFlight with no Apple review.
 - App Store releases are still sent for review by hand in App Store Connect.
 - The iPhone build edits a copy of the app with exact text replacements in `ios-beta/prepare.mjs`. If the check

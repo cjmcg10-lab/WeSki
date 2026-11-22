@@ -49,7 +49,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm install --prefix ios-beta --no-audit --no-fund
+      - run: npm ci --prefix ios-beta --no-audit --no-fund
       - run: node ios-beta/prepare.mjs
       - run: npm run build:assets
 
