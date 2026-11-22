@@ -1,7 +1,7 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
-import { fetchHeights } from './heights.js';
+import { fetchHeights, fetchCanopy } from './heights.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
@@ -167,10 +167,11 @@ function initMap(id) {
     const pl = placeById(id);
     if (!pl?.available) throw new Error('no map for ' + id);
     const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
-    const [resort, buf, sur] = await Promise.all([
+    const [resort, buf, sur, canopy] = await Promise.all([
       resortP,
       fetchHeights(`/data/${id}/terrain`, resortP.then((R) => R.grid), undefined, noZ16),
       fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
+      fetchCanopy(`/data/${id}/canopy`),         // real tree cover; older maps have none and keep the old trees
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     if (S.map) {                              // leaving the previous mountain
@@ -186,7 +187,8 @@ function initMap(id) {
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
-    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null);
+    S.hasCanopy = !!canopy;
+    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy);
     S.map.maxFps = S.fps120 ? 120 : 60;
     if (q0) S.map.setQuality(q0);
     fpsReadout();
@@ -2180,7 +2182,7 @@ async function downloadOffline() {
   const box = $('#offline-box');
   try {
     // the app itself plus this mountain's map
-    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', ...heightFiles(), ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
+    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', ...heightFiles(), ...(S.hasCanopy ? ['canopy.z8'] : []), ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
     const cache = await caches.open('weski-map');
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;

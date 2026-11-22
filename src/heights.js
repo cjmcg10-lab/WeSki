@@ -69,3 +69,26 @@ export async function fetchHeights(base, expect, fetcher = fetch, skip = new Set
   if (!r.ok) throw new Error(`${base}.bin`);
   return r.arrayBuffer();
 }
+
+/**
+ * Where the trees really are (tools/build_canopy.py): canopy.z8 = gzip("SWC1", width, height, cell size,
+ * cover bytes, height bytes), on a grid aligned with the terrain, rows from south to north.
+ * Returns {w, h, cell, cover: Uint8Array (0-255 share under trees), height: Uint8Array (metres)}.
+ */
+export function decodeCanopy(bytes) {
+  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  if (b.length < 16 || b[0] !== 0x53 || b[1] !== 0x57 || b[2] !== 0x43 || b[3] !== 0x31) throw new Error('not a canopy grid');
+  const dv = new DataView(b.buffer, b.byteOffset, b.length), w = dv.getUint32(4, true), h = dv.getUint32(8, true), n = w * h;
+  if (!w || b.length !== 16 + 2 * n) throw new Error('canopy grid is cut short');
+  return { w, h, cell: dv.getFloat32(12, true), cover: b.subarray(16, 16 + n), height: b.subarray(16 + n, 16 + 2 * n) };
+}
+
+/** The canopy grid for a resort, or null when it has none (older maps) or the browser cannot unzip it. */
+export async function fetchCanopy(base, fetcher = fetch) {
+  if (typeof DecompressionStream === 'undefined') return null;
+  try {
+    const r = await fetcher(`${base}.z8`);
+    if (!r.ok || (r.headers.get('content-type') || '').includes('text/html')) return null;
+    return decodeCanopy(new Uint8Array(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer()));
+  } catch { return null; }
+}

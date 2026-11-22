@@ -50,8 +50,9 @@ const QUALITY = [
 ];
 
 export class SkiMap {
-  constructor(container, resort, geo, surroundH = null) {
+  constructor(container, resort, geo, surroundH = null, canopy = null) {
     this.surroundH = surroundH;
+    this.canopy = canopy;      // real tree cover (tools/build_canopy.py), or null for maps without one
     // European and Japanese maps have red pistes, so their lifts are drawn in slate instead of red
     const sc = scheme(resort);
     COLORS.lift = sc.lift; COLORS.liftInk = sc.liftInk; POI_STYLE.lift[0] = sc.lift; POI_STYLE.lifttop[0] = sc.lift;
@@ -148,7 +149,7 @@ export class SkiMap {
     document.removeEventListener('visibilitychange', this.onVis);
     this.controls.dispose();
     this.scene.traverse((o) => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose()); });
-    this.groundTex?.dispose(); this.zoneTex?.dispose();
+    this.groundTex?.dispose(); this.zoneTex?.dispose(); this.canopyTex?.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss?.();
     this.renderer.domElement.remove();
@@ -175,6 +176,25 @@ export class SkiMap {
   }
 
   // ---------- scene building
+  /**
+   * Half the width of a run's snow. Measured on aerial photos where we have it (`w`, tools/align_trails.py
+   * --widths: typically 20 m wide, most 12-48 m); otherwise a typical cut run (26 m, greens a little wider).
+   * Runs were all drawn 50-60 m wide before, which is wider than 94% of the measured ones.
+   * Glades keep a wider band: they are runs through the trees, not cut strips.
+   */
+  runRadius(t) {
+    if (t.glade) return 16;
+    if (t.w) return Math.min(45, Math.max(6, t.w / 2));
+    return t.d === 0 ? 15 : 13;
+  }
+
+  /** Slope outlines (OpenStreetMap piste areas) shown on the map: those whose run is not hidden. */
+  shownAreas() {
+    const hidden = new Set(this.resort.trails.filter((t) => t.hide && t.name).map((t) => t.name));
+    const shown = new Set(this.resort.trails.filter((t) => !t.hide && t.name).map((t) => t.name));
+    return (this.resort.areas || []).filter((a) => !a.name || shown.has(a.name) || !hidden.has(a.name));
+  }
+
   buildTerrain() {
     const { nx, ny, cell, zmin } = this.resort.grid, h = this.geo.h, geo = this.geo;
     // Snow mask: groomed trails, lift lines and base areas are open snow, the rest is forest.
@@ -186,14 +206,22 @@ export class SkiMap {
           if (Math.hypot(i * cell - x, j * cell - y) <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v);
         }
     };
-    for (const t of this.resort.trails) if (!t.hide) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], t.glade ? 16 : t.d === 0 ? 30 : 25, t.glade ? 0.4 : 1);
+    for (const t of this.resort.trails) if (!t.hide) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], this.runRadius(t), t.glade ? 0.4 : 1);
+    // a slope's real outline is open snow too
+    for (const a of this.shownAreas()) {
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let k = 0; k < a.pts.length; k += 2) { x0 = Math.min(x0, a.pts[k]); x1 = Math.max(x1, a.pts[k]); y0 = Math.min(y0, a.pts[k + 1]); y1 = Math.max(y1, a.pts[k + 1]); }
+      for (let j = Math.max(0, Math.floor(y0 / cell)); j <= Math.min(ny - 1, Math.ceil(y1 / cell)); j++)
+        for (let i = Math.max(0, Math.floor(x0 / cell)); i <= Math.min(nx - 1, Math.ceil(x1 / cell)); i++)
+          if (inPoly(a.pts, i * cell, j * cell)) mask[j * nx + i] = 1;
+    }
     for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 30, 1);
     for (const l of this.resort.lifts) {
       if (l.hide) continue;
       const n = Math.ceil(l.len / 12);
       for (let k = 0; k <= n; k++) {
         const f = k / n, x = l.pts[0] + (l.pts[l.pts.length - 2] - l.pts[0]) * f, y = l.pts[1] + (l.pts[l.pts.length - 1] - l.pts[1]) * f;
-        stamp(x, y, 9, 0.4);
+        stamp(x, y, 9, 0.5);     // lift lines are cut through the trees (0.5: no trees; glades are 0.4)
       }
     }
     this.snowMask = mask;
@@ -256,7 +284,20 @@ export class SkiMap {
     };
     const into = (ch) => (o, f) => { const v = f * 255; if (v > field[o * 4 + ch]) field[o * 4 + ch] = v; };
     const T = this.resort.trails.filter((t) => !t.hide);
-    for (const t of T) stroke(t.pts, t.glade ? 16 : t.d === 0 ? 30 : 25, into(t.glade ? 1 : 0));
+    for (const t of T) stroke(t.pts, this.runRadius(t), into(t.glade ? 1 : 0));
+    // slopes OpenStreetMap outlines (piste areas): filled to their real shape, with the same soft edge
+    for (const a of this.shownAreas()) {
+      const P = a.pts;
+      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+      for (let k = 0; k < P.length; k += 2) { x0 = Math.min(x0, P[k]); x1 = Math.max(x1, P[k]); y0 = Math.min(y0, P[k + 1]); y1 = Math.max(y1, P[k + 1]); }
+      const i0 = Math.max(0, Math.floor((x0 - RW) / sx)), i1 = Math.min(tw - 1, Math.ceil((x1 + RW) / sx));
+      const j0 = Math.max(0, Math.floor((y0 - RW) / sy)), j1 = Math.min(th - 1, Math.ceil((y1 + RW) / sy));
+      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+        const x = (i + 0.5) * sx, y = (j + 0.5) * sy, d = edgeDist(P, x, y);
+        if (d > RW) { if (inPoly(P, x, y)) into(0)(j * tw + i, 1); continue; }
+        into(0)(j * tw + i, Math.max(0, Math.min(1, 0.5 + (inPoly(P, x, y) ? d : -d) / (2 * RW))));
+      }
+    }
     for (const b of this.resort.buildings) stroke([b.pts[0], b.pts[1]], 30, into(0));
     for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(1));
     // zones, by code; later codes win where zones overlap (as before). +16: may tint off the groomed snow
@@ -279,12 +320,18 @@ export class SkiMap {
     const zoneTex = new THREE.DataTexture(zc, tw, th, THREE.RedIntegerFormat, THREE.UnsignedByteType);
     zoneTex.internalFormat = 'R8UI'; zoneTex.minFilter = zoneTex.magFilter = THREE.NearestFilter; zoneTex.needsUpdate = true;
     this.groundTex = fieldTex; this.zoneTex = zoneTex;
+    // real tree cover: wooded ground is forest, open ground below the treeline is snow (as it is in winter)
+    const cv = this.canopy;
+    const canopyTex = new THREE.DataTexture(cv ? cv.cover : new Uint8Array([255]), cv ? cv.w : 1, cv ? cv.h : 1, THREE.RedFormat, THREE.UnsignedByteType);
+    canopyTex.internalFormat = 'R8'; canopyTex.minFilter = THREE.LinearFilter; canopyTex.magFilter = THREE.LinearFilter; canopyTex.needsUpdate = true;
+    this.canopyTex = canopyTex;
 
     const lin = (r, g, b) => new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
     const Z = ['free', 'extreme', 'sled', 'race', 'learn', 'family', 'slow', 'park'].map((k) => lin(...ZONES[k].rgb));
     const tl = (this.resort.treeline || 1300) - zmin;                // treeline in the mesh's height units
     const U = {
-      uField: { value: fieldTex }, uZone: { value: zoneTex },
+      uField: { value: fieldTex }, uZone: { value: zoneTex }, uCanopy: { value: canopyTex }, uHasCanopy: { value: cv ? 1 : 0 },
+      cOpen: { value: lin(228, 235, 240) },
       uOrigin: { value: new THREE.Vector2(geo.W / 2, geo.H / 2) }, uSize: { value: new THREE.Vector2(W, H) },
       uTl: { value: tl }, uCell: { value: cell },
       cSnow: { value: lin(246, 250, 253) }, cGlade: { value: lin(176, 205, 190) }, cRock: { value: lin(124, 132, 141) }, cAlpine: { value: lin(226, 234, 240) },
@@ -301,6 +348,9 @@ export class SkiMap {
 varying vec3 vGPos;
 varying vec3 vGNrm;
 uniform sampler2D uField;
+uniform sampler2D uCanopy;
+uniform float uHasCanopy;
+uniform vec3 cOpen;
 uniform highp usampler2D uZone;
 uniform vec2 uOrigin, uSize;
 uniform float uTl, uCell;
@@ -311,6 +361,7 @@ vec3 groundColour() {
   vec2 uv = vec2((vGPos.x + uOrigin.x) / uSize.x, (uOrigin.y - vGPos.z) / uSize.y);
   vec4 f = texture2D(uField, uv);
   vec3 fw = fwidth(f.rgb);
+  float cv = texture2D(uCanopy, uv).r, cvw = max(fwidth(cv) * 0.6, 0.03);   // tree cover, with a crisp forest edge
   float hu = (vGPos.x - vGPos.z) / 9.0, hw = fwidth(hu);
   float alt = vGPos.y;
   vec3 n = normalize(vGNrm);
@@ -319,6 +370,8 @@ vec3 groundColour() {
   // forest bands by height, blended over ~40 m; alpine snow above the treeline; rock on steep ground
   vec3 c = alt > uTl - 260.0 ? mix(cHigh, cAlpine, smoothstep(uTl + 40.0, uTl + 80.0, alt))
                              : mix(mix(cLow, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
+  // with real tree cover: forest only where the trees are; clearings and meadows below the treeline are snow
+  if (uHasCanopy > 0.5 && !alpine) c = mix(cOpen, c, smoothstep(0.45 - cvw, 0.45 + cvw, cv));
   c = mix(c, alt > uTl + 60.0 ? cSnow : cGlade, edgeOf(f.g, fw.g));
   c = mix(c, cRock, smoothstep(-0.06, 0.06, relief - (alpine ? 0.7 : 0.95)));
   float s = edgeOf(f.r, fw.r);
@@ -405,7 +458,26 @@ vec3 groundColour() {
     let seed = 7;
     const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
     const spots = [];
-    for (let j = 1; j < ny - 1; j += 2) for (let i = 1; i < nx - 1; i += 2) {
+    if (this.canopy) {
+      // Real trees: planted where Meta's canopy map has them, as densely as it says, at its height. Never on a
+      // groomed run, slope outline, base area or lift line; glades keep theirs (they are runs through the trees).
+      const cv = this.canopy, c = cv.cell, BUDGET = 9000;   // about 4x the old random trees, at half the triangles each
+      let total = 0;
+      const ok = (ci, cj) => {
+        const gi = Math.min(nx - 1, Math.round(((ci + 0.5) * c) / cell)), gj = Math.min(ny - 1, Math.round(((cj + 0.5) * c) / cell));
+        return near[((gj / q) | 0) * qx + ((gi / q) | 0)] && mask[gj * nx + gi] < 0.45;
+      };
+      for (let cj = 0; cj < cv.h; cj++) for (let ci = 0; ci < cv.w; ci++) {
+        const k = cj * cv.w + ci;
+        if (cv.cover[k] > 60 && ok(ci, cj)) total += cv.cover[k] / 255;
+      }
+      const keep = Math.min(1, BUDGET / Math.max(1, total));     // one tree per cell at full cover, within the budget
+      for (let cj = 0; cj < cv.h; cj++) for (let ci = 0; ci < cv.w; ci++) {
+        const k = cj * cv.w + ci;
+        if (cv.cover[k] <= 60 || rnd() > (cv.cover[k] / 255) * keep || !ok(ci, cj)) continue;
+        spots.push([(ci + rnd()) * c, (cj + rnd()) * c, rnd(), Math.min(35, Math.max(4, cv.height[k] || 12))]);
+      }
+    } else for (let j = 1; j < ny - 1; j += 2) for (let i = 1; i < nx - 1; i += 2) {
       if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.15) continue;
       // trees thin out over the last 150 m below the treeline and stop at it
       const up = zmin + h[j * nx + i] / 10 - (tl - 150);
@@ -416,9 +488,11 @@ vec3 groundColour() {
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
-    spots.forEach(([x, y, r], i) => {
-      const p = this.world(x, y, -0.5), s = 2.6 + r * 1.5;
-      m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3));
+    spots.forEach(([x, y, r, tall], i) => {
+      const p = this.world(x, y, -0.5);
+      // real height where known (the cone is 4.2 units tall), a little narrower than before; else as before
+      if (tall) { const s = (tall * (0.85 + r * 0.3)) / 4.2; m.compose(p, qn, sc.set(s * 0.95, s, s * 0.95)); }
+      else { const s = 2.6 + r * 1.5; m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3)); }
       mesh.setMatrixAt(i, m);
       const alt = p.y + this.resort.grid.zmin;
       c.copy(dark).lerp(light, r).lerp(frost, alt > tl - 300 ? Math.min(0.75, (alt - (tl - 300)) / 200) : 0);
@@ -1497,4 +1571,25 @@ function densify(pts, step) {
     for (let k = 1; k <= n; k++) out.push(ax + ((bx - ax) * k) / n, ay + ((by - ay) * k) / n);
   }
   return out;
+}
+
+/** Is (x, y) inside the closed polygon [x0, y0, x1, y1, ...]? */
+function inPoly(P, x, y) {
+  let c = false;
+  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
+    const xi = P[i], yi = P[i + 1], xj = P[j], yj = P[j + 1];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+
+/** Distance from (x, y) to the nearest edge of the closed polygon [x0, y0, x1, y1, ...]. */
+function edgeDist(P, x, y) {
+  let best = Infinity;
+  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
+    const ax = P[j], ay = P[j + 1], dx = P[i] - ax, dy = P[i + 1] - ay, L2 = dx * dx + dy * dy;
+    const t = L2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)) : 0;
+    best = Math.min(best, Math.hypot(x - ax - t * dx, y - ay - t * dy));
+  }
+  return best;
 }

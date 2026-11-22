@@ -415,7 +415,8 @@ export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4) {
 
 /** Small conifer, base at y=0. */
 export function treeGeometry() {
-  return new THREE.ConeGeometry(1, 4.2, 4).translate(0, 2.1, 0); // one 4-sided cone: cheap on phones
+  // one 4-sided cone, no bottom (it sits in the snow and is never seen): 4 triangles a tree
+  return new THREE.ConeGeometry(1, 4.2, 4, 1, true).translate(0, 2.1, 0);
 }
 
 /** Map pin (dropped pin) and flag (meeting point), base at y=0, ~3 units tall. */
