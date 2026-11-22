@@ -507,4 +507,6 @@ export default {
   1400: 'Am Fuß wahrscheinlich Regen, weiter oben trockener.',
   1401: 'Sie sind hier',
   1402: 'In meiner Liste behalten',
+  1450: 'Saisondaten unbekannt. Diese Bewertung geht davon aus, dass die Lifte fahren.',
+  1451: 'Für einige Berge sind die Saisondaten unbekannt: Ihre Bewertungen gehen davon aus, dass die Lifte fahren.',
 };

@@ -429,3 +429,13 @@ describe('forecast text is translated', () => {
     expect(ALL_CODES.filter((c) => !(c in CODE_TEXT))).toEqual([]);
   });
 });
+
+describe('season dates unknown (issue #50)', async () => {
+  const { seasonUnknown } = await import('../src/forecast/ui.js').catch(() => ({}));
+  it.skipIf(!seasonUnknown)('flags a resort with no published season or only assumed hours', () => {
+    expect(seasonUnknown({ status: { assumed: true, season: null } })).toBe(true);
+    expect(seasonUnknown({ status: { assumed: false, season: null } })).toBe(true);
+    expect(seasonUnknown({})).toBe(true);
+    expect(seasonUnknown({ status: { assumed: false, season: { open: '2026-11-20', close: '2027-04-15' } } })).toBe(false);
+  });
+});

@@ -507,4 +507,6 @@ export default {
   1400: 'É provável chuva na base e mais seco no alto.',
   1401: 'Você está aqui',
   1402: 'Manter na minha lista',
+  1450: 'Datas da temporada desconhecidas. Esta pontuação pressupõe que os teleféricos estão a funcionar.',
+  1451: 'As datas da temporada de algumas montanhas são desconhecidas: as pontuações pressupõem que os teleféricos estão a funcionar.',
 };

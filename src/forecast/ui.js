@@ -282,6 +282,7 @@ export function sheetCalendar() {
   const ages = forecasts.map((f) => f.at);
   const updated = ages.length ? ageText(ageHoursOf(Math.min(...ages))) : '';
   const stale = forecasts.some((f) => isStale(ageHoursOf(f.at)));
+  const noSeason = forecasts.some(seasonUnknown);
   const refreshLabel = fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online');
   return [t('Forecast'), `
     ${offlineBanner()}
@@ -291,9 +292,12 @@ export function sheetCalendar() {
     ${!forecasts.length || forecasts.some(historyShort) ? `<p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>` : ''}
     ${sortLine}
     ${table}
-    <div class="wx-foot fc-foot"><div class="grow"><b>${esc(updated)}</b>${stale ? `<br>${t('Some forecasts are older than usual.')}` : ''}<br>${t('All times are each mountain’s local time.')}${fc.footer ? `<br><span class="fc-line">${esc(fc.footer)}</span>` : ''}</div><button class="btn" data-act="fc-refresh">${esc(refreshLabel)}</button></div>
+    <div class="wx-foot fc-foot"><div class="grow"><b>${esc(updated)}</b>${stale ? `<br>${t('Some forecasts are older than usual.')}` : ''}<br>${t('All times are each mountain’s local time.')}${noSeason ? `<br>${t('Season dates are unknown for some mountains: their scores assume the lifts are running.')}` : ''}${fc.footer ? `<br><span class="fc-line">${esc(fc.footer)}</span>` : ''}</div><button class="btn" data-act="fc-refresh">${esc(refreshLabel)}</button></div>
     ${credits(forecasts)}`, false];
 }
+
+/** No published opening hours or season for this resort: the score assumes the lifts are running (issue #50). */
+export const seasonUnknown = (forecast) => !forecast?.status || forecast.status.assumed === true || !forecast.status.season;
 
 // ---------- S2 day view
 function chartSvg(day) {
@@ -368,12 +372,14 @@ function dayBody(resort, forecast, day) {
   const hidden = w.kind === 'hidden';
   const boxes = [hidden ? '' : cbox(esc(winText), t('Best window')), day.detail === 'hourly' && day.peakHour ? cbox(esc(fmtHour(day.peakHour.hour)), t('Peak hour')) : '', cbox(esc(assumed ? t('Assumed {0}', range) : range), t('Ski hours'))].join('');
   const statusOld = forecast.status && !forecast.status.assumed && isStale(statusAgeHours(forecast.status, Date.now()));
+  const noSeason = seasonUnknown(forecast);
   return `
     <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
     <p class="fc-note">${esc(codeText(day.confidence.reason))}</p>
     ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(n))}</p>`).join('')}
     ${statusOld ? `<p class="fc-notice">${t('Opening hours and closures are from an older check, so they are treated as assumed.')}</p>` : ''}
+    ${noSeason ? `<p class="fc-note">${t('Season dates unknown. This score assumes the lifts are running.')}</p>` : ''}
     <div class="boxes b3 fc-facts">${boxes}</div>
     ${hidden ? '' : `<p class="fc-note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>`}
     ${detail}

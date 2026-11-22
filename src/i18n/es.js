@@ -507,4 +507,6 @@ export default {
   1400: 'Es probable que llueva en la base y esté más seco arriba.',
   1401: 'Estás aquí',
   1402: 'Guardar en mi lista',
+  1450: 'Fechas de temporada desconocidas. Esta puntuación supone que los remontes funcionan.',
+  1451: 'Se desconocen las fechas de temporada de algunas montañas: sus puntuaciones suponen que los remontes funcionan.',
 };
