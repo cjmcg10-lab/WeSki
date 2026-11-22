@@ -70,8 +70,9 @@ try {
   await page.waitForTimeout(3000);
 
   await page.locator('[data-act="tab"][data-tab="forecast"]').click();
-  await page.locator('.fc-empty').waitFor({ state: 'visible', timeout: 15000 });
-  await page.locator('.fc-empty [data-act="fc-add"]').click();
+  // opened inside Jay Peak: its forecast comes first ("You're here") and mountains can still be added
+  await page.locator('.fc-rowhead', { hasText: 'Jay Peak' }).locator('.fc-here').waitFor({ state: 'visible', timeout: 30000 });
+  await page.locator('.fc-actions [data-act="fc-add"]').click();
   await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
   for (const [query, name] of [['Zermatt', 'Zermatt'], ['Mt Buller', 'Mount Buller']]) {
     const box = page.locator('#fc-q');
@@ -97,7 +98,8 @@ try {
   await page.locator('[data-act="fc-pin-save"]').click();
   await page.locator('.fc-rowhead', { hasText: 'Pinned' }).waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('[data-act="fc-trip"]').click();
-  await page.locator('#fc-trip-out', { hasText: 'Add at least two mountains' }).waitFor({ state: 'visible', timeout: 15000 });
+  // Jay Peak (you're here) and the pinned hill make two mountains: the trip planner asks for the days
+  await page.locator('.sheet-body, #sheet', { hasText: 'Which days will you ski?' }).first().waitFor({ state: 'visible', timeout: 15000 });
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }

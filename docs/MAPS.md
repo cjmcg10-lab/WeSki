@@ -13,7 +13,7 @@ start with [`ADDING_MOUNTAINS.md`](ADDING_MOUNTAINS.md); every mountain must pas
 | Overlays | Difficulty colours and symbols, glades dashed, slow zones (green ▽) and terrain parks (orange ⬣) painted onto the snow surface. |
 | Groups | Up to 20 people join by 6-character code; a display name is optional. Location sharing is opt-in, can be paused, and shows when each person last updated. |
 | Directions | To a friend, a place, a dropped pin or the group meeting point. Uses trails downhill, lifts uphill and walking links, plus short climbs back up a trail and cut-acrosses to a neighbouring trail when that beats a lap (see [Uphill tolerance](#uphill-tolerance)); avoids closures you mark; keeps to your max difficulty where possible and warns when a route must go above it. |
-| Voice | Optional spoken turn-by-turn directions, called ahead of each turn according to your speed, with a touch-proof Pocket mode that keeps the screen (and so GPS and speech) alive. |
+| Voice | Optional spoken turn-by-turn directions, called ahead of each turn according to your speed,. |
 | Weather | Summit and base conditions, ski-specific alerts, 12-hour strip and 7-day forecast (US National Weather Service in the USA, MET Norway elsewhere). |
 | My tracks | Optional dotted breadcrumb trail on the map along everything you have skied; works with or without stats tracking (location-only tracks are never added to History). |
 | Appearance | Dark by default, light mode in More. |

@@ -16,7 +16,7 @@ the Forecast section is free. Made by Built By Roger LLC. Not an official produc
 
 - **3D and 2D maps:** every run and lift (lifts animated on their cables), rated the way the resort rates them
 - **Friend groups:** join with a 6-character code; location sharing is opt-in and can be paused
-- **Directions:** downhill on runs, up on lifts, within your chosen difficulty; optional voice with a Pocket mode
+- **Directions:** downhill on runs, up on lifts, within your chosen difficulty; optional spoken directions
 - **Stats and history:** speed, runs, distance and vertical, replayed on the map, stored on your phone
 - **Weather:** summit and base forecasts with ski alerts
 - **Forecast** (in progress): compare ski-day scores for the mountains you watch, on one calendar

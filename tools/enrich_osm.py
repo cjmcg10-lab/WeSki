@@ -7,7 +7,7 @@ Lifts (by their OpenStreetMap way id, from api.openstreetmap.org):
   seats   aerialway:occupancy (people per chair or cabin), when it differs from the build
   cap     aerialway:capacity (people an hour): the app spaces the chairs from it
   bubble  aerialway:bubble=yes (a weather cover)     heat  aerialway:heating=yes     detach  aerialway:detachable
-Buildings (matched by footprint centre, within 6 m; from overpass-api.de, or when it does not answer, from an
+Buildings (matched by footprint centre, within 12 m; from overpass-api.de, or when it does not answer, from an
 OpenStreetMap extract downloaded in tiles with tools/dev/osmget.py into $PIPE_WORK):
   roofShape  roof:shape (flat, gabled, hipped, pyramidal, skillion, ...)
   roofCol    roof:colour, or a colour for roof:material (metal, tiles, slate, wood)
@@ -143,7 +143,7 @@ def enrich(rid):
             continue
         d = np.hypot(pts[:, 0] - cx, pts[:, 1] - cy)
         k = int(d.argmin())
-        if d[k] > 6:
+        if d[k] > 12:      # maps nudged onto the aerial photos (shift_m) can sit up to ~10 m off OpenStreetMap
             continue
         t = osm_b[k][2]
         n_b["matched"] += 1

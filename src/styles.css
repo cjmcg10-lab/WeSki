@@ -219,14 +219,9 @@ body.flying #topbar, body.flying #fabs, body.flying #tabs, body.flying #navbar, 
 .step-ico { box-shadow: inset 0 0 0 1px rgba(255,255,255,.3); }
 .crumb { display: inline-block; width: 46px; height: 0; border-top: 3px dotted #ff5aa8; vertical-align: middle; }
 
-/* spoken directions + pocket mode */
+/* spoken directions */
 #navbar button.voice { flex: none; padding: 6px 9px; font-size: 12.5px; }
 #navbar button.voice.on { background: var(--green, #1f9d55); }
-#pocket { position: absolute; inset: 0; z-index: 90; background: #000; color: #5b6570; display: grid; place-items: center; text-align: center; touch-action: none; user-select: none; -webkit-user-select: none; }
-#pocket b { display: block; font-size: 17px; color: #7d8894; margin-bottom: 6px; }
-#pocket span { font-size: 13.5px; line-height: 1.5; }
-#pocket i { display: block; height: 4px; width: 0; margin: 16px auto 0; border-radius: 2px; background: #7d8894; }
-#pocket.holding i { width: 160px; transition: width 1.5s linear; }
 
 /* ======================================================================
    2026-11 look: dark navy panels with a thin light edge, low-poly peaks in
@@ -524,7 +519,6 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 body.playing #searchbtn, body.navigating #searchbtn { display: none; }
 #infobar, #searchbtn { transition: opacity .45s; }
 body.flying #infobar, body.flying #searchbtn { opacity: 0; pointer-events: none; }
-#fabs button[data-act="pocket"] { --fab-bg: #142e48; }
 .srow { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 10px 12px; margin-top: 8px; border-radius: 14px; border: 1px solid var(--edge2); background: var(--card); }
 .srow .grow { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .srow b { font-size: 16.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .srow small { color: var(--muted); font-size: 13.5px; }

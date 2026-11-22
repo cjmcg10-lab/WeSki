@@ -52,7 +52,10 @@ const QUALITY = [
 export class SkiMap {
   constructor(container, resort, geo, surroundH = null, canopy = null) {
     this.surroundH = surroundH;
-    this.canopy = canopy;      // real tree cover (tools/build_canopy.py), or null for maps without one
+    // real tree cover (tools/build_canopy.py), or null for maps without one; a file made for another build of the
+    // map (a different grid) is ignored, and the old trees are drawn instead
+    const g0 = resort.grid;
+    this.canopy = canopy && canopy.w === (g0.nx - 1) * 2 && canopy.h === (g0.ny - 1) * 2 ? canopy : null;
     // European and Japanese maps have red pistes, so their lifts are drawn in slate instead of red
     const sc = scheme(resort);
     COLORS.lift = sc.lift; COLORS.liftInk = sc.liftInk; POI_STYLE.lift[0] = sc.lift; POI_STYLE.lifttop[0] = sc.lift;
@@ -109,6 +112,7 @@ export class SkiMap {
     this.buildLifts();
     this.buildBuildings();
     this.buildMarkers();
+    this.scene.traverse((o) => { if (o.isMesh && o !== this.trees) clearsTreeMark(o.material); });
 
     const c = (this.controls = new MapControls(this.cam3, r.domElement));
     c.enableDamping = true;
@@ -947,6 +951,7 @@ vec3 groundColour() {
     const av = ride ? M.makeRide(ride, avatar, color) : M.makeAvatar(avatar, color);
     obj.add(av);
     if (ring) obj.add(M.makeRing(ring));
+    obj.traverse((o) => { if (o.isMesh) clearsTreeMark(o.material); });
     obj.userData.key = key; obj.userData.avatar = av;
     return true;
   }
@@ -1632,4 +1637,13 @@ function edgeDist(P, x, y) {
     best = Math.min(best, Math.hypot(x - ax - t * dx, y - ay - t * dy));
   }
   return best;
+}
+
+/** A solid thing in front of a tree (a person, a lift, a building) clears the tree's stencil mark, so the runs drawn
+ * through the trees (buildTrails) never draw over it. */
+function clearsTreeMark(mat) {
+  for (const m of Array.isArray(mat) ? mat : [mat]) {
+    if (!m || m.stencilWrite || m.isLineMaterial || m.transparent) continue;
+    Object.assign(m, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+  }
 }
