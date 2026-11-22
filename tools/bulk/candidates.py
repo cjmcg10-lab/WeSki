@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 """List the ski resorts the automatic builder can work through, from OpenSkiMap (no AI, no hand picking).
 
-usage: python3 tools/bulk/candidates.py [--areas ski_areas.geojson] [--lifts lifts.geojson] [--min-runs 10] [--min-lifts 2] [--out FILE]
+usage: python3 -I tools/bulk/candidates.py [--areas ski_areas.geojson] [--lifts lifts.geojson] [--min-runs 10] [--min-lifts 2] [--out FILE]
+
+Run it with `python3 -I`: the downloaded files are untrusted data. Downloads stop at 300 MB. All of our maps must be
+on disk first (`node tools/maps_r2.mjs pull --all`); it exits with that message otherwise.
 
 OpenSkiMap (https://openskimap.org, data from OpenStreetMap, ODbL) publishes every ski area in the world as one
 GeoJSON file, refreshed daily: tiles.openskimap.org/geojson/ski_areas.geojson (about 21 MB). Without --areas it is
@@ -11,7 +14,8 @@ OpenSkiMap resort each OpenStreetMap lift belongs to.
 Keeps operating downhill areas with at least --min-runs downhill runs and --min-lifts lifts, and writes
 tools/bulk/candidates.json: one entry per resort with a stable id, OpenSkiMap id, name, country and region, a centre
 point and box, the OpenStreetMap outline it comes from, skimap.org id, website, run and lift counts, the share of runs
-with an OpenStreetMap rating, and `built` (our resort id) when one of our mountains already covers it.
+with a rating (a run with no or an unknown difficulty counts as unrated), and `built` (our resort id) when one of our
+mountains already covers it.
 
 The order is the build order: USA and Canada first (the owner's market), then the Alps, Japan, the rest; within a
 group the biggest resorts first.
@@ -31,7 +35,10 @@ import urllib.request
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 URL = "https://tiles.openskimap.org/geojson/{}.geojson"
 UA = {"User-Agent": "weski-build"}
+MAX_DOWNLOAD = 300 << 20
+KNOWN_RATINGS = {"novice", "easy", "intermediate", "advanced", "expert", "freeride", "extreme"}
 GROUPS = [["US", "CA"], ["CH", "AT", "FR", "IT", "DE", "SI", "LI", "AD"], ["JP"], ["NO", "SE", "FI"], ["NZ", "AU", "CL", "AR"]]
+STOP = {"ski", "resort", "area", "mountain", "mount", "mt", "the", "and", "de", "du", "des", "la", "le", "les", "station"}
 
 
 def args():
@@ -39,9 +46,12 @@ def args():
     i = 0
     while i < len(a):
         k = a[i].lstrip("-").replace("-", "_")
-        if k not in opt:
+        if k not in opt or i + 1 >= len(a):
             raise SystemExit(__doc__)
-        opt[k] = a[i + 1] if k in ("areas", "lifts", "out") else int(a[i + 1])
+        try:
+            opt[k] = a[i + 1] if k in ("areas", "lifts", "out") else int(a[i + 1])
+        except ValueError:
+            raise SystemExit(f"--{k.replace('_', '-')} needs a whole number, got {a[i + 1]!r}")
         i += 2
     return opt
 
@@ -55,8 +65,18 @@ def osd_file(name, path=None):
     f = f"{work}/{name}.geojson"
     if not os.path.exists(f) or time.time() - os.path.getmtime(f) > 86400:
         print(f"downloading {URL.format(name)}")
-        with urllib.request.urlopen(urllib.request.Request(URL.format(name), headers=UA), timeout=600) as r, open(f + ".part", "wb") as o:
-            o.write(r.read())
+        got = 0
+        try:
+            with urllib.request.urlopen(urllib.request.Request(URL.format(name), headers=UA), timeout=600) as r, open(f + ".part", "wb") as o:
+                while chunk := r.read(1 << 20):
+                    got += len(chunk)
+                    if got > MAX_DOWNLOAD:
+                        raise SystemExit(f"{URL.format(name)} is larger than {MAX_DOWNLOAD >> 20} MB: stopped")
+                    o.write(chunk)
+        except BaseException:
+            if os.path.exists(f + ".part"):
+                os.remove(f + ".part")
+            raise
         os.replace(f + ".part", f)
     return f
 
@@ -81,21 +101,13 @@ def bounds(geom):
 
 
 def built_resorts():
-    """Our built resorts: id -> (name, centre, download box)."""
-    out = {}
+    """Our built resorts: id -> (name, centre). Every map must be on disk (they live in R2, not git)."""
     idx = {r["id"]: r for r in json.load(open(f"{ROOT}/public/data/index.json"))}
-    d = f"{ROOT}/tools/resorts"
-    for f in sorted(os.listdir(d)):
-        rid = f[:-5]
-        if not f.endswith(".json") or rid not in idx:
-            continue
-        c = json.load(open(f"{d}/{f}"))
-        b = c.get("osm_bbox") or c.get("bbox") or c.get("area_bbox")
-        out[rid] = (idx[rid]["name"], (idx[rid]["lon"], idx[rid]["lat"]), b)
-    return out
-
-
-STOP = {"ski", "resort", "area", "mountain", "mount", "mt", "the", "and", "de", "du", "des", "la", "le", "les", "station"}
+    ours = {rid: (r["name"], (r["lon"], r["lat"])) for rid, r in idx.items() if os.path.exists(f"{ROOT}/tools/resorts/{rid}.json")}
+    missing = [rid for rid in ours if not os.path.exists(f"{ROOT}/public/data/{rid}/resort.json")]
+    if missing:
+        raise SystemExit(f"Maps missing ({len(missing)} of {len(ours)}): run `node tools/maps_r2.mjs pull --all` first")
+    return ours
 
 
 def words(name):
@@ -108,9 +120,11 @@ def km(a, b):
 
 
 def mark_built(rows, ours, lifts_path):
-    """A resort counts as built when most of its lifts (OpenStreetMap ids, from OpenSkiMap's lift file) are on one
-    of our maps. Exact for linked areas (Cervinia is in our Zermatt map) and for neighbours (Mad River Glen is not in
-    our Sugarbush map, though it sits inside its download box)."""
+    """A resort counts as built when more than half of its lifts that have an OpenStreetMap id (OpenSkiMap's lift
+    file) are on one of our maps. Lifts without an id (our `extra_lifts`, drawn by hand) are not counted on either
+    side. Exact for linked areas (Cervinia is in our Zermatt map) and for neighbours (Mad River Glen is not in our
+    Sugarbush map, though it sits inside its download box). Name and distance never set `built`; they only print a
+    review line."""
     ours_lifts = {}
     for rid in ours:
         for l in json.load(open(f"{ROOT}/public/data/{rid}/resort.json"))["lifts"]:
@@ -120,6 +134,8 @@ def mark_built(rows, ours, lifts_path):
     for f in json.load(open(lifts_path))["features"]:
         q = f["properties"]
         osm = next((s["id"] for s in q.get("sources") or [] if s.get("type") == "openstreetmap"), None)
+        if not osm:
+            continue
         for a in q.get("skiAreas") or []:
             per_area.setdefault(a["properties"]["id"], []).append(osm)
     for r in rows:
@@ -130,25 +146,42 @@ def mark_built(rows, ours, lifts_path):
                 hits[ours_lifts[osm]] = hits.get(ours_lifts[osm], 0) + 1
         if hits:
             rid, n = max(hits.items(), key=lambda x: x[1])
-            if n >= max(1, len(ids) / 2):
+            if n > len(ids) / 2:
                 r["built"] = rid
     claimed = {r["built"] for r in rows if r["built"]}
-    for rid, (name, c, box) in ours.items():      # fallback by name for any of ours its lifts did not match
+    for rid, (name, c) in ours.items():
         if rid in claimed:
             continue
-        mine, best = words(name), None
+        mine = words(name)
         for r in rows:
-            d, shared = km(c, (r["lon"], r["lat"])), len(mine & words(r["name"]))
-            if d < 15 and shared and not r["built"] and (best is None or (shared, -d) > best[0]):
-                best = ((shared, -d), r)
-        if best:
-            best[1]["built"] = rid
+            d = km(c, (r["lon"], r["lat"]))
+            if d < 15 and mine & words(r["name"]) and not r["built"]:
+                print(f"review: {r['id']} ({r['name']}) may be {rid} (name match, {d:.0f} km)")
+
+
+def stable_ids(rows):
+    """Slug from the name; every member of a name collision gets the region (or country), and any that still collide
+    get a short OpenSkiMap id suffix. Independent of file order."""
+    def collisions(rs):
+        g = {}
+        for r in rs:
+            g.setdefault(r["id"], []).append(r)
+        return [m for m in g.values() if len(m) > 1]
+    for r in rows:
+        r["id"] = slug(r["name"]) or "resort"
+    for g in collisions(rows):
+        for r in g:
+            r["id"] = f"{r['id']}-{slug(r['region']) or r['cc'].lower()}"
+    for g in collisions(rows):
+        for r in g:
+            r["id"] = f"{r['id']}-{r['osd'][:6]}"
 
 
 def main():
     opt = args()
+    ours = built_resorts()
     F = json.load(open(osd_file("ski_areas", opt["areas"])))["features"]
-    rows, seen = [], {}
+    rows = []
     for f in F:
         q = f["properties"]
         if "downhill" not in (q.get("activities") or []) or q.get("status") not in (None, "operating") or not q.get("name"):
@@ -156,6 +189,7 @@ def main():
         st = q.get("statistics") or {}
         bd = ((st.get("runs") or {}).get("byActivity") or {}).get("downhill", {}).get("byDifficulty") or {}
         runs = sum(v.get("count", 0) for v in bd.values())
+        rated = sum(v.get("count", 0) for k, v in bd.items() if k in KNOWN_RATINGS)
         lifts = sum(v.get("count", 0) for v in ((st.get("lifts") or {}).get("byType") or {}).values())
         if runs < opt["min_runs"] or lifts < opt["min_lifts"]:
             continue
@@ -168,26 +202,20 @@ def main():
             lon, lat = (box[0] + box[2]) / 2, (box[1] + box[3]) / 2
         if lon is None:
             continue
-        rid = slug(q["name"]) or "resort"
-        if rid in seen:                                   # same name elsewhere: add the region, then a number
-            rid = f"{rid}-{slug(region) or cc.lower()}"
-            n = 2
-            while rid in seen:
-                rid = f"{rid.rsplit('-', 1)[0]}-{n}"; n += 1
-        seen[rid] = 1
         src = {s["type"]: s["id"] for s in q.get("sources") or []}
         elev = [st.get("minElevation"), st.get("maxElevation")]
         rows.append({
-            "id": rid, "osd": q["id"], "name": q["name"], "cc": cc, "region": region,
+            "id": None, "osd": q["id"], "name": q["name"], "cc": cc, "region": region,
             "lon": round(lon, 5), "lat": round(lat, 5), "box": [round(v, 5) for v in box] if box else None,
             "osm": src.get("openstreetmap"), "skimap": src.get("skimap.org"), "web": (q.get("websites") or [None])[0],
-            "runs": runs, "lifts": lifts, "rated": round(1 - bd.get("other", {}).get("count", 0) / runs, 3),
+            "runs": runs, "lifts": lifts, "rated": round(rated / runs, 3),
             "vert": round(elev[1] - elev[0]) if None not in elev else None, "convention": q.get("runConvention"),
             "built": None,
         })
-    mark_built(rows, built_resorts(), osd_file("lifts", opt["lifts"]))
+    stable_ids(rows)
+    mark_built(rows, ours, osd_file("lifts", opt["lifts"]))
     rank = {c: g for g, cs in enumerate(GROUPS) for c in cs}
-    rows.sort(key=lambda r: (rank.get(r["cc"], len(GROUPS)), -(r["lifts"] * 3 + r["runs"])))
+    rows.sort(key=lambda r: (rank.get(r["cc"], len(GROUPS)), -(r["lifts"] * 3 + r["runs"]), r["id"]))
     with open(opt["out"], "w") as o:
         o.write("[\n" + ",\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n]\n")
     todo = [r for r in rows if not r["built"]]
