@@ -3,7 +3,7 @@ import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
 import { SNOW_HISTORY_MIN_HOURS } from './score/explain.js';
 import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
-import { VIEW_KEY, loadList, saveList, add, sortRows, topPickId } from './watchlist.js';
+import { VIEW_KEY, loadList, saveList, syncList, add, sortRows, topPickId } from './watchlist.js';
 import { loadHistory } from '../weather.js';
 import { loadForecast, withHistory, sourceAgeHours, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
@@ -125,9 +125,23 @@ export async function loadAll(force = false) {
   redraw();
 }
 
+function syncWatchlist() {
+  loadCatalog().then((c) => {
+    fc.catalog = c;
+    fc.catalogError = false;
+    const { list, changed } = syncList(fc.list, (id) => resortFor(c, id));
+    if (!changed) return;
+    fc.list = list;
+    saveList(prefs, list);
+    fc.data.clear();
+    loadAll(false);
+  }).catch(() => {});
+}
+
 function start() {
   if (fc.started) return;
   fc.started = true;
+  syncWatchlist();
   fc.list.filter((r) => !fc.data.has(r.id)).forEach((r) => setEntry(r, { state: 'loading' }));
   loadAll(false);
 }

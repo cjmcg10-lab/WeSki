@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import EN from '../src/i18n/en.js';
 import { toResort, searchResorts, sameName, loadCatalog, resortFor, canForecast } from '../src/forecast/resorts.js';
 import { catalogFromIndex, forecastPoints } from '../src/forecast/catalog.js';
-import { add, remove, move, insertAt, has, cleanList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
+import { add, remove, move, insertAt, has, cleanList, syncList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
 import { loadForecast, loadStatusSaved, withHistory, sourceAgeHours, rescored, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
 import { loadHistory, savedHistory } from '../src/weather.js';
 import { ageText, CODE_TEXT, codeText } from '../src/forecast/text.js';
@@ -328,6 +328,29 @@ describe('scoring a watched mountain', () => {
     }
     expect(windowSummary({ window: null }).kind).toBe('none');
     expect(timeBlocks(days[0]).every((b) => b.score >= 0 && b.score <= 100)).toBe(true);
+  });
+});
+
+describe('saved list follows the catalog', () => {
+  const saved = (over = {}) => ({ id: 'stowe', name: 'Stowe', region: 'Vermont', country: 'USA', tz: 'America/New_York', lat: 44.5, lon: -72.8, baseLat: 44.45, baseLon: -72.7, top: 1116, base: 399, ...over });
+  const fresh = saved({ lat: 44.53, top: 1120 });
+  const find = (id) => (id === 'stowe' || id === 'old-stowe' ? fresh : null);
+
+  it('replaces a saved entry with the catalog values, and leaves unknown ids alone', () => {
+    const pin = { id: 'pin-1', name: 'Pin', lat: 1, lon: 2, top: 10, base: 5, tz: 'UTC' };
+    const { list, changed } = syncList([saved(), pin], find);
+    expect(changed).toBe(true);
+    expect(list[0]).toMatchObject({ lat: 44.53, top: 1120 });
+    expect(list[1]).toBe(pin);
+  });
+
+  it('turns a merged id into the new id, drops a duplicate, and reports no change when nothing differs', () => {
+    expect(syncList([saved({ id: 'old-stowe' })], find).list[0].id).toBe('stowe');
+    expect(syncList([saved(), saved({ id: 'old-stowe' })], find).list).toHaveLength(1);
+    const same = [fresh];
+    const out = syncList(same, find);
+    expect(out.changed).toBe(false);
+    expect(out.list).toBe(same);
   });
 });
 
