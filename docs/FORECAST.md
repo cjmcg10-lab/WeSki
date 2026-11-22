@@ -16,7 +16,7 @@ The whole section is free (owner decision, 2026-11-21). The map, groups and trac
 
 ## How a score is made
 
-Full rules: `docs/FORECAST_SCORING.md` (engine version 1.6.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
+Full rules: `docs/FORECAST_SCORING.md` (engine version 1.7.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
 
 1. Each hour is scored from 0 to 100 at the base and at the upper mountain from four parts: expected snow surface 45% (carried hour by hour from the last 48 to 72 hours: new snow, rain then refreeze, daytime softening, grooming), visibility 25%, wind 20%, temperature and precipitation comfort 10%.
 2. The hour score is the average of base and upper. If the source cannot tell them apart, one estimate is used and confidence drops. Summit wind and visibility are never invented.
@@ -75,7 +75,7 @@ node tests/acceptance/acceptance.mjs [site address]
 
 The expected local failure of `npm test` is the Sunday River map test, because the other maps live in R2 (`node tools/maps_r2.mjs pull --all` fixes it).
 
-`tests/acceptance/acceptance.mjs` drives the live site (default `https://skiwithme.builtbyroger.app`) with Playwright in four set-ups (360 px and 1280 px, light and dark): empty list, add Jay Peak, Burke and Cannon through search, sort, open a day and come back to the same place, remove all three, add Sundown Mountain Resort (a small Iowa hill), Zermatt and Mount Buller (Southern Hemisphere), reorder, reload, open each, plan a trip, add a pin by coordinates. It writes `smoke-output/acceptance/report.json` (every cell's text, the day views, console errors, horizontal-scroll checks) and a set of screenshots (calendar, day, add, trip, pin) beside it; the folder is git-ignored. It exits with an error when a page error, a failed request or a horizontal scroll appears. Change the three mountain names at the top of the script to try others. The live API can be checked with curl (User-Agent `weski-build`): `/api/weather?...&id=<id>`, `/api/history/<id>`, `/api/resort-status/<id>`.
+`tests/acceptance/acceptance.mjs` drives the live site (default `https://skiwithme.builtbyroger.app`) with Playwright in four set-ups (360 px and 1280 px, light and dark): empty list, add Jay Peak, Burke and Cannon through search, sort, open a day and come back to the same place, remove all three, add Sundown Mountain Resort (a small Iowa hill), Zermatt and Mount Buller (Southern Hemisphere), reorder, reload, open each, plan a trip, add a pin by coordinates. It writes `smoke-output/acceptance/report.json` (every cell's text, the day views, console errors, horizontal-scroll checks) and a set of screenshots (calendar, day, add, trip, pin) beside it; the folder is git-ignored. It exits with an error when a page error, a failed request or a horizontal scroll appears, and also when one of three checks fails: the "Where should you ski?" prompt must show after every mountain is removed in Edit list, Back from a day view must return to the same place (same scroll position, same sort and the same cell focused), and the row order set in Edit list must be kept through a reload. Change the three mountain names at the top of the script to try others. The live API can be checked with curl (User-Agent `weski-build`): `/api/weather?...&id=<id>`, `/api/history/<id>`, `/api/resort-status/<id>`.
 
 ### What the 2026-11-22 acceptance run showed
 
