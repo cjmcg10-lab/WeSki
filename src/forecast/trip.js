@@ -1,0 +1,90 @@
+import { roundHalfUp } from './score/index.js';
+
+export const TRIP_KEY = 'fcTrip';
+export const MAX_RANGE_DAYS = 14;
+export const MARGIN = { High: 5, Medium: 8, Low: 12 };
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+const LEVEL_ORDER = ['Low', 'Medium', 'High'];
+const DAY_MS = 86400e3;
+
+const isDate = (value) => typeof value === 'string' && DATE_RE.test(value) && !Number.isNaN(Date.parse(`${value}T12:00:00Z`));
+
+export const shiftDate = (date, days) => new Date(Date.parse(`${date}T12:00:00Z`) + days * DAY_MS).toISOString().slice(0, 10);
+
+export const daysBetween = (from, to) => Math.round((Date.parse(`${to}T12:00:00Z`) - Date.parse(`${from}T12:00:00Z`)) / DAY_MS);
+
+export const rangeError = (from, to) => isDate(from) && isDate(to) && to < from;
+
+export function rangeDays(from, to) {
+  if (!isDate(from)) return [];
+  const end = isDate(to) && to >= from ? to : from;
+  const count = Math.min(daysBetween(from, end) + 1, MAX_RANGE_DAYS);
+  return Array.from({ length: count }, (_, i) => shiftDate(from, i));
+}
+
+export function cleanTrip(raw) {
+  const picked = Array.isArray(raw?.picked) ? [...new Set(raw.picked.filter(isDate))].sort() : [];
+  const from = isDate(raw?.from) ? raw.from : '';
+  const to = from && isDate(raw?.to) && raw.to >= from ? raw.to : '';
+  return { picked, from, to };
+}
+
+export const tripDates = (trip) => [...new Set([...trip.picked, ...rangeDays(trip.from, trip.to)])].sort();
+
+export function classifyDay(forecast, date) {
+  const days = forecast?.scored?.days ?? [];
+  const day = days.find((d) => d.date === date);
+  if (day?.status === 'closed') return { kind: 'closed' };
+  if (day && day.status !== 'insufficient' && typeof day.score === 'number') return { kind: 'scored', score: day.score, level: day.confidence?.level ?? 'Low' };
+  if (!day && days.length && date > days[days.length - 1].date) return { kind: 'notyet' };
+  return { kind: 'insufficient' };
+}
+
+const lowestLevel = (levels) => levels.reduce((low, level) => (LEVEL_ORDER.indexOf(level) < LEVEL_ORDER.indexOf(low) ? level : low), 'High');
+
+export function summarize(forecast, dates) {
+  const days = dates.map((date) => ({ date, ...classifyDay(forecast, date) }));
+  const scored = days.filter((d) => d.kind === 'scored').map((d) => ({ ...d, shown: roundHalfUp(d.score) }));
+  const closed = days.filter((d) => d.kind === 'closed').length;
+  const pick = (better) => scored.reduce((best, d) => (!best || better(d.shown, best.shown) ? d : best), null);
+  const level = scored.length ? lowestLevel(scored.map((d) => d.level)) : null;
+  return {
+    days,
+    total: dates.length,
+    covered: scored.length,
+    closed,
+    allClosed: dates.length > 0 && closed === dates.length,
+    average: scored.length ? roundHalfUp(scored.reduce((sum, d) => sum + d.score, 0) / scored.length) : null,
+    strongest: pick((a, b) => a > b),
+    weakest: pick((a, b) => a < b),
+    level,
+    margin: level ? MARGIN[level] : null,
+  };
+}
+
+export const isCloseCall = (a, b) => a.covered > 0 && a.covered === b.covered && Math.abs(a.average - b.average) < Math.max(a.margin, b.margin);
+
+export function rankTrip(entries, dates) {
+  const cards = entries.map((entry, order) => ({ ...entry, order, ...(entry.forecast ? summarize(entry.forecast, dates) : { failed: true }) }));
+  const open = cards.filter((c) => !c.failed && !c.allClosed)
+    .sort((a, b) => b.covered - a.covered || (b.average ?? -1) - (a.average ?? -1) || a.order - b.order);
+  const failed = cards.filter((c) => c.failed);
+  const closed = cards.filter((c) => c.allClosed);
+  open.forEach((card, i) => {
+    card.rank = i + 1;
+    if (i > 0 && isCloseCall(open[i - 1], card)) card.closeWith = open[i - 1].resort.id;
+  });
+  closed.forEach((card, i) => { card.rank = open.length + i + 1; });
+  return [...open, ...failed, ...closed];
+}
+
+export function notYet(dates, forecasts) {
+  const known = forecasts.filter((f) => f?.scored?.days?.length);
+  if (!known.length) return { dates: [], span: 0 };
+  const lastOf = (f) => f.scored.days[f.scored.days.length - 1].date;
+  const widest = known.reduce((best, f) => (lastOf(f) > lastOf(best) ? f : best));
+  const span = daysBetween(widest.scored.days[0].date, lastOf(widest));
+  return { dates: dates.filter((d) => d > lastOf(widest)), span };
+}
+
+export const entersRangeOn = (date, span) => shiftDate(date, -span);

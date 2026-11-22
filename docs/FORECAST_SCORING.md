@@ -259,6 +259,30 @@ Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (d
 
 `outlook` codes (days 6 to 9) are not produced: phase 7 (#8) found no ensemble source that works from a Worker at no cost.
 
+## Trip planner (#7)
+
+`src/forecast/trip.js` compares the mountains on the list over the days someone picks. It reads the day results the engine already made (so it works offline from the saved forecasts) and does not change any score. The picked days live in prefs under `fcTrip` (`picked` days, plus `from` and `to` for a later range of up to 14 days).
+
+Each picked day, for one mountain, is one of: scored, `closed`, `insufficient`, or not yet (later than the mountain's last forecast day). Per mountain:
+
+- Covered days are the scored days. Closed days, insufficient days and not-yet days are not covered, and none of them is counted in the average, the strongest day or the weakest day. A closed day is never a zero.
+- Average is the mean of the covered days' scores, rounded half up for display. Strongest and weakest are the covered days with the highest and lowest displayed score; a tie goes to the earlier date.
+- Coverage reads "{covered} of {picked} days", with "· {n} closed" when any picked day is closed.
+
+Ranking rule, in order:
+
+1. Coverage first: a mountain with fewer covered days never ranks above one with more, whatever its average. Missing days therefore never help a mountain.
+2. Then the higher average.
+3. Then the order on the person's list.
+4. A mountain whose forecast failed to load is listed after every ranked mountain and has no rank number.
+5. A mountain closed on every picked day is listed last and takes its rank numbers after the open ones.
+
+Too close to call. A mountain's uncertainty depends on its least confident covered day: High 5 points, Medium 8, Low 12 (first guesses, to be tuned in phase 8). Two neighbours in the ranking are "too close to call" when they have the same coverage and their displayed averages differ by less than the larger of their two uncertainties. The second card of the pair says so. A provisional mountain from a map pin always scores Low confidence, so a pin is flagged against any mountain within 12 points.
+
+Dates beyond the forecast. A picked day later than a mountain's last forecast day is "Not yet" and takes no part in the ranking. The screen says when it arrives: the date minus the length of the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."). When every picked day is beyond range it says none are in range yet.
+
+Tests: `tests/forecast-trip.test.js`.
+
 ## Not in version 1
 
 Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7 checked every free source and found none feasible; `docs/FORECAST_SOURCES.md` says what would be needed, and `range: { low, high }` is not part of the output until members exist), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
