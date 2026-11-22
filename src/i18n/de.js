@@ -511,4 +511,5 @@ export default {
   1451: 'Für einige Berge sind die Saisondaten unbekannt: Ihre Bewertungen gehen davon aus, dass die Lifte fahren.',
   1410: 'Neue Version bereit',
   1411: 'Neu laden',
+  1430: 'Sehr kalt an den Liften: gefühlt {0} in der kältesten Skistunde.',
 };

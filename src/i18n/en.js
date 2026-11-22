@@ -1017,4 +1017,5 @@ export default {
   1451: 'Season dates are unknown for some mountains: their scores assume the lifts are running.',
   1410: 'New version ready',
   1411: 'Reload',
+  1430: 'Very cold on the lifts: it feels like {0} in the coldest ski hour.',
 };

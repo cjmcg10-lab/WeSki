@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.6.0)
+# Forecast scoring engine (version 1.7.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Version 1.6.0 is issue #12 (a new explanation code, `EX_RAIN_AT_BASE_DRY`, found in the acceptance test). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Version 1.6.0 is issue #12 (a new explanation code, `EX_RAIN_AT_BASE_DRY`, found in the acceptance test). Version 1.7.0 is issue #51 (a `NT_VERY_COLD` day note; no weight or curve changed). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -50,7 +50,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.6.0',
+  version: '1.7.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -83,7 +83,7 @@ Day (one per local date in the weather):
 | `closureSource` | The `{ code, params }` the caller passed, or `null`, present only when `closed` |
 | `flags` | Strings: `snow_history_limited` (when the history before the forecast covers under 48 valid hours), `stale_source`, `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
 | `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
-| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds], `NT_OUT_OF_SEASON` and `NT_WEATHER_ALERT` [event name], one note per distinct alert event on that date. Always an array. Not part of `explain` and never changes `score` or `status` |
+| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds], `NT_OUT_OF_SEASON`, `NT_WEATHER_ALERT` [event name], one note per distinct alert event on that date, and `NT_VERY_COLD` [coldest °C]. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
 | `uncertainty` | Always `null` in version 1. It stays null until there are several forecasts or ensemble members to compare, so no Close call shows |
 
@@ -253,6 +253,7 @@ Which factor is chosen: each component's weighted distance from its reference (s
 - `EX_LIFT_HOLD_CONFIRMED` [number of confirmed holds that date] (new, needs ten translations in phase 2)
 - `NT_OUT_OF_SEASON` (new, needs ten translations in phase 2)
 - `NT_WEATHER_ALERT` [event name, a string: the alert's own English name such as `Winter Storm Warning`] (new in 1.5.0, issue #8). A winter storm, snow, ice, wind chill, extreme cold, high wind or gale alert from the NWS, Environment Canada or MET Norway that covers the date. It is a fact shown beside the day, like a lift hold: it does not move the wind or any component, the score, the status or the confidence. English text `Weather alert: {0}.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1350) with the other nine languages; the alert name itself is the provider's and is not translated
+- `NT_VERY_COLD` [the coldest temperature in °C, rounded] (new in 1.7.0, issue #51). Added when, in any ski hour with a score, a site that is used feels like −20 °C or colder; the temperature is the colder of the feels-like and the air temperature. On a two-site mountain that is in practice the summit; on a one-site mountain it is that site. −20 °C was chosen because the comfort curve is about half there (51 of 100) and falls to 25 at −25 °C, while `F_COLD` (−10 °C) is too common to call out. Like the alert note it never changes a component, the score, the status or the confidence: the issue found Zermatt at −25 °C scoring 93 Epic, and the weights are not changed without calibration evidence (see Calibration round 1). The screens show the temperature in the viewer's units. English text `Very cold on the lifts: it feels like {0} in the coldest ski hour.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1430) with the other nine languages
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 

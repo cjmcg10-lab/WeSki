@@ -68,6 +68,8 @@ const dayOf = (forecast, date) => forecast?.scored?.days.find((d) => d.date === 
 const imperial = () => host.units() === 'imperial';
 const fmtTemp = (c) => (c == null ? '–' : `${Math.round(imperial() ? c * 1.8 + 32 : c)}°${imperial() ? 'F' : 'C'}`);
 const fmtSpeed = (ms) => (ms == null ? '–' : `${Math.round(imperial() ? ms * 2.23694 : ms * 3.6)} ${imperial() ? 'mph' : 'km/h'}`);
+// The very-cold note carries °C from the engine; show it in the viewer's units.
+const noteShown = (n) => (n.code === 'NT_VERY_COLD' ? { ...n, params: [fmtTemp(n.params?.[0])] } : n);
 const fmtVis = (m) => (m == null ? '–' : imperial() ? `${(m / 1609.34).toFixed(m < 1609 ? 1 : 0)} mi` : `${(m / 1000).toFixed(m < 1000 ? 1 : 0)} km`);
 
 // ---------- loading
@@ -377,7 +379,7 @@ function dayBody(resort, forecast, day) {
     <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
     <p class="fc-note">${esc(codeText(day.confidence.reason))}</p>
-    ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(n))}</p>`).join('')}
+    ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(noteShown(n)))}</p>`).join('')}
     ${statusOld ? `<p class="fc-notice">${t('Opening hours and closures are from an older check, so they are treated as assumed.')}</p>` : ''}
     ${noSeason ? `<p class="fc-note">${t('Season dates unknown. This score assumes the lifts are running.')}</p>` : ''}
     <div class="boxes b3 fc-facts">${boxes}</div>

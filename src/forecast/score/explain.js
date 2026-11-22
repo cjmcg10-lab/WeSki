@@ -5,6 +5,9 @@ const MIN_POINTS = 1.5;
 const COLD_FEELS = -10;
 const WARM_FEELS = 3;
 
+/** A "Very cold" day note below this (°C, the colder of feels-like and air temperature at any site in a ski hour). The comfort curve is about half (51) here and falls to 25 at -25 °C; F_COLD's -10 °C is too common to note. */
+export const VERY_COLD_C = -20;
+
 export const pointsFor = (component, score) => WEIGHTS[component] * (score - REFERENCE[component]);
 
 export function factorCode(component, points, d) {
@@ -59,6 +62,14 @@ export function dayDrivers(rows) {
     out.push({ component: c, code: factorCode(c, points, d), params: [], points });
   }
   return out.sort((a, b) => Math.abs(b.points) - Math.abs(a.points)).slice(0, 3);
+}
+
+/** `NT_VERY_COLD` [coldest °C, rounded] when any site in a ski hour feels like `VERY_COLD_C` or colder; a fact beside the day, never a score change. */
+export function veryColdNote(skiRows) {
+  const temps = siteList(skiRows).map((s) => Math.min(s.detail.feels ?? s.detail.t, s.detail.t ?? s.detail.feels)).filter(Number.isFinite);
+  if (!temps.length) return null;
+  const coldest = Math.min(...temps);
+  return coldest <= VERY_COLD_C ? { code: 'NT_VERY_COLD', params: [Math.round(coldest)] } : null;
 }
 
 const LOW_VISIBILITY_BELOW = 75;

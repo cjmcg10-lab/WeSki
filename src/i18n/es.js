@@ -511,4 +511,5 @@ export default {
   1451: 'Se desconocen las fechas de temporada de algunas montañas: sus puntuaciones suponen que los remontes funcionan.',
   1410: 'Nueva versión lista',
   1411: 'Recargar',
+  1430: 'Mucho frío en los remontes: la sensación térmica llega a {0} en la hora de esquí más fría.',
 };

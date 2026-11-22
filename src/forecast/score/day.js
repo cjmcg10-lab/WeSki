@@ -1,4 +1,4 @@
-import { SNOW_HISTORY_MIN_HOURS, dayConfidence, dayDrivers, dayExplanation, windowConfidence } from './explain.js';
+import { SNOW_HISTORY_MIN_HOURS, dayConfidence, dayDrivers, dayExplanation, veryColdNote, windowConfidence } from './explain.js';
 
 export const DAY_WEIGHTS = { mean: 0.6, window: 0.4 };
 export const WINDOW_HOURS = 3;
@@ -74,6 +74,8 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
   if (holds.length) notes.push({ code: 'EX_LIFT_HOLD_CONFIRMED', params: [holds.length] });
   if (outOfSeason(season, date)) notes.push({ code: 'NT_OUT_OF_SEASON', params: [] });
   for (const event of alertEventsOn(alerts, date)) notes.push({ code: 'NT_WEATHER_ALERT', params: [event] });
+  const cold = veryColdNote([...skiRowsOf(rows, from, to).values()]);
+  if (cold) notes.push(cold);
   const detail = detailLevel(daysAhead);
   const base = { date, uncertainty: null, detail, skiHours: { from, to, assumed, expected }, daysAhead, liftHolds: holds, notes };
   if (closure) {

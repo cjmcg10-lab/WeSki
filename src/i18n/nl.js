@@ -511,4 +511,5 @@ export default {
   1451: 'Voor sommige bergen zijn de seizoensdata onbekend: hun scores gaan ervan uit dat de liften draaien.',
   1410: 'Nieuwe versie klaar',
   1411: 'Herladen',
+  1430: 'Erg koud bij de liften: het voelt als {0} in het koudste skiuur.',
 };
