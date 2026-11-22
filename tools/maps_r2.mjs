@@ -123,7 +123,8 @@ async function pull(id) {
     const bin = join(dir, f.replace('.z16', '.bin'));
     if (!existsSync(bin)) continue;
     const key = packedKey(id, f, bin);
-    if (key in have) await curl(['-o', join(dir, f), `${API()}/${key}`]);
+    // the compact copy is optional (the app falls back to the .bin): a failed download only leaves it out
+    if (key in have) await curl(['-o', join(dir, f), `${API()}/${key}`]).catch((e) => { rmSync(join(dir, f), { force: true }); console.warn(`${id}: ${f} left out (${e.message.slice(0, 120)})`); });
   }
   rmSync(tmp, { recursive: true, force: true });
   console.log(`${id}: downloaded into ${dir}`);
@@ -145,8 +146,11 @@ if (cmd === 'status') {
   console.log(`${cfg.ids.length} R2 resorts removed from ${DATA} (the app serves them from R2)`);
 } else if (cmd === 'pull' && ids.length) {
   const all = ids[0] === '--all' ? cfg.ids.filter((id) => !onDisk(id)) : ids;
-  await pool(all.map((id) => () => pull(id)), 4);
-  console.log(`${all.length} resorts downloaded`);
+  // one resort that fails (an API hiccup, a rate limit while several CI runs pull at once) no longer stops the others
+  const failed = [];
+  await pool(all.map((id) => () => pull(id).catch((e) => { failed.push(id); console.error(`${id}: not downloaded (${e.message.slice(0, 200)})`); })), 4);
+  console.log(`${all.length - failed.length} resorts downloaded${failed.length ? `, ${failed.length} failed: ${failed.join(', ')}` : ''}`);
+  if (failed.length) process.exitCode = 1;
 } else {
   console.error('usage: node tools/maps_r2.mjs push <id...> | push --all | pull <id...> | pull --all | status');
   process.exit(1);
