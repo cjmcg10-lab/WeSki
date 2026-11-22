@@ -1,0 +1,134 @@
+{
+ "_label": "Recorded mtnpowder.com feed for Blue (resortId 3), 2026-11-22, trimmed to the fields the normaliser reads and a few lifts and trails.",
+ "Name": "Blue",
+ "LastUpdate": "2026-11-22T11:58:48-0500",
+ "OperatingStatus": "Open",
+ "MountainAreas": [
+  {
+   "Name": "Area",
+   "Lifts": [
+    {
+     "Name": "Orchard Express",
+     "StatusEnglish": "closed_for_season",
+     "UpdateDate": "2026-10-28T15:11:43-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Monday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Tuesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Wednesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Thursday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Friday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Saturday": {
+       "Open": "",
+       "Close": ""
+      }
+     }
+    },
+    {
+     "Name": "Explorer",
+     "StatusEnglish": "closed_for_season",
+     "UpdateDate": "2026-10-28T15:11:43-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Monday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Tuesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Wednesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Thursday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Friday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Saturday": {
+       "Open": "",
+       "Close": ""
+      }
+     }
+    },
+    {
+     "Name": "Little Ripper",
+     "StatusEnglish": "closed_for_season",
+     "UpdateDate": "2026-10-28T15:11:43-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Monday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Tuesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Wednesday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Thursday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Friday": {
+       "Open": "",
+       "Close": ""
+      },
+      "Saturday": {
+       "Open": "",
+       "Close": ""
+      }
+     }
+    }
+   ],
+   "Trails": [
+    {
+     "Name": "Badlands Terrain Park",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-11-19T11:02:47-0500",
+     "Grooming": "No",
+     "Difficulty": "LargePark"
+    },
+    {
+     "Name": "Butternut",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-11-19T11:02:47-0500",
+     "Grooming": "No",
+     "Difficulty": "Intermediate"
+    }
+   ]
+  }
+ ]
+}

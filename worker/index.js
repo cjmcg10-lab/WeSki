@@ -7,6 +7,7 @@ import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEma
 import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weather } from './weather.js';
+import { resortStatus } from './resort-status.js';
 export { Accounts, ResortLog } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -54,6 +55,12 @@ async function api(request, env, url) {
       if (r.error) return json({ error: r.error }, r.status);
       return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=900' } });
     } catch (e) { return json({ error: 'The weather service did not answer.' }, 502); }
+  }
+  const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (statusId) {
+    try {
+      return new Response(JSON.stringify(await resortStatus(statusId)), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=300' } });
+    } catch (e) { return json({ error: 'The resort status service did not answer.' }, 502); }
   }
   if (path === '/api/config' && method === 'GET') {
     const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));

@@ -1,0 +1,190 @@
+{
+ "_label": "Recorded mtnpowder.com feed for Palisades Tahoe (resortId 61), 2026-11-22, trimmed to the fields the normaliser reads and a few lifts and trails.",
+ "Name": "Palisades Tahoe",
+ "LastUpdate": "2026-11-22T08:58:48-0800",
+ "OperatingStatus": "Closed",
+ "MountainAreas": [
+  {
+   "Name": "Area",
+   "Lifts": [
+    {
+     "Name": "Siberia Express",
+     "StatusEnglish": "open",
+     "UpdateDate": "2026-11-21T16:01:08-0800",
+     "Hours": {
+      "Sunday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    },
+    {
+     "Name": "Summit Express",
+     "StatusEnglish": "delayed",
+     "UpdateDate": "2026-11-21T16:14:15-0800",
+     "Hours": {
+      "Sunday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    },
+    {
+     "Name": "Treeline Cirque",
+     "StatusEnglish": "open_to_mid_station_only",
+     "UpdateDate": "2026-11-20T16:07:34-0800",
+     "Hours": {
+      "Sunday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    },
+    {
+     "Name": "Headwall Express",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-11-20T23:09:49-0800",
+     "Hours": {
+      "Sunday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    }
+   ],
+   "Trails": [
+    {
+     "Name": "Dance Floor",
+     "StatusEnglish": "open",
+     "UpdateDate": "2026-11-21T10:23:12-0800",
+     "Grooming": "Yes",
+     "Difficulty": "Intermediate"
+    },
+    {
+     "Name": "East Runout",
+     "StatusEnglish": "open",
+     "UpdateDate": "2026-11-21T08:32:17-0800",
+     "Grooming": "Yes",
+     "Difficulty": "Intermediate"
+    },
+    {
+     "Name": "Loop Road",
+     "StatusEnglish": "open",
+     "UpdateDate": "2026-11-21T10:24:35-0800",
+     "Grooming": "Yes",
+     "Difficulty": "Intermediate"
+    },
+    {
+     "Name": "Bullet",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-04-05T08:51:56-0700",
+     "Grooming": "No",
+     "Difficulty": "Very Difficult"
+    },
+    {
+     "Name": "Chicken Bowl",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-05-12T14:14:58-0700",
+     "Grooming": "No",
+     "Difficulty": "Very Difficult"
+    }
+   ]
+  }
+ ]
+}
