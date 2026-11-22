@@ -498,12 +498,12 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 .mrow .soon-tag { font-style: normal; font-size: 12.5px; font-weight: 600; color: #ffb35c; margin-top: 1px; }
 
 /* ---------- 2026-11 round 2: panels that pull down, last visited */
-#start-panel, #sheet { transition: transform .3s cubic-bezier(.2, .8, .2, 1); touch-action: pan-x; }
+#start-panel, #sheet { transition: transform .3s cubic-bezier(.2, .8, .2, 1); touch-action: pan-x pinch-zoom; }
 #start-panel.dragging, #sheet.dragging { transition: none; }
 #start-panel.mini { transform: translateY(var(--mini, 0px)); }
 #start-panel.mini #resort-list, #start-panel.mini .join-btn { pointer-events: none; }
 #start-panel .grab, #sheet .grab { width: 54px; height: 6px; top: 9px; }
-#sheet-body, #resort-list { touch-action: pan-y; }
+#sheet-body, #resort-list { touch-action: pan-y pinch-zoom; }
 .mrow .nm { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
 .mrow .nm b { min-width: 0; flex: 0 1 auto; }
 .mrow .lastv { flex: none; font-size: 12.5px; font-weight: 500; color: #9fb2c6; white-space: nowrap; }
