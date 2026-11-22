@@ -309,10 +309,14 @@ export class SkiMap {
     for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(1));
     // zones, by code; later codes win where zones overlap (as before). +16: may tint off the groomed snow
     const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
+    // A pixel's code is read without blending, so where a zone has nothing under it, it also takes pixels a little
+    // outside its edge (f > 0.35): the smooth field then draws the edge instead of the texture cells. Such a pixel is
+    // only held weakly: any other zone that really covers it (f > 0.5) takes it over.
     const paint = (pts, rad, v, off) => stroke(pts, rad, (o, f) => {
       const cur = zc[o] & 15;
       const fv = f * 255;
-      if (v > cur && f > 0.5) { zc[o] = v | (off ? 16 : 0); field[o * 4 + 2] = fv; } else if (v === cur && fv > field[o * 4 + 2]) field[o * 4 + 2] = fv;
+      const take = !cur ? f > 0.35 : v !== cur && f > 0.5 && (v > cur || field[o * 4 + 2] < 127.5);
+      if (take) { zc[o] = v | (off ? 16 : 0); field[o * 4 + 2] = fv; } else if (v === cur && fv > field[o * 4 + 2]) field[o * 4 + 2] = fv;
     });
     for (const t of T) {
       const z = t.z || (t.slow ? 'slow' : null);
@@ -493,7 +497,7 @@ vec3 groundColour() {
     }
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
     // stencil: trees mark the pixels they cover, so runs can be drawn through them (see buildTrails)
-    const treeMat = new THREE.MeshLambertMaterial({ flatShading: true, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), treeMat, spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
@@ -705,8 +709,9 @@ vec3 groundColour() {
     // towers: one instanced mesh per tower type
     const types = new Map();
     for (const t of towerMats) { const k = t.h + '|' + t.arm; if (!types.has(k)) types.set(k, []); types.get(k).push(t); }
+    const towerMat = M.vcMat(true);   // smooth shading: round steel poles
     for (const list of types.values()) {
-      const mesh = new THREE.InstancedMesh(M.towerGeometry(list[0].h + 1, list[0].arm), M.vcMat(), list.length);
+      const mesh = new THREE.InstancedMesh(M.towerGeometry(list[0].h + 1, list[0].arm), towerMat, list.length);
       const mt = new THREE.Matrix4();
       list.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, mt); });
       this.scene.add(mesh);

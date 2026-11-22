@@ -1271,7 +1271,8 @@ function zonesCard() {
   for (const z of R.zones || []) add(z.kind, z.name);
   const rows = Object.keys(ZONES).filter((k) => have[k]).map((k) => {
     const Z = ZONES[k], names = [...have[k]].filter((n) => n !== Z.name), hatch = k === 'free' || k === 'extreme';
-    const bg = hatch ? `repeating-linear-gradient(135deg, rgb(${Z.rgb}) 0 5px, #f6fafd 5px 10px)` : `rgb(${Z.rgb})`;
+    // thin stripes over about a third of the swatch, as the hatching on the map (stripe 0.6-0.95 of each 9 m step)
+    const bg = hatch ? `repeating-linear-gradient(135deg, #f6fafd 0 6.5px, rgb(${Z.rgb}) 6.5px 10px)` : `rgb(${Z.rgb})`;
     const list = names.length ? ` Here: ${names.slice(0, 8).map(esc).join(', ')}${names.length > 8 ? ` and ${names.length - 8} more` : ''}.` : '';
     return `<div class="legend-row"><div class="sw"><div class="band" style="background:${bg};color:${Z.ink}">${Z.sym}</div></div><span><b>${Z.name}</b> — ${Z.text}${k === 'free' || k === 'extreme' ? '' : list}</span></div>`;
   });

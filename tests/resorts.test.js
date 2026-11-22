@@ -71,7 +71,8 @@ describe('every built resort', () => {
 });
 
 describe('existence check', () => {
-  it('Sunday River: the Merrill Hill II chair and the runs not on the resort map are hidden', () => {
+  // like the other map tests, it needs the map downloaded from R2 (node tools/maps_r2.mjs pull --all)
+  it.skipIf(!existsSync('public/data/sunday-river/resort.json'))('Sunday River: the Merrill Hill II chair and the runs not on the resort map are hidden', () => {
     const { resort } = loadResort('sunday-river');
     expect(resort.lifts.find((l) => l.name === 'Merrill Hill II').hide).toBeTruthy();
     expect(resort.lifts.find((l) => l.name === 'Merrill Hill Triple').hide).toBeFalsy();
