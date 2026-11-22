@@ -1,4 +1,4 @@
-# Forecast scoring engine (version 1.3.1)
+# Forecast scoring engine (version 1.4.0)
 
 Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
@@ -49,7 +49,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.3.1',
+  version: '1.4.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -128,7 +128,7 @@ A grooming report (`opts.grooming`) is applied once, at the hour of its timestam
 
 **Wind (20).** Strength = the larger of the wind speed and 0.65 × the gust, in m/s. Points: 0 → 100, 4 → 98, 8 → 86, 12 → 60, 16 → 30, 20 → 10, 26 and more → 0. This is a predicted wind effect only. A confirmed lift hold from the resort is a different thing: it is reported in `liftHolds` and `notes` with `EX_LIFT_HOLD_CONFIRMED`, it does not move the wind component or the day score, and the wind codes (`F_STRONG_GUSTS`, `EX_SUMMIT_WIND`) are never emitted because of it.
 
-**Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. Because the hour is the mean of base and upper, a gale at the summit alone leaves the base side scoring normally, so such a day can still land in the Good band.
+**Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. **Upper-lift hold (1.4.0).** When both sites are scored and the upper site has a hold risk, the hour score is also pulled toward a cap of 50 by the upper risk: `score − upperRisk × max(0, score − 50)`. The upper lifts are the way to the upper terrain, so a calm base cannot carry a day when they would stop. A full upper hold lands a day at 50 at best (Fair). The cap of 50 is a first guess, still uncalibrated. The extra loss is added to `holdLoss`. With a single estimate the rule does not apply, because there is only one site and the cap of 35 already covers it. Calibration round 1 below is the evidence.
 
 **Comfort (10).** Feels-like temperature (−35 °C → 0, −25 → 25, −18 → 58, −10 → 92, −4 to +3 → 100, 6 → 85, 9 → 60, 13 → 30), multiplied by a rain factor (1, 0.4, 0.25, 0.15 for none, light, moderate, heavy) and a snowfall factor (0 cm → 1, 1 → 0.92, 3 → 0.78).
 
@@ -258,7 +258,7 @@ Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (d
 
 ## Not in version 1
 
-Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7), calibration of the numbers against real days (phase 8), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
@@ -267,3 +267,28 @@ Several forecasts or ensemble members and with them `uncertainty`, model agreeme
 `tests/forecast-history.test.js` covers the engine's history, confidence and detail levels (version 1.3.0); `tests/forecast-store.test.js` covers the server side (history store, observations, archive, stale fallback) with recorded NWS stations and observations (`nws-stations-stowe.json`, `nws-obs-kmvl.json`, real responses trimmed to the fields the app reads).
 
 `tests/forecast-status.test.js` covers the resort-status side with recorded feeds `status-mtnpowder-*.json` (trimmed real responses): the normaliser, an assumed window, a confirmed closure, a short operating day, a confirmed lift hold kept apart from wind, and out of season without a closure. See `docs/FORECAST_SOURCES.md` for where the status comes from.
+
+## Calibration round 1 (version 1.4.0)
+
+Done for #9. It is a first pass on past weather. Real calibration needs a season of archived forecasts and skier feedback, which does not exist yet.
+
+**Data.** Hourly airport observations from NOAA NCEI "global-hourly" (public domain, no key, User-Agent `weski-build`), turned into the engine's weather shape by `tools/forecast_backtest.mjs`: temperature, wind, gust and visibility are measured; snowfall is estimated from the intensity in the METAR present-weather code (light 0.4, moderate 1, heavy 2 cm an hour); feels-like is wind chill. Open-Meteo is not used. Recordings are in `tests/fixtures/forecast/backtest/` (Mammoth Lakes, a Stowe-area airport, Mount Washington summit with a valley airport). These are airports, not ski slopes: they show how the engine orders days, not how many points a slope earned.
+
+**Memorable days, before (1.3.1) and after (1.4.0).**
+
+| Day | What happened | Before | After |
+| --- | --- | --- | --- |
+| Mammoth 2023-02-24 | powder storm, heavy snow, visibility 400 m | 75.5 Great | 75.5 Great |
+| Mammoth 2023-02-26 | bluebird after the storm | 95.1 Epic | 95.1 Epic |
+| Stowe 2023-12-18 | rain on snow, 16 C, gusts to 22 m/s | 44.6 Fair | 44.6 Fair |
+| Stowe 2023-12-22 | cold and calm four days later | 82.8 Great | 82.8 Great |
+| Mount Washington 2023-02-03 | summit gale 45 m/s, valley calm | 56.5 Good | 50.0 Fair |
+| Mount Washington 2023-01-31 | summit gale 34 m/s, valley calm | 71.3 Great | 65.6 Good |
+| Mammoth 2023-03-14 | warm wet snow and rain | 51.7 Fair | 51.7 Fair |
+| Mammoth 2023-03-18 | clear day after the warm spell refroze | 79.7 Great | 79.7 Great |
+
+The ordering is right everywhere: bluebird over storm, calm cold over rain, clear after refreeze over warm and wet. The one clear fault was the summit gale. With the upper lifts almost certainly on hold, the day still scored Good or Great because the calm valley half pulled the mean up. That is the change in 1.4.0 (upper-lift hold above). Nothing else was changed: the other days had no evidence against them. Points still open, not changed for lack of evidence: very windy days with near-zero visibility scored 56 to 69, and comfort has only 10% weight.
+
+**An 80 means the same day everywhere.** The same recorded weather (Mount Washington summit and valley) was given to four resort profiles. Alpine (3,300 / 1,800 m), Japanese (1,400 / 700 m) and Southern Hemisphere (2,054 / 1,720 m) profiles score identically on every day, because the engine uses only the weather, the two heights' difference and no latitude or hemisphere. The small low hill (70 m vertical) scores from the valley data alone by design (`small_vertical`), so a summit gale does not reach it: 78.1 against 50.0 on the gale day. That is intended, a 70 m hill has no separate summit. Dates and season are local, so a Southern Hemisphere July day is scored as winter weather like any other.
+
+**Rerun.** `node tools/forecast_backtest.mjs` scores the recorded days; add `--fetch` to download them again. After a season, export each resort with `GET /api/forecast-archive/<id>` (needs the owner's `ARCHIVE_ADMIN_SECRET`, see `docs/PRIVACY_DATA.md`) and run `node tools/forecast_calibrate.mjs --fetch <origin> --ids a,b --since <date>` with `ARCHIVE_ADMIN_KEY` set. It reports score against skier ratings (rank correlation), resort order on the same day, best-window timing and lead-time error. Feedback counts can be inflated: an answer has no identity, so a person can send more than once (the limit is 20 a day per network). Check `--min-answers` and look for outlier days before trusting a correlation. Change a weight or threshold only when those numbers clearly support it, bump `SCORING_VERSION` and add a "Calibration round N" section here.

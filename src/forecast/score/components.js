@@ -22,6 +22,7 @@ export function curve(points) {
 const RAIN_LEVEL = { 51: 1, 53: 1, 55: 1, 56: 2, 57: 2, 61: 1, 63: 2, 65: 3, 66: 2, 67: 3, 68: 1, 80: 1, 81: 2, 82: 3 };
 const THUNDER_RAIN_LEVEL = { 95: 2, 96: 2, 99: 3 };
 export const HOLD = { sustained: [14, 18], gust: [20, 25], cap: 35 };
+export const UPPER_HOLD_CAP = 50;
 const FREEZING_CODES = [56, 57, 66, 67];
 const FOG_CODES = [45, 48];
 

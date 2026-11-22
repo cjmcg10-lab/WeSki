@@ -46,6 +46,30 @@ counts, since repeat visits add to the same squares.
 - a mapped run nobody skis over a whole season: a candidate for "closed for good" or a wrong line.
 Nothing changes on the map automatically: every change still passes `docs/MOUNTAIN_CHECKLIST.md`.
 
+## Ski-day feedback ("How was it?", added for #9)
+
+Optional, never pre-filled, and not tied to the map-help switch: each answer is the person's own choice.
+- Phone (`src/feedback.js`, `feedbackCard` in `src/main.js`): a card at the top of a saved day. Rating 1 to 5, optional tags
+  (icy, powder, slushy, windy/lifts on hold, crowded, visibility), Send or Skip. Asked once per mountain and local date:
+  Send and Skip both write `feedbackAsked` (`resort:day`), so it is never asked again for that day. Answers wait in
+  `feedbackQueue` while offline and go out at the next map open (`flushFeedback`).
+- Body: `{resort, day, rating, tags}`. No key, account, device id, location, track or time of day.
+- Server (`worker/calibration.js`, table `feedback` in the `ResortLog` Durable Object): `POST /api/feedback` checks the
+  mountain is on the server-side resort list (`worker/catalog.js`), the date is a real date within 120 days, the rating is
+  1 to 5 and every tag is on the list. It adds to one row per date: five rating counts and a count per tag. Nothing from the
+  request is kept. Rate limit: 20 answers a day per network. The key is a 16-character hash of the network (IPv4 address, or the first 64 bits of an IPv6 address) plus the date plus the optional Worker secret `IP_SALT` (the date alone when unset; set it with `npx wrangler secret put IP_SALT -c wrangler.assets.jsonc` so the hashes cannot be guessed from the public date). Limiter rows (`limits` table, `ResortLog` and `Accounts`) are deleted whenever `allow()` runs after their time has passed, so the keys do not pile up; an unused resort keeps its few rows until its next request.
+- Counts are not public. They are read only through the admin export below, to compare scores with how days skied.
+- Because an answer has no identity it cannot be found or deleted later; the privacy policy says so.
+- Because no key is kept, a person can send twice for one day by reinstalling or clearing data. The rate limit bounds it and
+  the calibration reads counts per day, so a few repeats do not move it.
+
+## Calibration export (admin only)
+
+`GET /api/forecast-archive/<id>?since=<ms>&limit=<n>` returns the archived forecasts (`docs/FORECAST_HISTORY.md`), the stored
+72 hours and the feedback counts of one listed resort, for `tools/forecast_calibrate.mjs`. It needs the header `x-admin-key`
+to equal the Worker secret `ARCHIVE_ADMIN_SECRET`; with no secret set the route answers 404, with a wrong key 401. The owner
+sets the secret with `npx wrangler secret put ARCHIVE_ADMIN_SECRET -c wrangler.assets.jsonc`. The export holds no personal data.
+
 ## Map-mistake reports
 
 Public notes: mountain, place (map grid metres), run at that place, kind, text (contact details stripped), time.
