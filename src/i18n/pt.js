@@ -511,4 +511,5 @@ export default {
   1451: 'As datas da temporada de algumas montanhas são desconhecidas: as pontuações pressupõem que os teleféricos estão a funcionar.',
   1410: 'Nova versão pronta',
   1411: 'Recarregar',
+  1430: 'Muito frio nos teleféricos: sensação térmica de {0} na hora de esqui mais fria.',
 };

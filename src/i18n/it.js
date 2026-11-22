@@ -511,4 +511,5 @@ export default {
   1451: 'Le date della stagione di alcune montagne sono sconosciute: i loro punteggi presuppongono che gli impianti siano aperti.',
   1410: 'Nuova versione pronta',
   1411: 'Ricarica',
+  1430: 'Molto freddo sugli impianti: temperatura percepita di {0} nell’ora di sci più fredda.',
 };

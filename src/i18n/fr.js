@@ -511,4 +511,5 @@ export default {
   1451: 'Les dates de saison de certaines montagnes sont inconnues : leurs notes supposent que les remontées fonctionnent.',
   1410: 'Nouvelle version prête',
   1411: 'Recharger',
+  1430: 'Très froid sur les remontées : ressenti de {0} à l’heure de ski la plus froide.',
 };

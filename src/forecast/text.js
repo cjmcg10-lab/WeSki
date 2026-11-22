@@ -27,6 +27,7 @@ export const CODE_TEXT = {
   EX_LIFT_HOLD_CONFIRMED: 'The resort has confirmed {0} lift hold(s) for this day.',
   NT_OUT_OF_SEASON: 'This day is outside the resort’s published season.',
   NT_WEATHER_ALERT: 'Weather alert: {0}.',
+  NT_VERY_COLD: 'Very cold on the lifts: it feels like {0} in the coldest ski hour.',
   CR_ONE_ESTIMATE: 'The weather service can’t tell the base and summit apart here.',
   CR_PARTIAL_SITES: 'Part of the day has a forecast for only the base or the summit.',
   CR_STALE: 'This forecast is {0} hours old, so conditions may have changed.',
