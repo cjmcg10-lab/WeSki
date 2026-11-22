@@ -2,6 +2,7 @@ import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
 import { fetchHeights } from './heights.js';
+const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
@@ -167,8 +168,8 @@ function initMap(id) {
     const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
     const [resort, buf, sur] = await Promise.all([
       resortP,
-      resortP.then((R) => fetchHeights(`/data/${id}/terrain`, R.grid)),
-      resortP.then((R) => fetchHeights(`/data/${id}/surround`, R.surround)).catch(() => null),
+      fetchHeights(`/data/${id}/terrain`, resortP.then((R) => R.grid), undefined, noZ16),
+      fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     if (S.map) {                              // leaving the previous mountain

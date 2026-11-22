@@ -60,8 +60,14 @@ async function pool(jobs, n = 6) {
 }
 
 async function etags(id) {
-  const j = JSON.parse(await curl([`${API()}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=50`]));
-  return Object.fromEntries((j.result || []).map((o) => [o.key, o.etag]));
+  const out = {};
+  let cursor = '';
+  do {
+    const j = JSON.parse(await curl([`${API()}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`]));
+    for (const o of j.result || []) out[o.key] = o.etag;
+    cursor = j.result_info?.is_truncated ? j.result_info.cursor : '';
+  } while (cursor);
+  return out;
 }
 
 async function push(id) {
@@ -80,10 +86,14 @@ async function push(id) {
     const src = f === 'resort.json' || f === 'graph.json' || PACKED.includes(f) ? join(tmp, f) : join(dir, f);
     if (!existsSync(src)) return;
     const key = PACKED.includes(f) ? packedKey(id, f, join(dir, f.replace('.z16', '.bin'))) : `data/${id}/${f}`;
-    if (have[key] === md5(readFileSync(src))) return;
-    const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API()}/${key}`]));
-    if (!res.success) throw new Error(`${key}: ${JSON.stringify(res.errors)}`);
-    sent++;
+    if (have[key] !== md5(readFileSync(src))) {
+      const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API()}/${key}`]));
+      if (!res.success) throw new Error(`${key}: ${JSON.stringify(res.errors)}`);
+      sent++;
+    }
+    if (!PACKED.includes(f)) return;
+    const older = new RegExp(`^data/${id}/${f.replace('.z16', '')}\\.([0-9a-f]{12}\\.)?z16$`);
+    for (const k of Object.keys(have).filter((k) => k !== key && older.test(k))) await curl(['-X', 'DELETE', `${API()}/${k}`]);
   }), 4);
   rmSync(tmp, { recursive: true, force: true });
   if (!cfg.ids.includes(id)) cfg.ids.push(id), cfg.ids.sort();

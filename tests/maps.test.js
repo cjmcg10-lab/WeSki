@@ -90,6 +90,16 @@ describe('compact height grids (.z16)', async () => {
       expect(Buffer.from(buf).equals(bin)).toBe(true);
     }
   });
+  it('starts the compact download before the grid size is known, and remembers a miss', async () => {
+    const asked = [];
+    let sizeKnown = false;
+    const fetcher = async (u) => { asked.push(u); expect(sizeKnown).toBe(false); return new Response('no', { status: 404 }); };
+    const size = new Promise((r) => setTimeout(() => { sizeKnown = true; r(R.grid); }, 5));
+    const skip = new Set();
+    await fetchHeights('/data/a/terrain', size, async (u) => u.endsWith('.z16') ? fetcher(u) : respond(bin), skip);
+    await fetchHeights('/data/a/terrain', R.grid, async (u) => { asked.push(u); return respond(bin); }, skip);
+    expect(asked).toEqual(['/data/a/terrain.z16', '/data/a/terrain.bin']);
+  });
   const stamp = (s) => createHash('md5').update(s).digest('hex').slice(0, 12);
   it('the server serves a compact file made from the .bin now in R2', async () => {
     const env = { MAPS: bucket({ 'data/test-mtn/terrain.bin': 'bin-2', [`data/test-mtn/terrain.${stamp('bin-2')}.z16`]: 'zz' }) };

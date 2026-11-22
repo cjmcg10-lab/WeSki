@@ -46,18 +46,23 @@ export function decodeHeights(bytes, expect) {
 
 /**
  * Fetch a height grid for the app: the compact .z16 where the browser can unzip it, else the plain
- * .bin (older browsers, a resort not yet uploaded in the compact form, or a compact grid whose size is not expect's {nx, ny}). Returns an ArrayBuffer of
- * 16-bit heights, exactly what the .bin holds.
+ * .bin (older browsers, a resort not yet uploaded in the compact form, or a compact grid whose size is
+ * not expect's {nx, ny}). expect may be a promise, so the download starts before resort.json has
+ * arrived. A resort whose compact file was missing or wrong is remembered in `skip` (a Set kept by the
+ * caller) and goes straight to the .bin next time. Returns an ArrayBuffer of 16-bit heights, exactly
+ * what the .bin holds.
  */
-export async function fetchHeights(base, expect, fetcher = fetch) {
-  if (typeof DecompressionStream !== 'undefined') {
+export async function fetchHeights(base, expect, fetcher = fetch, skip = new Set()) {
+  if (typeof DecompressionStream !== 'undefined' && !skip.has(base)) {
     try {
       const r = await fetcher(`${base}.z16`);
       // (a missing file can come back as the app's own page, from the single-page fallback)
       if (r.ok && !(r.headers.get('content-type') || '').includes('text/html')) {
-        const raw = await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
-        return decodeHeights(new Uint8Array(raw), expect).buffer;
+        const raw = new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+        const [bytes, size] = await Promise.all([raw, expect]);
+        try { return decodeHeights(new Uint8Array(bytes), size).buffer; } catch (e) { skip.add(base); throw e; }
       }
+      skip.add(base);
     } catch { /* fall back to the plain file */ }
   }
   const r = await fetcher(`${base}.bin`);

@@ -202,7 +202,7 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
   In R2 each compact file is stored as `terrain.<first 12 characters of the .bin's md5>.z16`, and the Worker serves
   `terrain.z16` only from the copy that matches the `.bin` now in R2 (404 otherwise, so the app uses the `.bin`). An
   older tool that re-uploads a `.bin` therefore can never leave phones with heights from an earlier map. `pull` fetches
-  the matching `.z16` too. Old copies stay in the bucket unused; delete them in the Cloudflare dashboard if wanted.
+  the matching `.z16` too. `push` deletes older compact copies of the same grid.
   The 59 resorts uploaded before this have no matching compact files and serve the `.bin` until someone with R2
   access runs `node tools/maps_r2.mjs push --all` (only the new `.z16` files are sent, the rest is already current).
 - The deploy downloads every R2 map before `npm test`, so the tests still check every mountain, then drops them
