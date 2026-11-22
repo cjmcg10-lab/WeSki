@@ -95,7 +95,7 @@ try {
   await page.locator('#fc-hbase').fill('400');
   await page.locator('#fc-hbase').press('Tab');
   await page.locator('[data-act="fc-pin-save"]').click();
-  await page.locator('.fc-rowhead', { hasText: 'Provisional' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.fc-rowhead', { hasText: 'Pinned' }).waitFor({ state: 'visible', timeout: 15000 });
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }
