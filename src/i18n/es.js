@@ -504,4 +504,5 @@ export default {
   1133: 'Clasificado según los {0} días que pronostican todas las montañas.',
   1134: 'Clasificado según el único día que pronostican todas las montañas.',
   1135: 'Sin clasificar: estas montañas no tienen ningún día de previsión en común.',
+  1400: 'Es probable que llueva en la base y esté más seco arriba.',
 };

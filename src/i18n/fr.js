@@ -504,4 +504,5 @@ export default {
   1133: 'Classement sur les {0} jours prévus pour chaque montagne.',
   1134: 'Classement sur le seul jour prévu pour chaque montagne.',
   1135: 'Pas de classement : ces montagnes n’ont aucun jour de prévision en commun.',
+  1400: 'Pluie probable à la base, plus sec en altitude.',
 };

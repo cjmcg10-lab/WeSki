@@ -17,4 +17,5 @@ export default [
     files: ['tools/**/*.mjs', 'tests/**/*.{js,mjs}', 'vite.config.js', 'eslint.config.js'],
     languageOptions: { globals: globals.node },
   },
+  { files: ['tests/acceptance/*.mjs'], languageOptions: { globals: { ...globals.node, ...globals.browser } } },
 ];
