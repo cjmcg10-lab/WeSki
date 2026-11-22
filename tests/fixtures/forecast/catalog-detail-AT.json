@@ -1,0 +1,76 @@
+{
+ "osd-1fd29b021584344dd3b8f2960fe561faf357": {
+  "osd": "1fd29b021584344dd3b8f2960fe561faf357bfe2",
+  "status": "operating",
+  "website": "https://www.schladming-dachstein.at/",
+  "flags": [],
+  "src": {
+   "base": "lifts",
+   "top": "lifts"
+  },
+  "base": {
+   "lat": 47.4115,
+   "lon": 13.7796,
+   "elev": 723
+  },
+  "top": {
+   "lat": 47.3738,
+   "lon": 13.7784,
+   "elev": 2004
+  },
+  "sectors": [
+   {
+    "base": {
+     "lat": 47.4115,
+     "lon": 13.7796,
+     "elev": 723
+    },
+    "top": {
+     "lat": 47.3738,
+     "lon": 13.7784,
+     "elev": 2004
+    },
+    "lifts": 51
+   },
+   {
+    "base": {
+     "lat": 47.3776,
+     "lon": 13.5463,
+     "elev": 934
+    },
+    "top": {
+     "lat": 47.338,
+     "lon": 13.5345,
+     "elev": 1854
+    },
+    "lifts": 6
+   },
+   {
+    "base": {
+     "lat": 47.4051,
+     "lon": 13.8638,
+     "elev": 1136
+    },
+    "top": {
+     "lat": 47.3761,
+     "lon": 13.8657,
+     "elev": 1976
+    },
+    "lifts": 5
+   },
+   {
+    "base": {
+     "lat": 47.4176,
+     "lon": 13.6551,
+     "elev": 1103
+    },
+    "top": {
+     "lat": 47.4198,
+     "lon": 13.6136,
+     "elev": 1494
+    },
+    "lifts": 10
+   }
+  ]
+ }
+}

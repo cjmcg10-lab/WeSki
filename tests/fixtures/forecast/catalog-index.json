@@ -1,0 +1,310 @@
+{
+ "v": 1,
+ "source": {
+  "name": "OpenSkiData / OpenSkiMap.org",
+  "url": "https://openskidata.org",
+  "licence": "ODbL 1.0 (OpenStreetMap contributors), Skimap.org",
+  "dataDate": "2026-11-21",
+  "elevationCheck": "Copernicus GLO-30",
+  "timeZones": "timezonefinder 9.2.0"
+ },
+ "fields": [
+  "id",
+  "name",
+  "aliases",
+  "towns",
+  "region",
+  "cc",
+  "lat",
+  "lon",
+  "baseLat",
+  "baseLon",
+  "top",
+  "base",
+  "tz",
+  "flags"
+ ],
+ "countries": {
+  "NZ": "New Zealand",
+  "FR": "France",
+  "US": "United States",
+  "AR": "Argentina",
+  "CZ": "Czechia",
+  "CH": "Switzerland",
+  "CL": "Chile",
+  "AU": "Australia",
+  "CA": "Canada",
+  "JP": "Japan",
+  "AT": "Austria"
+ },
+ "tz": [
+  "America/Argentina/Salta",
+  "America/Denver",
+  "America/New_York",
+  "America/Santiago",
+  "America/Toronto",
+  "Asia/Tokyo",
+  "Australia/Sydney",
+  "Europe/Paris",
+  "Europe/Prague",
+  "Europe/Zurich",
+  "Pacific/Auckland",
+  "Europe/Vienna"
+ ],
+ "rows": [
+  [
+   "jay-peak",
+   "Jay Peak",
+   [
+    "Jay Peak Resort"
+   ],
+   [],
+   "Vermont",
+   "US",
+   44.9241,
+   -72.5262,
+   44.9359,
+   -72.5008,
+   1166,
+   560,
+   2,
+   8
+  ],
+  [
+   "zermatt",
+   "Zermatt – Cervinia",
+   [
+    "Breuil-Cervinia Ski Paradise",
+    "Zermatt - Breuil-Cervinia"
+   ],
+   [
+    "Zermatt"
+   ],
+   "Valais",
+   "CH",
+   45.9243,
+   7.7338,
+   45.8882,
+   7.624,
+   3874,
+   1558,
+   9,
+   8
+  ],
+  [
+   "osd-6509c4ab0514c35a94f1a436029ea69c8de5",
+   "Portillo",
+   [],
+   [],
+   "De Valparaiso",
+   "CL",
+   -32.8275,
+   -70.1192,
+   -32.8494,
+   -70.1365,
+   3346,
+   2578,
+   3,
+   0
+  ],
+  [
+   "osd-976d9a75995718d0e06985401b4909133169",
+   "The Remarkables Ski Area",
+   [],
+   [
+    "Kawarau Falls"
+   ],
+   "Otago Region",
+   "NZ",
+   -45.06,
+   168.8066,
+   -45.0533,
+   168.8153,
+   1986,
+   1607,
+   10,
+   0
+  ],
+  [
+   "osd-562a20a601646b66731b356f79d1bcdd26a6",
+   "Perisher",
+   [],
+   [
+    "Perisher Village"
+   ],
+   "New South Wales",
+   "AU",
+   -36.4092,
+   148.3868,
+   -36.379,
+   148.4073,
+   2037,
+   1604,
+   6,
+   0
+  ],
+  [
+   "osd-996de78b34e97c95d665d00cd0b668cfaee6",
+   "Cerro Catedral",
+   [],
+   [],
+   "Rio Negro",
+   "AR",
+   -41.1694,
+   -71.4864,
+   -41.1645,
+   -71.444,
+   2092,
+   1036,
+   0,
+   0
+  ],
+  [
+   "osd-0bd87c732c1cffdf2ef8743e9b73c520a67e",
+   "Skiareál Špindlerův Mlýn - Medvědín",
+   [],
+   [
+    "Lubawka Obszar Wiejski"
+   ],
+   "dolnoslaskie",
+   "CZ",
+   50.7414,
+   15.583,
+   50.7231,
+   15.5925,
+   1233,
+   693,
+   8,
+   0
+  ],
+  [
+   "osd-3121a78b5a889b6e66108a32e83893467493",
+   "Niseko Moiwa Ski Resort",
+   [
+    "ニセコモイワスキー場",
+    "ニセコモイワスキーリゾート"
+   ],
+   [],
+   "Hokkaido Prefecture",
+   "JP",
+   42.8623,
+   140.6327,
+   42.8491,
+   140.6285,
+   789,
+   340,
+   5,
+   0
+  ],
+  [
+   "osd-2badaaea50fcf2640ddea5311798bbd7e2c1",
+   "Hakuba Happo One",
+   [
+    "白馬八方尾根"
+   ],
+   [],
+   "Nagano Prefecture",
+   "JP",
+   36.697,
+   137.7993,
+   36.6983,
+   137.8388,
+   1827,
+   749,
+   5,
+   0
+  ],
+  [
+   "osd-001ec7c57bf7ee15d967293b14f9ba8dcf5c",
+   "Batawa",
+   [],
+   [
+    "Quinte West"
+   ],
+   "Ontario",
+   "CA",
+   44.177,
+   -77.6,
+   44.177,
+   -77.6,
+   null,
+   108,
+   4,
+   5
+  ],
+  [
+   "osd-15e2806f5f0f210d1ba7c60822a8133728aa",
+   "La Poya",
+   [
+    "Chamonix"
+   ],
+   [
+    "Vallorcine"
+   ],
+   "Haute-Savoie",
+   "FR",
+   46.0147,
+   6.9145,
+   46.0186,
+   6.9185,
+   1501,
+   1347,
+   7,
+   0
+  ],
+  [
+   "osd-c2fba992cc1711880d5f8d8ffa661f71eab9",
+   "Brévent/Flégère",
+   [
+    "Chamonix"
+   ],
+   [
+    "Chamonix"
+   ],
+   "Haute-Savoie",
+   "FR",
+   45.974,
+   6.8751,
+   45.9265,
+   6.8676,
+   2486,
+   1047,
+   7,
+   0
+  ],
+  [
+   "osd-02af76862bbc9a55d3685f3ef4d42e7a9f08",
+   "Cranor Hill Municipal Ski Hill",
+   [],
+   [],
+   "Colorado",
+   "US",
+   38.5838,
+   -106.8968,
+   38.5868,
+   -106.8957,
+   2494,
+   2397,
+   1,
+   0
+  ],
+  [
+   "osd-1fd29b021584344dd3b8f2960fe561faf357",
+   "Schladming Dachstein",
+   [],
+   [
+    "Schladming"
+   ],
+   "Styria",
+   "AT",
+   47.3738,
+   13.7784,
+   47.4115,
+   13.7796,
+   2004,
+   723,
+   11,
+   0
+  ]
+ ]
+}
