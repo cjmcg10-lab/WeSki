@@ -19,7 +19,11 @@ reaches the live site, and anyone can see where the work stands.
    files (`src/main.js`, `index.html`, `src/styles.css`, the language files).
 5. **Pull request.** Open a pull request into `main` with "Closes #N" and the template
    filled in, in plain language. Open it as a draft while work is still going; mark it ready when it is done.
-6. **Checks.** The "Checks" workflow runs the tests and the build on every pull request. It must pass.
+6. **Checks.** The "Checks" workflow runs on every pull request, whatever branch it targets, and must pass. It runs the
+   tests and the build, a bug-finding code check (`npm run lint`), a syntax check of the Python tools, a dry run of the
+   Worker deploy, and a browser smoke test (`npm run smoke`: opens Jay Peak in headless Chrome). Run `npm run lint` and
+   `npm run smoke` yourself before pushing. A separate weekly "Security audit" workflow warns about known problems in
+   the app's libraries; it does not block pull requests.
 7. **Review.** The other person reviews: Zach reviews Connor's pull requests and Connor reviews Zach's. A Claude review
    can help, but a person approves. Address comments by pushing more commits to the same branch.
 8. **Merge = release.** Merging into `main` deploys to the live site through the
@@ -39,7 +43,8 @@ the checks pass. Review can happen right after the merge in that case. Say so in
 In GitHub, Settings → Branches → add a branch protection rule (or ruleset) for `main`:
 
 - Require a pull request before merging, with 1 approval.
-- Require the "Checks / test-and-build" status check to pass.
+- Require these status checks to pass: "Checks / test-and-build", "Checks / lint", "Checks / python-syntax",
+  "Checks / worker-dry-run" and "Checks / smoke-test".
 - Do not allow direct pushes (owners can still override in an emergency).
 
 Until those settings are on, this process is a team agreement rather than something GitHub enforces.
