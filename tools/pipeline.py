@@ -20,7 +20,8 @@ Steps, in the order docs/MOUNTAIN_CHECKLIST.md asks for:
               an existing resort without --terrain -> tools/dem_from_built.py (exact, no download)
   3. official ratings: if tools/official/<id>.json is missing and the config names a feed
      ("ratings_feed": {"mtnpowder": 60}), fetch it; otherwise the card says the ratings are NOT checked
-  4. build_data, build_extras, build_zones, verify_exists
+  4. build_data, build_extras, build_zones, verify_exists, build_canopy (real trees), enrich_osm (lift and
+     building details)
   5. checks: official_ratings check, audit --list, check_downhill
   6. score card: tools/cards/<id>.md (committed: it is the record of the mountain's state) and a
      line in the summary table printed at the end. Full logs stay in the work folder.
@@ -485,6 +486,13 @@ def one(rid, opt):
         run([PY, "tools/build_extras.py", f"public/data/{rid}"], log)
         run([PY, "tools/build_zones.py", cfg_path, osm, f"public/data/{rid}"], log)
         logs["verify"] = run([PY, "tools/verify_exists.py", rid, osm, "--list"], log)
+        # real trees (Meta's canopy map) and the lift and building details OpenStreetMap records; a source that does
+        # not answer leaves the map as it was (older trees, generic buildings) rather than stopping the build
+        for step in (["tools/build_canopy.py", rid], ["tools/enrich_osm.py", rid]):
+            try:
+                run([PY, *step], log)
+            except StepFailed as e:
+                notes.append(f"{os.path.basename(step[0])} did not finish: {str(e).splitlines()[-1][:120]}")
     else:
         logs["verify"] = run([PY, "tools/verify_exists.py", rid, osm, "--list"], log)
     if os.path.exists(off):

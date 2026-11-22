@@ -16,7 +16,7 @@ the Forecast section is free. Made by Built By Roger LLC. Not an official produc
 
 - **3D and 2D maps:** every run and lift (lifts animated on their cables), rated the way the resort rates them
 - **Friend groups:** join with a 6-character code; location sharing is opt-in and can be paused
-- **Directions:** downhill on runs, up on lifts, within your chosen difficulty; optional voice with a Pocket mode
+- **Directions:** downhill on runs, up on lifts, within your chosen difficulty; optional spoken directions
 - **Stats and history:** speed, runs, distance and vertical, replayed on the map, stored on your phone
 - **Weather:** summit and base forecasts with ski alerts
 - **Forecast** (in progress): compare ski-day scores for the mountains you watch, on one calendar
@@ -63,5 +63,5 @@ Details in [`docs/DEVELOPMENT_PROCESS.md`](docs/DEVELOPMENT_PROCESS.md).
 
 Runs, lifts, buildings and places © OpenStreetMap contributors (ODbL). Terrain: USGS 3DEP (public domain), swisstopo
 swissALTI3D, IGN RGE ALTI (Licence Ouverte), BEV ALS DTM (CC BY 4.0), GSI elevation tiles, TINITALY / INGV (CC BY 4.0),
-Mapzen / AWS Terrain Tiles. Globe: Natural Earth and US Census state lines. Weather: US National Weather Service (public
+Mapzen / AWS Terrain Tiles. Trees: Meta and WRI High Resolution Canopy Height Maps (CC BY 4.0). Globe: Natural Earth and US Census state lines. Weather: US National Weather Service (public
 domain) and MET Norway (CC BY 4.0). The full list is in the app at [`/legal/credits`](public/legal/credits.html).

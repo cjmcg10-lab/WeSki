@@ -505,4 +505,6 @@ export default {
   1134: 'Classificado pelo único dia que todas as montanhas preveem.',
   1135: 'Sem classificação: estas montanhas não têm nenhum dia de previsão em comum.',
   1400: 'É provável chuva na base e mais seco no alto.',
+  1401: 'Você está aqui',
+  1402: 'Manter na minha lista',
 };

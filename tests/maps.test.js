@@ -121,3 +121,34 @@ describe('compact height grids (.z16)', async () => {
     }
   });
 });
+
+describe('real tree cover (canopy.z8)', async () => {
+  const { readFileSync, existsSync } = await import('node:fs');
+  const { gunzipSync } = await import('node:zlib');
+  const { decodeCanopy } = await import('../src/heights.js');
+  const file = 'public/data/jay-peak/canopy.z8';
+  it.skipIf(!existsSync(file))('lines up with the terrain grid and has the trees where they are', () => {
+    const c = decodeCanopy(gunzipSync(readFileSync(file)));
+    const R = JSON.parse(readFileSync('public/data/jay-peak/resort.json', 'utf8'));
+    expect([c.w, c.h, c.cell]).toEqual([(R.grid.nx - 1) * 2, (R.grid.ny - 1) * 2, R.grid.cell / 2]);
+    // runs are cut through the forest: points on Jay Peak's runs are far more often open than the mountain overall
+    let open = 0, n = 0;
+    for (const t of R.trails) if (!t.hide && !t.glade) for (let i = 0; i < t.pts.length; i += 2) {
+      const ci = Math.floor(t.pts[i] / c.cell), cj = Math.floor(t.pts[i + 1] / c.cell);
+      if (ci < 0 || cj < 0 || ci >= c.w || cj >= c.h) continue;
+      n++; if (c.cover[cj * c.w + ci] < 77) open++;
+    }
+    let all = 0;
+    for (const v of c.cover) if (v < 77) all++;
+    expect(open / n).toBeGreaterThan(0.75);
+    expect(all / c.cover.length).toBeLessThan(0.35);
+  });
+  it('refuses a file that is not a canopy grid', () => {
+    expect(() => decodeCanopy(new Uint8Array(20))).toThrow();
+  });
+  it('the server serves a canopy file from R2', async () => {
+    const env = { MAPS: bucket({ 'data/test-mtn/canopy.z8': 'zz' }) };
+    const [q, u] = req('/data/test-mtn/canopy.z8');
+    expect((await fromR2(q, env, u, ids)).status).toBe(200);
+  });
+});

@@ -26,6 +26,7 @@ const DATA = 'public/data';
 const LIST = join(DATA, 'r2.json');
 const KEEP = ['jay-peak']; // the unit tests load it: stays in git
 const FILES = ['resort.json', 'graph.json', 'terrain.bin', 'surround.bin'];
+const OPTIONAL = ['canopy.z8']; // real tree cover (tools/build_canopy.py): uploaded when the folder has one, fetched when R2 has one
 const PACKED = ['terrain.z16', 'surround.z16']; // made from the .bin files on push (src/heights.js)
 const md5 = (buf) => createHash('md5').update(buf).digest('hex');
 // stored as terrain.<first 12 of the .bin's md5>.z16, so the Worker serves one only for the .bin it was made from
@@ -82,7 +83,7 @@ async function push(id) {
   for (const [name, buf] of Object.entries(packResort(dir, R))) writeFileSync(join(tmp, name), buf);
   const have = await etags(id);
   let sent = 0;
-  await pool([...FILES, ...PACKED].map((f) => async () => {
+  await pool([...FILES, ...OPTIONAL, ...PACKED].map((f) => async () => {
     const src = f === 'resort.json' || f === 'graph.json' || PACKED.includes(f) ? join(tmp, f) : join(dir, f);
     if (!existsSync(src)) return;
     const key = PACKED.includes(f) ? packedKey(id, f, join(dir, f.replace('.z16', '.bin'))) : `data/${id}/${f}`;
@@ -109,6 +110,7 @@ async function pull(id) {
   const tmp = join(tmpdir(), `r2-pull-${id}`);
   mkdirSync(tmp, { recursive: true });
   await pool(FILES.map((f) => () => curl(['-o', join(tmp, f), `${API()}/data/${id}/${f}`])), 4);
+  for (const f of OPTIONAL) await curl(['-o', join(tmp, f), `${API()}/data/${id}/${f}`], 1).catch(() => rmSync(join(tmp, f), { force: true }));
   // put the graph back into resort.json, as the build tools write it
   const R = JSON.parse(readFileSync(join(tmp, 'resort.json'), 'utf8'));
   R.graph = JSON.parse(readFileSync(join(tmp, 'graph.json'), 'utf8'));
@@ -116,7 +118,7 @@ async function pull(id) {
   rmSync(join(tmp, 'graph.json'));
   mkdirSync(dir, { recursive: true });
   const have = await etags(id);
-  for (const f of FILES) if (f !== 'graph.json' && existsSync(join(tmp, f))) renameSync(join(tmp, f), join(dir, f));
+  for (const f of [...FILES, ...OPTIONAL]) if (f !== 'graph.json' && existsSync(join(tmp, f))) renameSync(join(tmp, f), join(dir, f));
   for (const f of PACKED) {
     const bin = join(dir, f.replace('.z16', '.bin'));
     if (!existsSync(bin)) continue;

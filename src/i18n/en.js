@@ -1011,4 +1011,6 @@ export default {
   1134: 'Ranked on the 1 day every mountain forecasts.',
   1135: 'Not ranked: these mountains have no forecast day in common.',
   1400: 'Rain is likely at the base; drier higher up.',
+  1401: 'You’re here',
+  1402: 'Keep on my list',
 };
