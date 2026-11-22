@@ -35,6 +35,23 @@ export function loadList(prefs) {
   return cleanList(prefs.get(LIST_KEY, []));
 }
 
+export function syncList(list, find) {
+  const seen = new Set();
+  let changed = false;
+  const next = [];
+  for (const r of list) {
+    const found = find(r.id);
+    const entry = found ? { ...r, ...found } : r;
+    if (seen.has(entry.id)) changed = true;
+    else {
+      seen.add(entry.id);
+      next.push(entry);
+      if (JSON.stringify(entry) !== JSON.stringify(r)) changed = true;
+    }
+  }
+  return { list: changed ? next : list, changed };
+}
+
 export function saveList(prefs, list) {
   prefs.set(LIST_KEY, list);
   return JSON.stringify(prefs.get(LIST_KEY, null)) === JSON.stringify(list);

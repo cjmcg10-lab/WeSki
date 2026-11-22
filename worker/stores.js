@@ -13,6 +13,7 @@ export class ForecastHistory extends DurableObject {
     this.store = new HistoryStore(ctx.storage);
   }
 
+  due(now) { return this.store.due(now); }
   record(snapshot, now) { return this.store.record(snapshot, now); }
   history(now) { return this.store.history(now); }
   lastGood(now) { return this.store.lastGood(now); }
