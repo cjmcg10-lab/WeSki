@@ -8,6 +8,7 @@ import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';
+import { feedbackResponse, archiveExportResponse } from './calibration.js';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -54,6 +55,9 @@ async function api(request, env, url, ctx) {
   if (historyId) return historyResponse(historyId, env);
   const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
   if (statusId) return statusResponse(statusId);
+  if (path === '/api/feedback' && method === 'POST') return feedbackResponse(await request.text(), env, await ipKey(request));
+  const archiveId = method === 'GET' && /^\/api\/forecast-archive\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (archiveId) return archiveExportResponse(request, url, archiveId, env);
   if (path === '/api/config' && method === 'GET') {
     const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));
     return json({
