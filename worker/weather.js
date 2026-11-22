@@ -4,7 +4,7 @@
 //   Elsewhere: MET Norway Locationforecast (api.met.no), CC BY 4.0, credit "Weather data from MET Norway".
 // One copy per mountain is shared by everyone through Cloudflare's cache, as both services ask.
 
-const UA = 'SkiWithMe/1.0 (+https://skiwithme.builtbyroger.app/about)';
+const UA = 'weski-build';
 const LAPSE = 0.0065; // °C per metre, standard atmosphere
 const HOURS = 7 * 24;
 const FETCH_TIMEOUT_MS = 8000;
@@ -75,7 +75,7 @@ function isoDurH(s) {
   const m = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(s) || [];
   return Math.max(1, (+m[1] || 0) * 24 + (+m[2] || 0) + Math.round((+m[3] || 0) / 60));
 }
-function nwsSeries(prop, grid, spread = false, intervals = null) {
+function nwsSeries(prop, grid, spread = false, intervals = null, covered = null) {
   const out = new Array(grid.length).fill(null);
   for (const v of prop?.values || []) {
     const [start, dur] = v.validTime.split('/');
@@ -85,6 +85,7 @@ function nwsSeries(prop, grid, spread = false, intervals = null) {
       if (i >= 0 && i < grid.length) {
         out[i] = v.value == null ? null : spread ? v.value / h : v.value;
         if (intervals) intervals[i] = h;
+        if (covered && v.value != null) covered[i] = true;
       }
     }
   }
@@ -111,7 +112,8 @@ async function nwsPoint(lat, lon, alt, tz, grid) {
   const pt = await cachedJson(`https://api.weather.gov/points/${lat.toFixed(4)},${lon.toFixed(4)}`, 86400);
   const g = (await cachedJson(pt.properties.forecastGridData, 3600)).properties;
   const dT = ((g.elevation?.value ?? alt) - alt) * LAPSE; // the grid cell's height is smoothed; correct to the real height
-  const temp = nwsSeries(g.temperature, grid).map((x) => (x == null ? null : x + dT));
+  const tempCovered = new Array(grid.length).fill(false);
+  const temp = nwsSeries(g.temperature, grid, false, null, tempCovered).map((x) => (x == null ? null : x + dT));
   const feels = nwsSeries(g.apparentTemperature, grid).map((x) => (x == null ? null : x + dT));
   const wind = nwsSeries(g.windSpeed, grid).map((x) => (x ?? 0) / 3.6);
   const gust = nwsSeries(g.windGust, grid).map((x, i) => Math.max((x ?? 0) / 3.6, wind[i]));
@@ -128,11 +130,12 @@ async function nwsPoint(lat, lon, alt, tz, grid) {
     const rain = snow[i] > 0.05 ? 0 : (qpf[i] || 0);
     return {
       t: temp[i], feels: feels[i] ?? windChill(temp[i], wind[i]), wind: wind[i], gust: gust[i], dir: dir[i] ?? 0, cloud: cloud[i] ?? 0,
-      pop: pop[i], snow: snow[i], rain, vis: vis[i], frz: snowLevel[i], acc: snowIntervals[i] ?? 1,
+      pop: pop[i], snow: snow[i], rain, vis: vis[i], frz: snowLevel[i], acc: snowIntervals[i] ?? 1, filled: !tempCovered[i] || snowIntervals[i] == null,
       code: codeFrom({ snowCm: snow[i], rainMm: rain, cloud: cloud[i] ?? 0, ...flags[i] }),
     };
   });
-  return { hours, issued: Date.parse(g.updateTime || g.generatedAt || ''), gridElevation: g.elevation?.value ?? null };
+  const stamps = [g.updateTime, g.generatedAt].map((x) => Date.parse(x || '')).filter(Number.isFinite);
+  return { hours, issued: stamps.length ? Math.max(...stamps) : NaN, gridElevation: g.elevation?.value ?? null };
 }
 
 // ---------- MET Norway
@@ -171,7 +174,7 @@ async function metPoint(lat, lon, alt, grid) {
       // MET gives gusts near Scandinavia only; elsewhere they are estimated as 1.5 times the wind (a common gust factor)
       gust: d.wind_speed_of_gust ?? wind * 1.5, dir: d.wind_from_direction ?? 0, cloud: d.cloud_area_fraction ?? 0,
       pop: pop ?? null, snow, rain, vis: fog == null ? null : fog >= 50 ? 500 : fog >= 20 ? 3000 : 20000, frz: null,
-      acc: one ? 1 : e.next_6_hours ? 6 : e.next_12_hours ? 12 : 1,
+      acc: one ? 1 : e.next_6_hours ? 6 : e.next_12_hours ? 12 : 1, filled: h < ts[0].at,
       code: codeFrom({ cloud: d.cloud_area_fraction ?? 0, fog: fog >= 50, rainMm: rain, ...c, snowCm: snow > 0.05 ? snow : (c.snowCm ?? 0) }),
     };
   });

@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { HistoryStore, forecastRows, mergeRows, toOpenMeteo, ARCHIVE_KEEP_MS, ARCHIVE_MIN_GAP_MS, HISTORY_HOURS } from '../worker/history.js';
 import { claimTotals, observationRows, pickStation, siteObservations, STATION_MAX_KM } from '../worker/observations.js';
-import { weatherResponse, historyResponse } from '../worker/capture.js';
-import { hourGrid, resolutionKm } from '../worker/weather.js';
+import { weatherResponse as weatherRaw, historyResponse as historyRaw, samePlace } from '../worker/capture.js';
+import { forecast, hourGrid, resolutionKm } from '../worker/weather.js';
 import { scoreForecast, SCORING_VERSION } from '../src/forecast/score/index.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
@@ -48,6 +48,11 @@ function fakeEnv(storage = new MemoryStorage()) {
 }
 const context = () => { const pending = []; return { pending, waitUntil: (p) => pending.push(p) }; };
 const body = async (res) => JSON.parse(await res.text());
+const LISTED_PLACE = { lat: 44.53, lon: -72.78, top: 1116, base: 399, blat: 44.5, blon: -72.78, tz: TZ };
+const resolve = async (_env, id) => (['stowe', 'alps'].includes(id) ? { id, place: LISTED_PLACE } : null);
+const weatherResponse = (url, env, ctx, opts) => weatherRaw(url, env, ctx, { resolve, ...opts });
+const historyResponse = (id, env, now) => historyRaw(id, env, now, resolve);
+const later = (n) => NOW + n * 31 * 60e3;
 
 describe('overlapping forecasts and snowfall totals', () => {
   it('a later forecast replaces an earlier one for the same hour and never adds to it', () => {
@@ -218,10 +223,13 @@ describe('history store', () => {
     const store = new HistoryStore(storage);
     await store.record(snap(NOW - 40 * 60e3), NOW);
     const writes = storage.writes;
-    expect((await store.record(snap(NOW - 40 * 60e3), NOW)).wrote).toEqual([]);
+    expect(await store.record(snap(NOW - 40 * 60e3), NOW)).toEqual({ recorded: false, reason: 'too_soon' });
     expect(storage.writes).toBe(writes);
+    expect((await store.record(snap(NOW - 40 * 60e3), later(1))).wrote).toEqual(['meta']);
     const observed = observationRows(kmvl.features, 'KMVL').filter((r) => r.ms > NOW - 72 * HOUR && r.ms <= NOW);
-    await store.record(snap(NOW - 40 * 60e3, { observed: { summit: [], base: observed } }), NOW);
+    await store.record(snap(NOW - 40 * 60e3, { observed: { summit: [], base: observed } }), later(2));
+    expect((await store.history(NOW)).coverage.base.observedHours).toBe(0);
+    await store.record(snap(NOW - 40 * 60e3, { observed: { summit: [], base: observed.map((r) => ({ ...r, snow: 0 })) } }), later(3));
     const h = await store.history(NOW);
     expect(h.coverage.base.observedHours).toBeGreaterThan(20);
     expect(h.sources).toEqual(expect.arrayContaining(['nws', 'nws-obs']));
@@ -241,12 +249,12 @@ describe('history store', () => {
     expect(out.inputs.observedHours).toBeGreaterThanOrEqual(24);
   });
 
-  it('refuses a snapshot from a different place for the same resort id', async () => {
+  it('records a resort at most once every 30 minutes, whatever the callers do', async () => {
     const store = new HistoryStore(new MemoryStorage());
     await store.record(snap(NOW - 40 * 60e3), NOW);
-    const elsewhere = snap(NOW - 10 * 60e3, { place: { ...place, lat: 46.5, lon: -72.78 } });
-    expect(await store.record(elsewhere, NOW)).toEqual({ recorded: false, reason: 'place_mismatch' });
+    expect(await store.record(snap(NOW - 10 * 60e3), NOW + 29 * 60e3)).toEqual({ recorded: false, reason: 'too_soon' });
     expect((await store.history(NOW)).ageHours).toBe(0.7);
+    expect((await store.record(snap(NOW - 10 * 60e3), NOW + 30 * 60e3)).recorded).toBe(true);
   });
 
   it('serves the last good forecast labelled with its age, and nothing once it is older than 48 hours', async () => {
@@ -264,7 +272,7 @@ describe('history store', () => {
   it('keeps the newest forecast as the last good one even when an older issue arrives later', async () => {
     const store = new HistoryStore(new MemoryStorage());
     await store.record(snap(NOW - HOUR), NOW);
-    await store.record(snap(NOW - 5 * HOUR), NOW);
+    await store.record(snap(NOW - 5 * HOUR), later(1));
     expect((await store.lastGood(NOW)).ageHours).toBe(1);
   });
 
@@ -273,10 +281,10 @@ describe('history store', () => {
     const store = new HistoryStore(storage);
     const t0 = NOW - 40 * 60e3;
     await store.record(snap(t0), NOW);
-    await store.record(snap(t0 + HOUR), NOW);
-    await store.record(snap(t0 + ARCHIVE_MIN_GAP_MS - 1), NOW);
+    await store.record(snap(t0 + HOUR), later(1));
+    await store.record(snap(t0 + ARCHIVE_MIN_GAP_MS - 1), later(2));
     expect(await store.archive()).toHaveLength(1);
-    await store.record(snap(t0 + ARCHIVE_MIN_GAP_MS), NOW);
+    await store.record(snap(t0 + ARCHIVE_MIN_GAP_MS), later(3));
     const [first, second] = await store.archive();
     expect(second.issued - first.issued).toBe(ARCHIVE_MIN_GAP_MS);
     expect(first).toMatchObject({ v: SCORING_VERSION, issued: t0, source: 'nws', model: 'nws_ndfd', ms0: GRID[0], resolutionKm: 2.5, hoursAssumed: true });
@@ -309,7 +317,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
     expect(payload.hours).toBeUndefined();
     expect(payload).toMatchObject({ source: 'nws', model: 'nws_ndfd', stale: false, resolutionKm: 2.5, gridElevation: { summit: 800, base: 450 } });
     expect(observe).toHaveBeenCalledTimes(2);
-    expect((await store.history(NOW)).coverage.base.observedHours).toBeGreaterThan(20);
+    expect((await store.history(NOW)).coverage.base.hours).toBeGreaterThan(10);
   });
 
   it('does not ask for observations outside the USA', async () => {
@@ -330,7 +338,11 @@ describe('the weather endpoint with history and the stale fallback', () => {
     await Promise.all(ctx.pending);
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const later = NOW + 7 * HOUR;
-    const res = await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => { throw new Error('weather source 503'); }, now: later });
+    const down = async () => { throw new Error('weather source 503'); };
+    expect((await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: down, now: later })).status).toBe(502);
+    expect((await weatherResponse(URL_STOWE('&id=ghost&stale=1'), env, ctx, { forecastFn: down, now: later })).status).toBe(502);
+    expect((await weatherResponse(new URL(`${URL_STOWE('&id=stowe&stale=1')}`.replace('lat=44.53', 'lat=46.5')), env, ctx, { forecastFn: down, now: later })).status).toBe(502);
+    const res = await weatherResponse(URL_STOWE('&id=stowe&stale=1'), env, ctx, { forecastFn: down, now: later });
     expect(res.status).toBe(200);
     expect(res.headers.get('cache-control')).toBe('public, max-age=60');
     const served = await body(res);
@@ -347,10 +359,10 @@ describe('the weather endpoint with history and the stale fallback', () => {
     const ctx = context();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const down = async () => { throw new Error('weather source 503'); };
-    expect((await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: down, now: NOW })).status).toBe(502);
+    expect((await weatherResponse(URL_STOWE('&id=stowe&stale=1'), env, ctx, { forecastFn: down, now: NOW })).status).toBe(502);
     expect((await weatherResponse(URL_STOWE(), env, ctx, { forecastFn: down, now: NOW })).status).toBe(502);
     const brokenEnv = { FORECASTHIST: { idFromName: () => 'x', get: () => ({ lastGood: async () => { throw new Error('storage down'); } }) } };
-    expect((await weatherResponse(URL_STOWE('&id=stowe'), brokenEnv, ctx, { forecastFn: down, now: NOW })).status).toBe(502);
+    expect((await weatherResponse(URL_STOWE('&id=stowe&stale=1'), brokenEnv, ctx, { forecastFn: down, now: NOW })).status).toBe(502);
     vi.restoreAllMocks();
   });
 
@@ -401,6 +413,109 @@ describe('the weather endpoint with history and the stale fallback', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     expect((await historyResponse('stowe', failing, NOW)).status).toBe(502);
     vi.restoreAllMocks();
+  });
+});
+
+describe('who may be recorded', () => {
+  const gate = () => {
+    const keys = new Set();
+    vi.stubGlobal('caches', { default: { match: async (r) => (keys.has(r.url) ? new Response('1') : undefined), put: async (r) => { keys.add(r.url); } } });
+    return keys;
+  };
+  const run = async (query, { env = fakeEnv().env, forecastFn = async () => result() } = {}) => {
+    const ctx = context();
+    await weatherResponse(URL_STOWE(query), env, ctx, { forecastFn, observe: async () => ({ station: null, rows: [] }), now: NOW });
+    await Promise.all(ctx.pending);
+  };
+
+  it('never records an id that is not on the resort list, and never touches a store for it', async () => {
+    const touched = vi.fn();
+    const env = { FORECASTHIST: { idFromName: touched, get: touched } };
+    await run('&id=ghost', { env });
+    expect(touched).not.toHaveBeenCalled();
+    expect((await historyResponse('ghost', env, NOW)).status).toBe(404);
+    expect(touched).not.toHaveBeenCalled();
+  });
+
+  it('records a listed id under the list place, not the one in the query', async () => {
+    const { env, store, storage } = fakeEnv();
+    await run('&id=stowe', { env });
+    expect((await storage.get('meta')).place).toEqual(LISTED_PLACE);
+    expect((await store.history(NOW)).tz).toBe(TZ);
+  });
+
+  it('refuses a request for another place under a listed id, so a made-up place cannot fill a real resort', async () => {
+    const { env, store } = fakeEnv();
+    const ctx = context();
+    const elsewhere = new URL(URL_STOWE('&id=stowe').href.replace('lat=44.53', 'lat=46.5'));
+    await weatherResponse(elsewhere, env, ctx, { forecastFn: async () => result(), now: NOW });
+    await Promise.all(ctx.pending);
+    expect(await store.history(NOW)).toBeNull();
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, top: 1116 + 251 })).toBe(false);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, tz: 'UTC' })).toBe(false);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, blat: 44.6 })).toBe(false);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, top: 1130, lat: 44.54 })).toBe(true);
+  });
+
+  it('claims the 30 minute gate only after a recording succeeds', async () => {
+    const keys = gate();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    await run('&id=ghost');
+    await run('&id=stowe', { env: { FORECASTHIST: { idFromName: () => 'x', get: () => ({ record: async () => { throw new Error('storage down'); } }) } } });
+    expect(keys.size).toBe(0);
+    const { env } = fakeEnv();
+    await run('&id=stowe', { env });
+    expect(keys.size).toBe(1);
+    const { env: second, store } = fakeEnv();
+    await run('&id=stowe', { env: second });
+    expect(await store.history(NOW)).toBeNull();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+});
+
+describe('hours a source did not cover are never recorded', () => {
+  const answer = (routes) => vi.stubGlobal('fetch', async (u) => {
+    const hit = Object.entries(routes).find(([part]) => String(u).includes(part));
+    if (!hit) throw new Error(`unexpected ${u}`);
+    return new Response(JSON.stringify(hit[1]));
+  });
+  const rowsOf = (points, grid) => forecastRows(points, grid, { issuedMs: NOW, source: 'x', model: 'm', now: NOW });
+
+  it('MET starting mid-day: the hours before its first entry are marked filled and skipped', async () => {
+    const start = Date.UTC(2026, 10, 22, 12);
+    const entry = (i) => ({ time: new Date(start + i * HOUR).toISOString(), data: { instant: { details: { air_temperature: -3, wind_speed: 2 } }, next_1_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 1 } }, next_6_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 6 } } } });
+    answer({ 'api.met.no': { properties: { meta: { updated_at: new Date(NOW - HOUR).toISOString() }, timeseries: Array.from({ length: 170 }, (_, i) => entry(i)) } } });
+    const oslo = new URL('https://x/api/weather?lat=61.2&lon=8.4&top=1500&base=300&tz=Europe/Oslo');
+    const res = await forecast(oslo, NOW);
+    vi.unstubAllGlobals();
+    const grid = res.hours.grid;
+    const filledCount = res.hours.base.filter((h) => h.filled).length;
+    expect(filledCount).toBe((start - grid[0]) / HOUR);
+    expect(res.hours.base[filledCount - 1].snow).toBeGreaterThan(0);
+    const rows = rowsOf(res.hours.base, grid);
+    expect(rows.map((r) => r.ms)).toEqual([start, start + HOUR, start + 2 * HOUR]);
+    expect(rows.every((r) => r.snow === 1)).toBe(true);
+  });
+
+  it('NWS series starting late: hours before the series are filled and cannot overwrite earlier forecast rows', async () => {
+    const start = Date.UTC(2026, 10, 22, 10);
+    const series = (v) => ({ values: [{ validTime: `${new Date(start).toISOString()}/PT14H`, value: v }] });
+    answer({
+      'api.weather.gov/points': { properties: { forecastGridData: 'https://api.weather.gov/gridpoints/BTV/1,1' } },
+      'gridpoints/BTV': { properties: { updateTime: '2026-11-22T06:00:00+00:00', generatedAt: '2026-11-22T12:00:00+00:00', elevation: { value: 400 }, temperature: series(-4), windSpeed: series(10), snowfallAmount: series(14) } },
+    });
+    const res = await forecast(URL_STOWE(), NOW);
+    vi.unstubAllGlobals();
+    expect(res.issuedAt).toBe('2026-11-22T12:00:00.000Z');
+    const grid = res.hours.grid;
+    const firstReal = (start - grid[0]) / HOUR;
+    expect(res.hours.base.slice(0, firstReal).every((h) => h.filled && h.snow === 0)).toBe(true);
+    expect(res.hours.base[firstReal].filled).toBe(false);
+    const rows = rowsOf(res.hours.base, grid);
+    expect(rows[0].ms).toBe(start);
+    const earlier = row(grid[0], { snow: 0.7, issued: 1 });
+    expect(mergeRows([earlier], rows, NOW).find((r) => r.ms === grid[0]).snow).toBe(0.7);
   });
 });
 

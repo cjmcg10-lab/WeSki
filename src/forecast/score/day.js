@@ -4,7 +4,7 @@ export const DAY_WEIGHTS = { mean: 0.6, window: 0.4 };
 export const WINDOW_HOURS = 3;
 export const ASSUMED_HOURS = { from: 9, to: 16 };
 export const MIN_HOURS_WITH_DATA = 3;
-export const DETAIL_MAX_DAYS_AHEAD = { hourly: 2, windows: 5, range: 9, trend: 14 };
+export const DETAIL_MAX_DAYS_AHEAD = { hourly: 1, windows: 5, range: 9, trend: 14 };
 export const BROAD_PARTS = ['morning', 'midday', 'afternoon'];
 
 const EPSILON = 1e-9;
@@ -17,7 +17,7 @@ export function detailLevel(daysAhead) {
   return Object.entries(DETAIL_MAX_DAYS_AHEAD).find(([, max]) => daysAhead <= max)?.[0] ?? 'none';
 }
 
-/** The best third of the ski hours (morning, midday or afternoon): the coarse timing allowed for days 3 to 5. */
+/** The best third of the ski hours (morning, midday or afternoon): the coarse timing allowed for days 2 to 5. */
 export function broadWindow(scoreByHour, from, to) {
   const length = to - from;
   if (length < WINDOW_HOURS) return null;

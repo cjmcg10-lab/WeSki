@@ -121,7 +121,7 @@ The wet and crust penalties are steep on purpose: steady moderate rain on snow l
 
 A grooming report (`opts.grooming`) is applied once, at the hour of its timestamp, before that hour's step: `crust` × 0.25 and `wet` × 0.7 (groomers break up a crust and firm a wet surface). The resort feed's report time is the time it updated the trail, so this is a deliberately small effect. A report mapped to the first hour of day 0 meets the starting surface (no crust, wet 0 or 0.2), so it changes little there and mostly sets the `grooming_reported` flag.
 
-**History (1.3.0).** With `opts.history` the state is first stepped through the up to 72 valid hours before the first forecast hour, with the same rules, then continues into the forecast, so rain then refreeze, fresh snow over a firm base and overnight softening carry into the first hour. The state starts from the first history hour as it would from the first forecast hour. A site's history must cover the hours before the forecast starts; hours at or after the first forecast hour are ignored, so the overlap with today's earlier hours is harmless. Gaps are not filled: the state steps across the hours that exist. `inputs.historyHours` is the number of valid history hours used (the smaller of summit and base when both are scored) and `inputs.observedHours` is the largest count of those that a station measured. With at least 48 valid hours the `snow_history_limited` flag and the `CR_SNOW_HISTORY_LIMITED` reason are dropped. Without history every day carries the flag and Medium at best.
+**History (1.3.0).** With `opts.history` the state is first stepped through the up to 72 valid hours before the first forecast hour, with the same rules, then continues into the forecast, so rain then refreeze, fresh snow over a firm base and overnight softening carry into the first hour. The state starts from the first history hour as it would from the first forecast hour. A site's history must cover the hours before the forecast starts; hours at or after the first forecast hour are ignored, so the overlap with today's earlier hours is harmless. Gaps are not filled: the state steps across the hours that exist. `inputs.historyHours` is the number of valid history hours used (the smaller of summit and base when both are scored) and `inputs.observedHours` is the largest count of those that a station measured, snowfall included (`observed[i]` is true only for such hours). With at least 48 valid hours the `snow_history_limited` flag and the `CR_SNOW_HISTORY_LIMITED` reason are dropped. Without history every day carries the flag and Medium at best.
 
 **Visibility (25).** The lowest of: distance (100 m → 0, 500 → 25, 2,000 → 60, 6,000 → 90, 12,000 and more → 100); snowfall in cm an hour (0 → 100, 0.5 → 92, 1.5 → 65, 3 → 35, 5 → 10); rain intensity (none 100, light 65, moderate 45, heavy 30); fog weather code (20). A null visibility counts as 100 for the distance term only; the other terms still apply. **Limitation:** the weather shape has no cloud cover, so v1 cannot tell fog on the summit from harmless high cloud. Fog comes only from visibility and the fog weather codes.
 
@@ -164,10 +164,10 @@ Rated separately for the day and for the timing of its best window. Every thresh
 | Model ground height 500 m or more off the resort | Medium | `CR_ELEVATION_MISMATCH` `[metres]` |
 | Coarse grid (`resolutionKm` 8 or more: MET Norway's global model outside the Nordics and the USA) | Medium | `CR_COARSE_GRID` `[km]` |
 | Under 48 valid history hours | Medium | `CR_SNOW_HISTORY_LIMITED` |
-| Under 24 history hours measured by a station | Medium | `CR_NO_OBSERVATIONS` |
-| Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
+| Under 24 history hours measured by a station, snowfall included (an hour whose station gave no precipitation total does not count) | Medium | `CR_NO_OBSERVATIONS` |
+| Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured with snowfall, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
 
-High needs measurements, not only forecast hours standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
 
 Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale` or `ageHours` of 6 or more → Low, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
 
@@ -177,8 +177,8 @@ Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, 
 
 | `daysAhead` | `detail` | What the screen may show |
 | --- | --- | --- |
-| 0 to 2 | `hourly` | The full hourly view, the best 3-hour window and the peak hour (the first 48 hours and the rest of day 2 that the source gives hourly) |
-| 3 to 5 | `windows` | The day score and `broadWindow` (morning, midday or afternoon), no hours |
+| 0 to 1 | `hourly` | The full hourly view, the best 3-hour window and the peak hour. Day 1 ends at most 48 hours after the first hour of day 0, so hourly stops at 48 hours; day 2 reaches 72 hours and therefore uses `windows` |
+| 2 to 5 | `windows` | The day score and `broadWindow` (morning, midday or afternoon), no hours |
 | 6 to 9 | `range` | A range only. The engine has one deterministic forecast and cannot make a range, so until ensemble members exist (phase 7) show the day as an outlook with no hours, no window and no range |
 | 10 to 14 | `trend` | A trend only (phase 7 or later); nothing numeric from this engine |
 | 15 or more | `none` | Nothing |

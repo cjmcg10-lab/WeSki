@@ -155,14 +155,14 @@ describe('confidence with history', () => {
 
 describe('detail levels', () => {
   it('maps days ahead to the finest detail the screens may show', () => {
-    expect([0, 1, 2, 3, 5, 6, 9, 10, 14, 15, 40].map(detailLevel)).toEqual(['hourly', 'hourly', 'hourly', 'windows', 'windows', 'range', 'range', 'trend', 'trend', 'none', 'none']);
+    expect([0, 1, 2, 3, 5, 6, 9, 10, 14, 15, 40].map(detailLevel)).toEqual(['hourly', 'hourly', 'windows', 'windows', 'windows', 'range', 'range', 'trend', 'trend', 'none', 'none']);
     expect(detailLevel(-1)).toBe('hourly');
   });
 
   it('puts the level on every day and a broad window only on the days that allow broad windows', () => {
     const out = scoreForecast(RESORT, forecastOf(7), { history: historyOf(72) });
-    expect(out.days.map((d) => d.detail)).toEqual(['hourly', 'hourly', 'hourly', 'windows', 'windows', 'windows', 'range']);
-    expect(out.days.map((d) => d.broadWindow === null)).toEqual([true, true, true, false, false, false, true]);
+    expect(out.days.map((d) => d.detail)).toEqual(['hourly', 'hourly', 'windows', 'windows', 'windows', 'windows', 'range']);
+    expect(out.days.map((d) => d.broadWindow === null)).toEqual([true, true, false, false, false, false, true]);
     expect(['morning', 'midday', 'afternoon']).toContain(out.days[3].broadWindow.part);
     expect(out.days[3].broadWindow.end - out.days[3].broadWindow.start).toBeGreaterThanOrEqual(2);
   });

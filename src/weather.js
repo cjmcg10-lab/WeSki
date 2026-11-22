@@ -38,7 +38,7 @@ export async function loadWeather(place, force = false) {
       at: Date.now(), source: data.source, summit: data.summit, base: data.base,
       model: data.model, issuedAt: data.issuedAt, ageHours: data.ageHours, stale: data.stale, resolutionKm: data.resolutionKm, gridElevation: data.gridElevation,
     };
-    prefs.set(key, out);
+    if (!data.stale) prefs.set(key, out);
     return out;
   } catch (e) {
     // Offline or the service is busy: fall back to the last forecast saved on the phone.

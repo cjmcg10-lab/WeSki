@@ -4,7 +4,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
-import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';

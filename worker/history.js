@@ -1,5 +1,4 @@
 import { SCORING_VERSION, scoreForecast } from '../src/forecast/score/index.js';
-import { distanceKm } from './observations.js';
 import { hourLabel } from './weather.js';
 
 const HOUR = 3600e3;
@@ -7,20 +6,21 @@ export const HISTORY_HOURS = 72;
 export const ARCHIVE_MIN_GAP_MS = 6 * HOUR;
 export const ARCHIVE_KEEP_MS = 28 * 24 * HOUR;
 export const LAST_GOOD_MAX_AGE_MS = 48 * HOUR;
-export const PLACE_TOLERANCE_KM = 5;
+export const RECORD_MIN_GAP_MS = 30 * 60e3;
 const SITES = ['summit', 'base'];
 const DELETE_BATCH = 128;
 
 const round = (x, digits) => (x == null ? x : Math.round(x * 10 ** digits) / 10 ** digits);
 const pad = (ms) => String(ms).padStart(13, '0');
 const isObserved = (row) => row.src === 'nws-obs';
+const isMeasured = (row) => isObserved(row) && !row.snowEstimated;
 
 /** Hourly rows for the completed hours of a forecast, tagged with when it was issued and by which source and model. */
 export function forecastRows(points, grid, { issuedMs, source, model, now }) {
   const rows = [];
   points.forEach((p, i) => {
     const ms = grid[i];
-    if (ms + HOUR > now || ![p.t, p.wind, p.snow].every(Number.isFinite)) return;
+    if (p.filled || ms + HOUR > now || ![p.t, p.wind, p.snow].every(Number.isFinite)) return;
     rows.push({
       ms, t: round(p.t, 1), feels: round(p.feels ?? p.t, 1), snow: round(p.snow, 2), wind: round(p.wind, 1), gust: round(p.gust ?? p.wind, 1),
       vis: p.vis == null ? null : Math.round(p.vis), code: p.code ?? 0, acc: p.acc ?? 1, issued: issuedMs, src: source, model,
@@ -58,7 +58,7 @@ export function toOpenMeteo(rows, tz) {
   return {
     hourly: {
       time: rows.map((r) => hourLabel(r.ms, tz)), temperature_2m: col('t'), apparent_temperature: col('feels'), snowfall: col('snow'),
-      wind_speed_10m: col('wind'), wind_gusts_10m: col('gust'), visibility: col('vis'), weather_code: col('code'), observed: rows.map(isObserved),
+      wind_speed_10m: col('wind'), wind_gusts_10m: col('gust'), visibility: col('vis'), weather_code: col('code'), observed: rows.map(isMeasured),
     },
   };
 }
@@ -87,7 +87,7 @@ export function archiveEntry(snap, scored) {
 
 function coverage(rows) {
   const newest = rows.reduce((m, r) => Math.max(m, r.issued), 0);
-  return { hours: rows.length, observedHours: rows.filter(isObserved).length, newestIssued: newest || null, sources: [...new Set(rows.map((r) => r.src))] };
+  return { hours: rows.length, observedHours: rows.filter(isMeasured).length, newestIssued: newest || null, sources: [...new Set(rows.map((r) => r.src))] };
 }
 
 /** Per-resort history, last good forecast and forecast archive on top of a Durable Object style key-value storage. */
@@ -98,11 +98,11 @@ export class HistoryStore {
 
   async record(snap, now = Date.now()) {
     const meta = (await this.storage.get('meta')) ?? null;
-    if (meta && distanceKm(meta.place, snap.place) > PLACE_TOLERANCE_KM) return { recorded: false, reason: 'place_mismatch' };
+    if (meta?.recordedAt && now - meta.recordedAt < RECORD_MIN_GAP_MS) return { recorded: false, reason: 'too_soon' };
     const stored = (await this.storage.get('hist')) ?? { summit: [], base: [] };
     const hist = Object.fromEntries(SITES.map((s) => [s, mergeRows(mergeRows(stored[s] ?? [], snap.forecast?.[s] ?? [], now), snap.observed?.[s] ?? [], now)]));
     const writes = {};
-    const nextMeta = { ...(meta ?? {}), place: snap.place };
+    const nextMeta = { ...(meta ?? {}), place: snap.place, recordedAt: now };
     if (JSON.stringify(hist) !== JSON.stringify(stored)) writes.hist = hist;
     if (!meta || !(meta.issuedAt >= snap.issuedAt)) {
       writes.last = { issuedAt: snap.issuedAt, weather: snap.weather };
@@ -140,7 +140,7 @@ export class HistoryStore {
       tz: meta.place.tz,
       sources: cover.sources,
       ageHours: cover.newestIssued == null ? null : round(Math.max(0, now - cover.newestIssued) / HOUR, 1),
-      coverage: Object.fromEntries(SITES.map((s) => [s, { hours: (hist[s] ?? []).length, observedHours: (hist[s] ?? []).filter(isObserved).length }])),
+      coverage: Object.fromEntries(SITES.map((s) => [s, { hours: (hist[s] ?? []).length, observedHours: (hist[s] ?? []).filter(isMeasured).length }])),
     };
   }
 
