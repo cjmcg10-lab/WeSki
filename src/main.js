@@ -1389,9 +1389,10 @@ function stepText(s, lower) {
 // ---------- sheets
 function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
+  if (fcUi.isForecastSheet(S.sheet) && !fcUi.isForecastSheet(name)) fcUi.onClose();
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast', fcpin: 'forecast' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
@@ -2204,7 +2205,7 @@ async function downloadOffline() {
 // ---------- events
 function onInput(e) {
   const t = e.target;
-  if (t.id === 'fc-q') { if (e.type === 'input') fcUi.onInput(t); return; }
+  if (t.id?.startsWith('fc-')) { fcUi.onInput(t, e.type); return; }
   if (t.id === 'f-search') { if (e.type === 'input') { S.searchQ = t.value; $('#search-list').innerHTML = searchResults(); } return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-lang') { if (e.type === 'change') setLang(t.value); return; }

@@ -17,6 +17,14 @@ const plain = (text) =>
     .replace(/[^\p{L}\p{N}]+/gu, ' ')
     .trim();
 
+const EARTH_KM = 6371;
+
+export function distanceKm(lat1, lon1, lat2, lon2) {
+  const rad = Math.PI / 180;
+  const h = Math.sin(((lat2 - lat1) * rad) / 2) ** 2 + Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lon2 - lon1) * rad) / 2) ** 2;
+  return 2 * EARTH_KM * Math.asin(Math.sqrt(h));
+}
+
 export const normalise = (text) => plain(text).split(' ').map((w) => WORD_FORMS[w] ?? w).join(' ');
 
 function queryForms(text) {
@@ -122,6 +130,15 @@ export function catalogFromIndex(index, { fetchImpl = globalThis.fetch, baseUrl 
     return hits.slice(0, limit).map(({ entry, match }) => describe(entry, match));
   }
 
+  function nearby(lat, lon, { maxKm = 3, limit = 3 } = {}) {
+    return entries
+      .map((entry) => ({ entry, km: Math.min(...[[entry.row.lat, entry.row.lon], [entry.row.baseLat, entry.row.baseLon]].filter(([a, b]) => a != null && b != null).map(([a, b]) => distanceKm(lat, lon, a, b))) }))
+      .filter(({ km }) => km <= maxKm)
+      .sort((a, b) => a.km - b.km || (a.entry.row.id < b.entry.row.id ? -1 : 1))
+      .slice(0, limit)
+      .map(({ entry, km }) => ({ ...describe(entry, null), tz: entry.tz, km }));
+  }
+
   const idOf = (id) => index.idAliases?.[id] ?? id;
 
   function getResort(id) {
@@ -161,7 +178,7 @@ export function catalogFromIndex(index, { fetchImpl = globalThis.fetch, baseUrl 
     return (await shards.get(cc))[entry.row.id] ?? null;
   }
 
-  return { size: entries.length, source: index.source, search, getResort, loadDetail };
+  return { size: entries.length, source: index.source, search, nearby, getResort, loadDetail };
 }
 
 export async function loadCatalog({ fetchImpl = globalThis.fetch, baseUrl = DEFAULT_BASE } = {}) {

@@ -86,6 +86,16 @@ try {
       throw new Error(`search for "${query}" never showed ${name}; results panel says: ${shown.slice(0, 300)}`);
     }
   }
+  await page.locator('[data-act="fc-pin-new"]').click();
+  await page.locator('#fc-name').fill('Smoke Hill');
+  await page.locator('[data-act="fc-pin-coords"]').click();
+  await page.locator('#fc-lat').fill('44.5');
+  await page.locator('#fc-lon').fill('-72.78');
+  await page.locator('#fc-lon').press('Tab');
+  await page.locator('#fc-hbase').fill('400');
+  await page.locator('#fc-hbase').press('Tab');
+  await page.locator('[data-act="fc-pin-save"]').click();
+  await page.locator('.fc-rowhead', { hasText: 'Pinned' }).waitFor({ state: 'visible', timeout: 15000 });
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }
