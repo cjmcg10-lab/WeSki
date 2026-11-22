@@ -18,12 +18,14 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync,
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
+import { packResort } from './heights_pack.mjs';
 
 const run = promisify(execFile);
 const DATA = 'public/data';
 const LIST = join(DATA, 'r2.json');
 const KEEP = ['jay-peak']; // the unit tests load it: stays in git
 const FILES = ['resort.json', 'graph.json', 'terrain.bin', 'surround.bin'];
+const PACKED = ['terrain.z16', 'surround.z16']; // made from the .bin files on push (src/heights.js); pull leaves them
 const TYPE = (f) => (f.endsWith('.json') ? 'application/json' : 'application/octet-stream');
 const cfg = JSON.parse(readFileSync(LIST, 'utf8'));
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'placeholder-the-proxy-adds-the-real-token';
@@ -67,10 +69,11 @@ async function push(id) {
   writeFileSync(join(tmp, 'graph.json'), JSON.stringify(R.graph || {}));
   delete R.graph;
   writeFileSync(join(tmp, 'resort.json'), JSON.stringify(R));
+  for (const [name, buf] of Object.entries(packResort(dir, R))) writeFileSync(join(tmp, name), buf);
   const have = await etags(id);
   let sent = 0;
-  await pool(FILES.map((f) => async () => {
-    const src = f === 'resort.json' || f === 'graph.json' ? join(tmp, f) : join(dir, f);
+  await pool([...FILES, ...PACKED].map((f) => async () => {
+    const src = f === 'resort.json' || f === 'graph.json' || PACKED.includes(f) ? join(tmp, f) : join(dir, f);
     if (!existsSync(src)) return;
     const key = `data/${id}/${f}`;
     if (have[key] === createHash('md5').update(readFileSync(src)).digest('hex')) return;

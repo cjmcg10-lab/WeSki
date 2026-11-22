@@ -195,6 +195,11 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
   repository survives a session, so the folders are not on disk until pulled (about half a minute). `push <id...>`
   uploads (only files whose content changed), lists the id in r2.json and keeps the folder out of git;
   `pipeline.py` does both for any mountain listed there, and `--r2` for a new one. `drop` deletes the local copies.
+- Compact height grids (2026-11-22): `push` also uploads `terrain.z16` and `surround.z16`, made from the `.bin` files
+  (`src/heights.js`: each height predicted from its neighbours, only the difference kept, gzipped; exact, 56% smaller,
+  and Cloudflare never compressed the `.bin`). The app downloads the `.z16` and falls back to the `.bin` on old
+  browsers or when one is missing; the app build makes them for Jay Peak. `pull` only fetches the `.bin` files.
+  Always upload with `push` (or `pipeline.py`) so the two stay in step.
 - The deploy downloads every R2 map before `npm test`, so the tests still check every mountain, then drops them
   before the app build. If the GitHub token cannot read R2 the deploy warns and tests only Jay Peak.
 - `build_index.py` keeps index entries for R2 mountains that are not downloaded.

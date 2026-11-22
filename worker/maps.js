@@ -5,13 +5,13 @@
 import r2 from '../public/data/r2.json';
 
 const IDS = new Set(r2.ids);
-const TYPES = { json: 'application/json', bin: 'application/octet-stream' };
+const TYPES = { json: 'application/json', bin: 'application/octet-stream', z16: 'application/octet-stream' };
 
 export const inR2 = (id) => IDS.has(id);
 
 /** The R2 copy of /data/<id>/<file> for a listed resort, or null to fall through to the static files. */
 export async function fromR2(request, env, url, ids = IDS) {
-  const m = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/([a-z]+\.(json|bin))$/);
+  const m = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/([a-z]+\.(json|bin|z16))$/);
   if (!m || !ids.has(m[1]) || !env.MAPS || !['GET', 'HEAD'].includes(request.method)) return null;
   const obj = await env.MAPS.get(`data/${m[1]}/${m[2]}`, { onlyIf: request.headers });
   if (!obj) return new Response('Not found', { status: 404 });
