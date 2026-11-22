@@ -2,7 +2,7 @@
 import os, sys, unittest
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from reports import describe, find_feature, format_report, osm_link, parse_day, select_new  # noqa: E402
+from reports import describe, find_feature, format_report, next_marker, osm_link, parse_day, select_new  # noqa: E402
 from skiheat import clean_heat, clusters, describe_clusters, run_counts  # noqa: E402
 
 # a flat projection: 1 m east = 0.00001 deg lon, 1 m north = 0.00001 deg lat, origin at (10, 45)
@@ -29,6 +29,15 @@ class Reports(unittest.TestCase):
 
     def test_select_by_date_ignores_marker(self):
         self.assertEqual([r["id"] for r in select_new(REPORTS, 3, parse_day("2026-12-02"))], [2, 3])
+
+    def test_marker_never_skips_unseen_reports(self):
+        self.assertEqual(next_marker(REPORTS, select_new(REPORTS, 0), 0), 3)
+        self.assertEqual(next_marker(REPORTS, select_new(REPORTS, 3), 3), 3)
+        self.assertEqual(next_marker([], [], 4), 4)
+        # --since a day after report 1, with the marker at 0: report 1 was never listed, so the marker stays put
+        self.assertEqual(next_marker(REPORTS, select_new(REPORTS, 0, parse_day("2026-12-02")), 0), 0)
+        # with the marker already at 1, the same --since listing covers everything new
+        self.assertEqual(next_marker(REPORTS, select_new(REPORTS, 1, parse_day("2026-12-02")), 1), 3)
 
     def test_find_by_osm_number_and_nearest(self):
         self.assertEqual(find_feature(RESORT, "111")[1]["name"], "Upper Run")
