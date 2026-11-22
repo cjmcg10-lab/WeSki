@@ -28,12 +28,16 @@ export async function loadWeather(place, force = false) {
   const hit = prefs.get(key, null);
   if (hit && !force && Date.now() - hit.at < CACHE_MS) return { ...hit, cached: true };
   const url = `/api/weather?lat=${place.lat}&lon=${place.lon}&blat=${place.baseLat ?? place.lat}&blon=${place.baseLon ?? place.lon}`
-    + `&top=${Math.round(place.top)}&base=${Math.round(place.base)}&tz=${encodeURIComponent(place.tz)}`;
+    + `&top=${Math.round(place.top)}&base=${Math.round(place.base)}&tz=${encodeURIComponent(place.tz)}`
+    + (/^[a-z0-9-]{2,40}$/.test(place.id || '') ? `&id=${place.id}` : '');
   try {
     const res = await fetch(url);
     const data = await res.json();
     if (!res.ok || data.error) throw new Error(data.reason || 'Weather service error');
-    const out = { at: Date.now(), source: data.source, summit: data.summit, base: data.base };
+    const out = {
+      at: Date.now(), source: data.source, summit: data.summit, base: data.base,
+      model: data.model, issuedAt: data.issuedAt, ageHours: data.ageHours, stale: data.stale, resolutionKm: data.resolutionKm, gridElevation: data.gridElevation,
+    };
     prefs.set(key, out);
     return out;
   } catch (e) {

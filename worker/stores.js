@@ -4,6 +4,20 @@ import {
   sha256, randomToken, entitlement, PLANS, TRIAL_HOURS, MAX_SESSIONS, LOGIN_TTL_MS, SESSION_TTL_MS, normEmail,
 } from './accounts.js';
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
+import { HistoryStore } from './history.js';
+
+/** One per watched resort: 72 hours of weather history, the last good forecast and the forecast archive (see docs/FORECAST_HISTORY.md). */
+export class ForecastHistory extends DurableObject {
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.store = new HistoryStore(ctx.storage);
+  }
+
+  record(snapshot, now) { return this.store.record(snapshot, now); }
+  history(now) { return this.store.history(now); }
+  lastGood(now) { return this.store.lastGood(now); }
+  archive(sinceMs, limit) { return this.store.archive(sinceMs, limit); }
+}
 
 export class Accounts extends DurableObject {
   constructor(ctx, env) {

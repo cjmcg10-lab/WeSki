@@ -7,16 +7,19 @@
 const UA = 'SkiWithMe/1.0 (+https://skiwithme.builtbyroger.app/about)';
 const LAPSE = 0.0065; // °C per metre, standard atmosphere
 const HOURS = 7 * 24;
+const FETCH_TIMEOUT_MS = 8000;
+const MODEL = { nws: 'nws_ndfd', met: 'met_locationforecast' };
+const NOMINAL_KM = { fine: 2.5, coarse: 9 };
 
-const inUS = (lat, lon) => (lat > 24 && lat < 50 && lon > -125 && lon < -66) || (lat > 51 && lat < 72 && lon > -170 && lon < -129);
+export const inUS = (lat, lon) => (lat > 24 && lat < 50 && lon > -125 && lon < -66) || (lat > 51 && lat < 72 && lon > -170 && lon < -129);
 
 /** Fetch JSON through Cloudflare's cache for ttl seconds (the upstream's own expiry when it is longer). */
-async function cachedJson(url, ttl, headers = {}) {
+export async function cachedJson(url, ttl, headers = {}) {
   const cache = typeof caches !== 'undefined' ? caches.default : null;
   const key = new Request(url);
   const hit = cache && (await cache.match(key));
   if (hit) return hit.json();
-  const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/geo+json, application/json', ...headers } });
+  const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/geo+json, application/json', ...headers }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`weather source ${res.status}`);
   const body = await res.text();
   const exp = Date.parse(res.headers.get('expires') || '') || 0;
@@ -37,7 +40,7 @@ export function hourGrid(tz, now = Date.now()) {
   for (let i = 0; i < 30 && localParts(t, tz).hour !== 0; i++) t -= 3600e3;
   return Array.from({ length: HOURS }, (_, i) => t + i * 3600e3);
 }
-const label = (ms, tz) => { const p = localParts(ms, tz); return `${p.date}T${String(p.hour).padStart(2, '0')}:00`; };
+export const hourLabel = (ms, tz) => { const p = localParts(ms, tz); return `${p.date}T${String(p.hour).padStart(2, '0')}:00`; };
 
 /** Sunrise and sunset (NOAA's simple formula, about a minute's accuracy) as local "YYYY-MM-DDTHH:MM". */
 export function sunTimes(dateStr, lat, lon, tz) {
@@ -54,7 +57,7 @@ export function sunTimes(dateStr, lat, lon, tz) {
 }
 
 // ---------- weather codes (WMO, as the app's describeCode reads them)
-function codeFrom({ snowCm = 0, rainMm = 0, cloud = 0, fog = false, thunder = false, freezing = false, sleet = false }) {
+export function codeFrom({ snowCm = 0, rainMm = 0, cloud = 0, fog = false, thunder = false, freezing = false, sleet = false }) {
   if (thunder) return 95;
   if (snowCm > 0.05 && !sleet) return snowCm >= 1.5 ? 75 : snowCm >= 0.3 ? 73 : 71;
   if (sleet) return 68;
@@ -65,21 +68,24 @@ function codeFrom({ snowCm = 0, rainMm = 0, cloud = 0, fog = false, thunder = fa
 const SEVERITY = (c) => (c >= 95 ? 9 : c === 75 ? 8 : c === 73 ? 7 : c === 66 || c === 68 ? 6 : c === 63 ? 5 : c === 71 ? 4 : c === 61 ? 3 : c === 45 ? 2 : c);
 
 /** Windchill (Environment Canada / NWS formula), °C, wind m/s. */
-const windChill = (t, ms) => { const v = ms * 3.6; return t <= 10 && v > 4.8 ? 13.12 + 0.6215 * t - 11.37 * v ** 0.16 + 0.3965 * t * v ** 0.16 : t; };
+export const windChill = (t, ms) => { const v = ms * 3.6; return t <= 10 && v > 4.8 ? 13.12 + 0.6215 * t - 11.37 * v ** 0.16 + 0.3965 * t * v ** 0.16 : t; };
 
 // ---------- NWS: series of {validTime: "2026-11-20T12:00:00+00:00/PT6H", value} → value per hour
 function isoDurH(s) {
   const m = /^P(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?)?$/.exec(s) || [];
   return Math.max(1, (+m[1] || 0) * 24 + (+m[2] || 0) + Math.round((+m[3] || 0) / 60));
 }
-function nwsSeries(prop, grid, spread = false) {
+function nwsSeries(prop, grid, spread = false, intervals = null) {
   const out = new Array(grid.length).fill(null);
   for (const v of prop?.values || []) {
     const [start, dur] = v.validTime.split('/');
     const t0 = Date.parse(start), h = isoDurH(dur);
     for (let k = 0; k < h; k++) {
       const i = Math.round((t0 + k * 3600e3 - grid[0]) / 3600e3);
-      if (i >= 0 && i < grid.length) out[i] = v.value == null ? null : spread ? v.value / h : v.value;
+      if (i >= 0 && i < grid.length) {
+        out[i] = v.value == null ? null : spread ? v.value / h : v.value;
+        if (intervals) intervals[i] = h;
+      }
     }
   }
   // hours before the first value (earlier today) take the first known value; gaps take the previous one
@@ -113,18 +119,20 @@ async function nwsPoint(lat, lon, alt, tz, grid) {
   const cloud = nwsSeries(g.skyCover, grid);
   const pop = nwsSeries(g.probabilityOfPrecipitation, grid);
   const qpf = nwsSeries(g.quantitativePrecipitation, grid, true);
-  const snow = nwsSeries(g.snowfallAmount, grid, true).map((mm) => (mm || 0) / 10);
+  const snowIntervals = new Array(grid.length).fill(null);
+  const snow = nwsSeries(g.snowfallAmount, grid, true, snowIntervals).map((mm) => (mm || 0) / 10);
   const vis = nwsSeries(g.visibility, grid);
   const snowLevel = nwsSeries(g.snowLevel, grid);
   const flags = nwsWeatherFlags(g.weather, grid);
-  return grid.map((_, i) => {
+  const hours = grid.map((_, i) => {
     const rain = snow[i] > 0.05 ? 0 : (qpf[i] || 0);
     return {
       t: temp[i], feels: feels[i] ?? windChill(temp[i], wind[i]), wind: wind[i], gust: gust[i], dir: dir[i] ?? 0, cloud: cloud[i] ?? 0,
-      pop: pop[i], snow: snow[i], rain, vis: vis[i], frz: snowLevel[i],
+      pop: pop[i], snow: snow[i], rain, vis: vis[i], frz: snowLevel[i], acc: snowIntervals[i] ?? 1,
       code: codeFrom({ snowCm: snow[i], rainMm: rain, cloud: cloud[i] ?? 0, ...flags[i] }),
     };
   });
+  return { hours, issued: Date.parse(g.updateTime || g.generatedAt || ''), gridElevation: g.elevation?.value ?? null };
 }
 
 // ---------- MET Norway
@@ -141,7 +149,7 @@ const MET_CODE = (s, t, mm) => {
 async function metPoint(lat, lon, alt, grid) {
   const m = await cachedJson(`https://api.met.no/weatherapi/locationforecast/2.0/complete?lat=${lat.toFixed(4)}&lon=${lon.toFixed(4)}&altitude=${Math.round(alt)}`, 3600);
   const ts = m.properties.timeseries.map((x) => ({ at: Date.parse(x.time), ...x.data }));
-  return grid.map((h) => {
+  const hours = grid.map((h) => {
     let e = ts[0];
     for (const x of ts) { if (x.at <= h) e = x; else break; }
     const d = e.instant.details;
@@ -163,14 +171,16 @@ async function metPoint(lat, lon, alt, grid) {
       // MET gives gusts near Scandinavia only; elsewhere they are estimated as 1.5 times the wind (a common gust factor)
       gust: d.wind_speed_of_gust ?? wind * 1.5, dir: d.wind_from_direction ?? 0, cloud: d.cloud_area_fraction ?? 0,
       pop: pop ?? null, snow, rain, vis: fog == null ? null : fog >= 50 ? 500 : fog >= 20 ? 3000 : 20000, frz: null,
+      acc: one ? 1 : e.next_6_hours ? 6 : e.next_12_hours ? 12 : 1,
       code: codeFrom({ cloud: d.cloud_area_fraction ?? 0, fog: fog >= 50, rainMm: rain, ...c, snowCm: snow > 0.05 ? snow : (c.snowCm ?? 0) }),
     };
   });
+  return { hours, issued: Date.parse(m.properties.meta?.updated_at || ''), gridElevation: null };
 }
 
 /** Turn hourly points into the Open-Meteo shape the app reads. */
 export function shape(hours, grid, tz, lat, lon, now = Date.now()) {
-  const time = grid.map((ms) => label(ms, tz));
+  const time = grid.map((ms) => hourLabel(ms, tz));
   const ci = Math.max(0, Math.min(hours.length - 1, Math.floor((now - grid[0]) / 3600e3)));
   const H = (k) => hours.map((h) => h[k]);
   const dates = [...new Set(time.map((x) => x.slice(0, 10)))].slice(0, 7);
@@ -214,15 +224,28 @@ export function fillFreezing(sum, bas, top, base) {
   }
 }
 
-/** GET /api/weather?lat&lon&blat&blon&top&base&tz → {source, summit, base} */
-export async function weather(url) {
-  const q = (k) => Number(url.searchParams.get(k));
+const inNordics = (lat, lon) => lat > 54 && lat < 72 && lon > 3 && lon < 32;
+const toIso = (ms) => new Date(ms).toISOString();
+
+/** Nominal grid spacing of the model behind a source at a place: the US grid and MET's Nordic model are fine, MET's global model elsewhere is coarse. */
+export const resolutionKm = (source, lat, lon) => (source === 'nws' || inNordics(lat, lon) ? NOMINAL_KM.fine : NOMINAL_KM.coarse);
+
+export function placeFrom(url) {
+  const q = (k) => (url.searchParams.get(k) ? Number(url.searchParams.get(k)) : NaN);
   const lat = q('lat'), lon = q('lon'), top = q('top'), base = q('base');
   const blat = url.searchParams.has('blat') ? q('blat') : lat, blon = url.searchParams.has('blon') ? q('blon') : lon;
   const tz = url.searchParams.get('tz') || 'UTC';
   if (![lat, lon, top, base, blat, blon].every(Number.isFinite) || Math.abs(lat) > 85 || Math.abs(lon) > 180) return { error: 'bad place', status: 400 };
   try { new Intl.DateTimeFormat('en', { timeZone: tz }); } catch { return { error: 'bad time zone', status: 400 }; }
-  const grid = hourGrid(tz);
+  return { lat, lon, top, base, blat, blon, tz };
+}
+
+/** The forecast plus the raw hourly points (`hours`) the history store records. */
+export async function forecast(url, now = Date.now()) {
+  const place = placeFrom(url);
+  if (place.error) return place;
+  const { lat, lon, top, base, blat, blon, tz } = place;
+  const grid = hourGrid(tz, now);
   let source = 'nws', sum, bas;
   try {
     if (!inUS(lat, lon)) throw new Error('outside the US');
@@ -231,6 +254,26 @@ export async function weather(url) {
     source = 'met';
     [sum, bas] = await Promise.all([metPoint(lat, lon, top, grid), metPoint(blat, blon, base, grid)]);
   }
-  fillFreezing(sum, bas, top, base);
-  return { source, summit: shape(sum, grid, tz, lat, lon), base: shape(bas, grid, tz, blat, blon) };
+  fillFreezing(sum.hours, bas.hours, top, base);
+  const issued = Math.min(...[sum.issued, bas.issued].filter(Number.isFinite), now);
+  return {
+    source,
+    model: MODEL[source],
+    issuedAt: toIso(issued),
+    fetchedAt: toIso(now),
+    ageHours: Math.round(Math.max(0, now - issued) / 360e3) / 10,
+    stale: false,
+    resolutionKm: resolutionKm(source, lat, lon),
+    gridElevation: { summit: sum.gridElevation, base: bas.gridElevation },
+    summit: shape(sum.hours, grid, tz, lat, lon, now),
+    base: shape(bas.hours, grid, tz, blat, blon, now),
+    hours: { grid, summit: sum.hours, base: bas.hours },
+  };
+}
+
+/** GET /api/weather?lat&lon&blat&blon&top&base&tz → the forecast without its raw hourly points */
+export async function weather(url) {
+  const out = { ...(await forecast(url)) };
+  delete out.hours;
+  return out;
 }
