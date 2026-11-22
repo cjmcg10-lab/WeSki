@@ -37,6 +37,7 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
 // On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
 const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
 function fitScreen() {
+  if (window.visualViewport && window.visualViewport.scale > 1.01) return;
   const portrait = window.innerHeight >= window.innerWidth;
   const h = COLUMN.matches ? Math.min(window.innerHeight - 32, 932)
     : navigator.standalone === true && portrait ? Math.max(window.innerHeight, screen.height) : window.innerHeight;

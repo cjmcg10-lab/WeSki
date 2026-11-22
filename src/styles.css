@@ -24,7 +24,7 @@ html { min-height: calc(100% + env(safe-area-inset-top, 0px)); }
 html, body { margin: 0; height: 100%; overflow: hidden; background: var(--page); color: var(--ink);
   font: 15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui, sans-serif;
   -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
-button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; }
+button { font: inherit; color: inherit; border: 0; background: none; padding: 0; cursor: pointer; touch-action: manipulation; }
 input, select { font: inherit; color: inherit; }
 .hidden { display: none !important; }
 
