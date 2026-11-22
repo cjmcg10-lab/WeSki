@@ -2,7 +2,8 @@
 
 An installable web app for ski resorts: 3D mountain from LiDAR, friend groups with live GPS,
 directions, voice, stats. Vanilla JS + three.js + Vite, tests in vitest, hosted on Cloudflare.
-`README.md` describes the app and the data pipeline in full. Read it first. This file holds what a new
+`README.md` gives the short overview and `docs/MAPS.md` the full detail of the maps, directions and data pipeline.
+Read both first. This file holds what a new
 session needs that the README does not: the rules, the state of the work, and what is next.
 
 ## Rules for working here
