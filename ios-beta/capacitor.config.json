@@ -1,0 +1,11 @@
+{
+  "appId": "app.builtbyroger.skiwithme",
+  "appName": "SkiWithMe",
+  "webDir": "www",
+  "ios": {
+    "contentInset": "never"
+  },
+  "server": {
+    "iosScheme": "capacitor"
+  }
+}

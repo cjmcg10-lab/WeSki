@@ -38,6 +38,21 @@ jobs:
       - run: node tools/maps_r2.mjs drop
       - run: npm run build:assets
 
+  # Makes sure the iPhone build's text replacements still match the app, then builds it (about 2 minutes).
+  ios-prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm ci --prefix ios-beta --no-audit --no-fund
+      - run: node ios-beta/prepare.mjs
+      - run: npm run build:assets
+
   # Looks through the code for likely bugs (a name that does not exist, a typo in a variable). No style rules (about 1 minute).
   lint:
     runs-on: ubuntu-latest

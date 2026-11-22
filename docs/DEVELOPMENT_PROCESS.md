@@ -33,6 +33,16 @@ reaches the live site, and anyone can see where the work stands.
 10. **Close.** The merged pull request closes the issue. Update `CLAUDE.md` or the feature's plan file if something a
     future session needs to know changed.
 
+## iPhone app (TestFlight)
+
+- Every merge to `main` deploys the website and also uploads a new TestFlight build (about 11-15 minutes, the "iPhone beta"
+  workflow). Only changes to the app (`src/`, `public/`, `index.html`, `ios-beta/`, `package*.json`, `vite.config.js`)
+  trigger it; worker, tools, tests and docs changes do not.
+- Internal testers get the new build in TestFlight with no Apple review.
+- App Store releases are still sent for review by hand in App Store Connect.
+- The iPhone build edits a copy of the app with exact text replacements in `ios-beta/prepare.mjs`. If the check
+  `ios-prepare` fails on a pull request, update the matching line in `ios-beta/prepare.mjs` to the new code.
+
 ## Urgent fixes
 
 When the live site is broken: open an issue anyway (one line is fine), branch, fix, open a pull request, and merge once

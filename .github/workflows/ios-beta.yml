@@ -1,0 +1,133 @@
+name: iPhone beta
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'ios-beta/**'
+      - 'package*.json'
+      - 'vite.config.js'
+      - 'tools/heights_pack.mjs'
+      - '.github/workflows/ios-beta.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: skiwithme-ios-beta
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: macos-26
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Package the free beta and configure Xcode
+        run: |
+          npm ci --prefix ios-beta --no-audit --no-fund
+          node ios-beta/prepare.mjs
+          npm run build:assets
+          mv dist ios-beta/www
+          cd ios-beta
+          npx --no-install cap add ios
+          python3 -m venv "$RUNNER_TEMP/icon-tools"
+          "$RUNNER_TEMP/icon-tools/bin/pip" install Pillow
+          "$RUNNER_TEMP/icon-tools/bin/python" configure.py
+      - name: Build for iPhone
+        working-directory: ios-beta
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release -destination 'generic/platform=iOS' -derivedDataPath "$RUNNER_TEMP/iphone" CODE_SIGNING_ALLOWED=NO build
+          ditto -c -k --keepParent "$RUNNER_TEMP/iphone/Build/Products/Release-iphoneos/App.app" "$RUNNER_TEMP/SkiWithMe-unsigned.zip"
+      - name: Launch on iPhone Simulator
+        working-directory: ios-beta
+        run: |
+          device=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; print(next(d["udid"] for ds in json.load(sys.stdin)["devices"].values() for d in ds if "iPhone" in d["name"]))')
+          xcrun simctl boot "$device"
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination "id=$device" -derivedDataPath "$RUNNER_TEMP/sim" CODE_SIGNING_ALLOWED=NO build
+          xcrun simctl bootstatus "$device" -b
+          xcrun simctl install "$device" "$RUNNER_TEMP/sim/Build/Products/Debug-iphonesimulator/App.app"
+          xcrun simctl launch "$device" app.builtbyroger.skiwithme
+          sleep 10
+          xcrun simctl io "$device" screenshot "$RUNNER_TEMP/SkiWithMe-launch.png"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SkiWithMe-beta
+          path: |
+            ${{ runner.temp }}/SkiWithMe-unsigned.zip
+            ${{ runner.temp }}/SkiWithMe-launch.png
+      - name: Sign and upload to TestFlight
+        if: github.ref == 'refs/heads/main'
+        working-directory: ios-beta
+        shell: bash
+        env:
+          CERT: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+          CERT_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          PROFILE: ${{ secrets.IOS_PROFILE_BASE64 }}
+          API_KEY: ${{ secrets.ASC_API_KEY_BASE64 }}
+          KEY_ID: P23JUVP933
+          ISSUER: 310f2b16-3524-41de-a797-be8b331d6f1f
+        run: |
+          set -euo pipefail
+          umask 077
+          : "${CERT:?Missing IOS_CERTIFICATE_BASE64}" "${CERT_PASSWORD:?Missing IOS_CERTIFICATE_PASSWORD}"
+          : "${PROFILE:?Missing IOS_PROFILE_BASE64}" "${API_KEY:?Missing ASC_API_KEY_BASE64}"
+          signing=$(mktemp -d "$RUNNER_TEMP/signing.XXXXXX")
+          keychain="$signing/ci.keychain-db"
+          trap 'security delete-keychain "$keychain" >/dev/null 2>&1 || true; rm -rf "$signing"' EXIT
+          keypass=$(openssl rand -hex 32)
+          printf '%s' "$CERT" | base64 -D > "$signing/input.p12"
+          printf '%s' "$PROFILE" | base64 -D > "$signing/profile.mobileprovision"
+          security cms -D -i "$signing/profile.mobileprovision" > "$signing/profile.plist"
+          uuid=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$signing/profile.plist")
+          team=$(/usr/libexec/PlistBuddy -c 'Print TeamIdentifier:0' "$signing/profile.plist")
+          appid=$(/usr/libexec/PlistBuddy -c 'Print Entitlements:application-identifier' "$signing/profile.plist")
+          test "$appid" = "$team.app.builtbyroger.skiwithme" || { echo 'Profile does not match SkiWithMe'; exit 1; }
+          profiles="$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles"
+          mkdir -p "$profiles"
+          cp "$signing/profile.mobileprovision" "$profiles/$uuid.mobileprovision"
+          security create-keychain -p "$keypass" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$keypass" "$keychain"
+          # Repackage Windows/OpenSSL exports for the macOS Keychain importer.
+          ssl="$(brew --prefix openssl@3)/bin/openssl"
+          "$ssl" pkcs12 -legacy -in "$signing/input.p12" -passin env:CERT_PASSWORD -nodes -out "$signing/identity.pem"
+          "$ssl" pkcs12 -export -legacy -in "$signing/identity.pem" -out "$signing/import.p12" -passout env:CERT_PASSWORD
+          security import "$signing/import.p12" -P "$CERT_PASSWORD" -T /usr/bin/codesign -t cert -f pkcs12 -k "$keychain"
+          api_key_b64="$API_KEY"
+          unset CERT CERT_PASSWORD PROFILE API_KEY
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keypass" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" "$HOME/Library/Keychains/login.keychain-db"
+          # Scope signing to the application target so Swift package resources use their own settings.
+          export TEAM_ID="$team" PROFILE_UUID="$uuid"
+          python3 - <<'PY'
+          from pathlib import Path
+          import os, plistlib, subprocess
+          path = Path('ios/App/App.xcodeproj/project.pbxproj')
+          project = plistlib.loads(subprocess.check_output(['plutil','-convert','xml1','-o','-',str(path)]))
+          objects = project['objects']
+          target = next(x for x in objects.values() if x.get('isa') == 'PBXNativeTarget' and x.get('name') == 'App')
+          for cid in objects[target['buildConfigurationList']]['buildConfigurations']:
+              config = objects[cid]
+              if config['name'] == 'Release':
+                  config['buildSettings'].update(CODE_SIGN_STYLE='Manual', DEVELOPMENT_TEAM=os.environ['TEAM_ID'],
+                      CODE_SIGN_IDENTITY='Apple Distribution', PROVISIONING_PROFILE_SPECIFIER=os.environ['PROFILE_UUID'])
+          path.write_bytes(plistlib.dumps(project))
+          options = dict(method='app-store-connect', destination='upload', signingStyle='manual',
+              teamID=os.environ['TEAM_ID'], signingCertificate='Apple Distribution', manageAppVersionAndBuildNumber=False,
+              provisioningProfiles={'app.builtbyroger.skiwithme':os.environ['PROFILE_UUID']})
+          Path(os.environ['RUNNER_TEMP'],'export.plist').write_bytes(plistlib.dumps(options))
+          PY
+          xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
+            -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/SkiWithMe.xcarchive" archive
+          printf '%s' "$api_key_b64" | base64 -D > "$signing/AuthKey_$KEY_ID.p8"
+          xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/SkiWithMe.xcarchive" \
+            -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" \
+            -authenticationKeyPath "$signing/AuthKey_$KEY_ID.p8" -authenticationKeyID "$KEY_ID" \
+            -authenticationKeyIssuerID "$ISSUER"
+          rm -f "$signing/AuthKey_$KEY_ID.p8"
