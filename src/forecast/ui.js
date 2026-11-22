@@ -3,7 +3,7 @@ import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
 import { loadCatalog, searchResorts, sameName } from './resorts.js';
 import { VIEW_KEY, loadList, saveList, add, has, sortRows, topPickId } from './watchlist.js';
-import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale } from './data.js';
+import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit'];
@@ -31,7 +31,16 @@ const online = () => typeof navigator === 'undefined' || navigator.onLine !== fa
 const nameOf = (r) => (sameName(fc.list, r) ? `${r.name}, ${r.region}` : r.name);
 const place = (r) => [r.region, r.country].filter(Boolean).join(', ');
 const entry = (id) => fc.data.get(id) ?? { state: 'loading' };
-const rows = () => fc.list.map((resort) => ({ resort, entry: entry(resort.id), forecast: entry(resort.id).fc }));
+function current(resort) {
+  const e = entry(resort.id);
+  if (e.fc) {
+    const next = rescored(e.fc);
+    if (next !== e.fc) setEntry(resort, { fc: next });
+  }
+  return entry(resort.id);
+}
+const rows = () => fc.list.map((resort) => { const e = current(resort); return { resort, entry: e, forecast: e.fc }; });
+const nextDay = (date) => { const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
 const dayOf = (forecast, date) => forecast?.scored?.days.find((d) => d.date === date);
 
 // ---------- units
@@ -45,6 +54,25 @@ function setEntry(resort, patch) {
   fc.data.set(resort.id, { ...entry(resort.id), ...patch });
 }
 
+function focusKey() {
+  const el = document.activeElement;
+  if (!el || el === document.body || !document.querySelector('#sheet-body')?.contains(el)) return null;
+  const q = (k, v) => (v == null ? '' : `[${k}="${CSS.escape(v)}"]`);
+  const d = el.dataset;
+  if (d.act) return `[data-act="${CSS.escape(d.act)}"]${q('data-r', d.r)}${q('data-d', d.d)}${q('data-dir', d.dir)}${q('data-v', d.v)}`;
+  if (d.row) return q('data-row', d.row);
+  return el.id ? `#${CSS.escape(el.id)}` : null;
+}
+
+function redraw() {
+  const sheet = host.sheet();
+  if (sheet !== 'forecast' && sheet !== 'fcday') return;
+  const own = !fc.focusSel;
+  if (own) fc.focusSel = focusKey();
+  host.render();
+  if (own) fc.focusSel = null;
+}
+
 async function loadOne(resort, force) {
   if (!fc.data.has(resort.id)) setEntry(resort, { state: 'loading' });
   try {
@@ -54,14 +82,15 @@ async function loadOne(resort, force) {
     if (entry(resort.id).fc) setEntry(resort, { failedRefresh: true });
     else setEntry(resort, { state: 'error' });
   }
-  host.render();
+  redraw();
 }
 
 export async function loadAll(force = false) {
   const watched = [...fc.list];
+  if (force && fc.updating) return;
   fc.updating = force;
   fc.footer = '';
-  if (force) host.render();
+  if (force) redraw();
   await Promise.all(watched.map((r) => loadOne(r, force)));
   fc.updating = false;
   if (force) {
@@ -73,7 +102,7 @@ export async function loadAll(force = false) {
     else host.toast(t('Forecasts updated'), 6000);
     if (fc.footer) host.announce(fc.footer);
   }
-  host.render();
+  redraw();
 }
 
 function start() {
@@ -155,7 +184,9 @@ export function sheetCalendar() {
   const shown = sortRows(all, sortDate);
   const topId = sortDate ? topPickId(all, sortDate) : null;
   const failedAll = all.length > 0 && all.every((r) => r.entry.state === 'error');
-  const head = dates.map((d, i) => `<th scope="col" aria-sort="${d === sortDate ? 'descending' : 'none'}"><button class="fc-datehead${d === sortDate ? ' on' : ''}" data-act="fc-sort" data-d="${d}"><span>${i === 0 ? t('Today') : fmtWeekday(d)}</span><b>${fmtDayNumber(d)}</b><i aria-hidden="true">${d === sortDate ? '↓' : '↕'}</i></button></th>`).join('');
+  const todays = fc.list.map((r) => localToday(r.tz)).sort();
+  const dayLabel = (d) => (d === todays[0] ? t('Today') : d === nextDay(todays[0]) ? t('Tomorrow') : fmtWeekday(d));
+  const head = dates.map((d) => `<th scope="col" aria-sort="${d === sortDate ? 'descending' : 'none'}"><button class="fc-datehead${d === sortDate ? ' on' : ''}" data-act="fc-sort" data-d="${d}"><span>${dayLabel(d)}</span><b>${fmtDayNumber(d)}</b><i aria-hidden="true">${d === sortDate ? '↓' : '↕'}</i></button></th>`).join('');
   const table = dates.length
     ? `<div class="fc-scroll"><table class="fc-grid"><caption class="sr">${t('Ski score for each mountain on your list, by date')}</caption><thead><tr><th scope="col" class="fc-corner"><span class="sr">${t('Mountain')}</span></th>${head}</tr></thead><tbody>${shown.map((r) => rowHtml(r, dates, topId)).join('')}</tbody></table></div>`
     : `<div class="fc-scroll"><table class="fc-grid"><tbody>${shown.map((r) => rowHtml(r, ['·'], null)).join('')}</tbody></table></div>`;
@@ -251,10 +282,10 @@ function dayBody(resort, forecast, day) {
   return `
     <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
-    <p class="note">${esc(codeText(day.confidence.reason))}</p>
+    <p class="fc-note">${esc(codeText(day.confidence.reason))}</p>
     ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(n))}</p>`).join('')}
     <div class="boxes b3 fc-facts">${cbox(esc(winText), t('Best window'))}${cbox(day.peakHour ? `${esc(fmtHour(day.peakHour.hour))}` : '–', t('Peak hour'))}${cbox(esc(assumed ? t('Assumed {0}', range) : range), t('Ski hours'))}</div>
-    <p class="note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>
+    <p class="fc-note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>
     ${detail}
     ${siteCard(resort, f, day)}`;
 }
@@ -263,7 +294,7 @@ export function sheetDay(arg) {
   const resort = fc.list.find((r) => r.id === arg?.id);
   if (!resort) return sheetCalendar();
   start();
-  const e = entry(resort.id);
+  const e = current(resort);
   const forecast = e.fc;
   const dates = forecast ? forecast.scored.days.map((d) => d.date) : [];
   const i = dates.indexOf(arg.date);
@@ -435,7 +466,7 @@ export function onClick(b) {
       host.render();
       break;
     }
-    case 'fc-refresh': loadAll(true); break;
+    case 'fc-refresh': if (!fc.updating) loadAll(true); break;
     case 'fc-retry': { const r = fc.list.find((x) => x.id === d.r); if (r) { setEntry(r, { state: 'loading', fc: undefined }); host.render(); loadOne(r, true); } break; }
     case 'fc-day': {
       fc.bodyScroll = document.querySelector('#sheet-body')?.scrollTop ?? 0;

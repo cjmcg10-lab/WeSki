@@ -864,4 +864,6 @@ export default {
   965: 'The resort has confirmed {0} lift hold(s) for this day.',
   966: 'This day is outside the resort’s published season.',
   967: 'Too warm',
+  968: 'No explanation is available for this day.',
+  969: 'Tomorrow',
 };

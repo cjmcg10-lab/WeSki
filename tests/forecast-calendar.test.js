@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
 import EN from '../src/i18n/en.js';
 import { toResort, searchResorts, sameName, loadCatalog } from '../src/forecast/resorts.js';
 import { add, remove, move, insertAt, has, cleanList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
-import { loadForecast, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
-import { ageText, CODE_TEXT } from '../src/forecast/text.js';
+import { loadForecast, loadStatusSaved, rescored, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
+import { ageText, CODE_TEXT, codeText } from '../src/forecast/text.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
 const catalog = JSON.parse(readFileSync(new URL('../public/data/index.json', import.meta.url), 'utf8')).map(toResort);
@@ -127,7 +127,7 @@ describe('scoring a watched mountain', () => {
   });
 
   it('uses published hours, a confirmed closure and the out-of-season note from the resort status', () => {
-    const status = { id: 'stowe', hours: { from: 8, to: 15 }, closures: { '2026-11-23': { code: 'EX_COLD', params: [] } }, liftHolds: [{ lift: 'Gondola', status: 'delayed', date: '2026-11-22' }], season: { open: null, close: null, state: 'closed_for_season' }, grooming: [], assumed: false };
+    const status = { id: 'stowe', fetchedAt: new Date(now).toISOString(), hours: { from: 8, to: 15 }, closures: { '2026-11-23': { code: 'EX_COLD', params: [] } }, liftHolds: [{ lift: 'Gondola', status: 'delayed', date: '2026-11-22' }], season: { open: null, close: null, state: 'closed_for_season' }, grooming: [], assumed: false };
     const days = scoreResort(stowe, weather, { now, at: now, status }).days;
     expect(days[0].skiHours.assumed).toBe(false);
     expect([days[0].skiHours.from, days[0].skiHours.to]).toEqual([8, 15]);
@@ -137,11 +137,59 @@ describe('scoring a watched mountain', () => {
   });
 
   it('keeps the last real status when a refresh falls back to assumed', async () => {
-    const real = { id: 'stowe', hours: { from: 9, to: 16 }, closures: {}, liftHolds: [], grooming: [], season: null, assumed: false };
+    const real = { id: 'stowe', fetchedAt: new Date(now).toISOString(), hours: { from: 9, to: 16 }, closures: {}, liftHolds: [], grooming: [], season: null, assumed: false };
     const loadWx = () => Promise.resolve({ at: now, source: 'nws', summit: weather.summit, base: weather.base });
-    const first = await loadForecast(stowe, false, loadWx, () => Promise.resolve(real));
+    const first = await loadForecast(stowe, false, loadWx, () => Promise.resolve(real), now);
     expect(first.status).toBe(real);
     expect(first.scored.days[0].skiHours.assumed).toBe(false);
+  });
+
+  describe('status fallback and caching', () => {
+    const real = (fetchedAt) => ({ id: 'stowe', fetchedAt, hours: { from: 9, to: 16 }, closures: { '2026-11-23': { code: 'EX_COLD', params: [] } }, liftHolds: [{ lift: 'Gondola', status: 'delayed', date: '2026-11-22' }], grooming: [], season: null, assumed: false });
+    const assumed = { id: 'stowe', fetchedAt: null, hours: null, closures: {}, liftHolds: [], grooming: [], season: null, assumed: true };
+    const loadWx = (at) => () => Promise.resolve({ at, source: 'nws', summit: weather.summit, base: weather.base });
+    let mem;
+    beforeEach(() => { mem = new Map(); globalThis.localStorage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) }; });
+    afterEach(() => { delete globalThis.localStorage; });
+
+    it('saves the fetch time with a real status and reuses it for 20 minutes', async () => {
+      const calls = [];
+      const loader = (r) => { calls.push(r.id); return Promise.resolve(real(new Date(now).toISOString())); };
+      const first = await loadStatusSaved(stowe, loader, now);
+      expect(first.fetchedAt).toBe(new Date(now).toISOString());
+      await loadStatusSaved(stowe, loader, now + 10 * 60e3);
+      expect(calls).toHaveLength(1);
+      await loadStatusSaved(stowe, loader, now + 21 * 60e3);
+      expect(calls).toHaveLength(2);
+    });
+
+    it('keeps a recent saved status when the fetch fails', async () => {
+      await loadStatusSaved(stowe, () => Promise.resolve(real(new Date(now - 2 * 3600e3).toISOString())), now - 25 * 60e3);
+      const out = await loadForecast(stowe, false, loadWx(now), (r) => loadStatusSaved(r, () => Promise.resolve(assumed), now), now);
+      expect(out.status.closures['2026-11-23']).toBeTruthy();
+      expect(out.scored.days.find((d) => d.date === '2026-11-23').status).toBe('closed');
+    });
+
+    it('treats a saved status older than 6 hours as assumed hours with no closures or holds', async () => {
+      await loadStatusSaved(stowe, () => Promise.resolve(real(new Date(now - 9 * 3600e3).toISOString())), now - 25 * 60e3);
+      const out = await loadForecast(stowe, false, loadWx(now), (r) => loadStatusSaved(r, () => Promise.resolve(assumed), now), now);
+      const days = out.scored.days;
+      expect(days[0].skiHours.assumed).toBe(true);
+      expect([days[0].skiHours.from, days[0].skiHours.to]).toEqual([9, 16]);
+      expect(days.find((d) => d.date === '2026-11-23').status).not.toBe('closed');
+      expect(days[0].notes.map((n) => n.code)).not.toContain('EX_LIFT_HOLD_CONFIRMED');
+      expect(days[0].confidence.reason.code).toBe('CR_STALE');
+    });
+  });
+
+  it('scores again when the mountain’s date or the age band changed', () => {
+    const forecast = { resort: stowe, weather, at: now, status: undefined, scored: scoreResort(stowe, weather, { now, at: now }) };
+    expect(rescored(forecast, now + 60e3)).toBe(forecast);
+    const nextDay = rescored(forecast, Date.parse('2026-11-23T17:00:00Z'));
+    expect(nextDay).not.toBe(forecast);
+    expect(nextDay.scored.days[0].date).toBe('2026-11-23');
+    const aged = rescored(forecast, now + 7 * 3600e3);
+    expect(aged.scored.days[0].confidence.reason.code).toBe('CR_STALE');
   });
 
   it('never shows a day before today', () => {
@@ -219,13 +267,14 @@ describe('forecast text is translated', () => {
   const sources = ['ui.js', 'text.js', 'data.js'].map((f) => readFileSync(new URL(`../src/forecast/${f}`, import.meta.url), 'utf8'));
   const literals = new Set();
   for (const src of sources) {
-    for (const m of src.matchAll(/\b(?:t|tag|confWord)\(/g)) {
+    for (const m of src.matchAll(/\b(?:t|tag|confWord|codeText)\(/g)) {
       let depth = 1, j = m.index + m[0].length;
       const from = j;
       while (j < src.length && depth > 0) { const c = src[j]; if (c === '(' || c === '[') depth += 1; else if (c === ')' || c === ']') depth -= 1; j += 1; }
       for (const x of src.slice(from, j - 1).matchAll(/'((?:[^'\\]|\\.)*)'/g)) literals.add(x[1].replace(/\\'/g, "'"));
     }
   }
+  for (const src of sources) for (const m of src.matchAll(/fallback = '((?:[^'\\]|\\.)*)'/g)) literals.add(m[1]);
   const known = new Set(Object.values(EN));
 
   it('has an English entry for every t() literal', () => {
@@ -236,6 +285,12 @@ describe('forecast text is translated', () => {
   it('has an English entry for every engine code and band label', () => {
     expect(Object.values(CODE_TEXT).filter((s) => !known.has(s))).toEqual([]);
     for (const word of ['Epic', 'Great', 'Good', 'Fair', 'Poor', 'Morning', 'Midday', 'Afternoon', 'High', 'Medium', 'Low', 'Med']) expect(known.has(word), word).toBe(true);
+  });
+
+  it('translates the fallback text and the Tomorrow label', () => {
+    expect(literals.has('No explanation is available for this day.')).toBe(true);
+    expect(codeText(undefined)).toBe('No explanation is available for this day.');
+    expect(known.has('Tomorrow')).toBe(true);
   });
 
   it('covers every code the scoring engine can return', async () => {

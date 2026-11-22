@@ -39,7 +39,7 @@ function sourceInputs(resort, weather, opts) {
 }
 
 export function scoreForecast(resort, weather, opts = {}) {
-  const window = opts.hours ? { from: opts.hours.from, to: opts.hours.to, assumed: false } : { ...ASSUMED_HOURS, assumed: true };
+  const window = opts.hours ? { from: opts.hours.from, to: opts.hours.to, assumed: !!opts.hours.assumed } : { ...ASSUMED_HOURS, assumed: true };
   const groomedAt = groomedHours(opts.grooming, weather);
   const { rows, sites, history } = scoreHours(resort, weather ?? {}, groomedAt, opts.history);
   const dates = [...new Set(rows.map((r) => r.date))];

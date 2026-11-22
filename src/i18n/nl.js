@@ -358,4 +358,6 @@ export default {
   965: 'Het skigebied heeft {0} liftonderbreking(en) voor deze dag bevestigd.',
   966: 'Deze dag valt buiten het gepubliceerde seizoen van het skigebied.',
   967: 'Te warm',
+  968: 'Er is geen uitleg beschikbaar voor deze dag.',
+  969: 'Morgen',
 };

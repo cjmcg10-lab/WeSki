@@ -358,4 +358,6 @@ export default {
   965: 'Das Skigebiet hat {0} Liftunterbrechung(en) für diesen Tag bestätigt.',
   966: 'Dieser Tag liegt außerhalb der veröffentlichten Saison des Skigebiets.',
   967: 'Zu warm',
+  968: 'Für diesen Tag gibt es keine Erklärung.',
+  969: 'Morgen',
 };

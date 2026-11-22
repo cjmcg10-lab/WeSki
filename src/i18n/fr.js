@@ -358,4 +358,6 @@ export default {
   965: 'La station a confirmé {0} arrêt(s) de remontées pour ce jour.',
   966: 'Ce jour est hors de la saison publiée de la station.',
   967: 'Trop chaud',
+  968: 'Aucune explication n’est disponible pour ce jour.',
+  969: 'Demain',
 };

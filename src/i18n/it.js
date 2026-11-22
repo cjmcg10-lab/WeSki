@@ -358,4 +358,6 @@ export default {
   965: 'Il comprensorio ha confermato {0} sospensione/i degli impianti per questo giorno.',
   966: 'Questo giorno è fuori dalla stagione pubblicata del comprensorio.',
   967: 'Troppo caldo',
+  968: 'Nessuna spiegazione disponibile per questo giorno.',
+  969: 'Domani',
 };

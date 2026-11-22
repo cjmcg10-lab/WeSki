@@ -358,4 +358,6 @@ export default {
   965: 'La estación ha confirmado {0} retención(es) de remontes para este día.',
   966: 'Este día queda fuera de la temporada publicada de la estación.',
   967: 'Demasiado cálido',
+  968: 'No hay explicación disponible para este día.',
+  969: 'Mañana',
 };

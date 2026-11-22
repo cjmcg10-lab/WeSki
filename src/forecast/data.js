@@ -14,26 +14,73 @@ export const ageHoursOf = (at, now = Date.now()) => Math.max(0, (now - at) / HOU
 
 export const isStale = (hours) => hours >= STALE_HOURS;
 
-export function scoreResort(resort, weather, { now = Date.now(), at = now, status } = {}) {
-  const first = (weather?.base?.hourly?.time ?? weather?.summit?.hourly?.time ?? [])[0]?.slice(0, 10);
-  const local = localToday(resort.tz, now);
-  const today = first && local < first ? first : local;
-  const out = scoreForecast(resort, weather, { ...statusToScoreOpts(status), today, ageHours: ageHoursOf(at, now) });
-  return { ...out, days: out.days.filter((d) => d.date >= today) };
-}
-
+const STATUS_FRESH_MS = 20 * 60e3;
+const STATUS_GRACE_MS = 1500;
 const statusKey = (id) => `fcStatus:${id}`;
 
-export async function loadStatusSaved(resort, loader = loadResortStatus) {
-  const fresh = await loader(resort);
-  if (!fresh.assumed) { prefs.set(statusKey(resort.id), fresh); return fresh; }
-  return prefs.get(statusKey(resort.id), null) ?? fresh;
+const statusAgeHours = (status, now) => {
+  const at = Date.parse(status?.fetchedAt ?? '');
+  return Number.isFinite(at) ? ageHoursOf(at, now) : Infinity;
+};
+
+export function agedStatus(status, now = Date.now()) {
+  if (!status || status.assumed) return { status, ageHours: 0 };
+  const ageHours = statusAgeHours(status, now);
+  if (!isStale(ageHours)) return { status, ageHours };
+  const hours = status.hours ? { ...status.hours, assumed: true } : status.hours;
+  return { status: { ...status, hours, closures: {}, liftHolds: [] }, ageHours };
 }
 
-export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved) {
-  const [w, status] = await Promise.all([loader(resort, force), statusLoader(resort)]);
+function scoreToday(resort, weather, now) {
+  const first = (weather?.base?.hourly?.time ?? weather?.summit?.hourly?.time ?? [])[0]?.slice(0, 10);
+  const local = localToday(resort.tz, now);
+  return first && local < first ? first : local;
+}
+
+export function scoreResort(resort, weather, { now = Date.now(), at = now, status } = {}) {
+  const today = scoreToday(resort, weather, now);
+  const aged = agedStatus(status, now);
+  const weatherAge = ageHoursOf(at, now);
+  const opts = statusToScoreOpts(aged.status);
+  if (aged.status?.hours?.assumed && opts.hours) opts.hours = { ...opts.hours, assumed: true };
+  const out = scoreForecast(resort, weather, { ...opts, today, ageHours: Math.max(weatherAge, aged.ageHours === Infinity ? 0 : aged.ageHours) });
+  return { ...out, today, band: bandOfAges(weatherAge, aged.ageHours), days: out.days.filter((d) => d.date >= today) };
+}
+
+const bandOfAges = (weatherAge, statusAge) => `${isStale(weatherAge)}|${isStale(statusAge)}`;
+
+export function rescored(forecast, now = Date.now()) {
+  const { resort, weather, at, status, scored } = forecast;
+  if (scoreToday(resort, weather, now) === scored.today && bandOfAges(ageHoursOf(at, now), agedStatus(status, now).ageHours) === scored.band) return forecast;
+  return { ...forecast, scored: scoreResort(resort, weather, { now, at, status }) };
+}
+
+export function savedStatus(resort) {
+  const saved = prefs.get(statusKey(resort.id), null);
+  return saved?.status ? saved : null;
+}
+
+export async function loadStatusSaved(resort, loader = loadResortStatus, now = Date.now()) {
+  const saved = prefs.get(statusKey(resort.id), null);
+  if (saved?.status && now - saved.checkedAt < STATUS_FRESH_MS) return saved.status;
+  const fresh = await loader(resort);
+  if (!fresh.assumed) {
+    const status = { ...fresh, fetchedAt: fresh.fetchedAt ?? new Date(now).toISOString() };
+    prefs.set(statusKey(resort.id), { status, checkedAt: now });
+    return status;
+  }
+  return saved?.status ?? fresh;
+}
+
+const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved, now = Date.now()) {
+  const saved = savedStatus(resort);
+  const statusP = statusLoader(resort);
+  const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
+  const [w, status] = await Promise.all([loader(resort, force), quick]);
   const weather = { summit: w.summit, base: w.base };
-  return { resort, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(resort, weather, { at: w.at, status }) };
+  return { resort, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(resort, weather, { now, at: w.at, status }) };
 }
 
 export function columnDates(forecasts, count = 7) {

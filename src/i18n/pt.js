@@ -358,4 +358,6 @@ export default {
   965: 'A estação confirmou {0} paralisação(ões) de elevadores para este dia.',
   966: 'Este dia está fora da temporada publicada da estação.',
   967: 'Quente demais',
+  968: 'Não há explicação disponível para este dia.',
+  969: 'Amanhã',
 };
