@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { normaliseMtnpowder, publishedHours, resortStatus, assumedStatus } from '../worker/resort-status.js';
+import { normaliseMtnpowder, publishedHours, resortStatus, statusResponse, assumedStatus } from '../worker/resort-status.js';
 import { MTNPOWDER_IDS } from '../worker/resort-status-feeds.js';
 import { loadResortStatus, statusToScoreOpts } from '../src/forecast/status.js';
 import { scoreForecast, ALL_CODES } from '../src/forecast/score/index.js';
@@ -10,19 +10,36 @@ const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/$
 const RESORT = { id: 'palisades-tahoe', lat: 44.5, lon: -72.8, baseLat: 44.45, baseLon: -72.7, top: 1116, base: 399, tz: 'America/Los_Angeles' };
 const NOW = Date.parse('2026-11-22T17:30:00Z');
 const palisades = () => normaliseMtnpowder('palisades-tahoe', fixture('status-mtnpowder-palisades'), NOW);
-const stratton = () => normaliseMtnpowder('stratton', fixture('status-mtnpowder-stratton'), NOW);
 const dayZero = (name) => scoreForecast(RESORT, fixture(name)).days[0].date;
 
+const clone = (name, edit) => { const f = fixture(name); edit(f); return f; };
+const allLifts = (f) => f.MountainAreas.flatMap((a) => a.Lifts);
+const strattonToday = (lastUpdate) => clone('status-mtnpowder-stratton', (f) => {
+  f.LastUpdate = lastUpdate;
+  for (const l of allLifts(f)) l.UpdateDate = '2026-11-22T09:05:00-0500';
+});
+const palisadesToday = () => clone('status-mtnpowder-palisades', (f) => {
+  f.LastUpdate = '2026-11-22T10:30:00-0800';
+  for (const l of allLifts(f).filter((x) => x.StatusEnglish === 'delayed' || x.StatusEnglish === 'open_to_mid_station_only')) l.UpdateDate = '2026-11-22T09:10:00-0800';
+});
+const NOON_ET = Date.parse('2026-11-22T17:00:00Z');
+
 describe('feed normaliser (recorded mtnpowder.com responses)', () => {
-  it('reads published hours, season, lift holds and grooming from an operating resort', () => {
+  it('reads published hours and season from an operating resort, and grooming from the last 24 hours', () => {
     const s = palisades();
     expect(s).toMatchObject({ id: 'palisades-tahoe', source: 'mtnpowder', assumed: false, hours: { from: 9, to: 16 }, season: { state: 'open' }, closures: {} });
     expect(s.fetchedAt).toBe('2026-11-22T17:30:00.000Z');
-    expect(s.liftHolds).toEqual([
-      { lift: 'Summit Express', status: 'delayed', date: '2026-11-22', at: '2026-11-21T16:14' },
-      { lift: 'Treeline Cirque', status: 'partial', date: '2026-11-22', at: '2026-11-20T16:07' },
-    ]);
+    expect(s.updatedAt).toBe('2026-11-22T16:58:48.000Z');
     expect(s.grooming.map((g) => g.at)).toEqual(['2026-11-21T10:23', '2026-11-21T10:24']);
+  });
+
+  it('counts a lift hold as confirmed only when the lift changed today, local time', () => {
+    expect(palisades().liftHolds).toEqual([]);
+    const s = normaliseMtnpowder('palisades-tahoe', palisadesToday(), NOW);
+    expect(s.liftHolds).toEqual([
+      { lift: 'Summit Express', status: 'delayed', date: '2026-11-22', at: '2026-11-22T09:10' },
+      { lift: 'Treeline Cirque', status: 'partial', date: '2026-11-22', at: '2026-11-22T09:10' },
+    ]);
   });
 
   it('does not call a resort closed when its lifts are running, even if the headline status says Closed', () => {
@@ -30,11 +47,25 @@ describe('feed normaliser (recorded mtnpowder.com responses)', () => {
     expect(palisades().closures).toEqual({});
   });
 
-  it('turns a resort that reports closed with no lift running into a confirmed closure for that date only', () => {
-    const s = stratton();
+  it('turns a headline Closed with lifts closed today during published hours into a closure for that date only', () => {
+    const s = normaliseMtnpowder('stratton', strattonToday('2026-11-22T11:58:48-0500'), NOON_ET);
     expect(s.season).toMatchObject({ state: 'not_open' });
     expect(s.closures).toEqual({ '2026-11-22': { code: 'closed.ops_report', params: ['Stratton'], source: 'mtnpowder' } });
     expect(s.hours).toEqual({ from: 9, to: 16 });
+  });
+
+  it.each(['2026-11-22T18:30:00-0500', '2026-11-22T07:30:00-0500'])('gives no closure and no season state when the feed is read outside published hours (%s)', (lastUpdate) => {
+    const s = normaliseMtnpowder('stratton', strattonToday(lastUpdate), Date.parse(lastUpdate.replace(/([+-]\d\d)(\d\d)$/, '$1:$2')));
+    expect(s.assumed).toBe(false);
+    expect(s.closures).toEqual({});
+    expect(s.season).toBeNull();
+  });
+
+  it('gives no closure when the closed lifts were last changed on an earlier day', () => {
+    const f = clone('status-mtnpowder-stratton', (x) => { for (const l of allLifts(x)) l.UpdateDate = '2026-11-21T09:05:00-0500'; });
+    const s = normaliseMtnpowder('stratton', f, NOON_ET);
+    expect(s.closures).toEqual({});
+    expect(s.season).toBeNull();
   });
 
   it('records closed-for-season as a season state and never as a closure', () => {
@@ -43,10 +74,9 @@ describe('feed normaliser (recorded mtnpowder.com responses)', () => {
     expect(s.closures).toEqual({});
   });
 
-  it('falls back to the labelled assumed status when the feed is stale or malformed', () => {
-    const feed = fixture('status-mtnpowder-palisades');
-    const stale = normaliseMtnpowder('palisades-tahoe', feed, Date.parse('2026-11-25T00:00:00Z'));
-    expect(stale).toEqual(assumedStatus('palisades-tahoe'));
+  it('falls back to the labelled assumed status when the lifts have not changed for 36 hours, or the feed is malformed', () => {
+    expect(normaliseMtnpowder('stratton', fixture('status-mtnpowder-stratton'), NOW)).toEqual(assumedStatus('stratton'));
+    expect(normaliseMtnpowder('palisades-tahoe', fixture('status-mtnpowder-palisades'), Date.parse('2026-11-25T00:00:00Z'))).toEqual(assumedStatus('palisades-tahoe'));
     expect(normaliseMtnpowder('x', { LastUpdate: 'soon' }, NOW).assumed).toBe(true);
     expect(normaliseMtnpowder('x', null, NOW).assumed).toBe(true);
   });
@@ -66,32 +96,81 @@ describe('feed normaliser (recorded mtnpowder.com responses)', () => {
 
 describe('server entry', () => {
   const feed = fixture('status-mtnpowder-palisades');
-  it('answers with the assumed status until the source is switched live, and for unmapped resorts', async () => {
-    expect(await resortStatus('palisades-tahoe', { fetchFeed: () => { throw new Error('must not fetch'); } })).toEqual(assumedStatus('palisades-tahoe'));
-    expect((await resortStatus('stowe', { live: ['mtnpowder'], fetchFeed: () => { throw new Error('must not fetch'); } })).assumed).toBe(true);
+  const never = () => { throw new Error('must not fetch'); };
+  it('answers with the assumed status when the source is not live, and for unmapped resorts', async () => {
+    expect(await resortStatus('palisades-tahoe', { live: [], fetchFeed: never })).toEqual(assumedStatus('palisades-tahoe'));
+    expect((await resortStatus('stowe', { fetchFeed: never })).assumed).toBe(true);
   });
 
-  it('fetches the mapped feed number and normalises it when live', async () => {
+  it('does not read ids off the object prototype', async () => {
+    for (const id of ['constructor', 'toString', '__proto__']) expect((await resortStatus(id, { fetchFeed: never })).assumed).toBe(true);
+  });
+
+  it('fetches the mapped feed number and normalises it (live by default)', async () => {
     const seen = [];
-    const s = await resortStatus('palisades-tahoe', { live: ['mtnpowder'], now: NOW, fetchFeed: async (n) => (seen.push(n), feed) });
+    const s = await resortStatus('palisades-tahoe', { now: NOW, fetchFeed: async (n) => (seen.push(n), feed) });
     expect(seen).toEqual([61]);
     expect(s.hours).toEqual({ from: 9, to: 16 });
   });
+});
 
-  it('lets a failed feed fetch reach the route, which answers 502', async () => {
-    await expect(resortStatus('palisades-tahoe', { live: ['mtnpowder'], fetchFeed: async () => { throw new Error('resort feed 500'); } })).rejects.toThrow('resort feed 500');
+describe('status route with stubbed fetch and cache', () => {
+  const feedText = JSON.stringify(fixture('status-mtnpowder-palisades'));
+  const stub = (fetchImpl) => {
+    const store = new Map();
+    const puts = [];
+    vi.stubGlobal('caches', { default: { match: async (k) => store.get(k.url), put: async (k, r) => { puts.push(k.url); store.set(k.url, r); } } });
+    vi.stubGlobal('fetch', fetchImpl);
+    return puts;
+  };
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('fetches once with the weski-build agent and a timeout, caches the feed, and answers with a cache header', async () => {
+    const calls = [];
+    const puts = stub(async (url, init) => (calls.push({ url, init }), new Response(feedText)));
+    const first = await statusResponse('palisades-tahoe', { now: Date.parse('2026-11-22T17:30:00Z') });
+    expect(first.status).toBe(200);
+    expect(first.headers.get('cache-control')).toBe('public, max-age=300');
+    expect((await first.json()).id).toBe('palisades-tahoe');
+    expect(calls).toHaveLength(1);
+    expect(calls[0].url).toBe('https://mtnpowder.com/feed?resortId=61');
+    expect(calls[0].init.headers['user-agent']).toBe('weski-build');
+    expect(calls[0].init.signal).toBeInstanceOf(AbortSignal);
+    await statusResponse('palisades-tahoe', { now: Date.parse('2026-11-22T17:30:00Z') });
+    expect(calls).toHaveLength(1);
+    expect(puts).toHaveLength(1);
+  });
+
+  it('answers 502 and caches nothing when the upstream fails or sends a body that is not JSON', async () => {
+    let puts = stub(async () => new Response('<html>oops</html>'));
+    const bad = await statusResponse('palisades-tahoe');
+    expect(bad.status).toBe(502);
+    expect(bad.headers.get('cache-control')).toBe('no-store');
+    expect(puts).toEqual([]);
+    puts = stub(async () => new Response('x', { status: 503 }));
+    expect((await statusResponse('palisades-tahoe')).status).toBe(502);
+    expect(puts).toEqual([]);
+  });
+
+  it('answers the assumed status without any request for an unmapped resort', async () => {
+    stub(async () => { throw new Error('must not fetch'); });
+    const res = await statusResponse('stowe');
+    expect((await res.json()).assumed).toBe(true);
   });
 });
 
 describe('phone side', () => {
   const respond = (body, ok = true) => async () => ({ ok, json: async () => body });
-  it('returns the server status when it is well formed', async () => {
+  it('returns the server status when it is well formed, asking with a timeout', async () => {
     const s = palisades();
-    expect(await loadResortStatus({ id: 'palisades-tahoe' }, respond(s))).toEqual(s);
+    let init;
+    expect(await loadResortStatus({ id: 'palisades-tahoe' }, async (u, i) => (init = i, { ok: true, json: async () => s }))).toEqual(s);
+    expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('returns a labelled assumed status offline, on an error status, and on a bad body', async () => {
     const assumed = assumedStatus('palisades-tahoe');
+    expect(assumed.updatedAt).toBeNull();
     expect(await loadResortStatus({ id: 'palisades-tahoe' }, async () => { throw new TypeError('offline'); })).toEqual(assumed);
     expect(await loadResortStatus({ id: 'palisades-tahoe' }, respond({}, false))).toEqual(assumed);
     expect(await loadResortStatus({ id: 'palisades-tahoe' }, respond({ nope: 1 }))).toEqual(assumed);
@@ -99,12 +178,21 @@ describe('phone side', () => {
   });
 
   it('gives the engine options, and leaves the assumed window in place when no hours are published', () => {
-    expect(statusToScoreOpts(palisades())).toMatchObject({ hours: { from: 9, to: 16 }, liftHolds: expect.any(Array), closures: {}, season: { state: 'open' } });
+    expect(statusToScoreOpts(palisades())).toMatchObject({ hours: { from: 9, to: 16 }, liftHolds: [], closures: {}, season: { state: 'open' } });
     const none = statusToScoreOpts(assumedStatus('x'));
     expect(none.hours).toBeUndefined();
     const out = scoreForecast(RESORT, fixture('scenario-clear-groomer'), none);
     expect(out.hours.assumed).toBe(true);
     expect(out.days[0].flags).toContain('assumed_hours');
+  });
+
+  it('drops malformed entries so a bad body cannot crash the engine', () => {
+    const bad = { ...assumedStatus('x'), hours: { from: 'a', to: 9 }, liftHolds: [null, { lift: 3 }, { lift: 'A', status: 'delayed', date: '2026-11-22' }], grooming: [null, { at: 5 }, { at: 'soon' }, { at: '2026-11-22T08:00' }], closures: null, season: 'open' };
+    const opts = statusToScoreOpts(bad);
+    expect(opts).toMatchObject({ hours: undefined, closures: {}, season: undefined });
+    expect(opts.liftHolds).toHaveLength(1);
+    expect(opts.grooming).toEqual([{ at: '2026-11-22T08:00' }]);
+    expect(() => scoreForecast(RESORT, fixture('scenario-clear-groomer'), opts)).not.toThrow();
   });
 });
 
@@ -113,7 +201,7 @@ describe('engine with resort status', () => {
 
   it('shows Closed only for the confirmed closure date and keeps the other days scored', () => {
     const date = dayZero('real-stowe-2026-11-22');
-    const out = run('real-stowe-2026-11-22', statusToScoreOpts({ ...stratton(), closures: { [date]: stratton().closures['2026-11-22'] } }));
+    const out = run('real-stowe-2026-11-22', statusToScoreOpts({ ...assumedStatus('stratton'), closures: { [date]: { code: 'closed.ops_report', params: ['Stratton'], source: 'mtnpowder' } } }));
     expect(out.days[0]).toMatchObject({ status: 'closed', score: null, closureSource: { code: 'closed.ops_report', source: 'mtnpowder' } });
     expect(out.days.slice(1).every((d) => d.status === 'ok')).toBe(true);
   });
@@ -168,6 +256,12 @@ describe('engine with resort status', () => {
     expect(groomed.hours[8].components.surface).toBe(plain.hours[8].components.surface);
     const yesterday = run('scenario-freeze-thaw', { grooming: [{ trail: 'Main', at: '2000-01-01T11:20' }] }).days[0];
     expect(yesterday.score).toBe(plain.score);
+  });
+
+  it('a real feed grooming reaches the score: reports from the last day map to the first hour of day 0', () => {
+    const out = run('real-stowe-2026-11-22', statusToScoreOpts(palisades()));
+    expect(out.days[0].flags).toContain('grooming_reported');
+    expect(out.days[1].flags).not.toContain('grooming_reported');
   });
 
   it('lists the new codes in the published list', () => {

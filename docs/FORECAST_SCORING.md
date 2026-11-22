@@ -34,7 +34,7 @@ const out = scoreForecast(resort, weather, opts);
 | `closures` | `{ 'YYYY-MM-DD': closureSource \| true }` confirmed closures. Only the caller can say a day is closed |
 | `season` | `{ open, close, state }` from the resort status: `state` is `'open'`, `'closed_for_season'` or `'not_open'`; `open` and `close` are local dates or `null`. A date is out of season when `state` is `closed_for_season` or `not_open`, before `open`, or after `close`. It only adds a note, never a closure |
 | `liftHolds` | `[{ lift, status: 'delayed' \| 'partial', date, from?, to? }]` holds the resort has confirmed, for the dates they apply to. They are shown beside the score and never change it |
-| `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). Reports before the first weather hour are ignored |
+| `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
 | `ageHours` | Age of the forecast in hours, for the stale-source reason |
 
@@ -110,7 +110,7 @@ Hour score at a site = 0.45 surface + 0.25 visibility + 0.20 wind + 0.10 comfort
 
 The wet and crust penalties are steep on purpose: steady moderate rain on snow lands below about 45 for the day, and a hard refreeze costs the surface up to 55 points. Thunder counts as rain only when it is above 0 °C with no snowfall; thundersnow is snow.
 
-A grooming report (`opts.grooming`) is applied once, at the hour of its timestamp, before that hour's step: `crust` × 0.25 and `wet` × 0.7 (groomers break up a crust and firm a wet surface). The resort feed's report time is the time it updated the trail, so this is a deliberately small effect.
+A grooming report (`opts.grooming`) is applied once, at the hour of its timestamp, before that hour's step: `crust` × 0.25 and `wet` × 0.7 (groomers break up a crust and firm a wet surface). The resort feed's report time is the time it updated the trail, so this is a deliberately small effect. A report mapped to the first hour of day 0 meets the starting surface (no crust, wet 0 or 0.2), so it changes little there and mostly sets the `grooming_reported` flag.
 
 Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the history is limited, and every day carries the flag `snow_history_limited` and a confidence that is never High.
 

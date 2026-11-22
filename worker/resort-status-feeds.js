@@ -11,4 +11,4 @@ export const MTNPOWDER_IDS = {
   'crystal-mountain': 80,
 };
 
-export const LIVE_SOURCES = [];
+export const LIVE_SOURCES = ['mtnpowder'];
