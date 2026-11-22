@@ -14,13 +14,15 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
-concurrency:
-  group: skiwithme-ios-beta
-  cancel-in-progress: false
 jobs:
   build:
     runs-on: macos-26
     timeout-minutes: 35
+    # One build and upload at a time. Only this job is serialised here, so a new merge's build does not wait behind
+    # the previous run's distribute job (which can poll Apple for up to 40 minutes); that job has its own group.
+    concurrency:
+      group: skiwithme-ios-beta
+      cancel-in-progress: false
     outputs:
       build_number: ${{ steps.number.outputs.number }}
     steps:
