@@ -17,18 +17,21 @@ const CHECK_GAP = 30 * 60 * 1000;   // ask the server for a new version at most 
 export function watchUpdates({ sw, isSafe, show, reload = () => location.reload(), now = Date.now, gap = CHECK_GAP }) {
   // Without a worker in charge yet, the first takeover is the very first install, not a new version.
   let hadController = !!sw.controller;
-  let reg = null, lastCheck = now(), ready = false, reloading = false;
+  let reg = null, lastCheck = now(), ready = false, reloading = false, last = null;
 
   const doReload = () => { if (reloading) return; reloading = true; reload(); };
-  const markReady = () => {
-    if (ready) return;
+  // Each new version asks again, so a bar closed with "Not now" comes back for the next one (show() adds one bar only).
+  // The takeover and the new worker's "activated" both report the same version: count it once.
+  const markReady = (worker) => {
+    if (worker && worker === last) return;
+    last = worker || null;
     ready = true;
     if (isSafe()) doReload(); else show();
   };
 
   sw.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; }
-    markReady();
+    markReady(sw.controller);
   });
 
   return {
@@ -39,8 +42,11 @@ export function watchUpdates({ sw, isSafe, show, reload = () => location.reload(
       if (!r) return;
       r.addEventListener('updatefound', () => {
         const w = r.installing;
-        if (!w) return;
-        w.addEventListener('statechange', () => { if (w.state === 'activated' && hadController) markReady(); });
+        // A worker found while no worker runs this screen is the very first install (its takeover sets the
+        // controller before it reports "activated"), not a new version.
+        if (!w || !sw.controller) return;
+        let done = false;
+        w.addEventListener('statechange', () => { if (w.state === 'activated' && !done) { done = true; markReady(w); } });
       });
     },
     /** Ask the server whether a newer version exists (at most every `gap` milliseconds unless forced). */
