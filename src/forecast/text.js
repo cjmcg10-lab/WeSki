@@ -88,7 +88,7 @@ export const fmtHourRange = (from, to) => `${fmtHour(from)}–${fmtHour(to)}`;
 export function codeText(item, fallback = 'No explanation is available for this day.') {
   const en = item && CODE_TEXT[item.code];
   if (!en) return t(fallback);
-  const params = (item.params ?? []).map((p) => (HOUR_PARAM.has(item.code) ? fmtHour(p) : typeof p === 'number' ? Math.round(p) : p));
+  const params = (item.params ?? []).map((p) => (HOUR_PARAM.has(item.code) ? fmtHour(p) : typeof p === 'number' ? Math.round(p) : (p ?? '')));
   return t(en, ...params);
 }
 

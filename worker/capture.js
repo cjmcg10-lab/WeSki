@@ -75,7 +75,8 @@ async function capture(env, id, url, result, now, observe, resolve) {
 
 async function lastGood(env, id, now) {
   try {
-    return await store(env, id).lastGood(now);
+    const last = await store(env, id).lastGood(now);
+    return last && { ...last, alerts: [] };
   } catch (e) {
     console.error('last good forecast unavailable', { id, message: e.message });
     return null;

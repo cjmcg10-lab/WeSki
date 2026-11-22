@@ -8,17 +8,17 @@ export const inCanada = (lat, lon) => lat > 41.5 && lat < 84 && lon > -141 && lo
 export const inNordics = (lat, lon) => lat > 54 && lat < 72 && lon > 3 && lon < 32;
 export const inNorway = (lat, lon) => lat > 57.5 && lat < 72 && lon > 4 && lon < 31.5;
 
-/** Fetch JSON through Cloudflare's cache for ttl seconds (the upstream's own expiry when it is longer). */
-export async function cachedJson(url, ttl, headers = {}) {
+/** Fetch JSON through Cloudflare's cache for ttl seconds (the upstream's own expiry when it is longer, unless `exactTtl`). */
+export async function cachedJson(url, ttl, headers = {}, { timeoutMs = FETCH_TIMEOUT_MS, exactTtl = false } = {}) {
   const cache = typeof caches !== 'undefined' ? caches.default : null;
   const key = new Request(url);
   const hit = cache && (await cache.match(key));
   if (hit) return hit.json();
-  const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/geo+json, application/json', ...headers }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+  const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/geo+json, application/json', ...headers }, signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) throw new Error(`weather source ${res.status}`);
   const body = await res.text();
   const exp = Date.parse(res.headers.get('expires') || '') || 0;
-  const age = Math.max(ttl, Math.round((exp - Date.now()) / 1000));
+  const age = exactTtl ? ttl : Math.max(ttl, Math.round((exp - Date.now()) / 1000));
   if (cache) await cache.put(key, new Response(body, { headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${age}` } }));
   return JSON.parse(body);
 }

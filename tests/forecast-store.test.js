@@ -387,7 +387,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
     const { env } = fakeEnv();
     const ctx = context();
     const observe = async () => ({ station: null, rows: [] });
-    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(NOW - 40 * 60e3), observe, now: NOW });
+    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => ({ ...result(NOW - 40 * 60e3), alerts: [{ event: 'Winter Storm Warning', level: 'warning', from: '2026-11-22T10:00', to: '2026-11-23T10:00', source: 'nws-alerts' }] }), observe, now: NOW });
     await Promise.all(ctx.pending);
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const later = NOW + 7 * HOUR;
@@ -400,6 +400,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=60');
     const served = await body(res);
     expect(served).toMatchObject({ stale: true, source: 'nws' });
+    expect(served.alerts).toEqual([]);
     expect(served.ageHours).toBeCloseTo(7.7, 1);
     const out = scoreForecast({ id: 'stowe', top: 1116, base: 399 }, served);
     expect(out.days[0].confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [8] } });

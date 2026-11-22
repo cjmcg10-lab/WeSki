@@ -157,6 +157,50 @@ describe('alerts on recorded responses', () => {
     expect(await alertsFor(46.02, 7.75)).toEqual([]);
   });
 
+  it('a US point never asks Environment Canada', async () => {
+    const urls = [];
+    vi.stubGlobal('fetch', async (u) => {
+      urls.push(String(u));
+      return new Response(JSON.stringify(fixture('nws-alerts-olympics')));
+    });
+    await alertsFor(47.97, -123.5);
+    await alertsFor(44.53, -72.78);
+    expect(urls.length).toBe(2);
+    expect(urls.some((u) => u.includes('weather.gc.ca'))).toBe(false);
+  });
+
+  it('NWS: the end falls back from ends to eventEndingTime to expires', async () => {
+    const feature = (props) => ({ features: [{ properties: { status: 'Actual', messageType: 'Alert', event: 'Winter Storm Warning', onset: '2026-11-22T10:00:00Z', ...props } }] });
+    const endOf = async (props) => {
+      answer([['alerts/active', feature(props)]]);
+      return (await alertsFor(47.97, -123.5))[0].to;
+    };
+    expect(await endOf({ ends: '2026-11-23T01:00:00Z', eventEndingTime: '2026-11-23T02:00:00Z', expires: '2026-11-23T03:00:00Z' })).toBe(Date.parse('2026-11-23T01:00:00Z'));
+    expect(await endOf({ ends: null, eventEndingTime: '2026-11-23T02:00:00Z', expires: '2026-11-23T03:00:00Z' })).toBe(Date.parse('2026-11-23T02:00:00Z'));
+    expect(await endOf({ ends: null, expires: '2026-11-23T03:00:00Z' })).toBe(Date.parse('2026-11-23T03:00:00Z'));
+  });
+
+  it('Environment Canada: one feature with no name does not drop the others; marine and tropical alerts are left out', async () => {
+    const f = (props) => ({ properties: { status_en: 'active', alert_type: 'warning', validity_datetime: '2026-11-22T10:00:00Z', expiration_datetime: '2026-11-23T10:00:00Z', ...props } });
+    answer([['alerts/active', new Response('{}', { status: 400 })], ['weather-alerts', { features: [f({}), f({ alert_name_en: 'snowfall warning' }), f({ alert_name_en: 'freezing spray warning' }), f({ alert_name_en: 'tropical storm warning' })] }]]);
+    expect((await alertsFor(49.4, -82.4)).map((a) => a.event)).toEqual(['Snowfall warning']);
+  });
+
+  it('a hanging alert service does not hold the forecast back', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.stubGlobal('fetch', (u) => {
+      const url = String(u);
+      if (url.includes('alerts/active')) return new Promise(() => {});
+      const hit = nwsRoutes.find(([part]) => url.includes(part));
+      return Promise.resolve(new Response(JSON.stringify(hit[1])));
+    });
+    const started = Date.now();
+    const res = await forecast(new URL(STOWE), NOW);
+    expect(res.alerts).toEqual([]);
+    expect(res.source).toBe('nws');
+    expect(Date.now() - started).toBeLessThan(3000);
+  });
+
   it('the forecast carries the alerts as local times in the resort\'s zone', async () => {
     answer([...nwsRoutes.slice(0, 2), ['alerts/active', fixture('nws-alerts-olympics')]]);
     const res = await forecast(new URL('https://x/api/weather?lat=47.97&lon=-123.5&top=1600&base=600&tz=America/Los_Angeles'), NOW);
