@@ -233,19 +233,19 @@ body.flying #topbar, body.flying #fabs, body.flying #tabs, body.flying #navbar, 
    each panel title, teal for the main action and the selected choice.
    ====================================================================== */
 :root {
-  --teal: #3ee6c4; --teal2: #22c9a8; --teal-ink: #04261f; --teal-soft: rgba(62, 230, 196, .16);
+  --teal: #3ee6c4; --teal2: #22c9a8; --teal-ink: #04261f; --teal-soft: rgba(62, 230, 196, .16); --teal-glow: rgba(62, 230, 196, .22); --teal-glow-strong: rgba(62, 230, 196, .3);
   --edge: rgba(150, 190, 230, .26); --edge2: rgba(150, 190, 230, .4);
   --panel: linear-gradient(180deg, #14293e 0%, #0b1a2a 60%, #081422 100%);
   --card: rgba(28, 52, 76, .55); --card2: rgba(34, 60, 86, .6); --bg: #0b1a2a; --head: #e9f1f8; --cap: #a8c1d8;
   --chip: rgba(10, 24, 38, .7); --seg-on: rgba(62, 230, 196, .22); --muted: #9fb2c4;
 }
 :root[data-theme="light"] {
-  --teal: #00715c; --teal2: #005f4d; --teal-ink: #ffffff; --teal-soft: rgba(0, 113, 92, .12);
+  --teal: #00715c; --teal2: #005f4d; --teal-ink: #ffffff; --teal-soft: rgba(0, 113, 92, .12); --teal-glow: rgba(0, 113, 92, .22); --teal-glow-strong: rgba(0, 113, 92, .3);
   --edge: rgba(30, 70, 110, .16); --edge2: rgba(30, 70, 110, .3);
   --panel: linear-gradient(180deg, #ffffff 0%, #f3f6fa 100%);
   --card: #ffffff; --card2: #ffffff; --bg: #f3f6fa; --head: #12202e; --cap: #4f6a84; --chip: #e7edf3; --seg-on: rgba(0, 113, 92, .16);
 }
-:root[data-theme="light"] #start { --teal: #3ee6c4; --teal2: #22c9a8; --teal-ink: #04261f; --teal-soft: rgba(62, 230, 196, .16); --seg-on: rgba(62, 230, 196, .22); }
+:root[data-theme="light"] :is(#start, #consent) { --teal: #3ee6c4; --teal2: #22c9a8; --teal-ink: #04261f; --teal-soft: rgba(62, 230, 196, .16); --seg-on: rgba(62, 230, 196, .22); --teal-glow: rgba(62, 230, 196, .22); --teal-glow-strong: rgba(62, 230, 196, .3); }
 
 /* header */
 #headbg { position: absolute; top: 0; left: 0; right: 0; height: calc(var(--sat) + 74px); z-index: 4; pointer-events: none;
@@ -308,7 +308,7 @@ body.navigating #fabs { bottom: calc(var(--tabs) + 14px); }
 .card h3 { font-size: 14px; letter-spacing: 1.6px; color: var(--cap); margin-bottom: 10px; font-weight: 700; }
 .card h4 { margin: 0 0 6px; font-size: 19px; font-weight: 800; letter-spacing: -.2px; }
 .card .sub, .sub { color: var(--muted); }
-.btn { background: linear-gradient(180deg, var(--teal), var(--teal2)); color: var(--teal-ink); font-size: 17px; padding: 14px; border-radius: 16px; box-shadow: 0 4px 16px rgba(62, 230, 196, .22); }
+.btn { background: linear-gradient(180deg, var(--teal), var(--teal2)); color: var(--teal-ink); font-size: 17px; padding: 14px; border-radius: 16px; box-shadow: 0 4px 16px var(--teal-glow); }
 .btn.go { background: linear-gradient(180deg, var(--teal), var(--teal2)); }
 .btn.alt { background: rgba(40, 66, 92, .55); color: var(--ink); border: 1px solid var(--edge2); box-shadow: none; }
 .btn.outline { background: rgba(8, 22, 36, .5); color: var(--ink); border: 1.5px solid var(--teal); box-shadow: none; }
@@ -488,7 +488,7 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 #resort-card .facts > div { border-left: 1px solid var(--edge2); }
 #resort-card .facts > div:first-child { border-left: 0; }
 #resort-card .facts b { font-size: 19px; } #resort-card .facts span { text-transform: none; letter-spacing: 0; color: #dce8f3; font-size: 13.5px; }
-#resort-card .ski-here { background: linear-gradient(180deg, var(--teal), var(--teal2)); color: var(--teal-ink); font-size: 21px; padding: 13px; border-radius: 14px; box-shadow: 0 6px 18px rgba(62, 230, 196, .3); }
+#resort-card .ski-here { background: linear-gradient(180deg, var(--teal), var(--teal2)); color: var(--teal-ink); font-size: 21px; padding: 13px; border-radius: 14px; box-shadow: 0 6px 18px var(--teal-glow-strong); }
 #resort-card .ski-here.off { background: rgba(40, 66, 92, .6); color: var(--muted); box-shadow: none; }
 #resort-card .join-btn { margin: 10px 0 0; font-size: 19px; padding: 12px; }
 #resort-card .soon { color: #dce8f3; margin: 12px 0; }
