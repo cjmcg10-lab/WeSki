@@ -19,6 +19,7 @@ import { dragPanel } from './drag.js';
 import { parseLook, lookString, CHARACTERS, SKIN, HAIR_COLORS, LENS, HAT_COLORS, PANTS, GEAR, HEADS, HAIRS } from './look.js';
 import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
+import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
 import * as acct from './account.js';
 import * as fcUi from './forecast/ui.js';
@@ -698,8 +699,35 @@ function askLeaveResort() {
   $('#modal').classList.remove('hidden');
 }
 
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  navigator.serviceWorker.register('/sw.js').catch(() => {});
+// New versions: reload by itself only while the start screen shows and nothing is under way (no directions, group,
+// tracking, open sheet, pop-up or typing); otherwise show a "New version ready" bar and let the person choose.
+const isHidden = (sel) => { const el = document.querySelector(sel); return !el || el.classList.contains('hidden'); };
+function safeToReload() {
+  if (S.nav || S.group || S.tracker || S.session) return false;
+  if (isHidden('#start') || document.body.classList.contains('flying')) return false;
+  if (!isHidden('#sheet') || !isHidden('#modal') || $('#consent') || $('#docview:not(.hidden)')) return false;
+  const f = document.activeElement;
+  return !(f && /^(INPUT|TEXTAREA|SELECT)$/.test(f.tagName));
+}
+function showUpdateBar() {
+  if ($('#update-bar')) return;
+  const el = document.createElement('div');
+  el.id = 'update-bar';
+  el.setAttribute('role', 'status');
+  el.innerHTML = `<span>${esc(t('New version ready'))}</span>
+    <button class="up-go" data-act="update-reload">${esc(t('Reload'))}</button>
+    <button class="up-x" data-act="update-later" aria-label="${esc(t('Not now'))}">✕</button>`;
+  document.body.appendChild(el);
+}
+const updates = 'serviceWorker' in navigator && location.protocol === 'https:'
+  ? watchUpdates({ sw: navigator.serviceWorker, isSafe: safeToReload, show: showUpdateBar })
+  : null;
+if (updates) {
+  navigator.serviceWorker.register('/sw.js').then((r) => updates.attach(r)).catch(() => {});
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') updates.check();
+    else updates.tryReload();               // leaving the app on the start screen: the new version is there on return
+  });
 }
 persist();
 // Language: translate the page as it changes, starting with the saved choice or the phone's language.
@@ -2252,6 +2280,8 @@ async function onClick(e) {
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
+    case 'update-reload': updates?.reloadNow(); break;
+    case 'update-later': $('#update-bar')?.remove(); break;
     case 'up-plans': $('#modal').classList.add('hidden'); openSheet('pass', d.why); break;
     case 'up-trial': {
       $('#modal').classList.add('hidden');

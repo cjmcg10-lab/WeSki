@@ -507,4 +507,6 @@ export default {
   1400: 'Es probable que llueva en la base y esté más seco arriba.',
   1401: 'Estás aquí',
   1402: 'Guardar en mi lista',
+  1410: 'Nueva versión lista',
+  1411: 'Recargar',
 };

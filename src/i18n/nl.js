@@ -507,4 +507,6 @@ export default {
   1400: 'Aan de voet is regen waarschijnlijk, hoger op is het droger.',
   1401: 'U bent hier',
   1402: 'Bewaren in mijn lijst',
+  1410: 'Nieuwe versie klaar',
+  1411: 'Herladen',
 };
