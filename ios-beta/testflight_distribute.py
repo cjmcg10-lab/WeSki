@@ -23,6 +23,19 @@ class ApiError(Exception):
         self.body = body
 
 
+def is_transient(err):
+    if isinstance(err, ApiError):
+        return err.status == 429 or err.status >= 500
+    return isinstance(err, (urllib.error.URLError, TimeoutError))
+
+
+def error_text(err):
+    try:
+        return " ".join(f"{e.get('code', '')} {e.get('detail', '')}" for e in json.loads(err.body)["errors"])
+    except (ValueError, KeyError, TypeError, AttributeError):
+        return err.body
+
+
 class Client:
     def __init__(self, key_pem, key_id, issuer, clock=time.time, opener=urllib.request.urlopen):
         self.key_pem = key_pem
@@ -72,12 +85,25 @@ def find_app(client, bundle_id):
 def wait_for_build(client, app_id, build_number, sleep=time.sleep, clock=time.monotonic):
     deadline = clock() + POLL_LIMIT_SECONDS
     while True:
-        builds = client.request(
-            "GET",
-            "/builds",
-            {"filter[app]": app_id, "filter[version]": build_number, "limit": 1},
-        )["data"]
-        if builds:
+        try:
+            builds = client.request(
+                "GET",
+                "/builds",
+                {
+                    "filter[app]": app_id,
+                    "filter[version]": build_number,
+                    "filter[preReleaseVersion.platform]": "IOS",
+                    "limit": 1,
+                },
+            )["data"]
+        except (ApiError, urllib.error.URLError, TimeoutError) as err:
+            if not is_transient(err):
+                raise
+            print(f"Temporary problem asking App Store Connect ({err}); retrying")
+            builds = None
+        if builds is None:
+            pass
+        elif builds:
             state = builds[0]["attributes"]["processingState"]
             if state == "VALID":
                 return builds[0]
@@ -122,6 +148,9 @@ def add_to_group(client, group, build_id):
     except ApiError as err:
         if err.status != 409:
             raise
+        members = client.request("GET", f"/betaGroups/{group['id']}/builds", {"limit": 200})["data"]
+        if not any(m["id"] == build_id for m in members):
+            raise
         return "was already in"
     return "added to"
 
@@ -163,7 +192,7 @@ def submit_for_review(client, build_id):
             },
         )
     except ApiError as err:
-        if err.status != 409:
+        if err.status != 409 or "already" not in error_text(err).lower():
             raise
         return "was already submitted for beta review"
     return "submitted for beta review"
@@ -198,6 +227,9 @@ def main():
         distribute(client, os.environ["BUILD_NUMBER"], os.environ.get("WHATS_NEW", "").strip(), wanted)
     except ApiError as err:
         print(f"App Store Connect error: {err}", file=sys.stderr)
+        return 1
+    except (urllib.error.URLError, TimeoutError) as err:
+        print(f"Could not reach App Store Connect: {err}", file=sys.stderr)
         return 1
     return 0
 

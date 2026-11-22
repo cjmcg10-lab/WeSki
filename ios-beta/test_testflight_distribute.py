@@ -1,4 +1,5 @@
 import unittest
+import urllib.error
 from unittest import mock
 
 import jwt
@@ -23,12 +24,24 @@ def group(gid, name, internal, all_builds=False):
     return {"id": gid, "attributes": {"name": name, "isInternalGroup": internal, "hasAccessToAllBuilds": all_builds}}
 
 
+class Scripted:
+    def __init__(self, responses):
+        self.responses = list(responses)
+        self.calls = []
+
+    def request(self, method, path, params=None, body=None):
+        self.calls.append((method, path, params, body))
+        item = self.responses.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+
 class FakeClient:
-    def __init__(self, build_attrs, groups, conflict_on=()):
+    def __init__(self, build_attrs, groups):
         self.calls = []
         self.build_attrs = build_attrs
         self.groups = groups
-        self.conflict_on = conflict_on
 
     def request(self, method, path, params=None, body=None):
         self.calls.append((method, path))
@@ -40,9 +53,6 @@ class FakeClient:
             return {"data": self.groups}
         if path.endswith("/betaBuildLocalizations"):
             return {"data": []}
-        for suffix in self.conflict_on:
-            if path.endswith(suffix):
-                raise td.ApiError(409, "exists")
         return {}
 
 
@@ -77,13 +87,52 @@ class DistributeTest(unittest.TestCase):
         self.assertIn(("POST", "/betaGroups/g2/relationships/builds"), client.calls)
         self.assertIn(("POST", "/betaAppReviewSubmissions"), client.calls)
 
-    def test_conflicts_are_success(self):
-        client = FakeClient(
-            {"processingState": "VALID", "usesNonExemptEncryption": False},
-            [group("g2", "dev", False)],
-            conflict_on=("/relationships/builds", "/betaAppReviewSubmissions"),
-        )
-        self.run_distribute(client)
+    def test_already_added_and_submitted_are_success(self):
+        add = Scripted([td.ApiError(409, "x"), {"data": [{"id": "b1"}]}])
+        self.assertEqual(td.add_to_group(add, group("g2", "dev", False), "b1"), "was already in")
+        sub = Scripted([td.ApiError(409, '{"errors":[{"code":"ENTITY_ERROR","detail":"Build already submitted"}]}')])
+        self.assertIn("already submitted", td.submit_for_review(sub, "b1"))
+
+    def test_other_409_fails(self):
+        add = Scripted([td.ApiError(409, "x"), {"data": []}])
+        with self.assertRaises(td.ApiError):
+            td.add_to_group(add, group("g2", "dev", False), "b1")
+        sub = Scripted([td.ApiError(409, '{"errors":[{"code":"STATE_ERROR","detail":"Missing export compliance"}]}')])
+        with self.assertRaises(td.ApiError):
+            td.submit_for_review(sub, "b1")
+
+    def test_whats_new_patches_existing_and_posts_new(self):
+        existing = Scripted([{"data": [{"id": "l1", "attributes": {"locale": "en-US"}}]}, {}])
+        td.set_whats_new(existing, "b1", "Hi")
+        self.assertEqual(existing.calls[1][:2], ("PATCH", "/betaBuildLocalizations/l1"))
+        fresh = Scripted([{"data": [{"id": "l2", "attributes": {"locale": "de-DE"}}]}, {}])
+        td.set_whats_new(fresh, "b1", "Hi")
+        self.assertEqual(fresh.calls[1][:2], ("POST", "/betaBuildLocalizations"))
+        self.assertEqual(fresh.calls[1][3]["data"]["attributes"]["whatsNew"], "Hi")
+
+    def test_poll_not_listed_then_valid(self):
+        build = {"id": "b1", "attributes": {"processingState": "VALID"}}
+        client = Scripted([{"data": []}, {"data": [build]}])
+        sleeps = []
+        self.assertEqual(td.wait_for_build(client, "a", "81", sleeps.append), build)
+        self.assertEqual(sleeps, [td.POLL_SECONDS])
+        self.assertEqual(client.calls[0][2]["filter[preReleaseVersion.platform]"], "IOS")
+
+    def test_poll_retries_5xx_and_network_errors(self):
+        build = {"id": "b1", "attributes": {"processingState": "VALID"}}
+        client = Scripted([td.ApiError(503, "x"), urllib.error.URLError("down"), {"data": [build]}])
+        self.assertEqual(td.wait_for_build(client, "a", "81", lambda s: None), build)
+
+    def test_poll_does_not_retry_client_errors(self):
+        with self.assertRaises(td.ApiError):
+            td.wait_for_build(Scripted([td.ApiError(401, "x")]), "a", "81", lambda s: None)
+
+    def test_poll_times_out(self):
+        ticks = iter(range(0, 100000, 1000))
+        client = Scripted([{"data": []}] * 10)
+        with self.assertRaises(SystemExit) as ctx:
+            td.wait_for_build(client, "a", "81", lambda s: None, clock=lambda: next(ticks))
+        self.assertIn("not ready after 40 minutes", str(ctx.exception))
 
     def test_group_name_case_insensitive_and_missing_lists_found(self):
         groups = [group("g1", "Dev", True), group("g2", "Other", True)]

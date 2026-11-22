@@ -21,6 +21,8 @@ jobs:
   build:
     runs-on: macos-26
     timeout-minutes: 35
+    outputs:
+      build_number: ${{ steps.number.outputs.number }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,6 +41,14 @@ jobs:
           python3 -m venv "$RUNNER_TEMP/icon-tools"
           "$RUNNER_TEMP/icon-tools/bin/pip" install Pillow
           "$RUNNER_TEMP/icon-tools/bin/python" configure.py
+      - name: Publish the build number
+        id: number
+        shell: bash
+        run: |
+          set -euo pipefail
+          number=$(/usr/libexec/PlistBuddy -c 'Print CFBundleVersion' ios-beta/ios/App/App/Info.plist)
+          test -n "$number"
+          echo "number=$number" >> "$GITHUB_OUTPUT"
       - name: Build for iPhone
         working-directory: ios-beta
         run: |
@@ -136,12 +146,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 50
+    concurrency:
+      group: skiwithme-ios-distribute
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install 'PyJWT[crypto]'
+      - run: pip install 'PyJWT[crypto]==2.15.1' 'cryptography==50.0.2'
       - name: Add the build to the tester group
         working-directory: ios-beta
         shell: bash
@@ -149,14 +162,13 @@ jobs:
           API_KEY: ${{ secrets.ASC_API_KEY_BASE64 }}
           ASC_KEY_ID: P23JUVP933
           ASC_ISSUER_ID: 310f2b16-3524-41de-a797-be8b331d6f1f
-          RUN_NUMBER: ${{ github.run_number }}
-          RUN_ATTEMPT: ${{ github.run_attempt }}
+          BUILD_NUMBER: ${{ needs.build.outputs.build_number }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           TESTFLIGHT_GROUPS: dev
         run: |
           set -euo pipefail
           umask 077
-          : "${API_KEY:?Missing ASC_API_KEY_BASE64}"
+          : "${API_KEY:?Missing ASC_API_KEY_BASE64}" "${BUILD_NUMBER:?The build job published no build number}"
           key=$(mktemp "$RUNNER_TEMP/asc-key.XXXXXX")
           trap 'rm -f "$key"' EXIT
           printf '%s' "$API_KEY" | base64 -d > "$key"
@@ -164,5 +176,4 @@ jobs:
           export ASC_KEY_PATH="$key"
           WHATS_NEW=$(printf '%s' "${COMMIT_MESSAGE:-}" | head -n 1)
           export WHATS_NEW
-          export BUILD_NUMBER=$((RUN_NUMBER * 10 + RUN_ATTEMPT))
           python3 testflight_distribute.py
