@@ -1013,6 +1013,8 @@ export default {
   1400: 'Rain is likely at the base; drier higher up.',
   1401: 'You’re here',
   1402: 'Keep on my list',
+  1450: 'Season dates unknown. This score assumes the lifts are running.',
+  1451: 'Season dates are unknown for some mountains: their scores assume the lifts are running.',
   1410: 'New version ready',
   1411: 'Reload',
 };
