@@ -61,6 +61,20 @@ def select_new(reports, last_id=0, since_ms=None):
     return sorted(keep, key=lambda r: r.get("id") or 0)
 
 
+def next_marker(reports, shown, last_id=0):
+    """The last-seen marker after listing `shown` out of `reports`. It moves past a report only when every report
+    above the old marker up to it was listed, so a --since day later than the marker never skips unseen reports."""
+    ids = {r.get("id") or 0 for r in shown}
+    out = last_id
+    for i in sorted(r.get("id") or 0 for r in reports):
+        if i <= last_id:
+            continue
+        if i not in ids:
+            break
+        out = i
+    return out
+
+
 def _pts(f):
     p = f.get("pts") or []
     return [(p[i], p[i + 1]) for i in range(0, len(p) - 1, 2)]
@@ -189,8 +203,8 @@ def main(argv=None):
             print(f"{rid}: unexpected answer from the server", file=sys.stderr)
             continue
         new = select_new(reports, seen.get(rid, 0), since)
-        if reports and not A.keep_marker:
-            seen[rid] = max(seen.get(rid, 0), max(r.get("id") or 0 for r in reports))
+        if not A.keep_marker:
+            seen[rid] = next_marker(reports, new, seen.get(rid, 0))
         if not new:
             if not A.json and len(ids) == 1:
                 print(f"{rid}: no new reports ({len(reports)} in all)")
