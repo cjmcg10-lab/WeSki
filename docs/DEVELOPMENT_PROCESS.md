@@ -39,6 +39,8 @@ reaches the live site, and anyone can see where the work stands.
   workflow). Only changes to the app (`src/`, `public/`, `index.html`, `ios-beta/`, `package*.json`, `vite.config.js`)
   trigger it; worker, tools, tests and docs changes do not.
 - Internal testers get the new build in TestFlight with no Apple review.
+- Once Apple finishes processing, the workflow's second job (`ios-beta/testflight_distribute.py`) adds the build to the
+  `dev` tester group by itself and, for an outside-testers group, sets "What to Test" and sends it for beta review.
 - App Store releases are still sent for review by hand in App Store Connect.
 - The iPhone build edits a copy of the app with exact text replacements in `ios-beta/prepare.mjs`. If the check
   `ios-prepare` fails on a pull request, update the matching line in `ios-beta/prepare.mjs` to the new code.
