@@ -63,5 +63,5 @@ Details in [`docs/DEVELOPMENT_PROCESS.md`](docs/DEVELOPMENT_PROCESS.md).
 
 Runs, lifts, buildings and places © OpenStreetMap contributors (ODbL). Terrain: USGS 3DEP (public domain), swisstopo
 swissALTI3D, IGN RGE ALTI (Licence Ouverte), BEV ALS DTM (CC BY 4.0), GSI elevation tiles, TINITALY / INGV (CC BY 4.0),
-Mapzen / AWS Terrain Tiles. Globe: Natural Earth and US Census state lines. Weather: US National Weather Service (public
+Mapzen / AWS Terrain Tiles. Trees: Meta and WRI High Resolution Canopy Height Maps (CC BY 4.0). Globe: Natural Earth and US Census state lines. Weather: US National Weather Service (public
 domain) and MET Norway (CC BY 4.0). The full list is in the app at [`/legal/credits`](public/legal/credits.html).

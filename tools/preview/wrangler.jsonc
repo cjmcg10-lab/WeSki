@@ -1,0 +1,10 @@
+// The preview site for a branch (tools/preview/deploy.mjs). Separate from the live app: its own Worker, no groups,
+// accounts or payments; it only reads the map bucket.
+{
+  "name": "skiwithme-preview",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "r2_buckets": [{ "binding": "MAPS", "bucket_name": "skiwithme-maps" }]
+}

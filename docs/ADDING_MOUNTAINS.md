@@ -219,3 +219,23 @@ into `tools/bulk/candidates.json` (not in git), in build order. A resort counts 
 lifts (by OpenStreetMap id, from OpenSkiMap's `lifts.geojson`; lifts without an id are left out) are already on one of
 our maps. A name-and-distance match only prints a "review:" line and never marks a resort built. The builder starts from these
 entries rather than names typed by hand: matching by name and distance once picked Park City for Deer Valley.
+
+## Real trees, lift and building details, and previews (2026-11-22)
+
+- `python3 -I tools/build_canopy.py <id>` writes `public/data/<id>/canopy.z8`: tree cover and height on a grid of
+  half a terrain cell, from Meta and WRI's global 1 m canopy height map (CC BY 4.0, read from
+  `dataforgood-fb-data.s3.amazonaws.com`, only the resort's window). The app plants its trees from it (real density
+  and placement, 9,000 trees, about four times the old random ones at half the triangles each) and colours open
+  ground below the treeline as snow. Checked on Jay Peak: 90% of points on our runs fall on open ground, against 19%
+  of the mountain overall. Its run widths are about twice the aerial-photo widths, so it is not used for widths.
+- `python3 -I tools/enrich_osm.py <id>` adds what OpenStreetMap records to a built map without a rebuild: lift seats,
+  capacity (chairs are spaced from it), bubble, heating, detachable; building roof shape and colour, wall colour or
+  material, storeys. US resorts have almost none of these tags (Jay Peak, Cannon, Magic, Stowe: none); Zermatt has
+  capacity on 37 of 66 lifts and 11 bubble chairs. Buildings without tags get a gabled roof along their long side.
+- `pipeline.py` runs both after every build; `maps_r2.mjs` uploads and downloads `canopy.z8` when there is one.
+- Runs are drawn at their measured width (`w`), or 26 m (greens 30 m) instead of 50-60 m; slope outlines are filled.
+- **Preview a branch before it reaches main:** `node tools/preview/deploy.mjs <ids>` bundles the app into the
+  separate Worker `skiwithme-preview` (https://skiwithme-preview.cjmcg10.workers.dev) and uploads the named
+  resorts' map files from disk to R2 under `preview/data/<id>/` (the live `data/` files are not touched). Every other
+  resort opens from the live map files. No groups, sign-in or purchases in the preview; weather and Forecast data come
+  from the live site. Remove it with `npx wrangler delete -c tools/preview/wrangler.jsonc`.
