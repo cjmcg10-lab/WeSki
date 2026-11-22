@@ -505,4 +505,6 @@ export default {
   1134: 'Classifica basata sull’unico giorno previsto per ogni montagna.',
   1135: 'Nessuna classifica: queste montagne non hanno giorni di previsione in comune.',
   1400: 'Pioggia probabile alla base, più asciutto in quota.',
+  1401: 'Sei qui',
+  1402: 'Tieni nella mia lista',
 };

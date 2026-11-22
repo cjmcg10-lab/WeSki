@@ -505,4 +505,6 @@ export default {
   1134: 'Gerangschikt op de ene dag die elke berg voorspelt.',
   1135: 'Niet gerangschikt: deze bergen hebben geen voorspelde dag gemeen.',
   1400: 'Aan de voet is regen waarschijnlijk, hoger op is het droger.',
+  1401: 'U bent hier',
+  1402: 'Bewaren in mijn lijst',
 };

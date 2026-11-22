@@ -505,4 +505,6 @@ export default {
   1134: 'Classement sur le seul jour prévu pour chaque montagne.',
   1135: 'Pas de classement : ces montagnes n’ont aucun jour de prévision en commun.',
   1400: 'Pluie probable à la base, plus sec en altitude.',
+  1401: 'Vous êtes ici',
+  1402: 'Garder dans ma liste',
 };

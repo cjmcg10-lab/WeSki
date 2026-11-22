@@ -55,7 +55,10 @@ function current(resort) {
   }
   return entry(resort.id);
 }
-const rows = () => fc.list.map((resort) => { const e = current(resort); return { resort, entry: e, forecast: e.fc }; });
+// The mountain the skier is at, when the Forecast opens from inside a resort (setHere): shown first, tagged
+// "You're here", even when it is not on their list; "Keep on my list" saves it.
+const hereExtra = () => (fc.here && !fc.list.some((r) => r.id === fc.here.id) ? [fc.here] : []);
+const rows = () => [...hereExtra(), ...fc.list].map((resort) => { const e = current(resort); return { resort, entry: e, forecast: e.fc }; });
 const nextDay = (date) => { const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
 const canonicalId = (id) => fc.catalog?.getResort(id)?.id ?? id;
 const onList = (id) => fc.list.some((r) => canonicalId(r.id) === canonicalId(id));
@@ -157,6 +160,22 @@ function start() {
   loadAll(false);
 }
 
+/** Open the Forecast at this mountain (a resort id), or with none (from the start screen). */
+export function setHere(id) {
+  fc.hereId = id || null;
+  fc.here = id ? fc.list.find((r) => r.id === id) ?? null : null;
+  if (!id || fc.here) return;
+  loadCatalog().then((c) => {
+    fc.catalog ??= c;
+    const resort = resortFor(c, id);
+    if (!resort || fc.hereId !== id || !canForecast(resort)) return;
+    fc.here = resort;
+    if (!fc.data.has(resort.id)) setEntry(resort, { state: 'loading' });
+    redraw();
+    loadOne(resort, false);
+  }).catch(() => {});
+}
+
 export function onClose() {
   pin.leave();
   fc.started = false;
@@ -221,8 +240,11 @@ function rowHtml(row, dates, topId) {
   const { resort, entry: e } = row;
   const flash = fc.flash?.id === resort.id ? ` flash` : '';
   const newTag = fc.flash?.id === resort.id && fc.flash.isNew ? `<span class="tag fc-new">${t('New')}</span>` : '';
+  const here = fc.hereId === resort.id
+    ? `<span class="tag fc-here">${t('You’re here')}</span>${fc.list.some((r) => r.id === resort.id) ? '' : `<button class="btn sm alt fc-keep" data-act="fc-keep" data-r="${esc(resort.id)}">${t('Keep on my list')}</button>`}`
+    : '';
   const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) || row.forecast.serverStale ? ' old' : ''}">${ageLine(row.forecast)}</small>` : '';
-  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.pin ? coords(resort) : resort.region)}</small>${pinTags(resort)}${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}</th>`;
+  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.pin ? coords(resort) : resort.region)}</small>${pinTags(resort)}${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}${here}</th>`;
   if (e.state === 'nodata') return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(unavailableText(resort))}</span></td></tr>`;
   if (e.state === 'error') {
     const msg = online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.');
@@ -237,15 +259,18 @@ function emptyCalendar() {
 
 export function sheetCalendar() {
   start();
-  if (!fc.list.length && !fc.editRows.some((r) => r.removed)) return [t('Forecast'), emptyCalendar(), false];
+  if (!fc.list.length && !fc.here && !fc.editRows.some((r) => r.removed)) return [t('Forecast'), emptyCalendar(), false];
   const all = rows();
   const forecasts = all.map((r) => r.forecast).filter(Boolean);
   const dates = columnDates(forecasts);
   const sortDate = dates.includes(fc.view.sortDate) ? fc.view.sortDate : null;
   const shown = sortRows(all, sortDate);
+  // in your own order, the mountain you are at comes first
+  const hi = !sortDate && fc.hereId ? shown.findIndex((r) => r.resort.id === fc.hereId) : -1;
+  if (hi > 0) shown.unshift(...shown.splice(hi, 1));
   const topId = sortDate ? topPickId(all, sortDate) : null;
   const failedAll = all.length > 0 && all.every((r) => r.entry.state === 'error');
-  const todays = fc.list.filter((r) => r.tz).map((r) => localToday(r.tz)).sort();
+  const todays = [...hereExtra(), ...fc.list].filter((r) => r.tz).map((r) => localToday(r.tz)).sort();
   const dayLabel = (d) => (d === todays[0] ? t('Today') : d === nextDay(todays[0]) ? t('Tomorrow') : fmtWeekday(d));
   const head = dates.map((d) => `<th scope="col" aria-sort="${d === sortDate ? 'descending' : 'none'}"><button class="fc-datehead${d === sortDate ? ' on' : ''}" data-act="fc-sort" data-d="${d}"><span>${dayLabel(d)}</span><b>${fmtDayNumber(d)}</b><i aria-hidden="true">${d === sortDate ? '↓' : '↕'}</i></button></th>`).join('');
   const table = dates.length
@@ -639,6 +664,15 @@ export function onClick(b) {
     case 'fc-step': fc.tod = null; focusSel(`[data-act="fc-step"][data-dir="${d.dir}"]`); host.open('fcday', { id: d.r, date: d.d }); break;
     case 'fc-tod': fc.tod = d.v; focusSel(`[data-act="fc-tod"][data-v="${d.v}"]`); host.render(); break;
     case 'fc-doadd': addResort(d.r); break;
+    case 'fc-keep': {
+      if (!fc.here || fc.list.some((r) => r.id === fc.here.id)) break;
+      const before = fc.list;
+      fc.list = insertAt(fc.list, fc.here, 0);
+      if (!persist()) { fc.list = before; host.announce(t('Couldn’t save {0}. This device may be in private browsing or out of space.', fc.here.name)); break; }
+      host.announce(t('{0} added to your list.', fc.here.name));
+      host.render();
+      break;
+    }
     case 'fc-unadd': dropAdded(d.r); break;
     case 'fc-show': { fc.flash = { id: d.r, isNew: false }; openCalendar(); focusSel(`[data-row="${d.r}"]`); host.announce(t('{0} is already on your list.', fc.list.find((r) => r.id === d.r)?.name ?? '')); setTimeout(clearFlash, FLASH_MS); break; }
     case 'fc-catalog': fc.catalogError = false; updateResults(); ensureCatalog(); break;

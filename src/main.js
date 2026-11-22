@@ -2266,6 +2266,7 @@ async function onClick(e) {
   switch (act) {
     case 'tab':
       if (d.tab === 'track' && !S.historyLoaded) loadHistory();
+      if (d.tab === 'forecast') fcUi.setHere(S.place?.id);     // inside a mountain: its forecast first
       if (d.tab === 'map') closeSheet();
       else if (S.sheet === d.tab) closeSheet();
       else openSheet(d.tab);
@@ -2291,7 +2292,7 @@ async function onClick(e) {
     case 'start-hist': S.histOnly = !S.histOnly; if (S.histOnly) { S.favOnly = false; S.nearMe = null; S.allDays = null; } renderResortList(); break;
     case 'start-day': openDay(d.r, d.id); break;
     case 'start-join': startJoinAsk(); break;
-    case 'start-forecast': $('#sheet').classList.add('over-start'); openSheet('forecast'); break;
+    case 'start-forecast': $('#sheet').classList.add('over-start'); fcUi.setHere(null); openSheet('forecast'); break;
     case 'acct-chip': $('#sheet').classList.add('over-start'); openSheet('pass'); break;
     case 'start-join-go': startJoinGo(b); break;
     case 'go-group-mtn': goGroupMountain(d.code, d.id); break;
