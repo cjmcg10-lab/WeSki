@@ -1,6 +1,8 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
+import { fetchHeights } from './heights.js';
+const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
@@ -163,10 +165,11 @@ function initMap(id) {
     await loadPlaces();
     const pl = placeById(id);
     if (!pl?.available) throw new Error('no map for ' + id);
+    const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
     const [resort, buf, sur] = await Promise.all([
-      fetchOk(`/data/${id}/resort.json`).then((r) => r.json()),
-      fetchOk(`/data/${id}/terrain.bin`).then((r) => r.arrayBuffer()),
-      fetchOk(`/data/${id}/surround.bin`).then((r) => r.arrayBuffer()).catch(() => null),
+      resortP,
+      fetchHeights(`/data/${id}/terrain`, resortP.then((R) => R.grid), undefined, noZ16),
+      fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     if (S.map) {                              // leaving the previous mountain
@@ -2141,20 +2144,23 @@ function stopReplay() {
 }
 
 // ---------- offline download
+/** The height-grid files this phone loads (see fetchHeights): compact where it can unzip them, plain otherwise. */
+const heightFiles = () => (typeof DecompressionStream !== 'undefined' ? ['terrain.z16', 'surround.z16'] : ['terrain.bin', 'surround.bin']);
 async function downloadOffline() {
   const box = $('#offline-box');
   try {
     // the app itself plus this mountain's map
-    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', 'terrain.bin', 'surround.bin', ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
+    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', ...heightFiles(), ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
     const cache = await caches.open('weski-map');
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
     for (const url of list) {
-      const res = await fetch(url, { cache: 'reload' });
+      let at = url, res = await fetch(at, { cache: 'reload' });
+      if (!res.ok && at.endsWith('.z16')) res = await fetch(at = at.replace(/\.z16$/, '.bin'), { cache: 'reload' });
       if (!res.ok) throw new Error(url);
       const blob = await res.clone().blob();
       bytes += blob.size;
-      await cache.put(url, res);
+      await cache.put(at, res);
       done++;
       $('#dl-n').textContent = done; $('#dl-p').value = done;
     }

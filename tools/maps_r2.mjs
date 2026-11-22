@@ -3,7 +3,8 @@
 //   node tools/maps_r2.mjs push <id> [<id> ...]   upload public/data/<id> to R2, list the id in public/data/r2.json,
 //                                                 and stop tracking the folder in git (it stays on disk, ignored)
 //   node tools/maps_r2.mjs push --all             every resort folder on disk except the ones kept in git (KEEP)
-//   node tools/maps_r2.mjs pull <id> [<id> ...]   download an R2 resort into public/data/<id> (to rebuild or test it)
+//   node tools/maps_r2.mjs pull <id> [<id> ...]   download an R2 resort into public/data/<id> (to rebuild or test it),
+//                                                 with its compact .z16 grids when R2 has ones made from the same .bin
 //   node tools/maps_r2.mjs pull --all             every resort listed in r2.json that is not on disk
 //   node tools/maps_r2.mjs drop                   delete the local copies of R2 resorts (before the app build in CI)
 //   node tools/maps_r2.mjs status                 which resorts are in R2 and which are on disk
@@ -18,12 +19,17 @@ import { existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync,
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { promisify } from 'node:util';
+import { packResort } from './heights_pack.mjs';
 
 const run = promisify(execFile);
 const DATA = 'public/data';
 const LIST = join(DATA, 'r2.json');
 const KEEP = ['jay-peak']; // the unit tests load it: stays in git
 const FILES = ['resort.json', 'graph.json', 'terrain.bin', 'surround.bin'];
+const PACKED = ['terrain.z16', 'surround.z16']; // made from the .bin files on push (src/heights.js)
+const md5 = (buf) => createHash('md5').update(buf).digest('hex');
+// stored as terrain.<first 12 of the .bin's md5>.z16, so the Worker serves one only for the .bin it was made from
+const packedKey = (id, f, bin) => `data/${id}/${f.replace(/\.z16$/, `.${md5(readFileSync(bin)).slice(0, 12)}.z16`)}`;
 const TYPE = (f) => (f.endsWith('.json') ? 'application/json' : 'application/octet-stream');
 const cfg = JSON.parse(readFileSync(LIST, 'utf8'));
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'placeholder-the-proxy-adds-the-real-token';
@@ -54,8 +60,14 @@ async function pool(jobs, n = 6) {
 }
 
 async function etags(id) {
-  const j = JSON.parse(await curl([`${API()}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=50`]));
-  return Object.fromEntries((j.result || []).map((o) => [o.key, o.etag]));
+  const out = {};
+  let cursor = '';
+  do {
+    const j = JSON.parse(await curl([`${API()}?prefix=${encodeURIComponent(`data/${id}/`)}&per_page=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`]));
+    for (const o of j.result || []) out[o.key] = o.etag;
+    cursor = j.result_info?.is_truncated ? j.result_info.cursor : '';
+  } while (cursor);
+  return out;
 }
 
 async function push(id) {
@@ -67,16 +79,21 @@ async function push(id) {
   writeFileSync(join(tmp, 'graph.json'), JSON.stringify(R.graph || {}));
   delete R.graph;
   writeFileSync(join(tmp, 'resort.json'), JSON.stringify(R));
+  for (const [name, buf] of Object.entries(packResort(dir, R))) writeFileSync(join(tmp, name), buf);
   const have = await etags(id);
   let sent = 0;
-  await pool(FILES.map((f) => async () => {
-    const src = f === 'resort.json' || f === 'graph.json' ? join(tmp, f) : join(dir, f);
+  await pool([...FILES, ...PACKED].map((f) => async () => {
+    const src = f === 'resort.json' || f === 'graph.json' || PACKED.includes(f) ? join(tmp, f) : join(dir, f);
     if (!existsSync(src)) return;
-    const key = `data/${id}/${f}`;
-    if (have[key] === createHash('md5').update(readFileSync(src)).digest('hex')) return;
-    const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API()}/${key}`]));
-    if (!res.success) throw new Error(`${key}: ${JSON.stringify(res.errors)}`);
-    sent++;
+    const key = PACKED.includes(f) ? packedKey(id, f, join(dir, f.replace('.z16', '.bin'))) : `data/${id}/${f}`;
+    if (have[key] !== md5(readFileSync(src))) {
+      const res = JSON.parse(await curl(['-X', 'PUT', '-H', `Content-Type: ${TYPE(f)}`, '--data-binary', `@${src}`, `${API()}/${key}`]));
+      if (!res.success) throw new Error(`${key}: ${JSON.stringify(res.errors)}`);
+      sent++;
+    }
+    if (!PACKED.includes(f)) return;
+    const older = new RegExp(`^data/${id}/${f.replace('.z16', '')}\\.([0-9a-f]{12}\\.)?z16$`);
+    for (const k of Object.keys(have).filter((k) => k !== key && older.test(k))) await curl(['-X', 'DELETE', `${API()}/${k}`]);
   }), 4);
   rmSync(tmp, { recursive: true, force: true });
   if (!cfg.ids.includes(id)) cfg.ids.push(id), cfg.ids.sort();
@@ -98,7 +115,14 @@ async function pull(id) {
   writeFileSync(join(tmp, 'resort.json'), JSON.stringify(R));
   rmSync(join(tmp, 'graph.json'));
   mkdirSync(dir, { recursive: true });
+  const have = await etags(id);
   for (const f of FILES) if (f !== 'graph.json' && existsSync(join(tmp, f))) renameSync(join(tmp, f), join(dir, f));
+  for (const f of PACKED) {
+    const bin = join(dir, f.replace('.z16', '.bin'));
+    if (!existsSync(bin)) continue;
+    const key = packedKey(id, f, bin);
+    if (key in have) await curl(['-o', join(dir, f), `${API()}/${key}`]);
+  }
   rmSync(tmp, { recursive: true, force: true });
   console.log(`${id}: downloaded into ${dir}`);
 }

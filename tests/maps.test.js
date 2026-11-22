@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { createHash } from 'node:crypto';
 import { fromR2 } from '../worker/maps.js';
 
 // a pretend R2 bucket: get() returns the object, or one without a body when the phone's copy is current
@@ -8,6 +9,9 @@ const bucket = (files) => ({
     const httpEtag = `"${key.length}"`;
     if (onlyIf?.get?.('if-none-match') === httpEtag) return { httpEtag };
     return { httpEtag, body: files[key] };
+  },
+  async head(key) {
+    return key in files ? { etag: createHash('md5').update(files[key]).digest('hex') } : null;
   },
 });
 const req = (path, headers = {}) => [new Request(`https://x${path}`, { headers }), new URL(`https://x${path}`)];
@@ -38,5 +42,82 @@ describe('map files from R2', () => {
   it('404 for a missing file of a listed resort', async () => {
     const [q, u] = req('/data/test-mtn/surround.bin');
     expect((await fromR2(q, env, u, ids)).status).toBe(404);
+  });
+});
+
+describe('compact height grids (.z16)', async () => {
+  const { readFileSync } = await import('node:fs');
+  const { gzipSync } = await import('node:zlib');
+  const { encodeHeights, decodeHeights, fetchHeights } = await import('../src/heights.js');
+  const bin = readFileSync('public/data/jay-peak/terrain.bin');
+  const R = JSON.parse(readFileSync('public/data/jay-peak/resort.json', 'utf8'));
+  const h = new Uint16Array(bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.length));
+  const z16 = gzipSync(encodeHeights(h, R.grid.nx));
+  const respond = (body, type = 'application/octet-stream') => new Response(body, { headers: { 'content-type': type } });
+
+  it('comes back exactly, and much smaller than the plain grid', () => {
+    expect(Buffer.from(decodeHeights(encodeHeights(h, R.grid.nx)).buffer).equals(bin)).toBe(true);
+    expect(z16.length).toBeLessThan(bin.length * 0.6);
+  });
+  it('is exact for any grid, even sheer cliffs (the difference wraps round)', () => {
+    const g = new Uint16Array([0, 65535, 0, 65535, 65535, 0, 65535, 0, 1, 2, 3, 4]);
+    expect([...decodeHeights(encodeHeights(g, 4))]).toEqual([...g]);
+  });
+  it('refuses something that is not a height grid', () => {
+    expect(() => decodeHeights(new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]))).toThrow();
+  });
+  it('the app fetches the compact file and gets the same heights as the plain one', async () => {
+    const asked = [];
+    const buf = await fetchHeights('/data/jay-peak/terrain', R.grid, async (u) => { asked.push(u); return respond(z16); });
+    expect(asked).toEqual(['/data/jay-peak/terrain.z16']);
+    expect(Buffer.from(buf).equals(bin)).toBe(true);
+  });
+  it('falls back to the plain file when the compact one is missing or is the app page', async () => {
+    for (const miss of [() => new Response('no', { status: 404 }), () => respond('<!doctype html>', 'text/html')]) {
+      const asked = [];
+      const buf = await fetchHeights('/data/jay-peak/terrain', R.grid, async (u) => { asked.push(u); return u.endsWith('.z16') ? miss() : respond(bin); });
+      expect(asked).toEqual(['/data/jay-peak/terrain.z16', '/data/jay-peak/terrain.bin']);
+      expect(Buffer.from(buf).equals(bin)).toBe(true);
+    }
+  });
+  it('falls back to the plain file when the compact grid is for a different size', async () => {
+    const other = gzipSync(encodeHeights(h.slice(0, R.grid.nx * (R.grid.ny - 1)), R.grid.nx));
+    const otherWidth = gzipSync(encodeHeights(h, R.grid.nx - 1));
+    for (const wrong of [other, otherWidth]) {
+      const asked = [];
+      const buf = await fetchHeights('/data/jay-peak/terrain', R.grid, async (u) => { asked.push(u); return u.endsWith('.z16') ? respond(wrong) : respond(bin); });
+      expect(asked).toEqual(['/data/jay-peak/terrain.z16', '/data/jay-peak/terrain.bin']);
+      expect(Buffer.from(buf).equals(bin)).toBe(true);
+    }
+  });
+  it('starts the compact download before the grid size is known, and remembers a miss', async () => {
+    const asked = [];
+    let sizeKnown = false;
+    const fetcher = async (u) => { asked.push(u); expect(sizeKnown).toBe(false); return new Response('no', { status: 404 }); };
+    const size = new Promise((r) => setTimeout(() => { sizeKnown = true; r(R.grid); }, 5));
+    const skip = new Set();
+    await fetchHeights('/data/a/terrain', size, async (u) => u.endsWith('.z16') ? fetcher(u) : respond(bin), skip);
+    await fetchHeights('/data/a/terrain', R.grid, async (u) => { asked.push(u); return respond(bin); }, skip);
+    expect(asked).toEqual(['/data/a/terrain.z16', '/data/a/terrain.bin']);
+  });
+  const stamp = (s) => createHash('md5').update(s).digest('hex').slice(0, 12);
+  it('the server serves a compact file made from the .bin now in R2', async () => {
+    const env = { MAPS: bucket({ 'data/test-mtn/terrain.bin': 'bin-2', [`data/test-mtn/terrain.${stamp('bin-2')}.z16`]: 'zz' }) };
+    const [q, u] = req('/data/test-mtn/terrain.z16');
+    const r = await fromR2(q, env, u, ids);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('content-type')).toBe('application/octet-stream');
+    expect(await r.text()).toBe('zz');
+  });
+  it('404 for a compact file made from an older .bin, or with no .bin, or with no compact copy', async () => {
+    for (const files of [
+      { 'data/test-mtn/terrain.bin': 'bin-2', [`data/test-mtn/terrain.${stamp('bin-1')}.z16`]: 'old' },
+      { 'data/test-mtn/terrain.z16': 'old' },
+      { [`data/test-mtn/terrain.${stamp('bin-2')}.z16`]: 'zz' },
+      { 'data/test-mtn/terrain.bin': 'bin-2' },
+    ]) {
+      const [q, u] = req('/data/test-mtn/terrain.z16');
+      expect((await fromR2(q, { MAPS: bucket(files) }, u, ids)).status).toBe(404);
+    }
   });
 });

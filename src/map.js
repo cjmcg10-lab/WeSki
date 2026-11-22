@@ -781,6 +781,7 @@ export class SkiMap {
   place(obj, d, color, ring, snap) {
     const spot = d.lift ? this.liftSpot(d.lift) : null;
     const fresh = this.dress(obj, d.avatar, color, ring, spot ? spot.ride : '');
+    if (fresh) this.overlayDirty = true;          // someone new, or a new look or colour: draw it now
     if (!spot) { this.aim(obj, d.x, d.y, d.heading, d.moving, fresh || snap); return; }
     const u = obj.userData;
     if (fresh || snap || !u.target || u.target.distanceTo(spot.pos) > 400) obj.position.copy(spot.pos);
@@ -792,6 +793,8 @@ export class SkiMap {
   aim(obj, x, y, heading, moving, snap) {
     const p = this.world(x, y, 0.4), u = obj.userData;
     if (snap || !u.target || u.target.distanceTo(p) > 400) obj.position.copy(p);
+    // standing still, GPS wanders by a few metres: ignore that, so a still figure stays put (and the map can rest)
+    if (!snap && !moving && u.target && !u.moving && u.target.distanceToSquared(p) < 4) p.copy(u.target);
     u.target = p;
     if (heading != null) { u.yaw = Math.PI - heading; if (snap || u.yawNow == null) { u.yawNow = u.yaw; obj.rotation.y = u.yaw; } }
     u.moving = !!moving;
@@ -808,6 +811,15 @@ export class SkiMap {
     }
     if (u.avatar && !u.avatar.userData.ride) M.animateAvatar(u.avatar, this.t, dt, u.moving);
     if (u.wave) this.waveStep(obj);
+  }
+
+  /** Does this person still need smooth redraws: moving, gliding into place, turning or waving? */
+  settling(obj) {
+    const u = obj.userData;
+    if (!u.target) return false;
+    if (u.wave || u.moving || (u.avatar?.userData.amt || 0) > 0.002) return true;
+    if (obj.position.distanceToSquared(u.target) > 0.0025) return true;      // more than 5 cm from where they are going
+    return u.yaw != null && Math.abs(Math.atan2(Math.sin(u.yaw - u.yawNow), Math.cos(u.yaw - u.yawNow))) > 0.005;
   }
 
   /** Make a person wave at the viewer (tapping them); tapping again starts the wave over. */
@@ -1085,8 +1097,10 @@ export class SkiMap {
     // Full frame rate while the map is being touched or flown; ~30 fps otherwise (saves battery/GPU).
     const now = performance.now();
     if (this.paused) return;
-    const busy = now - (this.lastInput || 0) < 900 || !!this.flight;
-    if (!busy && now - (this.lastFrame || 0) < 31) { this.wasBusy = false; return; }
+    const busy = now - (this.lastInput || 0) < 900 || now - (this.lastCameraMove || 0) < 150 || !!this.flight;
+    // Not touched: ~30 fps while someone on the map is moving, ~20 fps otherwise (chairs creeping
+    // along their cables look just as smooth, and most frames are then skipped entirely anyway).
+    if (!busy && now - (this.lastFrame || 0) < (this.peopleMoving ? 31 : 48)) { this.wasBusy = false; return; }
     // While touched, draw at most maxFps times a second (60 unless the user asked for more):
     // a 120 Hz screen otherwise doubles the work, and the heat that makes iOS slow the app down.
     if (busy && now - (this.lastFrame || 0) < 1000 / (this.maxFps || 60) - 3) return;
@@ -1237,10 +1251,19 @@ export class SkiMap {
     // redrawn when the view or the things on it changed, and at most ~4x a second otherwise.
     const cam = this.camera, e = cam.matrixWorld.elements, now = performance.now();
     const key = `${this.mode}|${e[12].toFixed(1)}|${e[13].toFixed(1)}|${e[14].toFixed(1)}|${e[0].toFixed(4)}|${e[5].toFixed(4)}|${e[10].toFixed(4)}|${this.zoom2.toFixed(4)}|${this.w}x${this.h}`;
-    const people = this.me || this.friends.size || this.play;
-    // Nothing is moving when the view is still, no lift is being animated and nobody is on the
-    // map: the picture is then only refreshed twice a second (saves battery and heat).
-    const still = !this.flight && farOut && !people && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
+    // People only need smooth redraws while someone is moving, gliding to a new position, turning
+    // or waving. Standing still (the usual case for your own dot and a group's friends) they look
+    // the same frame after frame, so they no longer keep the whole map redrawing.
+    let people = !!this.play;
+    if (!people && this.me) people = this.settling(this.meObj);
+    if (!people) for (const f of this.friends.values()) if (this.settling(f.obj)) { people = true; break; }
+    const justSettled = this.peopleMoving && !people;
+    this.peopleMoving = people;
+    if (justSettled) this.overlayDirty = true;
+    if (key !== this.overlayKey) this.lastCameraMove = now;
+    // Nothing is moving when the view is still, no lift is being animated and nobody on the map is
+    // moving: the picture is then only refreshed twice a second (saves battery and heat).
+    const still = !this.flight && farOut && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
     if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
     if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
