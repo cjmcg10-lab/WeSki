@@ -38,10 +38,17 @@ function skiRowsOf(rows, from, to) {
   return byHour;
 }
 
-export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours }) {
+export const outOfSeason = (season, date) =>
+  !!season && (season.state === 'closed_for_season' || season.state === 'not_open' || (!!season.open && date < season.open) || (!!season.close && date > season.close));
+
+export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours, season, liftHolds = [], groomed = false }) {
   const { from, to, assumed } = window;
   const expected = to - from;
-  const base = { date, uncertainty: null, skiHours: { from, to, assumed, expected }, daysAhead };
+  const holds = liftHolds.filter((h) => h.date === date).map(({ lift, status, from: heldFrom, to: heldTo }) => ({ lift, status, from: heldFrom ?? null, to: heldTo ?? null }));
+  const notes = [];
+  if (holds.length) notes.push({ code: 'EX_LIFT_HOLD_CONFIRMED', params: [holds.length] });
+  if (outOfSeason(season, date)) notes.push({ code: 'NT_OUT_OF_SEASON', params: [] });
+  const base = { date, uncertainty: null, skiHours: { from, to, assumed, expected }, daysAhead, liftHolds: holds, notes };
   if (closure) {
     return { ...base, status: 'closed', score: null, mean: null, window: null, peakHour: null, hours: [], factors: [], explain: null, confidence: null, windowConfidence: null, closureSource: closure === true ? null : closure, flags: [] };
   }
@@ -54,6 +61,8 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
   if (single) flags.push('single_estimate');
   const partial = !single && ski.some((r) => r.sites !== 'both');
   if (partial) flags.push('partial_sites');
+  if (holds.length) flags.push('lift_hold_confirmed');
+  if (groomed) flags.push('grooming_reported');
   const skiHours = { ...base.skiHours, withData };
 
   if (withData < MIN_HOURS_WITH_DATA || expected - withData > expected / 2) {

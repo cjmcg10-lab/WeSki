@@ -1,4 +1,4 @@
-import { COMPONENTS, initialSurface, normalizeHour, scoreSite, stepSurface } from './components.js';
+import { COMPONENTS, groomSurface, initialSurface, normalizeHour, scoreSite, stepSurface } from './components.js';
 import { hourFactor } from './explain.js';
 
 export const MIN_VERTICAL_M = 100;
@@ -17,7 +17,7 @@ function rawAt(h, i) {
   return { t: h.temperature_2m?.[i], feels: h.apparent_temperature?.[i], snow: h.snowfall?.[i], wind: h.wind_speed_10m?.[i], gust: h.wind_gusts_10m?.[i], vis: h.visibility?.[i], code: h.weather_code?.[i] };
 }
 
-export function siteSeries(block, site) {
+export function siteSeries(block, site, groomedAt = new Set()) {
   const h = block?.hourly;
   const bySlot = new Map();
   if (!h?.time) return bySlot;
@@ -26,7 +26,9 @@ export function siteSeries(block, site) {
   h.time.forEach((time, i) => {
     const x = normalizeHour(rawAt(h, i));
     if (!x) return;
-    state = stepSurface(state ?? initialSurface(x), x, hourOf(time));
+    state = state ?? initialSurface(x);
+    if (groomedAt.has(time)) state = groomSurface(state);
+    state = stepSurface(state, x, hourOf(time));
     const scored = scoreSite(x, state);
     scored.detail.site = site;
     bySlot.set(keys[i], scored);
@@ -58,13 +60,13 @@ export function chooseSites(resort, weather, upper, base) {
 
 const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
-export function scoreHours(resort, weather) {
+export function scoreHours(resort, weather, groomedAt = new Set()) {
   const block = weather.summit?.hourly?.time ? weather.summit : weather.base;
   if (!block?.hourly?.time) return { rows: [], sites: { mode: 'both', reason: null } };
   const times = block.hourly.time;
   const keys = occurrenceKeys(times);
-  const upper = siteSeries(weather.summit, 'upper');
-  const base = siteSeries(weather.base, 'base');
+  const upper = siteSeries(weather.summit, 'upper', groomedAt);
+  const base = siteSeries(weather.base, 'base', groomedAt);
   const sites = chooseSites(resort, weather, upper, base);
   const rows = times.map((time, i) => {
     const key = keys[i];

@@ -102,6 +102,11 @@ export function stepSurface(state, x, hour) {
   return { fresh, crust, wet };
 }
 
+export const GROOM_CRUST_KEPT = 0.25;
+export const GROOM_WET_KEPT = 0.7;
+
+export const groomSurface = (state) => ({ ...state, crust: state.crust * GROOM_CRUST_KEPT, wet: state.wet * GROOM_WET_KEPT });
+
 export function surfaceCode(state, x) {
   if (state.crust >= 0.4 && state.fresh < 3) return 'surf.icy';
   if (state.wet >= 0.5 || (x.rain > 0 && state.wet >= 0.3)) return 'surf.wet_snow';

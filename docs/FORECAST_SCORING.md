@@ -1,4 +1,4 @@
-# Forecast scoring engine (version 1.1.0)
+# Forecast scoring engine (version 1.2.0)
 
 Issue #2, part of #1. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
@@ -32,6 +32,9 @@ const out = scoreForecast(resort, weather, opts);
 | --- | --- |
 | `hours` | `{ from, to }` published operating hours, local, `to` exclusive. Without it the assumed window below is used and flagged |
 | `closures` | `{ 'YYYY-MM-DD': closureSource \| true }` confirmed closures. Only the caller can say a day is closed |
+| `season` | `{ open, close, state }` from the resort status: `state` is `'open'`, `'closed_for_season'` or `'not_open'`; `open` and `close` are local dates or `null`. A date is out of season when `state` is `closed_for_season` or `not_open`, before `open`, or after `close`. It only adds a note, never a closure |
+| `liftHolds` | `[{ lift, status: 'delayed' \| 'partial', date, from?, to? }]` holds the resort has confirmed, for the dates they apply to. They are shown beside the score and never change it |
+| `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
 | `ageHours` | Age of the forecast in hours, for the stale-source reason |
 
@@ -39,7 +42,7 @@ const out = scoreForecast(resort, weather, opts);
 
 ```
 {
-  version: '1.1.0',
+  version: '1.2.0',
   ageHours,                   // echo of opts.ageHours, or null
   resortId,
   siteMode: 'both' | 'single',
@@ -67,7 +70,9 @@ Day (one per local date in the weather):
 | `windowConfidence` | Same shape, for the timing of the best window |
 | `insufficientReason` | `{ code, params }`, present only when `status` is `insufficient` |
 | `closureSource` | The `{ code, params }` the caller passed, or `null`, present only when `closed` |
-| `flags` | Strings: `snow_history_limited` (always), `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h` |
+| `flags` | Strings: `snow_history_limited` (always), `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
+| `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
+| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds] and `NT_OUT_OF_SEASON`. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
 | `uncertainty` | Always `null` in version 1. It stays null until there are several forecasts or ensemble members to compare, so no Close call shows |
 
@@ -105,11 +110,13 @@ Hour score at a site = 0.45 surface + 0.25 visibility + 0.20 wind + 0.10 comfort
 
 The wet and crust penalties are steep on purpose: steady moderate rain on snow lands below about 45 for the day, and a hard refreeze costs the surface up to 55 points. Thunder counts as rain only when it is above 0 °C with no snowfall; thundersnow is snow.
 
+A grooming report (`opts.grooming`) is applied once, at the hour of its timestamp, before that hour's step: `crust` × 0.25 and `wet` × 0.7 (groomers break up a crust and firm a wet surface). The resort feed's report time is the time it updated the trail, so this is a deliberately small effect. A report mapped to the first hour of day 0 meets the starting surface (no crust, wet 0 or 0.2), so it changes little there and mostly sets the `grooming_reported` flag.
+
 Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the history is limited, and every day carries the flag `snow_history_limited` and a confidence that is never High.
 
 **Visibility (25).** The lowest of: distance (100 m → 0, 500 → 25, 2,000 → 60, 6,000 → 90, 12,000 and more → 100); snowfall in cm an hour (0 → 100, 0.5 → 92, 1.5 → 65, 3 → 35, 5 → 10); rain intensity (none 100, light 65, moderate 45, heavy 30); fog weather code (20). A null visibility counts as 100 for the distance term only; the other terms still apply. **Limitation:** the weather shape has no cloud cover, so v1 cannot tell fog on the summit from harmless high cloud. Fog comes only from visibility and the fog weather codes.
 
-**Wind (20).** Strength = the larger of the wind speed and 0.65 × the gust, in m/s. Points: 0 → 100, 4 → 98, 8 → 86, 12 → 60, 16 → 30, 20 → 10, 26 and more → 0. This is a predicted wind effect. Confirmed lift holds are separate and are phase 10 (#10).
+**Wind (20).** Strength = the larger of the wind speed and 0.65 × the gust, in m/s. Points: 0 → 100, 4 → 98, 8 → 86, 12 → 60, 16 → 30, 20 → 10, 26 and more → 0. This is a predicted wind effect only. A confirmed lift hold from the resort is a different thing: it is reported in `liftHolds` and `notes` with `EX_LIFT_HOLD_CONFIRMED`, it does not move the wind component or the day score, and the wind codes (`F_STRONG_GUSTS`, `EX_SUMMIT_WIND`) are never emitted because of it.
 
 **Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. Because the hour is the mean of base and upper, a gale at the summit alone leaves the base side scoring normally, so such a day can still land in the Good band.
 
@@ -124,12 +131,12 @@ Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the histo
 
 ## Day
 
-- Ski hours: the hours from `from` up to but not including `to`. Assumed window: 9:00 to 16:00 local (7 hours: 9, 10, 11, 12, 13, 14, 15), always labelled `assumed: true` and flagged `assumed_hours`. It is a placeholder until operating hours exist (#10); pass `opts.hours` to replace it.
+- Ski hours: the hours from `from` up to but not including `to`. Assumed window: 9:00 to 16:00 local (7 hours: 9, 10, 11, 12, 13, 14, 15), always labelled `assumed: true` and flagged `assumed_hours`. Pass `opts.hours` (from the resort status, whole local hours with `to` exclusive) to replace it; without published hours the assumed window stays and stays labelled.
 - Day score = 0.60 × mean(ski hours with data) + 0.40 × best window mean. Example: mean 70, best window 85 gives 76.
 - Best window = the highest mean of 3 consecutive ski hours that all have data. Isolated hours with gaps between never form one. **Tied windows: the earliest start wins** (means are compared with a tolerance of 1e-9 so float noise does not decide).
 - No 3 consecutive hours with data: the window term is dropped, day = mean, `window` is `null`, the flag `window_under_3h` is set, and the day view says "Best window: under 3 hours of data" (#15).
 - **Insufficient** when fewer than 3 ski hours have data, or more than half of the ski hours are missing. With the assumed 7 hours a day needs 4 hours with data. A window of under 3 hours (a short operating day) is always Insufficient.
-- **Closed** only when the caller passes a confirmed closure for the date. The engine never infers a closure from weather.
+- **Closed** only when the caller passes a confirmed closure for the date. The engine never infers a closure from weather or from the season. A day outside the season, or with the resort not yet open, stays scored and carries the note `NT_OUT_OF_SEASON`.
 - Dates are the date part of the weather's local time strings. Nothing is converted through UTC, so a daylight-saving change cannot move an hour to another date. The spring day has 23 hours; the fall day has 25, with the 01:00 label twice (both are kept in `hours`; in the ski-window statistics the first valid hour with a given label is used). Surface state is carried across every hour in order.
 - Peak hour: the best single ski hour, the earliest on a tie.
 
@@ -151,7 +158,7 @@ Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, 
 
 The engine returns `{ code, params }` and never a sentence. A parameter is a raw number (an hour is the local hour 0 to 23, a count is a number); the UI formats it. Codes are opaque strings. English templates for the codes that already exist are in `design/forecast/ux-prd.md` section 8.
 
-**Rule: a new code ships with its English text in `src/i18n/en.js` (new number) and its translation in all nine other language files, in the same pull request.** `tests/forecast-score.test.js` fails if the engine can emit a code that is not in `codes.js` or not listed on this page. Phase 2 adds the templates; no UI text is added in phase 1.
+**Rule: a new code ships with its English text in `src/i18n/en.js` (new number) and its translation in all nine other language files, in the same pull request.** `tests/forecast-score.test.js` fails if the engine can emit a code that is not in `codes.js` or not listed on this page. Phase 2 adds the templates; no UI text is added in phase 1. Phase 10 (#10) adds `EX_LIFT_HOLD_CONFIRMED` and `NT_OUT_OF_SEASON`.
 
 **Twin codes.** The design lists some meanings twice (an upper-case name and a dotted name). The engine emits the upper-case one wherever there is a twin, and the dotted names only where there is no upper-case equivalent. So these dotted codes are never emitted and can be dropped from the design: `conf.agree`, `conf.snow_amount`, `conf.far`, `conf.rain_snow`, `conf.one_point`, `conf.stale`, `timing.snow_arrival`, `timing.wind_ease`, `explain.fresh_wind_drop`, `explain.firm_flat`, `explain.leftover`, `explain.packed`, `explain.thaw`, `outlook.broad`, `insuff.summit_missing`, `insuff.not_loaded`, `insuff.too_few_hours`, `f.flat`, `f.firm`, `f.refreezing`, `f.softening`, `f.gusts_summit`. The hourly main-factor and score-part caption sets (`f.*`, `p.*`) from the prototype are replaced by the `F_*` factor codes below plus the component each factor belongs to (`component` in the output), which phase 2 maps to a part caption.
 
@@ -204,6 +211,11 @@ Which factor is chosen: each component's weighted distance from its reference (s
 - `surf.scoured` (wind 14 m/s or more and below −2 °C)
 - `surf.firm_groomed` (otherwise)
 
+`note` (day `notes`):
+
+- `EX_LIFT_HOLD_CONFIRMED` [number of confirmed holds that date] (new, needs ten translations in phase 2)
+- `NT_OUT_OF_SEASON` (new, needs ten translations in phase 2)
+
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 
 Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (later, phase 4, when history exists), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
@@ -212,8 +224,10 @@ Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (d
 
 ## Not in version 1
 
-Snow history before the forecast (phase 4), confirmed lift holds, grooming reports and published hours (phase 10), several forecasts or ensemble members and with them `uncertainty` and a High confidence (phase 7), calibration of the numbers against real days (phase 8), days 3 to 5 as time blocks and days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Snow history before the forecast (phase 4), several forecasts or ensemble members and with them `uncertainty` and a High confidence (phase 7), calibration of the numbers against real days (phase 8), days 3 to 5 as time blocks and days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
 `tests/forecast-score.test.js` with fixtures in `tests/fixtures/forecast/`. `real-stowe-2026-11-22.json` is a real `/api/weather` response (hourly blocks only). The five `scenario-*.json` files are derived from it by editing values; each says so in `_label`.
+
+`tests/forecast-status.test.js` covers the resort-status side with recorded feeds `status-mtnpowder-*.json` (trimmed real responses): the normaliser, an assumed window, a confirmed closure, a short operating day, a confirmed lift hold kept apart from wind, and out of season without a closure. See `docs/FORECAST_SOURCES.md` for where the status comes from.
