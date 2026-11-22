@@ -1097,7 +1097,7 @@ export class SkiMap {
     // Full frame rate while the map is being touched or flown; ~30 fps otherwise (saves battery/GPU).
     const now = performance.now();
     if (this.paused) return;
-    const busy = now - (this.lastInput || 0) < 900 || !!this.flight;
+    const busy = now - (this.lastInput || 0) < 900 || now - (this.lastCameraMove || 0) < 150 || !!this.flight;
     // Not touched: ~30 fps while someone on the map is moving, ~20 fps otherwise (chairs creeping
     // along their cables look just as smooth, and most frames are then skipped entirely anyway).
     if (!busy && now - (this.lastFrame || 0) < (this.peopleMoving ? 31 : 48)) { this.wasBusy = false; return; }
@@ -1257,10 +1257,13 @@ export class SkiMap {
     let people = !!this.play;
     if (!people && this.me) people = this.settling(this.meObj);
     if (!people) for (const f of this.friends.values()) if (this.settling(f.obj)) { people = true; break; }
+    const justSettled = this.peopleMoving && !people;
     this.peopleMoving = people;
+    if (justSettled) this.overlayDirty = true;
+    if (key !== this.overlayKey) this.lastCameraMove = now;
     // Nothing is moving when the view is still, no lift is being animated and nobody on the map is
     // moving: the picture is then only refreshed twice a second (saves battery and heat).
-    const still = !this.flight && farOut && !people && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
+    const still = !this.flight && farOut && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
     if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
     if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;

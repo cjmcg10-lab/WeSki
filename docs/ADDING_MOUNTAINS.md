@@ -198,8 +198,13 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
 - Compact height grids (2026-11-22): `push` also uploads `terrain.z16` and `surround.z16`, made from the `.bin` files
   (`src/heights.js`: each height predicted from its neighbours, only the difference kept, gzipped; exact, 56% smaller,
   and Cloudflare never compressed the `.bin`). The app downloads the `.z16` and falls back to the `.bin` on old
-  browsers or when one is missing; the app build makes them for Jay Peak. `pull` only fetches the `.bin` files.
-  Always upload with `push` (or `pipeline.py`) so the two stay in step.
+  browsers, when one is missing, or when its size does not match `resort.json`; the app build makes them for Jay Peak.
+  In R2 each compact file is stored as `terrain.<first 12 characters of the .bin's md5>.z16`, and the Worker serves
+  `terrain.z16` only from the copy that matches the `.bin` now in R2 (404 otherwise, so the app uses the `.bin`). An
+  older tool that re-uploads a `.bin` therefore can never leave phones with heights from an earlier map. `pull` fetches
+  the matching `.z16` too. Old copies stay in the bucket unused; delete them in the Cloudflare dashboard if wanted.
+  The 59 resorts uploaded before this have no matching compact files and serve the `.bin` until someone with R2
+  access runs `node tools/maps_r2.mjs push --all` (only the new `.z16` files are sent, the rest is already current).
 - The deploy downloads every R2 map before `npm test`, so the tests still check every mountain, then drops them
   before the app build. If the GitHub token cannot read R2 the deploy warns and tests only Jay Peak.
 - `build_index.py` keeps index entries for R2 mountains that are not downloaded.

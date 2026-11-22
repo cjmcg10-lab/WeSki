@@ -33,8 +33,6 @@ session needs that the README does not: the rules, the state of the work, and wh
   A blocked host shows as a proxy refusal: request the exact host through the environment tools (the owner approves a
   prompt). Never ask for a secret in chat; use the credential request form.
 - **Map files are in Cloudflare R2, not git** (all but Jay Peak): `node tools/maps_r2.mjs pull --all` before map work.
-- **Zach's sessions use the personal cloud environment `WeSki`** (created 2026-11-22: Cloudflare token as a network
-  secret, the live site, and the OSM, OpenSkiMap and terrain hosts). Map files download and upload from there.
 - **Nothing outside the repository survives a session.** OSM extracts (about 900 MB), terrain tiles, downloaded trail
   maps and screenshots lived in a scratch folder and are gone. Re-download only what a task needs: one resort's OSM
   extract takes a minute (`tools/dev/osmget.py`, bounding boxes in each `tools/resorts/<id>.json` and

@@ -164,10 +164,11 @@ function initMap(id) {
     await loadPlaces();
     const pl = placeById(id);
     if (!pl?.available) throw new Error('no map for ' + id);
+    const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
     const [resort, buf, sur] = await Promise.all([
-      fetchOk(`/data/${id}/resort.json`).then((r) => r.json()),
-      fetchHeights(`/data/${id}/terrain`),
-      fetchHeights(`/data/${id}/surround`).catch(() => null),
+      resortP,
+      resortP.then((R) => fetchHeights(`/data/${id}/terrain`, R.grid)),
+      resortP.then((R) => fetchHeights(`/data/${id}/surround`, R.surround)).catch(() => null),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     if (S.map) {                              // leaving the previous mountain
@@ -2153,11 +2154,12 @@ async function downloadOffline() {
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
     for (const url of list) {
-      const res = await fetch(url, { cache: 'reload' });
+      let at = url, res = await fetch(at, { cache: 'reload' });
+      if (!res.ok && at.endsWith('.z16')) res = await fetch(at = at.replace(/\.z16$/, '.bin'), { cache: 'reload' });
       if (!res.ok) throw new Error(url);
       const blob = await res.clone().blob();
       bytes += blob.size;
-      await cache.put(url, res);
+      await cache.put(at, res);
       done++;
       $('#dl-n').textContent = done; $('#dl-p').value = done;
     }

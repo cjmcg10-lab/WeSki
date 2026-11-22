@@ -32,12 +32,13 @@ export function encodeHeights(h, nx) {
   return out;
 }
 
-/** Uint8Array from encodeHeights (after gunzip) -> Uint16Array grid. */
-export function decodeHeights(bytes) {
+/** Uint8Array from encodeHeights (after gunzip) -> Uint16Array grid. With expect {nx, ny}, a grid of another size throws. */
+export function decodeHeights(bytes, expect) {
   const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   if (b.length < 12 || MAGIC.some((m, k) => b[k] !== m)) throw new Error('not a height grid');
   const dv = new DataView(b.buffer, b.byteOffset, b.length), nx = dv.getUint32(4, true), n = dv.getUint32(8, true);
   if (!nx || b.length !== 12 + 2 * n) throw new Error('height grid is cut short');
+  if (expect && (nx !== expect.nx || n !== expect.nx * expect.ny)) throw new Error('height grid is for a different map');
   const h = new Uint16Array(n);
   for (let i = 0; i < n; i++) h[i] = (b[12 + i] | (b[12 + n + i] << 8)) + predict(h, i, nx);   // Uint16Array wraps round too
   return h;
@@ -45,17 +46,17 @@ export function decodeHeights(bytes) {
 
 /**
  * Fetch a height grid for the app: the compact .z16 where the browser can unzip it, else the plain
- * .bin (older browsers, or a resort not yet uploaded in the compact form). Returns an ArrayBuffer of
+ * .bin (older browsers, a resort not yet uploaded in the compact form, or a compact grid whose size is not expect's {nx, ny}). Returns an ArrayBuffer of
  * 16-bit heights, exactly what the .bin holds.
  */
-export async function fetchHeights(base, fetcher = fetch) {
+export async function fetchHeights(base, expect, fetcher = fetch) {
   if (typeof DecompressionStream !== 'undefined') {
     try {
       const r = await fetcher(`${base}.z16`);
       // (a missing file can come back as the app's own page, from the single-page fallback)
       if (r.ok && !(r.headers.get('content-type') || '').includes('text/html')) {
         const raw = await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
-        return decodeHeights(new Uint8Array(raw)).buffer;
+        return decodeHeights(new Uint8Array(raw), expect).buffer;
       }
     } catch { /* fall back to the plain file */ }
   }
