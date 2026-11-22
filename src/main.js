@@ -299,7 +299,7 @@ async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   if (!consentOk()) { hideSplash(); await showConsent(); }
   acct.setSimFree(S.simFree);
-  acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
     const q = new URLSearchParams(location.search);
     if (q.has('signedin') || q.has('signin')) {
@@ -309,13 +309,14 @@ async function boot() {
     }
   }
   // Straight to the map when rejoining a group (you're mid-ski-day) or when asked to skip.
-  const saved = prefs.get('group', null), q = new URLSearchParams(location.search);
-  if (saved || q.has('skip')) {
-    const want = (saved && saved.resort) || q.get('skip') || 'jay-peak';
+  const saved = prefs.get('group', null), q = new URLSearchParams(location.search), back = takeReopen();
+  if (saved || back || q.has('skip')) {
+    const want = (saved && saved.resort) || back?.resort || q.get('skip') || 'jay-peak';
     try {
       await initMap(placeById(want)?.available ? want : 'jay-peak');
       hideSplash();
       if (saved) joinGroup(saved.code, saved.sharing, true);
+      if (back?.resort === want) restoreAfterReload(back, acctReady);
     } catch (e) { bootFailed(e); }
     return;
   }
@@ -326,6 +327,19 @@ async function boot() {
     const last = prefs.get('lastResort', 'jay-peak');
     try { await initMap(placeById(last)?.available ? last : 'jay-peak'); hideSplash(); } catch (err) { bootFailed(err); }
   }
+}
+
+/** Put back the dropped pin and the directions that were showing before Reload was tapped. */
+async function restoreAfterReload(back, acctReady) {
+  const pin = back.pin;
+  if (pin && Number.isFinite(pin.x) && Number.isFinite(pin.y)) { S.pin = pin; S.map.setPin(pin); }
+  const tg = back.nav;
+  if (!tg || !['poi', 'pin', 'meet', 'friend'].includes(tg.type)) return;
+  if (tg.type === 'poi' && !S.resort.pois[tg.id]) return;
+  if (tg.type === 'pin' && !S.pin) return;
+  if ((tg.type === 'meet' || tg.type === 'friend') && !S.group) return;
+  await acctReady.catch(() => {});            // directions need to know about the pass
+  if (!S.nav && S.place?.id === back.resort) startNav(tg);
 }
 
 // ---------- start screen (globe + resort picker)
@@ -682,6 +696,9 @@ async function leaveResort(save) {
   S.me = null; S.map.setMe(null);
   S.pin = null; S.map.setPin(null);
   renderChrome();
+  // A new version arrived while on the mountain: everything is wrapped up, so start the new version on the globe
+  // (the screen's old code may no longer be on the server).
+  if (updates?.ready) { updates.reloadNow(); return; }
   await exitToGlobe();
 }
 
@@ -718,6 +735,25 @@ function showUpdateBar() {
     <button class="up-go" data-act="update-reload">${esc(t('Reload'))}</button>
     <button class="up-x" data-act="update-later" aria-label="${esc(t('Not now'))}">✕</button>`;
   document.body.appendChild(el);
+}
+// Tapping Reload inside a mountain comes back to it: the ski day is saved first and resumes, the group rejoins as on any
+// start, and a dropped pin and the directions being followed are put back.
+const REOPEN = 'weski:reopen';
+async function reloadKeepingPlace() {
+  if (S.map && S.place && isHidden('#start')) {
+    try { sessionStorage.setItem(REOPEN, JSON.stringify({ resort: S.place.id, at: Date.now(), pin: S.pin || null, nav: S.nav?.target || null })); } catch { /* storage off: reload anyway */ }
+    await autosave();
+    if (S.crumbRec) await saveTracks(true);
+  }
+  updates?.reloadNow();
+}
+/** What to reopen after a Reload tapped inside a mountain (read once; ignored if old). */
+function takeReopen() {
+  try {
+    const v = JSON.parse(sessionStorage.getItem(REOPEN) || 'null');
+    sessionStorage.removeItem(REOPEN);
+    return v && Date.now() - v.at < 60 * 1000 && placeById(v.resort)?.available ? v : null;
+  } catch { return null; }
 }
 const updates = 'serviceWorker' in navigator && location.protocol === 'https:'
   ? watchUpdates({ sw: navigator.serviceWorker, isSafe: safeToReload, show: showUpdateBar })
@@ -2281,7 +2317,7 @@ async function onClick(e) {
     case 'exit-save': leaveResort(true); break;
     case 'exit-nosave': leaveResort(false); break;
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
-    case 'update-reload': updates?.reloadNow(); break;
+    case 'update-reload': b.disabled = true; await reloadKeepingPlace(); break;
     case 'update-later': $('#update-bar')?.remove(); break;
     case 'up-plans': $('#modal').classList.add('hidden'); openSheet('pass', d.why); break;
     case 'up-trial': {

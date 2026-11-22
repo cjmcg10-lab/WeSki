@@ -63,6 +63,30 @@ describe('new version watcher', () => {
     expect(log.shown).toBe(1);
   });
 
+  it('does not take the very first install for a new version when the new worker reports "activated"', () => {
+    const { sw, reg, w, log } = setup({ controller: false });
+    const worker = { state: 'installing', ls: {}, addEventListener(n, f) { (this.ls[n] ||= []).push(f); } };
+    reg.installing = worker;
+    reg.fire('updatefound');                   // found while nothing runs this screen
+    sw.controller = worker; sw.fire('controllerchange');   // clients.claim() takes the screen over first
+    worker.state = 'activated'; (worker.ls.statechange || []).forEach((f) => f());
+    expect(w.ready).toBe(false);
+    expect(log).toEqual({ shown: 0, reloads: 0 });
+  });
+
+  it('counts one new version once, and asks again for the next one after "Not now"', () => {
+    const { sw, reg, w, log } = setup();
+    const worker = { state: 'installing', ls: {}, addEventListener(n, f) { (this.ls[n] ||= []).push(f); } };
+    reg.installing = worker;
+    reg.fire('updatefound');
+    sw.controller = worker; sw.fire('controllerchange');
+    worker.state = 'activated'; worker.ls.statechange.forEach((f) => f());
+    expect(w.ready).toBe(true);
+    expect(log.shown).toBe(1);                  // takeover and "activated" are the same version
+    sw.controller = { next: true }; sw.fire('controllerchange');
+    expect(log.shown).toBe(2);                  // a later version shows the bar again
+  });
+
   it('asks the server for updates at most once per gap', async () => {
     const { reg, w, tick } = setup();
     w.check();
