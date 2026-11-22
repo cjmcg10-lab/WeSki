@@ -109,6 +109,21 @@ in a virtual environment holding `timezonefinder==9.2.0` and `rasterio`. Commit 
 
 Known limits: names and places are as OpenStreetMap has them, so a resort near a border can carry the neighbouring country's region name or town. A resort whose only mapped lifts are on one small hill has a small vertical (flagged). Season dates and opening hours are not in this source.
 
+## Provisional mountains by map pin (#6)
+
+Someone can add a mountain that is not in the catalog by dropping a pin (or two) on a map. Two outside sources are involved. Checked on 2026-11-22; nothing here needs an account or key.
+
+| | Ground height | Map picture |
+| --- | --- | --- |
+| Provider | AWS Terrain Tiles (Mapzen terrain tiles, public bucket `elevation-tiles-prod`), Terrarium PNG tiles | OpenFreeMap (openfreemap.org), style `https://tiles.openfreemap.org/styles/liberty`, drawn by MapLibre GL JS 5.6.2 (BSD-3-Clause) from cdnjs with a pinned integrity hash |
+| Licence | The tiles combine SRTM, USGS 3DEP and other public elevation sources. Free to use, including commercially; the credit is on `/legal/credits` (Terrain) | OpenFreeMap states its tiles are free for any use, commercial included, with no key or sign-up. Required credit: OpenFreeMap, OpenMapTiles, and © OpenStreetMap contributors. The map shows it on screen through MapLibre's attribution control, which is never hidden. Listed on `/legal/credits` (Pin map) |
+| Used by | `GET /api/elevation?lat=&lon=` (`worker/elevation.js`): the Worker fetches one zoom 12 tile (about 30 m a pixel), decodes the PNG and returns metres. Latitude is limited to ±85 and longitude to ±180; anything else is a 400. Six second timeout, 30 day cache in `caches.default`, User-Agent `weski-build`, no personal data sent | The phone loads the map library and tiles only when the pin screen opens. If the library cannot load, the screen says so and the coordinates can be typed instead |
+| Limits | A single 30 m pixel: on a ridge the number can be 10 to 50 m off the true top. The person can overwrite either height | OpenFreeMap is a free public service with no guarantee; heavy use may need our own tiles (see the decision below) |
+
+Decision for #19 (the pin map's tile source): OpenFreeMap as is, chosen by the owner. If it becomes unreliable or the limits bite, switch to Protomaps tiles on our own Cloudflare R2 (only `STYLE_URL` in `src/forecast/pinmap.js` changes).
+
+What a pin is: a list entry with `pin: true` and an id `pin-` plus six letters or digits (matches the server's `[a-z0-9-]` route pattern). It lives only on the phone, in the same watchlist. The server treats an id it does not know as unlisted: the weather answer is the same and nothing is stored in history for it, and the status answer is the assumed one. One point gives one estimate with Low confidence (`CR_ONE_ESTIMATE`); two points give base and summit estimates at the heights of the pins. Lift and run positions are never checked, so every pin is labelled Provisional and Terrain unverified. The time zone comes from the nearest catalog resort within 300 km, otherwise a fixed `Etc/GMT` zone from the longitude, and the screens say when it is a guess. A pin within about 3 km of a catalog resort offers "Is this <name>?".
+
 ## Weather sources (#8)
 
 Phase 7 of the Forecast, part of #1. Licences, terms and endpoints checked on 2026-11-22 with live requests from this machine (User-Agent `weski-build`); the notes say where a statement comes from a provider's page rather than a request.

@@ -9,6 +9,7 @@ import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
+import { elevationResponse } from './elevation.js';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -51,6 +52,7 @@ async function api(request, env, url, ctx) {
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
   if (path === '/api/weather' && method === 'GET') return weatherResponse(url, env, ctx);
+  if (path === '/api/elevation' && method === 'GET') return elevationResponse(url);
   const historyId = method === 'GET' && /^\/api\/history\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
   if (historyId) return historyResponse(historyId, env);
   const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];

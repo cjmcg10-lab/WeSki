@@ -171,6 +171,9 @@ Rated separately for the day and for the timing of its best window. Every thresh
 | Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured with snowfall, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
 
 High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached; phase 7 found no free second source with measured snowfall. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+A provisional mountain from a map pin (#6) with one point is passed to the engine with the same height for top and base, so it takes the one-estimate row above: Low, `CR_ONE_ESTIMATE`, and no separate summit value is ever shown. With two pins it is scored like any mountain with those two heights.
+
+High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
 
 Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale`, `fetchAgeHours` of 6 or more or `ageHours` of 30 or more → Low, `WR_STALE` `[hours]`; `ageHours` of 18 or more → Medium, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
 
