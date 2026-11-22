@@ -49,6 +49,11 @@ try {
   page.on('requestfailed', (r) => { if (!isIgnorable(r.url())) problems.push(`request failed: ${r.url()} ${r.failure()?.errorText}`); });
   page.on('response', (r) => { if (r.status() >= 400 && !isIgnorable(r.url())) problems.push(`HTTP ${r.status()}: ${r.url()}`); });
 
+  await context.addInitScript(() => localStorage.setItem('weski:installSeen', 'true'));
+  await page.addLocatorHandler(page.locator('#modal:not(.hidden) .modal-box'), async () => {
+    await page.locator('#modal:not(.hidden) [data-act="modal-cancel"]').first().click();
+  });
+
   await page.goto(ORIGIN);
 
   await page.locator('#f-consent').check({ timeout: 30000 });
@@ -57,9 +62,6 @@ try {
   await page.locator('#start-panel').waitFor({ state: 'visible', timeout: 30000 });
   const jay = page.locator('[data-act="pick-resort"][data-id="jay-peak"]');
   await jay.waitFor({ state: 'visible', timeout: 15000 });
-
-  const closeInstall = page.locator('#modal [data-act="modal-cancel"]').first();
-  if (await closeInstall.isVisible().catch(() => false)) await closeInstall.click();
 
   await jay.click();
   await page.locator('[data-act="ski-here"][data-id="jay-peak"]').click({ timeout: 15000 });
