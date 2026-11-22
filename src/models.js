@@ -17,7 +17,7 @@ function part(geo, color, x = 0, y = 0, z = 0, rx = 0, ry = 0, rz = 0) {
   return g.index ? g.toNonIndexed() : g;
 }
 const box = (w, h, d) => new THREE.BoxGeometry(w, h, d);
-const vcMat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+const vcMat = (smooth = false) => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: !smooth });
 
 /**
  * A skier or snowboarder, ~1.8 units tall, travelling towards +Z.
@@ -389,7 +389,8 @@ export function tramGeometry(color) {
 
 export function towerGeometry(h, arm) {
   return mergeGeometries([
-    part(new THREE.CylinderGeometry(0.28, 0.5, h, 5), 0x6d7480, 0, h / 2, 0),
+    // a round pole, open at both ends: its foot is in the snow and its top inside the crossarm (16 + 12 triangles)
+    part(new THREE.CylinderGeometry(0.28, 0.5, h, 8, 1, true), 0x6d7480, 0, h / 2, 0),
     part(box(arm, 0.35, 0.5), 0x565c68, 0, h, 0),
   ]);
 }
@@ -421,8 +422,12 @@ export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4) {
 
 /** Small conifer, base at y=0. */
 export function treeGeometry() {
-  // one 4-sided cone, no bottom (it sits in the snow and is never seen): 4 triangles a tree
-  return new THREE.ConeGeometry(1, 4.2, 4, 1, true).translate(0, 2.1, 0);
+  // two stacked 6-sided cones, smooth shaded, no bottoms (they sit in the snow or inside the tier below and are
+  // not seen from above): 12 triangles a tree. Same overall size as before: 4.2 tall, radius 1 at the foot.
+  return mergeGeometries([
+    new THREE.ConeGeometry(1, 2.9, 6, 1, true).translate(0, 1.45, 0),
+    new THREE.ConeGeometry(0.72, 2.7, 6, 1, true).rotateY(Math.PI / 6).translate(0, 1.5 + 1.35, 0),
+  ]);
 }
 
 /** Map pin (dropped pin) and flag (meeting point), base at y=0, ~3 units tall. */
