@@ -564,7 +564,7 @@ describe('hours a source did not cover are never recorded', () => {
   it('MET starting mid-day: the hours before its first entry are marked filled and skipped', async () => {
     const start = Date.UTC(2026, 10, 22, 12);
     const entry = (i) => ({ time: new Date(start + i * HOUR).toISOString(), data: { instant: { details: { air_temperature: -3, wind_speed: 2 } }, next_1_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 1 } }, next_6_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 6 } } } });
-    answer({ 'api.met.no': { properties: { meta: { updated_at: new Date(NOW - HOUR).toISOString() }, timeseries: Array.from({ length: 170 }, (_, i) => entry(i)) } } });
+    answer({ metalerts: { features: [] }, 'api.met.no': { properties: { meta: { updated_at: new Date(NOW - HOUR).toISOString() }, timeseries: Array.from({ length: 170 }, (_, i) => entry(i)) } } });
     const oslo = new URL('https://x/api/weather?lat=61.2&lon=8.4&top=1500&base=300&tz=Europe/Oslo');
     const res = await forecast(oslo, NOW);
     vi.unstubAllGlobals();
@@ -581,6 +581,7 @@ describe('hours a source did not cover are never recorded', () => {
     const start = Date.UTC(2026, 10, 22, 10);
     const series = (v) => ({ values: [{ validTime: `${new Date(start).toISOString()}/PT14H`, value: v }] });
     answer({
+      'alerts/active': { features: [] },
       'api.weather.gov/points': { properties: { forecastGridData: 'https://api.weather.gov/gridpoints/BTV/1,1' } },
       'gridpoints/BTV': { properties: { updateTime: '2026-11-22T06:00:00+00:00', generatedAt: '2026-11-22T12:00:00+00:00', elevation: { value: 400 }, temperature: series(-4), windSpeed: series(10), snowfallAmount: series(14) } },
     });
