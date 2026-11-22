@@ -466,7 +466,9 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   squares off the shown runs, only from stretches that look like skiing (not lifts, standing, lodges, car parks), no
   time or identity; server keeps counts, publishes only >= 5
   ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
-  at `/api/reports/<id>`. A review script for reports, and using `/api/heat` in `tools/evidence.py`, are still to do.
+  at `/api/reports/<id>`. `tools/reports.py <id>|--all` lists new reports (marker in `tools/.reports_seen.json`,
+  not in git); `tools/evidence.py <id>` also shows the `/api/heat` ski days per run and squares skied off the runs
+  (`--heat-only` skips the GPS download). See "The final check" in `docs/ADDING_MOUNTAINS.md`.
 - Paid buttons stay visible to free users with a small "Pass" badge (`passBadge`); tapping one opens a short pop-up
   (`upsell(why)` in `src/main.js`: free day, See plans, Not now). Nothing shows while `PAYWALL` is off.
 - Start screen: a "Sign in" button (account initial once signed in, teal ring with a pass) at the top right of the
