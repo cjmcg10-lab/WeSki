@@ -198,5 +198,36 @@
  "blue_black": [],
  "not_runs": {
   "Big Rock Park": "The resort lists the whole park and also its East and West parts; both parts are on the map."
+ },
+ "lifts": [
+  "Avanti Express",
+  "Born Free Express",
+  "Cascade Village Lift",
+  "Eagle Bahn Gondola",
+  "Earl's Express",
+  "Game Creek Express",
+  "Golden Peak T-Bar",
+  "Gondola One",
+  "Gopher Hill Lift",
+  "High Noon Express",
+  "Highline Express",
+  "Mongolia",
+  "Mountaintop Express",
+  "Northwoods Express",
+  "Orient Express",
+  "Pete's Express",
+  "Pride Express",
+  "Riva Bahn Express",
+  "Skyline Express",
+  "Sourdough Express",
+  "Sun Down Express",
+  "Sun Up Express",
+  "Tea Cup Express",
+  "Wapiti",
+  "Wildwood Express"
+ ],
+ "lifts_source": "Vail 2026-27 trail maps, Front Side, Back Bowls and Blue Sky Basin (skimap.org maps 46353, 46354, 46355, the resort's PDFs), lift labels read by hand; the small numbered kids' lifts and carpets (15, 18, 25, 27, 28, 29, 35) carry no name on the maps and are left out",
+ "lifts_explained": {
+  "Gopher Hill Lift": "on the resort's 2026-27 map; OpenStreetMap still has the old Gopher Hill chair (way 191547029) but tags it abandoned, so the build leaves it out. Check whether it runs again (or was replaced) before forcing it back with keep_ways"
  }
 }

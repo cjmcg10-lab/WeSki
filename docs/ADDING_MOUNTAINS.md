@@ -96,6 +96,14 @@ And one independent check, which catches what geometry cannot (an area reached o
    OpenStreetMap, are explained in the official json under `lifts_explained`, never left unexplained. With feed
    areas, the card also flags any area with half or more of its runs missing.
 
+   Older mountains (issue #59, 2026-11-22): 35 of the 43 that had no list now carry one, read from the resort's
+   trail map on skimap.org (the file comes from `files.skimap.org`, now on the network allowlist), with the map
+   and how it was read in `lifts_source`. Still without a list: Zermatt (its map numbers the lifts without
+   names), Pizol (lifts lettered A to L only), Magic Mountain (lifts drawn but not named), Tignes – Val d'Isère,
+   Val Thorens, La Plagne, Les Arcs and Les Contamines (big Alpine maps with small labels; skimap.org's newest
+   Tignes file is the bike map). A listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12")
+   cannot be matched by name, so the whole-resort search ignores it (it once matched every lift around Park City).
+
 A separate area reached by shuttle (Snowshoe's Silver Creek) goes in `isolated_lifts` with a note.
 
 ## Ratings: cheapest source first

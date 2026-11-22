@@ -123,5 +123,37 @@
  "not_runs": {
   "Killebrew Canyon": "The name of the gated experts-only area; its runs (Outer Limits, Pipeline, Ramarrah's, The Fingers, Stateline Chute, Bob's Boulevard, Sweetwater, Boundary Chutes) are each on the map.",
   "Rocky Point": "An area name printed inside Mott Canyon between Bill's and Promise Land with no run line of its own; the map runs there (Under the Gun, Pac-Man) are double black."
+ },
+ "lifts": [
+  "Aerial Tramway",
+  "Big Easy",
+  "Black Bear Carpet",
+  "Boulder",
+  "Boulder Carpet",
+  "Canyon Express",
+  "Comet Express",
+  "Dipper Express",
+  "First Ride",
+  "Galaxy",
+  "Gondola",
+  "Groove",
+  "Gunbarrel Express",
+  "Mott Canyon",
+  "North Bowl Express",
+  "Olympic Express",
+  "Patsy's",
+  "Pioneer",
+  "Powderbowl Express",
+  "Red Fir",
+  "Sky Express",
+  "Stagecoach Express",
+  "Tamarack Express",
+  "Tubing Lift",
+  "World Cup"
+ ],
+ "lifts_source": "Heavenly trail map by James Niehues, 2024 printing (skimap.org map 30139), lift labels read by hand; the map counts 28 lifts, the others being unnamed learning-area carpets",
+ "lifts_explained": {
+  "Red Fir": "small beginner lift on the resort's map; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found",
+  "Black Bear Carpet": "beginner carpet on the resort's map; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
  }
 }

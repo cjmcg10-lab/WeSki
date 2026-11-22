@@ -30,5 +30,21 @@
   "Victor's Way": 0,
   "Wildwood": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Arrowhead Triple Chair",
+  "Boulder Summit Triple",
+  "Deer Run Triple Chair",
+  "Mohawk Triple Chair",
+  "Nutmeg Triple Chair",
+  "Robin's Nest",
+  "Runway",
+  "The Glider",
+  "The Rooster"
+ ],
+ "lifts_source": "Mohawk Mountain 2025 trail map (skimap.org map 37299), lift labels read by hand; the tubing lift is drawn but not named",
+ "lifts_explained": {
+  "The Glider": "beginner lift in the Hawk's Nest area; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found",
+  "The Rooster": "short beginner lift beside Robin's Nest; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
+ }
 }

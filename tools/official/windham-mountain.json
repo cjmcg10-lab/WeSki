@@ -61,5 +61,14 @@
   "Windfall",
   "Wolf's Prey",
   "World Cup"
- ]
+ ],
+ "lifts": [
+  "Baker Double",
+  "East Peak Express Quad",
+  "K Lift",
+  "Westside Six",
+  "Whiteway Express Quad",
+  "Wonderama Express Quad"
+ ],
+ "lifts_source": "Windham Mountain trail map (skimap.org map 30715, the resort's PDF), lift labels read by hand; the base-area conveyors are drawn but not named"
 }

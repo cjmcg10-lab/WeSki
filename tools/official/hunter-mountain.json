@@ -73,5 +73,24 @@
   "White Cloud": 1,
   "Woodstock Glades": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "20th Century Quad",
+  "Broadway Express",
+  "DC Discovery Carpet",
+  "EC East Carpet",
+  "F Lift",
+  "FC Frostyland Carpet",
+  "H Lift",
+  "HP Poma Lift",
+  "Kaatskill Flyer",
+  "Northern Express",
+  "Otis Quad",
+  "Zephyr Express Quad"
+ ],
+ "lifts_source": "Hunter Mountain trail map (skimap.org map 36859, the resort's PDF): the printed lift list",
+ "lifts_explained": {
+  "DC Discovery Carpet": "beginner carpet; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found",
+  "FC Frostyland Carpet": "beginner carpet; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
+ }
 }

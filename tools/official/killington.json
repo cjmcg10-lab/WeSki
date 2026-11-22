@@ -145,5 +145,31 @@
   "Wildfire": 2,
   "Yodeler": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Bear Mountain Quad",
+  "Canyon Quad",
+  "K-1 Express Gondola",
+  "Learn to Carpet",
+  "Needle's Eye Express Quad",
+  "North Ridge Quad",
+  "Northbrook Quad",
+  "Progression Carpet I",
+  "Ramshead Express Quad",
+  "Skye Peak Express Quad",
+  "Skyeship Express Gondola Stage 1",
+  "Skyeship Express Gondola Stage 2",
+  "Snowdon Quad",
+  "Snowdon Six Express",
+  "Snowshed Double",
+  "Snowshed Express Quad",
+  "South Ridge Quad",
+  "Sunrise Village Triple",
+  "Superstar Six"
+ ],
+ "lifts_source": "Killington 2026 winter trail map with the new Snowdon Quad (skimap.org map 46352, the resort's PDF), lift labels read by hand",
+ "lifts_explained": {
+  "Learn to Carpet": "beginner carpet; probably the map's Learn To Snowboard Carpet or a Snowplay carpet (names differ)",
+  "Progression Carpet I": "beginner carpet; probably one of the map's Snowplay carpets (names differ)"
+ }
 }

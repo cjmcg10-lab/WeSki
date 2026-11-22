@@ -149,5 +149,27 @@
  "hide": {
   "Merrill Hill II": "a real chairlift (built 2023) that rises from land being developed for future trails and homes; it is not on Sunday River's trail map (liftblog.com, 2023)",
   "Brilliant": "mapped in OpenStreetMap beside Spectra on Merrill Hill, but not on Sunday River's trail map or trail list"
- }
+ },
+ "lifts": [
+  "Aurora Peak Quad",
+  "Barker 6",
+  "Chondola",
+  "Gould Academy Surface Lift",
+  "Jordan 8",
+  "Jordan Mountain Double",
+  "Little White Cap Quad",
+  "Locke Mountain Triple",
+  "Lower Sundance Surface Lift",
+  "Merrill Hill Triple",
+  "Middle Sundance Surface Lift",
+  "North Peak Express",
+  "Oz Quad",
+  "Quantum Leap Triple",
+  "South Ridge Express",
+  "Spruce Peak Triple",
+  "Upper Sundance Surface Lift",
+  "White Cap Quad",
+  "White Heat Quad"
+ ],
+ "lifts_source": "Sunday River 2024-25 winter trail map (skimap.org map 30039, the resort's PDF): the printed numbered lift list 01 to 19 (the newer maps on skimap.org are summer maps)"
 }

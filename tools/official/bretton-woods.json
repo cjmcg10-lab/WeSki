@@ -104,5 +104,20 @@
   "Willey's Slide": 1,
   "Zealand": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "BEQ II",
+  "Bretton Woods Skyway Gondola",
+  "Learning Center Quad",
+  "Red Carpet",
+  "Rosebrook Summit Express Quad",
+  "Telegraph T-Bar",
+  "West Mountain Express High Speed Quad",
+  "Wonder Carpet",
+  "Zephyr High Speed Quad"
+ ],
+ "lifts_source": "Bretton Woods alpine trail map (skimap.org map 45737, the resort's PDF): base-area lift list L1 to L4 and the lift labels on the map; nine lifts, as the map's stats say",
+ "lifts_explained": {
+  "BEQ II": "the Bethlehem Express quad: on the map as Bethlehem Express High Speed Quad"
+ }
 }

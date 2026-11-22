@@ -78,5 +78,14 @@
   "Work Road": 0
  },
  "blue_black": [],
- "note": "Upper Showoff has no symbol on the map and keeps its OpenStreetMap rating (black). Wilderness Woods is drawn as two glades, the upper one black and the lower one blue, as OpenStreetMap already has them, so it is not listed. Hide Away, Valley Road and Moonlight Park are terrain parks and carry no rating."
+ "note": "Upper Showoff has no symbol on the map and keeps its OpenStreetMap rating (black). Wilderness Woods is drawn as two glades, the upper one black and the lower one blue, as OpenStreetMap already has them, so it is not listed. Hide Away, Valley Road and Moonlight Park are terrain parks and carry no rating.",
+ "lifts": [
+  "Mid Mountain Lift",
+  "Mighty Mite",
+  "Snowflake Lift",
+  "Timberline Lift",
+  "Vista Lift",
+  "Wilderness Lift"
+ ],
+ "lifts_source": "Bolton Valley 2024-25 trail map (skimap.org map 30685, the resort's PDF), lift labels read by hand"
 }
