@@ -497,4 +497,7 @@ export default {
   1126: 'Cancella le date',
   1127: 'Classifica aggiornata.',
   1128: 'La data di fine deve essere uguale o successiva a quella di inizio.',
+  1129: 'Copertura {0} su {1} giorno',
+  1130: 'Copertura {0} su {1} giorno · {2} chiuso',
+  1131: 'Un giorno successivo arriva dopo.',
 };

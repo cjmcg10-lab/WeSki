@@ -279,7 +279,9 @@ Ranking rule, in order:
 
 Too close to call. A mountain's uncertainty depends on its least confident covered day: High 5 points, Medium 8, Low 12 (first guesses, to be tuned in phase 8). Two neighbours in the ranking are "too close to call" when they have the same coverage and their displayed averages differ by less than the larger of their two uncertainties. The second card of the pair says so. A provisional mountain from a map pin always scores Low confidence, so a pin is flagged against any mountain within 12 points.
 
-Dates beyond the forecast. A picked day later than a mountain's last forecast day is "Not yet" and takes no part in the ranking. The screen says when it arrives: the date minus the length of the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."). When every picked day is beyond range it says none are in range yet.
+Dates beyond the forecast. A picked day later than a mountain's own last forecast day is "Not yet" for that mountain. It takes no part in the ranking and is left out of that mountain's coverage, so it reads "Coverage 3 of 3 days", not a missing day. This matters when mountains sit in different time zones and one window ends a day earlier. A mountain with no day inside the forecast says none of the days are in range yet. The note at the top uses the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."), but the arrival date is never earlier than today, and a "Not yet" button uses its own mountain's forecast. When every picked day is beyond range it says none are in range yet.
+
+Picking days. Tapping a day inside the From/To range removes it (the range remembers the exclusion in `skip`); tapping it again puts it back. "Clear dates" removes the range and its exclusions but keeps days picked by hand. Saved days before today are dropped on load. A score that is not a finite number counts as missing.
 
 Tests: `tests/forecast-trip.test.js`.
 

@@ -1,18 +1,20 @@
 import { t } from '../i18n.js';
 import { prefs } from '../store.js';
-import { bandOf, columnDates } from './data.js';
+import { bandOf, columnDates, localToday } from './data.js';
 import { esc, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate } from './text.js';
-import { TRIP_KEY, MAX_RANGE_DAYS, cleanTrip, tripDates, rangeError, rankTrip, notYet, entersRangeOn } from './trip.js';
+import { TRIP_KEY, MAX_RANGE_DAYS, cleanTrip, tripDates, toggleDate, clearRange, rangeError, rankTrip, notYet, entersRangeOn } from './trip.js';
 
 export function createTripScreen(ctx) {
   const { fc } = ctx;
   const H = () => ctx.host();
   const $ = (sel) => document.querySelector(sel);
-  const ui = { later: false, error: '' };
+  const ui = { later: false, error: '', draft: null };
   let trip = null;
 
-  const state = () => (trip ??= cleanTrip(prefs.get(TRIP_KEY, {})));
-  const save = () => prefs.set(TRIP_KEY, state());
+  const today = () => localToday(undefined);
+  const state = () => (trip ??= cleanTrip(prefs.get(TRIP_KEY, {}), today()));
+  const save = () => prefs.set(TRIP_KEY, trip);
+  const arrival = (date, span) => fmtShortDate(entersRangeOn(date, span, today()));
   const shortDay = (date) => `${fmtWeekday(date)} ${fmtDayNumber(date)}`;
 
   function view() {
@@ -36,7 +38,7 @@ export function createTripScreen(ctx) {
       const { band, label } = bandOf(day.score);
       return `<button class="fc-cell fc-tripday b${band}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: ski score {1}, {2}. {3}.', vis, day.shown, t(label), name))}"><span class="win">${esc(vis)}</span><b>${day.shown} ${t(label)}</b></button>`;
     }
-    if (day.kind === 'notyet') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', vis, t('Not yet'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Not yet')}</b></button>`;
+    if (day.kind === 'notyet') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Not yet'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Not yet')}</b></button>`;
     const closed = day.kind === 'closed';
     const word = closed ? t('Closed') : t('Insufficient data');
     return `<button class="fc-cell fc-tripday ${closed ? 'closed' : 'insuff'}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: {1}. {2}.', vis, word, name))}"><span class="win">${esc(vis)}</span><b>${word}</b></button>`;
@@ -46,11 +48,18 @@ export function createTripScreen(ctx) {
   const dayWord = (d) => `${d.shown} ${t(bandOf(d.score).label)}, ${fmtWeekday(d.date)}`;
 
   function factsHtml(card) {
-    const coverage = `<p class="fc-tripcov">${esc(card.closed ? t('Coverage {0} of {1} days · {2} closed', card.covered, card.total, card.closed) : t('Coverage {0} of {1} days', card.covered, card.total))}</p>`;
+    if (!card.total) return `<p class="fc-note">${t('None of these days are in forecast range yet.')}</p>${dayList(card)}`;
+    const one = card.total === 1;
+    const line = card.closed
+      ? (one ? t('Coverage {0} of {1} day · {2} closed', card.covered, card.total, card.closed) : t('Coverage {0} of {1} days · {2} closed', card.covered, card.total, card.closed))
+      : (one ? t('Coverage {0} of {1} day', card.covered, card.total) : t('Coverage {0} of {1} days', card.covered, card.total));
+    const coverage = `<p class="fc-tripcov">${esc(line)}</p>`;
     if (card.allClosed) return `<p class="fc-note">${t('Closed on all your days.')}</p>${coverage}`;
     if (!card.covered) return coverage;
     return `<dl class="fc-tripfacts">${fact(t('Average'), `${card.average} ${t(bandOf(card.average).label)}`)}${fact(t('Strongest'), dayWord(card.strongest))}${fact(t('Weakest'), dayWord(card.weakest))}</dl>${coverage}`;
   }
+
+  const dayList = (card) => `<ul class="fc-tripdays" role="list">${card.days.map((d) => `<li>${dayButton(card, d, ctx.nameOf(card.resort))}</li>`).join('')}</ul>`;
 
   function cardHtml(card, byId) {
     const name = ctx.nameOf(card.resort);
@@ -64,7 +73,7 @@ export function createTripScreen(ctx) {
       return `<li class="fc-tripcard">${head}${body}</li>`;
     }
     const close = card.closeWith ? `<p class="fc-note">${esc(t('Too close to call: {0} and {1} are closer than the forecast can tell apart.', byId.get(card.closeWith).resort.name, card.resort.name))}</p>` : '';
-    return `<li class="fc-tripcard">${head}${close}${factsHtml(card)}<ul class="fc-tripdays" role="list">${card.days.map((d) => `<li>${dayButton(card, d, name)}</li>`).join('')}</ul></li>`;
+    return `<li class="fc-tripcard">${head}${close}${factsHtml(card)}${card.total ? dayList(card) : ''}</li>`;
   }
 
   function outHtml() {
@@ -73,7 +82,7 @@ export function createTripScreen(ctx) {
     const late = notYet(picked, forecasts);
     if (late.dates.length) {
       const first = late.dates[0];
-      parts.push(`<p class="fc-note">${esc(t('Forecasts for {0} arrive on {1}.', fmtShortDate(first), fmtShortDate(entersRangeOn(first, late.span))))}${late.dates.length > 1 ? ` ${esc(t('{0} later days arrive after that.', late.dates.length - 1))}` : ''}</p>`);
+      parts.push(`<p class="fc-note">${esc(t('Forecasts for {0} arrive on {1}.', fmtShortDate(first), arrival(first, late.span)))}${late.dates.length === 2 ? ` ${esc(t('1 later day arrives after that.'))}` : ''}${late.dates.length > 2 ? ` ${esc(t('{0} later days arrive after that.', late.dates.length - 1))}` : ''}</p>`);
     }
     if (picked.length && late.dates.length === picked.length) parts.push(`<p class="fc-note">${t('None of these days are in forecast range yet.')}</p>`);
     parts.push('<p id="fc-trip-line" class="fc-note" role="status"></p>');
@@ -98,6 +107,8 @@ export function createTripScreen(ctx) {
       const on = picked.includes(b.dataset.d);
       b.setAttribute('aria-pressed', String(on));
       b.classList.toggle('on', on);
+      const glyph = b.querySelector('[aria-hidden="true"]');
+      if (glyph) glyph.textContent = on ? '✓ ' : '';
     });
     const err = $('#fc-to-err');
     if (err) err.textContent = ui.error;
@@ -117,8 +128,8 @@ export function createTripScreen(ctx) {
       <p id="fc-trip-cap" class="fc-legend">${esc(t('Later dates show up to {0} days.', MAX_RANGE_DAYS))}</p>
       <button class="btn sm alt" data-act="fc-trip-later" aria-expanded="${ui.later}" aria-controls="fc-later">${t('Later dates')}</button>
       <div id="fc-later" class="fc-later"${ui.later ? '' : ' hidden'}>
-        <label class="lbl" for="fc-from">${t('From')}</label><input class="field" type="date" id="fc-from" min="${min}" value="${esc(s.from)}" />
-        <label class="lbl" for="fc-to">${t('To')}</label><input class="field" type="date" id="fc-to" min="${min}" value="${esc(s.to)}" aria-describedby="fc-to-err fc-trip-cap" aria-invalid="${!!ui.error}" />
+        <label class="lbl" for="fc-from">${t('From')}</label><input class="field" type="date" id="fc-from" min="${min}" value="${esc(ui.draft?.from ?? s.from)}" />
+        <label class="lbl" for="fc-to">${t('To')}</label><input class="field" type="date" id="fc-to" min="${min}" value="${esc(ui.draft?.to ?? s.to)}" aria-describedby="fc-to-err fc-trip-cap" aria-invalid="${!!ui.error}" />
         <p id="fc-to-err" class="fc-error" role="alert">${esc(ui.error)}</p>
         <button class="btn sm alt" data-act="fc-trip-clear">${t('Clear dates')}</button>
       </div>
@@ -130,8 +141,7 @@ export function createTripScreen(ctx) {
       case 'fc-trip': ui.error = ''; H().open('fctrip'); return true;
       case 'fc-trip-back': { const sel = fc.returnSel; fc.returnSel = null; ctx.focusSel(sel); H().open('fctrip'); return true; }
       case 'fc-trip-pick': {
-        const s = state();
-        s.picked = s.picked.includes(d.d) ? s.picked.filter((x) => x !== d.d) : [...s.picked, d.d].sort();
+        trip = toggleDate(state(), d.d);
         save();
         refresh();
         H().announce(t('Ranking updated.'));
@@ -144,10 +154,9 @@ export function createTripScreen(ctx) {
         return true;
       }
       case 'fc-trip-clear': {
-        const s = state();
-        s.from = '';
-        s.to = '';
+        trip = clearRange(state());
         ui.error = '';
+        ui.draft = null;
         save();
         $('#fc-from').value = '';
         $('#fc-to').value = '';
@@ -163,9 +172,9 @@ export function createTripScreen(ctx) {
         H().open('fcday', { id: d.r, date: d.d });
         return true;
       case 'fc-trip-notyet': {
-        const { forecasts } = view();
-        const late = notYet([d.d], forecasts);
-        const text = late.dates.length ? t('Forecasts for {0} arrive on {1}.', fmtShortDate(d.d), fmtShortDate(entersRangeOn(d.d, late.span))) : '';
+        const own = ctx.rows().find((r) => r.resort.id === d.r)?.forecast;
+        const late = notYet([d.d], own ? [own] : []);
+        const text = late.dates.length ? t('Forecasts for {0} arrive on {1}.', fmtShortDate(d.d), arrival(d.d, late.span)) : '';
         const line = $('#fc-trip-line');
         if (line) line.textContent = text;
         if (text) H().announce(text);
@@ -177,9 +186,9 @@ export function createTripScreen(ctx) {
 
   function onInput(el, type) {
     if (el.id !== 'fc-from' && el.id !== 'fc-to') return false;
-    if (type !== 'change') return true;
     const from = $('#fc-from').value;
     const to = $('#fc-to').value;
+    if (type !== 'change') { ui.draft = { from, to }; return true; }
     if (rangeError(from, to)) {
       ui.error = t('The end date must be on or after the start date.');
       refresh();
@@ -187,9 +196,9 @@ export function createTripScreen(ctx) {
       return true;
     }
     ui.error = '';
-    const s = state();
-    s.from = from;
-    s.to = from ? to : '';
+    ui.draft = null;
+    trip = { ...state(), from, to: from ? to : '' };
+    trip = cleanTrip(trip, today());
     save();
     refresh();
     H().announce(t('Ranking updated.'));

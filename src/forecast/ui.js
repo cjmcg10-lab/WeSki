@@ -593,6 +593,7 @@ export function onClick(b) {
       const first = d.first;
       if (first) fc.flash = { id: first, isNew: true };
       fc.added = [];
+      if (!first && host.sheet() === 'fctrip') focusSel('[data-act="fc-trip"]');
       openCalendar();
       if (first) { focusSel(`[data-row="${first}"]`); setTimeout(clearFlash, FLASH_MS); }
       break;
@@ -625,7 +626,7 @@ export function onClick(b) {
       break;
     }
     case 'fc-refresh': if (!fc.updating) loadAll(true); break;
-    case 'fc-retry': { const r = fc.list.find((x) => x.id === d.r); if (r) { setEntry(r, { state: 'loading', fc: undefined }); host.render(); loadOne(r, true); } break; }
+    case 'fc-retry': { const r = fc.list.find((x) => x.id === d.r); if (r) { setEntry(r, { state: 'loading', fc: undefined }); focusSel(`[data-row="${r.id}"]`); host.render(); loadOne(r, true); } break; }
     case 'fc-day': {
       fc.bodyScroll = document.querySelector('#sheet-body')?.scrollTop ?? 0;
       fc.returnSel = `[data-act="fc-day"][data-r="${d.r}"][data-d="${d.d}"]`;

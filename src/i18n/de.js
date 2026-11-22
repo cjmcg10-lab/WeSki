@@ -497,4 +497,7 @@ export default {
   1126: 'Daten löschen',
   1127: 'Rangliste aktualisiert.',
   1128: 'Das Enddatum darf nicht vor dem Startdatum liegen.',
+  1129: 'Abdeckung {0} von {1} Tag',
+  1130: 'Abdeckung {0} von {1} Tag · {2} geschlossen',
+  1131: 'Ein späterer Tag folgt danach.',
 };

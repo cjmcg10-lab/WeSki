@@ -22,20 +22,38 @@ export function rangeDays(from, to) {
   return Array.from({ length: count }, (_, i) => shiftDate(from, i));
 }
 
-export function cleanTrip(raw) {
-  const picked = Array.isArray(raw?.picked) ? [...new Set(raw.picked.filter(isDate))].sort() : [];
-  const from = isDate(raw?.from) ? raw.from : '';
+export function cleanTrip(raw, today = '') {
+  const picked = Array.isArray(raw?.picked) ? [...new Set(raw.picked.filter((d) => isDate(d) && d >= today))].sort() : [];
+  const from = isDate(raw?.from) && raw.from >= today ? raw.from : '';
   const to = from && isDate(raw?.to) && raw.to >= from ? raw.to : '';
-  return { picked, from, to };
+  const span = rangeDays(from, to);
+  const skip = Array.isArray(raw?.skip) ? [...new Set(raw.skip.filter((d) => span.includes(d)))].sort() : [];
+  return { picked, from, to, skip };
 }
 
-export const tripDates = (trip) => [...new Set([...trip.picked, ...rangeDays(trip.from, trip.to)])].sort();
+export const tripDates = (trip) => {
+  const skip = trip.skip ?? [];
+  return [...new Set([...trip.picked, ...rangeDays(trip.from, trip.to).filter((d) => !skip.includes(d))])].sort();
+};
+
+export function toggleDate(trip, date) {
+  const inRange = rangeDays(trip.from, trip.to).includes(date);
+  const skip = trip.skip ?? [];
+  if (tripDates(trip).includes(date)) {
+    return { ...trip, picked: trip.picked.filter((d) => d !== date), skip: inRange ? [...skip, date].sort() : skip };
+  }
+  return inRange
+    ? { ...trip, skip: skip.filter((d) => d !== date) }
+    : { ...trip, picked: [...trip.picked, date].sort() };
+}
+
+export const clearRange = (trip) => ({ ...trip, from: '', to: '', skip: [] });
 
 export function classifyDay(forecast, date) {
   const days = forecast?.scored?.days ?? [];
   const day = days.find((d) => d.date === date);
   if (day?.status === 'closed') return { kind: 'closed' };
-  if (day && day.status !== 'insufficient' && typeof day.score === 'number') return { kind: 'scored', score: day.score, level: day.confidence?.level ?? 'Low' };
+  if (day && day.status !== 'insufficient' && Number.isFinite(day.score)) return { kind: 'scored', score: day.score, level: day.confidence?.level ?? 'Low' };
   if (!day && days.length && date > days[days.length - 1].date) return { kind: 'notyet' };
   return { kind: 'insufficient' };
 }
@@ -46,14 +64,17 @@ export function summarize(forecast, dates) {
   const days = dates.map((date) => ({ date, ...classifyDay(forecast, date) }));
   const scored = days.filter((d) => d.kind === 'scored').map((d) => ({ ...d, shown: roundHalfUp(d.score) }));
   const closed = days.filter((d) => d.kind === 'closed').length;
+  const later = days.filter((d) => d.kind === 'notyet').length;
+  const total = dates.length - later;
   const pick = (better) => scored.reduce((best, d) => (!best || better(d.shown, best.shown) ? d : best), null);
   const level = scored.length ? lowestLevel(scored.map((d) => d.level)) : null;
   return {
     days,
-    total: dates.length,
+    total,
+    later,
     covered: scored.length,
     closed,
-    allClosed: dates.length > 0 && closed === dates.length,
+    allClosed: total > 0 && closed === total,
     average: scored.length ? roundHalfUp(scored.reduce((sum, d) => sum + d.score, 0) / scored.length) : null,
     strongest: pick((a, b) => a > b),
     weakest: pick((a, b) => a < b),
@@ -87,4 +108,7 @@ export function notYet(dates, forecasts) {
   return { dates: dates.filter((d) => d > lastOf(widest)), span };
 }
 
-export const entersRangeOn = (date, span) => shiftDate(date, -span);
+export const entersRangeOn = (date, span, today = '') => {
+  const on = shiftDate(date, -span);
+  return on < today ? today : on;
+};

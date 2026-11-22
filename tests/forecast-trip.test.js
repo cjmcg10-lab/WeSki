@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MARGIN, MAX_RANGE_DAYS, classifyDay, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, summarize, tripDates,
+  MARGIN, MAX_RANGE_DAYS, classifyDay, clearRange, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, summarize, toggleDate, tripDates,
 } from '../src/forecast/trip.js';
 
 const DATES = ['2026-12-05', '2026-12-06', '2026-12-07', '2026-12-08'];
@@ -29,8 +29,8 @@ describe('trip dates', () => {
   });
 
   it('cleans what was saved, dropping anything that is not a date', () => {
-    expect(cleanTrip({ picked: ['2026-12-05', 'soon', 7, '2026-13-45'], from: 'x', to: '2026-12-09' })).toEqual({ picked: ['2026-12-05'], from: '', to: '' });
-    expect(cleanTrip(null)).toEqual({ picked: [], from: '', to: '' });
+    expect(cleanTrip({ picked: ['2026-12-05', 'soon', 7, '2026-13-45'], from: 'x', to: '2026-12-09' })).toEqual({ picked: ['2026-12-05'], from: '', to: '', skip: [] });
+    expect(cleanTrip(null)).toEqual({ picked: [], from: '', to: '', skip: [] });
     expect(cleanTrip({ picked: [], from: '2026-12-05', to: '2026-12-01' }).to).toBe('');
   });
 });
@@ -150,7 +150,62 @@ describe('days beyond the forecast', () => {
 
   it('never ranks a not-yet day for or against a mountain', () => {
     const s = summarize(forecast(days), ['2026-12-06', '2026-12-20']);
-    expect(s).toMatchObject({ covered: 1, total: 2, average: 60 });
+    expect(s).toMatchObject({ covered: 1, total: 1, later: 1, average: 60 });
     expect(s.days[1].kind).toBe('notyet');
+  });
+});
+
+describe('unpicking a day inside the range', () => {
+  const base = { picked: [], from: '2026-12-05', to: '2026-12-08', skip: [] };
+
+  it('lets a tap remove a range day and a second tap bring it back', () => {
+    const off = toggleDate(base, '2026-12-06');
+    expect(tripDates(off)).toEqual(['2026-12-05', '2026-12-07', '2026-12-08']);
+    expect(tripDates(toggleDate(off, '2026-12-06'))).toEqual(tripDates(base));
+  });
+
+  it('removes a day that is both picked and in the range', () => {
+    const both = { ...base, picked: ['2026-12-06'] };
+    expect(tripDates(toggleDate(both, '2026-12-06'))).not.toContain('2026-12-06');
+  });
+
+  it('clearing the range drops its exclusions but keeps hand picks', () => {
+    const state = toggleDate(toggleDate(base, '2026-12-06'), '2026-12-20');
+    const cleared = clearRange(state);
+    expect(cleared).toMatchObject({ from: '', to: '', skip: [], picked: ['2026-12-20'] });
+    expect(tripDates(cleared)).toEqual(['2026-12-20']);
+  });
+
+  it('forgets exclusions that fall outside the range and dates before today', () => {
+    expect(cleanTrip({ ...base, skip: ['2026-12-06', '2027-01-01'] }).skip).toEqual(['2026-12-06']);
+    expect(cleanTrip({ picked: ['2026-11-01', '2026-12-05'] }, '2026-11-22').picked).toEqual(['2026-12-05']);
+    expect(cleanTrip({ picked: [], from: '2026-11-01', to: '2026-11-05' }, '2026-11-22').from).toBe('');
+  });
+});
+
+describe('scores that are not numbers', () => {
+  it('treats NaN and Infinity as missing, never as a covered day', () => {
+    const f = forecast([day(DATES[0], NaN), day(DATES[1], Infinity), day(DATES[2], 60)]);
+    expect(classifyDay(f, DATES[0])).toEqual({ kind: 'insufficient' });
+    expect(classifyDay(f, DATES[1])).toEqual({ kind: 'insufficient' });
+    expect(summarize(f, DATES.slice(0, 3))).toMatchObject({ covered: 1, average: 60 });
+  });
+});
+
+describe('mixed time zones', () => {
+  it('counts a day after one mountain window as not yet, not as missing', () => {
+    const short = forecast([day(DATES[0], 70), day(DATES[1], 70), day(DATES[2], 70)]);
+    const s = summarize(short, DATES);
+    expect(s).toMatchObject({ covered: 3, total: 3, later: 1, allClosed: false });
+    expect(s.days[3].kind).toBe('notyet');
+  });
+
+  it('judges not-yet days per mountain and clamps the arrival date to today', () => {
+    const narrow = forecast([day(DATES[0], 70), day(DATES[1], 70)]);
+    const wide = forecast(DATES.map((d) => day(d, 70)));
+    expect(notYet([DATES[2]], [narrow]).dates).toEqual([DATES[2]]);
+    expect(notYet([DATES[2]], [wide]).dates).toEqual([]);
+    expect(entersRangeOn('2026-12-09', 30, '2026-11-22')).toBe('2026-11-22');
+    expect(entersRangeOn('2026-12-09', 2, '2026-11-22')).toBe('2026-12-07');
   });
 });

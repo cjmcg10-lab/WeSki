@@ -1003,4 +1003,7 @@ export default {
   1126: 'Clear dates',
   1127: 'Ranking updated.',
   1128: 'The end date must be on or after the start date.',
+  1129: 'Coverage {0} of {1} day',
+  1130: 'Coverage {0} of {1} day · {2} closed',
+  1131: '1 later day arrives after that.',
 };

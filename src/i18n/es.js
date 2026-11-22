@@ -497,4 +497,7 @@ export default {
   1126: 'Borrar fechas',
   1127: 'Clasificación actualizada.',
   1128: 'La fecha final debe ser igual o posterior a la inicial.',
+  1129: 'Cobertura {0} de {1} día',
+  1130: 'Cobertura {0} de {1} día · {2} cerrado',
+  1131: 'Un día posterior llega después.',
 };

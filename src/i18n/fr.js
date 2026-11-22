@@ -497,4 +497,7 @@ export default {
   1126: 'Effacer les dates',
   1127: 'Classement mis à jour.',
   1128: 'La date de fin doit être le jour de début ou après.',
+  1129: 'Couverture {0} sur {1} jour',
+  1130: 'Couverture {0} sur {1} jour · {2} fermé',
+  1131: 'Un jour plus tardif arrive ensuite.',
 };

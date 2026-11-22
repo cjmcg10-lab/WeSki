@@ -497,4 +497,7 @@ export default {
   1126: 'Data’s wissen',
   1127: 'Ranglijst bijgewerkt.',
   1128: 'De einddatum moet op of na de begindatum liggen.',
+  1129: 'Dekking {0} van {1} dag',
+  1130: 'Dekking {0} van {1} dag · {2} gesloten',
+  1131: 'Eén latere dag volgt daarna.',
 };
