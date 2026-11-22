@@ -12,6 +12,7 @@ info.update({
     "NSLocationWhenInUseUsageDescription": "Show your position on the ski map and record runs when you start tracking.",
     "NSLocationAlwaysAndWhenInUseUsageDescription": "Keep recording runs and updating your group during an active ski session while your screen is locked.",
     "UIBackgroundModes": ["location"],
+    "ITSAppUsesNonExemptEncryption": False,
     "CFBundleShortVersionString": "1.0",
     "CFBundleVersion": str(int(os.environ.get("GITHUB_RUN_NUMBER", "1")) * 10 + int(os.environ.get("GITHUB_RUN_ATTEMPT", "1"))),
     "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
