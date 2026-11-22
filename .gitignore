@@ -73,3 +73,6 @@ tools/bulk/candidates.json
 
 # preview site build (tools/preview/deploy.mjs)
 tools/preview/.build/
+
+# last map-mistake report listed per resort (tools/reports.py)
+tools/.reports_seen.json
