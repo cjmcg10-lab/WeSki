@@ -1,6 +1,7 @@
 import http.client
 import json
 import os
+import ssl
 import sys
 import time
 import urllib.error
@@ -30,6 +31,14 @@ class ApiError(Exception):
 def is_transient(err):
     if isinstance(err, ApiError):
         return err.status == 429 or err.status >= 500
+    # HTTPError is an OSError too; Client.request turns it into ApiError, but judge it by its status if one gets here.
+    if isinstance(err, urllib.error.HTTPError):
+        return err.code == 429 or err.code >= 500
+    # A certificate that fails to verify will not fix itself: fail now rather than poll for 40 minutes.
+    if isinstance(err, ssl.SSLCertVerificationError) or isinstance(
+        getattr(err, "reason", None), ssl.SSLCertVerificationError
+    ):
+        return False
     return isinstance(err, NETWORK_ERRORS)
 
 
@@ -153,14 +162,20 @@ def in_group(client, group_id, build_id):
     """Asks for this one build's groups, so a group with many builds is still checked correctly."""
     try:
         page = client.request("GET", f"/builds/{build_id}/relationships/betaGroups", {"limit": 200})
+        wanted = group_id
     except ApiError as err:
-        if err.status != 404:
+        # App Store Connect answers an operation a path does not offer with 403 (METHOD_FORBIDDEN), 404 or 405.
+        if err.status not in (403, 404, 405):
             raise
-        # Older behaviour, kept in case that lookup is not available: the group's first 200 builds.
-        members = client.request("GET", f"/betaGroups/{group_id}/builds", {"limit": 200})["data"]
-        return any(m["id"] == build_id for m in members)
+        # Fall back to the group's own build list, every page of it.
+        page = client.request("GET", f"/betaGroups/{group_id}/builds", {"limit": 200})
+        wanted = build_id
+    return any_page_has(client, page, wanted)
+
+
+def any_page_has(client, page, wanted_id):
     while True:
-        if any(x["id"] == group_id for x in page.get("data") or []):
+        if any(x["id"] == wanted_id for x in page.get("data") or []):
             return True
         next_url = (page.get("links") or {}).get("next")
         if not next_url:

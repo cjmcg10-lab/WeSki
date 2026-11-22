@@ -1,6 +1,7 @@
 import http.client
 import io
 import os
+import ssl
 import tempfile
 import unittest
 import urllib.error
@@ -94,6 +95,20 @@ class TransientTest(unittest.TestCase):
             http.client.BadStatusLine("junk"),
         ):
             self.assertTrue(td.is_transient(err), repr(err))
+
+    def test_raw_http_errors_judged_by_status(self):
+        def http_error(code):
+            return urllib.error.HTTPError("https://x", code, "msg", {}, io.BytesIO(b""))
+
+        for code in (400, 401, 403, 404, 409):
+            self.assertFalse(td.is_transient(http_error(code)), code)
+        for code in (429, 500, 503):
+            self.assertTrue(td.is_transient(http_error(code)), code)
+
+    def test_certificate_failures_are_not_transient(self):
+        bad = ssl.SSLCertVerificationError("certificate verify failed")
+        self.assertFalse(td.is_transient(bad))
+        self.assertFalse(td.is_transient(urllib.error.URLError(bad)))
 
     def test_programming_errors_are_not_transient(self):
         for err in (ValueError("x"), KeyError("x"), TypeError("x"), SystemExit("x")):
@@ -221,6 +236,19 @@ class DistributeTest(unittest.TestCase):
         add = Scripted([td.ApiError(409, "x"), td.ApiError(404, "no such path"), {"data": [{"id": "b1"}]}])
         self.assertEqual(td.add_to_group(add, group("g2", "dev", False), "b1"), "was already in")
         self.assertEqual(add.calls[2][1], "/betaGroups/g2/builds")
+        for status in (403, 405):
+            add = Scripted([
+                td.ApiError(409, "x"),
+                td.ApiError(status, "METHOD_FORBIDDEN"),
+                {"data": [{"id": "b0"}], "links": {"next": "https://example.invalid/builds2"}},
+                {"data": [{"id": "b1"}]},
+            ])
+            self.assertEqual(td.add_to_group(add, group("g2", "dev", False), "b1"), "was already in", status)
+            self.assertEqual(add.calls[3][1], "https://example.invalid/builds2")
+        missing = Scripted([td.ApiError(409, "x"), td.ApiError(404, "no such path"), {"data": [{"id": "b0"}]}])
+        with self.assertRaises(td.ApiError) as ctx:
+            td.add_to_group(missing, group("g2", "dev", False), "b1")
+        self.assertEqual(ctx.exception.status, 409)
         bad = Scripted([td.ApiError(409, "x"), td.ApiError(500, "down")])
         with self.assertRaises(td.ApiError) as ctx:
             td.add_to_group(bad, group("g2", "dev", False), "b1")
