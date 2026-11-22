@@ -1,9 +1,11 @@
 import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
+import { SNOW_HISTORY_MIN_HOURS } from './score/explain.js';
 import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
 import { VIEW_KEY, loadList, saveList, add, sortRows, topPickId } from './watchlist.js';
-import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
+import { loadHistory } from '../weather.js';
+import { loadForecast, withHistory, sourceAgeHours, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit'];
@@ -84,10 +86,19 @@ async function loadOne(resort, force) {
   try {
     const forecast = await loadForecast(resort, force);
     setEntry(resort, { state: 'ok', fc: forecast, failedRefresh: force && forecast.stale });
+    addHistory(resort, forecast, force);
   } catch (e) {
     if (entry(resort.id).fc) setEntry(resort, { failedRefresh: true });
     else setEntry(resort, { state: 'error' });
   }
+  redraw();
+}
+
+async function addHistory(resort, forecast, force) {
+  const history = await loadHistory(forecast.resort, force);
+  const shown = entry(resort.id).fc;
+  if (!history || shown?.at !== forecast.at || shown.history === history) return;
+  setEntry(resort, { fc: withHistory(shown, history) });
   redraw();
 }
 
@@ -149,8 +160,10 @@ function windowText(w) {
   return w.kind === 'hidden' ? '' : t('Under 3 h of data');
 }
 
+const historyShort = (f) => f.scored.inputs.historyHours < SNOW_HISTORY_MIN_HOURS;
+
 const ageLine = (forecast) => (forecast.serverStale
-  ? t('Forecast is {0} h old: the weather service isn’t answering', Math.round(forecast.scored.inputs.ageHours ?? ageHoursOf(forecast.at)))
+  ? t('Forecast is {0} h old: the weather service isn’t answering', Math.round(sourceAgeHours(forecast.weather, forecast.at) ?? ageHoursOf(forecast.at)))
   : ageText(ageHoursOf(forecast.at)));
 
 // ---------- S1 calendar
@@ -221,7 +234,7 @@ export function sheetCalendar() {
     ${failedAll && online() ? `<div class="card"><p class="sub">${t('Couldn’t load any forecasts. Your mountains are saved. Check your connection and try again.')}</p><button class="btn alt" data-act="fc-refresh">${t('Try again')}</button></div>` : ''}
     <div class="fc-actions" role="group" aria-label="${esc(t('Forecast actions'))}"><button class="btn sm alt" data-act="fc-add">${t('Add a mountain')}</button><button class="btn sm alt" data-act="fc-edit">${t('Edit list')}</button><button class="btn sm alt" data-act="fc-today">${t('Back to today')}</button></div>
     <p class="fc-legend">${t('Score out of 100')} · ${bars(2)} ${t('Bars show confidence')} · ${t('Tap a score for hourly detail')}</p>
-    <p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>
+    ${!forecasts.length || forecasts.some(historyShort) ? `<p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>` : ''}
     ${sortLine}
     ${table}
     <div class="wx-foot fc-foot"><div class="grow"><b>${esc(updated)}</b>${stale ? `<br>${t('Some forecasts are older than usual.')}` : ''}<br>${t('All times are each mountain’s local time.')}${fc.footer ? `<br><span class="fc-line">${esc(fc.footer)}</span>` : ''}</div><button class="btn" data-act="fc-refresh">${esc(refreshLabel)}</button></div>

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { HistoryStore, forecastRows, mergeRows, toOpenMeteo, ARCHIVE_KEEP_MS, ARCHIVE_MIN_GAP_MS, HISTORY_HOURS } from '../worker/history.js';
+import { HistoryStore, forecastRows, pendingRows, settlePending, mergeRows, PENDING_HOURS, toOpenMeteo, ARCHIVE_KEEP_MS, ARCHIVE_MIN_GAP_MS, HISTORY_HOURS } from '../worker/history.js';
 import { claimTotals, observationRows, pickStation, siteObservations, STATION_MAX_KM } from '../worker/observations.js';
 import { weatherResponse as weatherRaw, historyResponse as historyRaw, samePlace } from '../worker/capture.js';
 import { forecast, hourGrid, resolutionKm } from '../worker/weather.js';
@@ -43,7 +43,7 @@ const URL_STOWE = (extra = '') => new URL(`https://skiwithme.test/api/weather?la
 
 function fakeEnv(storage = new MemoryStorage()) {
   const store = new HistoryStore(storage);
-  const stub = { record: (s, now) => store.record(s, now), history: (now) => store.history(now), lastGood: (now) => store.lastGood(now), archive: (s, l) => store.archive(s, l) };
+  const stub = { due: (now) => store.due(now), record: (s, now) => store.record(s, now), history: (now) => store.history(now), lastGood: (now) => store.lastGood(now), archive: (s, l) => store.archive(s, l) };
   return { storage, store, env: { FORECASTHIST: { idFromName: (n) => n, get: () => stub } } };
 }
 const context = () => { const pending = []; return { pending, waitUntil: (p) => pending.push(p) }; };
@@ -225,7 +225,8 @@ describe('history store', () => {
     const writes = storage.writes;
     expect(await store.record(snap(NOW - 40 * 60e3), NOW)).toEqual({ recorded: false, reason: 'too_soon' });
     expect(storage.writes).toBe(writes);
-    expect((await store.record(snap(NOW - 40 * 60e3), later(1))).wrote).toEqual(['meta']);
+    expect((await store.record(snap(NOW - 40 * 60e3), later(1))).wrote).toEqual([]);
+    expect(storage.writes).toBe(writes);
     const observed = observationRows(kmvl.features, 'KMVL').filter((r) => r.ms > NOW - 72 * HOUR && r.ms <= NOW);
     await store.record(snap(NOW - 40 * 60e3, { observed: { summit: [], base: observed } }), later(2));
     expect((await store.history(NOW)).coverage.base.observedHours).toBe(0);
@@ -234,6 +235,29 @@ describe('history store', () => {
     expect(h.coverage.base.observedHours).toBeGreaterThan(20);
     expect(h.sources).toEqual(expect.arrayContaining(['nws', 'nws-obs']));
     expect(h.coverage.summit.observedHours).toBe(0);
+  });
+
+  it('writes hist, last and meta once when a new forecast arrives, and only the changed keys after that', async () => {
+    const storage = new MemoryStorage();
+    const store = new HistoryStore(storage);
+    expect((await store.record(snap(NOW - 40 * 60e3), NOW)).wrote).toEqual(expect.arrayContaining(['hist', 'last', 'meta']));
+    const newer = snap(NOW - 10 * 60e3);
+    newer.forecast.base[0] = { ...newer.forecast.base[0], snow: 4 };
+    expect((await store.record(newer, later(1))).wrote).toEqual(['hist', 'last', 'meta']);
+    const before = storage.writes;
+    expect((await store.record(newer, later(2))).wrote).toEqual([]);
+    expect(storage.writes).toBe(before);
+  });
+
+  it('says whether the 30 minute gate is open without writing', async () => {
+    const storage = new MemoryStorage();
+    const store = new HistoryStore(storage);
+    expect(await store.due(NOW)).toBe(true);
+    await store.record(snap(NOW - 40 * 60e3), NOW);
+    const writes = storage.writes;
+    expect(await store.due(NOW + 29 * 60e3)).toBe(false);
+    expect(await store.due(NOW + 30 * 60e3)).toBe(true);
+    expect(storage.writes).toBe(writes);
   });
 
   it('feeds the engine: measured history lifts a day to High', async () => {
@@ -320,6 +344,21 @@ describe('the weather endpoint with history and the stale fallback', () => {
     expect((await store.history(NOW)).coverage.base.hours).toBeGreaterThan(10);
   });
 
+  it('asks for observations only when the 30 minute gate is open', async () => {
+    const { env } = fakeEnv();
+    const ctx = context();
+    const observe = vi.fn(async () => ({ station: null, rows: [] }));
+    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(), observe, now: NOW });
+    await Promise.all(ctx.pending);
+    expect(observe).toHaveBeenCalledTimes(2);
+    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(NOW), observe, now: NOW + 10 * 60e3 });
+    await Promise.all(ctx.pending);
+    expect(observe).toHaveBeenCalledTimes(2);
+    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(NOW), observe, now: NOW + 31 * 60e3 });
+    await Promise.all(ctx.pending);
+    expect(observe).toHaveBeenCalledTimes(4);
+  });
+
   it('does not ask for observations outside the USA', async () => {
     const { env, store } = fakeEnv();
     const ctx = context();
@@ -378,7 +417,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
   it('keeps answering when the history store fails', async () => {
     const ctx = context();
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const env = { FORECASTHIST: { idFromName: () => 'x', get: () => ({ record: async () => { throw new Error('storage down'); } }) } };
+    const env = { FORECASTHIST: { idFromName: () => 'x', get: () => ({ due: async () => true, record: async () => { throw new Error('storage down'); } }) } };
     const res = await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(), observe: async () => ({ station: null, rows: [] }), now: NOW });
     await Promise.all(ctx.pending);
     expect(res.status).toBe(200);
@@ -461,7 +500,7 @@ describe('who may be recorded', () => {
     const keys = gate();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     await run('&id=ghost');
-    await run('&id=stowe', { env: { FORECASTHIST: { idFromName: () => 'x', get: () => ({ record: async () => { throw new Error('storage down'); } }) } } });
+    await run('&id=stowe', { env: { FORECASTHIST: { idFromName: () => 'x', get: () => ({ due: async () => true, record: async () => { throw new Error('storage down'); } }) } } });
     expect(keys.size).toBe(0);
     const { env } = fakeEnv();
     await run('&id=stowe', { env });
@@ -516,6 +555,79 @@ describe('hours a source did not cover are never recorded', () => {
     expect(rows[0].ms).toBe(start);
     const earlier = row(grid[0], { snow: 0.7, issued: 1 });
     expect(mergeRows([earlier], rows, NOW).find((r) => r.ms === grid[0]).snow).toBe(0.7);
+  });
+});
+
+describe('forecast hours kept until they have passed (MET Norway)', () => {
+  const place = { lat: 61.2, lon: 8.4, top: 1500, base: 300, blat: 61.2, blon: 8.4, tz: TZ };
+  const at = (hour, minute = 5) => Date.UTC(2026, 10, 22, hour, minute);
+  const snapAt = (now, snow) => {
+    const issuedMs = now - 5 * 60e3;
+    const pts = GRID.map((ms) => ({ t: -3, wind: 2, snow, filled: ms < Math.floor(now / HOUR) * HOUR }));
+    const tag = { issuedMs, source: 'met', model: 'met_locationforecast', now };
+    const weather = { ...result(issuedMs, { source: 'met', model: 'met_locationforecast' }) };
+    delete weather.hours;
+    return {
+      id: 'alps', place, source: 'met', model: 'met_locationforecast', issuedAt: issuedMs, fetchedAt: now, ms0: GRID[0], weather, observed: { summit: [], base: [] },
+      forecast: { summit: forecastRows(pts, GRID, tag), base: forecastRows(pts, GRID, tag) }, pending: { summit: pendingRows(pts, GRID, tag), base: pendingRows(pts, GRID, tag) },
+    };
+  };
+  const hoursOf = async (storage, from, to) => (await storage.get('hist')).base.filter((r) => r.ms >= at(from, 0) && r.ms < at(to, 0));
+
+  it('records nothing for a finished hour from a series that starts at the current hour, but keeps it pending', async () => {
+    const storage = new MemoryStorage();
+    const store = new HistoryStore(storage);
+    await store.record(snapAt(at(9), 1), at(9));
+    const kept = await storage.get('hist');
+    expect(kept.base).toEqual([]);
+    expect(kept.pending.base.length).toBeGreaterThan(24);
+    expect(kept.pending.base.length).toBeLessThanOrEqual(PENDING_HOURS + 1);
+    expect(kept.pending.base[0].ms).toBe(at(9, 0));
+    expect(kept.pending.base.every((r) => r.issued === at(9) - 5 * 60e3)).toBe(true);
+  });
+
+  it('promotes 09:00 to 14:00 from the 09:00 issue after 15:00, and the 15:00 issue wins where they overlap', async () => {
+    const storage = new MemoryStorage();
+    const store = new HistoryStore(storage);
+    await store.record(snapAt(at(9), 1), at(9));
+    await store.record(snapAt(at(15), 2), at(15));
+    const done = await hoursOf(storage, 9, 15);
+    expect(done.map((r) => r.ms)).toEqual([9, 10, 11, 12, 13, 14].map((h) => at(h, 0)));
+    expect(done.every((r) => r.snow === 1 && r.observed === false && r.src === 'met' && r.issued === at(9) - 5 * 60e3)).toBe(true);
+    const pending = (await storage.get('hist')).pending.base;
+    expect(pending[0].ms).toBe(at(15, 0));
+    expect(pending.every((r) => r.snow === 2)).toBe(true);
+    await store.record(snapAt(at(21), 3), at(21));
+    expect((await hoursOf(storage, 15, 21)).every((r) => r.snow === 2 && r.observed === false)).toBe(true);
+    expect((await hoursOf(storage, 9, 15)).every((r) => r.snow === 1)).toBe(true);
+    const h = await store.history(at(21));
+    expect(h.base.hourly.observed.every((o) => o === false)).toBe(true);
+    expect(h.sources).toEqual(['met']);
+  });
+
+  it('never promotes hours the source did not cover, and drops pending hours beyond the bound', () => {
+    const grid = Array.from({ length: 100 }, (_, i) => at(0, 0) + i * HOUR);
+    const pts = grid.map((ms) => ({ t: 0, wind: 1, snow: 1, filled: ms < at(3, 0) }));
+    const tag = { issuedMs: 1, source: 'met', model: 'm', now: at(2) };
+    const pend = pendingRows(pts, grid, tag);
+    expect(pend[0].ms).toBe(at(3, 0));
+    expect(pend.at(-1).ms).toBeLessThan(at(2) + PENDING_HOURS * HOUR);
+    const { done, pending } = settlePending(pend, [], at(8));
+    expect(done.map((r) => r.ms)).toEqual([3, 4, 5, 6, 7].map((h) => at(h, 0)));
+    expect(pending[0].ms).toBe(at(8, 0));
+    expect(settlePending(pend, [], at(2) + 50 * HOUR).pending.length).toBe(0);
+  });
+
+  it('a later real or observed row always wins over a promoted forecast, and a promoted one never beats a real row', () => {
+    const ms = at(10, 0);
+    const promoted = { ...row(ms, { snow: 1, issued: 500, src: 'met' }), observed: false };
+    expect(mergeRows([promoted], [row(ms, { snow: 2, issued: 100, src: 'met' })], at(20)).find((r) => r.ms === ms).snow).toBe(2);
+    const measured = row(ms, { snow: 3, src: 'nws-obs', model: 'obs:K' });
+    expect(mergeRows([promoted], [measured], at(20)).find((r) => r.ms === ms)).toMatchObject({ snow: 3, src: 'nws-obs' });
+    expect(mergeRows([row(ms, { snow: 2, issued: 1 })], [promoted], at(20)).find((r) => r.ms === ms).snow).toBe(2);
+    expect(mergeRows([measured], [promoted], at(20)).find((r) => r.ms === ms).snow).toBe(3);
+    const noTotal = row(ms, { snow: null, src: 'nws-obs', model: 'obs:K' });
+    expect(mergeRows([promoted], [noTotal], at(20)).find((r) => r.ms === ms)).toMatchObject({ snow: 1, snowEstimated: true });
   });
 });
 

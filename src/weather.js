@@ -48,6 +48,38 @@ export async function loadWeather(place, force = false, { allowStale = false } =
   }
 }
 
+const historyKey = (id) => `history1:${id}`;
+const historyId = (place) => (/^[a-z0-9-]{2,40}$/.test(place.id || '') && !place.id.startsWith('pin-') ? place.id : null);
+
+/** The history kept on the phone for a place if it is under 20 minutes old: `{ at, data }`, where `data` is null when the server has none yet. */
+export function savedHistory(place, now = Date.now()) {
+  const id = historyId(place);
+  const hit = id ? prefs.get(historyKey(id), null) : null;
+  return hit && now - hit.at < CACHE_MS ? hit : null;
+}
+
+/** The server's 72 hour history for a listed resort (`/api/history/<id>`), or null: offline, a pin, none recorded yet or any failure. */
+export async function loadHistory(place, force = false, now = Date.now()) {
+  const id = historyId(place);
+  if (!id || (typeof navigator !== 'undefined' && navigator.onLine === false)) return null;
+  const hit = force ? null : savedHistory(place, now);
+  if (hit) return hit.data;
+  try {
+    const res = await fetch(`/api/history/${id}`);
+    if (res.status === 404) {
+      prefs.set(historyKey(id), { at: now, data: null });
+      return null;
+    }
+    const body = await res.json();
+    if (!res.ok || body.error) throw new Error('History service error');
+    const data = { summit: body.summit, base: body.base };
+    prefs.set(historyKey(id), { at: now, data });
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 /** Index of the current hour in an hourly block (times are local to the resort). */
 export function hourIndex(w) {
   const now = w.current?.time?.slice(0, 13);

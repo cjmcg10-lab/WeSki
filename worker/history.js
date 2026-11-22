@@ -7,6 +7,7 @@ export const ARCHIVE_MIN_GAP_MS = 6 * HOUR;
 export const ARCHIVE_KEEP_MS = 28 * 24 * HOUR;
 export const LAST_GOOD_MAX_AGE_MS = 48 * HOUR;
 export const RECORD_MIN_GAP_MS = 30 * 60e3;
+export const PENDING_HOURS = 48;
 const SITES = ['summit', 'base'];
 const DELETE_BATCH = 128;
 
@@ -14,30 +15,56 @@ const round = (x, digits) => (x == null ? x : Math.round(x * 10 ** digits) / 10 
 const pad = (ms) => String(ms).padStart(13, '0');
 const isObserved = (row) => row.src === 'nws-obs';
 const isMeasured = (row) => isObserved(row) && !row.snowEstimated;
+const isPromoted = (row) => row.observed === false;
+const hashOf = (value) => {
+  let h = 0x811c9dc5;
+  for (const c of JSON.stringify(value)) h = Math.imul(h ^ c.charCodeAt(0), 0x01000193);
+  return (h >>> 0).toString(16);
+};
+const usable = (p, ms) => !p.filled && [p.t, p.wind, p.snow].every(Number.isFinite) && Number.isFinite(ms);
+
+const toRow = (p, ms, { issuedMs, source, model }) => ({
+  ms, t: round(p.t, 1), feels: round(p.feels ?? p.t, 1), snow: round(p.snow, 2), wind: round(p.wind, 1), gust: round(p.gust ?? p.wind, 1),
+  vis: p.vis == null ? null : Math.round(p.vis), code: p.code ?? 0, acc: p.acc ?? 1, issued: issuedMs, src: source, model,
+});
 
 /** Hourly rows for the completed hours of a forecast, tagged with when it was issued and by which source and model. */
-export function forecastRows(points, grid, { issuedMs, source, model, now }) {
-  const rows = [];
-  points.forEach((p, i) => {
-    const ms = grid[i];
-    if (p.filled || ms + HOUR > now || ![p.t, p.wind, p.snow].every(Number.isFinite)) return;
-    rows.push({
-      ms, t: round(p.t, 1), feels: round(p.feels ?? p.t, 1), snow: round(p.snow, 2), wind: round(p.wind, 1), gust: round(p.gust ?? p.wind, 1),
-      vis: p.vis == null ? null : Math.round(p.vis), code: p.code ?? 0, acc: p.acc ?? 1, issued: issuedMs, src: source, model,
-    });
-  });
-  return rows;
+export function forecastRows(points, grid, tag) {
+  return points.flatMap((p, i) => (grid[i] + HOUR > tag.now || !usable(p, grid[i]) ? [] : [toRow(p, grid[i], tag)]));
+}
+
+/** Rows for the hours still ahead (the next PENDING_HOURS), kept until the hour has passed. */
+export function pendingRows(points, grid, tag) {
+  return points.flatMap((p, i) => (grid[i] + HOUR <= tag.now || grid[i] >= tag.now + PENDING_HOURS * HOUR || !usable(p, grid[i]) ? [] : [toRow(p, grid[i], tag)]));
+}
+
+/**
+ * Merges a site's pending hours with a new forecast's and splits them at `now`: hours that have passed become history rows
+ * marked `observed: false` (a forecast, never a measurement), the rest stay pending for at most PENDING_HOURS.
+ */
+export function settlePending(stored, incoming, now) {
+  const byHour = new Map(stored.map((r) => [r.ms, r]));
+  for (const row of incoming) if (!byHour.has(row.ms) || row.issued >= byHour.get(row.ms).issued) byHour.set(row.ms, row);
+  const rows = [...byHour.values()].sort((a, b) => a.ms - b.ms);
+  return {
+    done: rows.filter((r) => r.ms + HOUR <= now).map((r) => ({ ...r, observed: false })),
+    pending: rows.filter((r) => r.ms + HOUR > now && r.ms < now + PENDING_HOURS * HOUR),
+  };
 }
 
 /**
  * One row per valid hour (UTC milliseconds, so a daylight-saving change cannot merge or split hours). A later forecast
- * replaces an earlier one for the same hour instead of adding to it, and an observation is never replaced by a forecast.
+ * replaces an earlier one for the same hour instead of adding to it, an observation is never replaced by a forecast, and a
+ * hour promoted from a pending forecast (`observed: false`) gives way to any real row.
  */
 export function mergeRows(existing, incoming, now) {
   const byHour = new Map(existing.map((r) => [r.ms, r]));
   for (const row of incoming) {
     const old = byHour.get(row.ms);
-    if (!old) {
+    if (old && isPromoted(row) && !isPromoted(old)) continue;
+    if (old && isPromoted(old) && !isPromoted(row)) {
+      byHour.set(row.ms, isObserved(row) && row.snow == null ? { ...row, snow: old.snow, snowEstimated: true } : row);
+    } else if (!old) {
       byHour.set(row.ms, row.snow == null ? { ...row, snow: 0, snowEstimated: true } : row);
     } else if (isObserved(row)) {
       if (row.snow != null) byHour.set(row.ms, row);
@@ -96,14 +123,26 @@ export class HistoryStore {
     this.storage = storage;
   }
 
+  /** False while the 30 minute gate is closed, so callers skip fetching observations for a recording that would be refused. */
+  async due(now = Date.now()) {
+    const meta = await this.storage.get('meta');
+    return !(meta?.recordedAt && now - meta.recordedAt < RECORD_MIN_GAP_MS);
+  }
+
   async record(snap, now = Date.now()) {
     const meta = (await this.storage.get('meta')) ?? null;
     if (meta?.recordedAt && now - meta.recordedAt < RECORD_MIN_GAP_MS) return { recorded: false, reason: 'too_soon' };
     const stored = (await this.storage.get('hist')) ?? { summit: [], base: [] };
-    const hist = Object.fromEntries(SITES.map((s) => [s, mergeRows(mergeRows(stored[s] ?? [], snap.forecast?.[s] ?? [], now), snap.observed?.[s] ?? [], now)]));
+    const hist = { pending: { summit: [], base: [] } };
+    for (const s of SITES) {
+      const { done, pending } = settlePending(stored.pending?.[s] ?? [], snap.pending?.[s] ?? [], now);
+      hist.pending[s] = pending;
+      hist[s] = mergeRows(mergeRows(mergeRows(stored[s] ?? [], done, now), snap.forecast?.[s] ?? [], now), snap.observed?.[s] ?? [], now);
+    }
+    const histHash = hashOf(hist);
     const writes = {};
-    const nextMeta = { ...(meta ?? {}), place: snap.place, recordedAt: now };
-    if (JSON.stringify(hist) !== JSON.stringify(stored)) writes.hist = hist;
+    const nextMeta = { ...(meta ?? {}), place: snap.place, histHash };
+    if (histHash !== meta?.histHash) writes.hist = hist;
     if (!meta || !(meta.issuedAt >= snap.issuedAt)) {
       writes.last = { issuedAt: snap.issuedAt, weather: snap.weather };
       nextMeta.issuedAt = snap.issuedAt;
@@ -115,8 +154,10 @@ export class HistoryStore {
       writes[`a:${pad(snap.issuedAt)}`] = archiveEntry(snap, scored);
       nextMeta.archivedAt = snap.issuedAt;
     }
-    if (JSON.stringify(nextMeta) !== JSON.stringify(meta)) writes.meta = nextMeta;
-    if (Object.keys(writes).length) await this.storage.put(writes);
+    if (Object.keys(writes).length) {
+      writes.meta = { ...nextMeta, recordedAt: now };
+      await this.storage.put(writes);
+    }
     if (archiving) await this.pruneArchive(now);
     return { recorded: true, wrote: Object.keys(writes) };
   }
