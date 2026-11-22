@@ -500,4 +500,5 @@ export default {
   1129: 'Cobertura {0} de {1} dia',
   1130: 'Cobertura {0} de {1} dia · {2} fechado',
   1131: 'Um dia posterior chega depois.',
+  1132: 'Antes da previsão',
 };

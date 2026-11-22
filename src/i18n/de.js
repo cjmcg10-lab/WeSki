@@ -500,4 +500,5 @@ export default {
   1129: 'Abdeckung {0} von {1} Tag',
   1130: 'Abdeckung {0} von {1} Tag · {2} geschlossen',
   1131: 'Ein späterer Tag folgt danach.',
+  1132: 'Vor der Vorhersage',
 };

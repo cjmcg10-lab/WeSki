@@ -24,8 +24,10 @@ export function rangeDays(from, to) {
 
 export function cleanTrip(raw, today = '') {
   const picked = Array.isArray(raw?.picked) ? [...new Set(raw.picked.filter((d) => isDate(d) && d >= today))].sort() : [];
-  const from = isDate(raw?.from) && raw.from >= today ? raw.from : '';
-  const to = from && isDate(raw?.to) && raw.to >= from ? raw.to : '';
+  const rawFrom = isDate(raw?.from) ? raw.from : '';
+  const rawTo = rawFrom && isDate(raw?.to) && raw.to >= rawFrom ? raw.to : '';
+  const from = rawFrom >= today ? rawFrom : rawTo >= today ? today : '';
+  const to = from ? rawTo : '';
   const span = rangeDays(from, to);
   const skip = Array.isArray(raw?.skip) ? [...new Set(raw.skip.filter((d) => span.includes(d)))].sort() : [];
   return { picked, from, to, skip };
@@ -55,6 +57,7 @@ export function classifyDay(forecast, date) {
   if (day?.status === 'closed') return { kind: 'closed' };
   if (day && day.status !== 'insufficient' && Number.isFinite(day.score)) return { kind: 'scored', score: day.score, level: day.confidence?.level ?? 'Low' };
   if (!day && days.length && date > days[days.length - 1].date) return { kind: 'notyet' };
+  if (!day && days.length && date < days[0].date) return { kind: 'past' };
   return { kind: 'insufficient' };
 }
 
@@ -64,7 +67,7 @@ export function summarize(forecast, dates) {
   const days = dates.map((date) => ({ date, ...classifyDay(forecast, date) }));
   const scored = days.filter((d) => d.kind === 'scored').map((d) => ({ ...d, shown: roundHalfUp(d.score) }));
   const closed = days.filter((d) => d.kind === 'closed').length;
-  const later = days.filter((d) => d.kind === 'notyet').length;
+  const later = days.filter((d) => d.kind === 'notyet' || d.kind === 'past').length;
   const total = dates.length - later;
   const pick = (better) => scored.reduce((best, d) => (!best || better(d.shown, best.shown) ? d : best), null);
   const level = scored.length ? lowestLevel(scored.map((d) => d.level)) : null;
@@ -85,15 +88,23 @@ export function summarize(forecast, dates) {
 
 export const isCloseCall = (a, b) => a.covered > 0 && a.covered === b.covered && Math.abs(a.average - b.average) < Math.max(a.margin, b.margin);
 
+const inWindow = (forecast, date) => !['notyet', 'past'].includes(classifyDay(forecast, date).kind);
+
 export function rankTrip(entries, dates) {
-  const cards = entries.map((entry, order) => ({ ...entry, order, ...(entry.forecast ? summarize(entry.forecast, dates) : { failed: true }) }));
+  const loaded = entries.filter((e) => e.forecast);
+  const shared = dates.filter((date) => loaded.every((e) => inWindow(e.forecast, date)));
+  const cards = entries.map((entry, order) => {
+    if (!entry.forecast) return { ...entry, order, failed: true };
+    const { covered, average, margin } = summarize(entry.forecast, shared);
+    return { ...entry, order, ...summarize(entry.forecast, dates), ranked: { covered, average, margin } };
+  });
   const open = cards.filter((c) => !c.failed && !c.allClosed)
-    .sort((a, b) => b.covered - a.covered || (b.average ?? -1) - (a.average ?? -1) || a.order - b.order);
+    .sort((a, b) => b.ranked.covered - a.ranked.covered || (b.ranked.average ?? -1) - (a.ranked.average ?? -1) || a.order - b.order);
   const failed = cards.filter((c) => c.failed);
   const closed = cards.filter((c) => c.allClosed);
   open.forEach((card, i) => {
     card.rank = i + 1;
-    if (i > 0 && isCloseCall(open[i - 1], card)) card.closeWith = open[i - 1].resort.id;
+    if (i > 0 && isCloseCall(open[i - 1].ranked, card.ranked)) card.closeWith = open[i - 1].resort.id;
   });
   closed.forEach((card, i) => { card.rank = open.length + i + 1; });
   return [...open, ...failed, ...closed];

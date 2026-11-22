@@ -269,19 +269,19 @@ Each picked day, for one mountain, is one of: scored, `closed`, `insufficient`, 
 - Average is the mean of the covered days' scores, rounded half up for display. Strongest and weakest are the covered days with the highest and lowest displayed score; a tie goes to the earlier date.
 - Coverage reads "{covered} of {picked} days", with "· {n} closed" when any picked day is closed.
 
-Ranking rule, in order:
+Ranking rule, in order. The ranking looks only at the picked days that fall inside every loaded (non-failed) mountain's forecast window, the shared days. A day before a mountain's first forecast day or after its last one is out of window for that mountain ("Past forecast" or "Not yet"), so mountains in different time zones are compared on the same days. Every picked day still shows on each card, but days outside the shared set count toward neither the ranking nor the close-call margin. No coverage fraction is used.
 
-1. Coverage first: a mountain with fewer covered days never ranks above one with more, whatever its average. Missing days therefore never help a mountain.
-2. Then the higher average.
+1. Coverage on the shared days first: a mountain with fewer covered shared days never ranks above one with more, whatever its average. Missing days therefore never help a mountain.
+2. Then the higher average over the shared days.
 3. Then the order on the person's list.
 4. A mountain whose forecast failed to load is listed after every ranked mountain and has no rank number.
 5. A mountain closed on every picked day is listed last and takes its rank numbers after the open ones.
 
-Too close to call. A mountain's uncertainty depends on its least confident covered day: High 5 points, Medium 8, Low 12 (first guesses, to be tuned in phase 8). Two neighbours in the ranking are "too close to call" when they have the same coverage and their displayed averages differ by less than the larger of their two uncertainties. The second card of the pair says so. A provisional mountain from a map pin always scores Low confidence, so a pin is flagged against any mountain within 12 points.
+Too close to call. A mountain's uncertainty depends on its least confident covered day: High 5 points, Medium 8, Low 12 (first guesses, to be tuned in phase 8). Two neighbours in the ranking are "too close to call" when they have the same shared-day coverage and their shared-day averages differ by less than the larger of their two uncertainties. The second card of the pair says so. A provisional mountain from a map pin always scores Low confidence, so a pin is flagged against any mountain within 12 points.
 
-Dates beyond the forecast. A picked day later than a mountain's own last forecast day is "Not yet" for that mountain. It takes no part in the ranking and is left out of that mountain's coverage, so it reads "Coverage 3 of 3 days", not a missing day. This matters when mountains sit in different time zones and one window ends a day earlier. A mountain with no day inside the forecast says none of the days are in range yet. The note at the top uses the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."), but the arrival date is never earlier than today, and a "Not yet" button uses its own mountain's forecast. When every picked day is beyond range it says none are in range yet.
+Dates outside the forecast. A picked day later than a mountain's own last forecast day is "Not yet" for that mountain, and one before its first forecast day is "Past forecast". It takes no part in the ranking and is left out of that mountain's coverage, so it reads "Coverage 3 of 3 days", not a missing day. This matters when mountains sit in different time zones and one window ends a day earlier. A mountain with no day inside the forecast says none of the days are in range yet. The note at the top uses the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."), but the arrival date is never earlier than today, and a "Not yet" button uses its own mountain's forecast. When every picked day is beyond range it says none are in range yet.
 
-Picking days. Tapping a day inside the From/To range removes it (the range remembers the exclusion in `skip`); tapping it again puts it back. "Clear dates" removes the range and its exclusions but keeps days picked by hand. Saved days before today are dropped on load. A score that is not a finite number counts as missing.
+Picking days. Tapping a day inside the From/To range removes it (the range remembers the exclusion in `skip`); tapping it again puts it back. "Clear dates" removes the range and its exclusions but keeps days picked by hand. Saved days before today are dropped on load, and a saved range that started before today but has not ended starts today. A score that is not a finite number counts as missing.
 
 Tests: `tests/forecast-trip.test.js`.
 

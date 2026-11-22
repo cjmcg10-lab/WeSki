@@ -39,6 +39,7 @@ export function createTripScreen(ctx) {
       return `<button class="fc-cell fc-tripday b${band}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: ski score {1}, {2}. {3}.', vis, day.shown, t(label), name))}"><span class="win">${esc(vis)}</span><b>${day.shown} ${t(label)}</b></button>`;
     }
     if (day.kind === 'notyet') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Not yet'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Not yet')}</b></button>`;
+    if (day.kind === 'past') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Past forecast'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Past forecast')}</b></button>`;
     const closed = day.kind === 'closed';
     const word = closed ? t('Closed') : t('Insufficient data');
     return `<button class="fc-cell fc-tripday ${closed ? 'closed' : 'insuff'}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: {1}. {2}.', vis, word, name))}"><span class="win">${esc(vis)}</span><b>${word}</b></button>`;

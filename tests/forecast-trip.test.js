@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MARGIN, MAX_RANGE_DAYS, classifyDay, clearRange, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, summarize, toggleDate, tripDates,
+  MARGIN, MAX_RANGE_DAYS, daysBetween, shiftDate, classifyDay, clearRange, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, summarize, toggleDate, tripDates,
 } from '../src/forecast/trip.js';
 
 const DATES = ['2026-12-05', '2026-12-06', '2026-12-07', '2026-12-08'];
@@ -43,7 +43,7 @@ describe('classifying a day', () => {
     expect(classifyDay(f, '2026-12-06')).toEqual({ kind: 'closed' });
     expect(classifyDay(f, '2026-12-07')).toEqual({ kind: 'insufficient' });
     expect(classifyDay(f, '2026-12-20')).toEqual({ kind: 'notyet' });
-    expect(classifyDay(f, '2026-12-01')).toEqual({ kind: 'insufficient' });
+    expect(classifyDay(f, '2026-12-01')).toEqual({ kind: 'past' });
     expect(classifyDay(null, '2026-12-05')).toEqual({ kind: 'insufficient' });
   });
 });
@@ -207,5 +207,42 @@ describe('mixed time zones', () => {
     expect(notYet([DATES[2]], [wide]).dates).toEqual([]);
     expect(entersRangeOn('2026-12-09', 30, '2026-11-22')).toBe('2026-11-22');
     expect(entersRangeOn('2026-12-09', 2, '2026-11-22')).toBe('2026-12-07');
+  });
+});
+
+describe('staggered forecast windows', () => {
+  const window = (from, to, score) => forecast(Array.from({ length: daysBetween(from, to) + 1 }, (_, i) => day(shiftDate(from, i), score)));
+  const picked = Array.from({ length: 7 }, (_, i) => shiftDate('2026-12-06', i));
+  const us = { resort: resort('us'), forecast: window('2026-12-05', '2026-12-11', 80), entry: { state: 'ok' } };
+  const japan = { resort: resort('japan'), forecast: window('2026-12-06', '2026-12-12', 60), entry: { state: 'ok' } };
+
+  it('marks days before a mountain window as past, and counts only days inside it', () => {
+    const jp = summarize(japan.forecast, ['2026-12-05', '2026-12-06']);
+    expect(jp.days[0].kind).toBe('past');
+    expect(jp).toMatchObject({ covered: 1, total: 1, later: 1 });
+  });
+
+  it('ranks on the days every mountain forecasts, not on raw counts', () => {
+    const ranked = rankTrip([japan, us], picked);
+    expect(order(ranked)).toEqual(['us', 'japan']);
+    expect(ranked[0].ranked.covered).toBe(6);
+    expect(ranked[1].ranked.covered).toBe(6);
+    expect(ranked[0].covered).toBe(6);
+    expect(ranked[1].covered).toBe(7);
+    expect(ranked[1].closeWith).toBeUndefined();
+  });
+
+  it('keeps the unshared days on the card but out of the average used for ranking', () => {
+    const odd = { resort: resort('odd'), forecast: forecast([...window('2026-12-06', '2026-12-11', 70).scored.days, day('2026-12-12', 100)]), entry: { state: 'ok' } };
+    const ranked = rankTrip([odd, us], picked);
+    expect(ranked.find((c) => c.resort.id === 'odd').average).toBeGreaterThan(70);
+    expect(ranked.find((c) => c.resort.id === 'odd').ranked.average).toBe(70);
+  });
+});
+
+describe('a saved range that started in the past', () => {
+  it('moves its start up to today instead of losing it', () => {
+    expect(cleanTrip({ picked: [], from: '2026-11-21', to: '2026-11-25' }, '2026-11-22')).toMatchObject({ from: '2026-11-22', to: '2026-11-25' });
+    expect(cleanTrip({ picked: [], from: '2026-11-18', to: '2026-11-20' }, '2026-11-22')).toMatchObject({ from: '', to: '' });
   });
 });

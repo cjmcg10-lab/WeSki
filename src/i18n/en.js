@@ -1006,4 +1006,5 @@ export default {
   1129: 'Coverage {0} of {1} day',
   1130: 'Coverage {0} of {1} day · {2} closed',
   1131: '1 later day arrives after that.',
+  1132: 'Past forecast',
 };

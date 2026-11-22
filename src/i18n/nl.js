@@ -500,4 +500,5 @@ export default {
   1129: 'Dekking {0} van {1} dag',
   1130: 'Dekking {0} van {1} dag · {2} gesloten',
   1131: 'Eén latere dag volgt daarna.',
+  1132: 'Vóór de voorspelling',
 };
