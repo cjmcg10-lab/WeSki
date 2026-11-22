@@ -4,11 +4,11 @@ import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
-import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
-import { weather } from './weather.js';
+import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';
-export { Accounts, ResortLog } from './stores.js';
+export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/;
@@ -42,20 +42,16 @@ async function groupOk(url, env, resort) {
   return env.GROUPS.get(env.GROUPS.idFromName(code)).isMember(member, resort);
 }
 
-async function api(request, env, url) {
+async function api(request, env, url, ctx) {
   const path = url.pathname, method = request.method;
   // state-changing requests must come from the app's own pages (cookies are SameSite=Lax as well)
   if (method === 'POST' && path !== '/api/paddle/webhook') {
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
-  if (path === '/api/weather' && method === 'GET') {
-    try {
-      const r = await weather(url);
-      if (r.error) return json({ error: r.error }, r.status);
-      return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=900' } });
-    } catch (e) { return json({ error: 'The weather service did not answer.' }, 502); }
-  }
+  if (path === '/api/weather' && method === 'GET') return weatherResponse(url, env, ctx);
+  const historyId = method === 'GET' && /^\/api\/history\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (historyId) return historyResponse(historyId, env);
   const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
   if (statusId) return statusResponse(statusId);
   if (path === '/api/config' && method === 'GET') {
@@ -147,7 +143,7 @@ async function api(request, env, url) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // directions data is part of the paid tier: served only with a pass when the paywall is on
     const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
@@ -156,7 +152,7 @@ export default {
     const map = await fromR2(request, env, url);
     if (map) return map;
     if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/groups')) {
-      const res = await api(request, env, url);
+      const res = await api(request, env, url, ctx);
       if (res) return res;
     }
     if (url.pathname === '/api/groups' && request.method === 'POST') {

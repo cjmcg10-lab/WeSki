@@ -110,21 +110,35 @@ export function dayExplanation(rows, drivers) {
   return { code: feels >= WARM_FEELS ? 'EX_WARM_SOFT' : 'EX_MIXED', params: [] };
 }
 
-const FAR_AHEAD_DAYS = 3;
-const VERY_FAR_AHEAD_DAYS = 6;
-const STALE_HOURS = 6;
+export const FAR_AHEAD_DAYS = 3;
+export const VERY_FAR_AHEAD_DAYS = 6;
+export const STALE_HOURS = 6;
+export const SNOW_HISTORY_MIN_HOURS = 48;
+export const OBSERVED_MIN_HOURS = 24;
+export const COARSE_GRID_KM = 8;
+export const ELEVATION_MISMATCH_MEDIUM_M = 500;
+export const ELEVATION_MISMATCH_LOW_M = 1000;
 
-export function dayConfidence({ single, partial, daysAhead, ageHours }) {
-  const limited = { reason: { code: 'CR_SNOW_HISTORY_LIMITED', params: [] } };
-  if (single) return { level: 'Low', reason: { code: 'CR_ONE_ESTIMATE', params: [] } };
-  if (partial) return { level: 'Low', reason: { code: 'CR_PARTIAL_SITES', params: [] } };
-  if (ageHours != null && ageHours >= STALE_HOURS) return { level: 'Low', reason: { code: 'CR_STALE', params: [Math.round(ageHours)] } };
-  if (daysAhead >= FAR_AHEAD_DAYS) return { level: daysAhead >= VERY_FAR_AHEAD_DAYS ? 'Low' : 'Medium', reason: { code: 'CR_FAR_AHEAD', params: [daysAhead] } };
-  return { level: 'Medium', ...limited };
+const rated = (level, code, params = []) => ({ level, reason: { code, params } });
+
+export function dayConfidence({ single, partial, daysAhead, ageHours, stale = false, history = { hours: 0, observed: 0 }, resolutionKm = null, elevationMismatchM = null }) {
+  if (single) return rated('Low', 'CR_ONE_ESTIMATE');
+  if (partial) return rated('Low', 'CR_PARTIAL_SITES');
+  if (stale || (ageHours != null && ageHours >= STALE_HOURS)) return rated('Low', 'CR_STALE', [Math.round(ageHours ?? 0)]);
+  if (daysAhead >= VERY_FAR_AHEAD_DAYS) return rated('Low', 'CR_FAR_AHEAD', [daysAhead]);
+  if (elevationMismatchM >= ELEVATION_MISMATCH_LOW_M) return rated('Low', 'CR_ELEVATION_MISMATCH', [Math.round(elevationMismatchM)]);
+  if (daysAhead >= FAR_AHEAD_DAYS) return rated('Medium', 'CR_FAR_AHEAD', [daysAhead]);
+  if (elevationMismatchM >= ELEVATION_MISMATCH_MEDIUM_M) return rated('Medium', 'CR_ELEVATION_MISMATCH', [Math.round(elevationMismatchM)]);
+  if (resolutionKm >= COARSE_GRID_KM) return rated('Medium', 'CR_COARSE_GRID', [resolutionKm]);
+  if (history.hours < SNOW_HISTORY_MIN_HOURS) return rated('Medium', 'CR_SNOW_HISTORY_LIMITED');
+  if (history.observed < OBSERVED_MIN_HOURS) return rated('Medium', 'CR_NO_OBSERVATIONS');
+  return rated('High', 'CR_HISTORY_COVERED');
 }
 
-export function windowConfidence({ window, assumed, daysAhead }) {
-  if (!window) return { level: 'Low', reason: { code: 'WR_NO_WINDOW', params: [] } };
-  if (daysAhead >= FAR_AHEAD_DAYS) return { level: 'Low', reason: { code: 'WR_TOO_FAR_AHEAD', params: [] } };
-  return { level: 'Medium', reason: { code: assumed ? 'WR_HOURS_ASSUMED' : 'WR_STABLE', params: [] } };
+export function windowConfidence({ window, assumed, daysAhead, stale = false, ageHours, dayLevel }) {
+  if (!window) return rated('Low', 'WR_NO_WINDOW');
+  if (daysAhead >= FAR_AHEAD_DAYS) return rated('Low', 'WR_TOO_FAR_AHEAD');
+  if (stale || (ageHours != null && ageHours >= STALE_HOURS)) return rated('Low', 'WR_STALE', [Math.round(ageHours ?? 0)]);
+  if (assumed) return rated('Medium', 'WR_HOURS_ASSUMED');
+  return rated(dayLevel === 'High' && daysAhead <= 1 ? 'High' : 'Medium', 'WR_STABLE');
 }

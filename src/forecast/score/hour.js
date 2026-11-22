@@ -17,12 +17,33 @@ function rawAt(h, i) {
   return { t: h.temperature_2m?.[i], feels: h.apparent_temperature?.[i], snow: h.snowfall?.[i], wind: h.wind_speed_10m?.[i], gust: h.wind_gusts_10m?.[i], vis: h.visibility?.[i], code: h.weather_code?.[i] };
 }
 
-export function siteSeries(block, site, groomedAt = new Set()) {
+export const HISTORY_HOURS = 72;
+
+/** Steps the snow surface through the hours before the forecast starts (the last 72 valid ones) and counts what it covered. */
+export function replayHistory(block, firstTime) {
+  const h = block?.hourly;
+  const past = { state: null, hours: 0, observed: 0 };
+  if (!h?.time) return past;
+  const usable = [];
+  h.time.forEach((time, i) => {
+    if (firstTime && time >= firstTime) return;
+    const x = normalizeHour(rawAt(h, i));
+    if (x) usable.push({ time, x, observed: !!h.observed?.[i] });
+  });
+  for (const { time, x, observed } of usable.slice(-HISTORY_HOURS)) {
+    past.state = stepSurface(past.state ?? initialSurface(x), x, hourOf(time));
+    past.hours++;
+    if (observed) past.observed++;
+  }
+  return past;
+}
+
+export function siteSeries(block, site, groomedAt = new Set(), past = null) {
   const h = block?.hourly;
   const bySlot = new Map();
   if (!h?.time) return bySlot;
   const keys = occurrenceKeys(h.time);
-  let state = null;
+  let state = past?.state ?? null;
   h.time.forEach((time, i) => {
     const x = normalizeHour(rawAt(h, i));
     if (!x) return;
@@ -60,14 +81,17 @@ export function chooseSites(resort, weather, upper, base) {
 
 const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
 
-export function scoreHours(resort, weather, groomedAt = new Set()) {
+export function scoreHours(resort, weather, groomedAt = new Set(), history = null) {
   const block = weather.summit?.hourly?.time ? weather.summit : weather.base;
-  if (!block?.hourly?.time) return { rows: [], sites: { mode: 'both', reason: null } };
+  if (!block?.hourly?.time) return { rows: [], sites: { mode: 'both', reason: null }, history: { hours: 0, observed: 0 } };
   const times = block.hourly.time;
   const keys = occurrenceKeys(times);
-  const upper = siteSeries(weather.summit, 'upper', groomedAt);
-  const base = siteSeries(weather.base, 'base', groomedAt);
+  const past = { summit: replayHistory(history?.summit, times[0]), base: replayHistory(history?.base, times[0]) };
+  const upper = siteSeries(weather.summit, 'upper', groomedAt, past.summit);
+  const base = siteSeries(weather.base, 'base', groomedAt, past.base);
   const sites = chooseSites(resort, weather, upper, base);
+  const used = sites.mode === 'single' ? [sites.use === 'base' ? 'base' : 'summit'] : [['summit', upper], ['base', base]].filter(([, s]) => s.size).map(([k]) => k);
+  const covered = { hours: used.length ? Math.min(...used.map((k) => past[k].hours)) : 0, observed: Math.max(0, ...used.map((k) => past[k].observed)) };
   const rows = times.map((time, i) => {
     const key = keys[i];
     let u = upper.get(key) ?? null;
@@ -87,5 +111,5 @@ export function scoreHours(resort, weather, groomedAt = new Set()) {
     row.factor = hourFactor(used);
     return row;
   });
-  return { rows, sites };
+  return { rows, sites, history: covered };
 }

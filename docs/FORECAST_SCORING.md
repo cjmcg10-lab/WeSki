@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.2.0)
+# Forecast scoring engine (version 1.3.0)
 
-Issue #2, part of #1. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -36,14 +36,21 @@ const out = scoreForecast(resort, weather, opts);
 | `liftHolds` | `[{ lift, status: 'delayed' \| 'partial', date, from?, to? }]` holds the resort has confirmed, for the dates they apply to. They are shown beside the score and never change it |
 | `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
-| `ageHours` | Age of the forecast in hours, for the stale-source reason |
+| `history` | `{ summit, base }`, each `{ hourly }` in the weather's shape (optionally with `observed: boolean[]`): the hours before the forecast starts, as `GET /api/history/<id>` returns them. The engine ignores any hour at or after the first forecast hour, uses the last 72 valid ones, and carries the snow surface through them before the first forecast hour. Without it the surface starts clean (limited history) |
+| `ageHours` | Age of the forecast in hours, for the stale-source reason. Default: `weather.ageHours` |
+| `stale` | `true` when the forecast was served from the last good copy because no source answered. Default: `weather.stale`. Confidence is Low (`CR_STALE`) |
+| `resolutionKm` | Nominal grid spacing of the weather model. Default: `weather.resolutionKm` |
+| `elevationMismatchM` | Largest gap in metres between the model grid's ground height and the resort's summit or base. Default: worked out from `weather.gridElevation` and `resort.top`/`resort.base`; null when the source does not say |
+
+A caller that passes the `/api/weather` response as `weather` only needs to add `history`: the source fields above ride along in that response.
 
 ## Output
 
 ```
 {
-  version: '1.2.0',
-  ageHours,                   // echo of opts.ageHours, or null
+  version: '1.3.0',
+  ageHours,                   // opts.ageHours or weather.ageHours, or null
+  inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
   siteMode: 'both' | 'single',
   siteReason: null | 'summit_missing' | 'base_missing' | 'small_vertical' | 'identical_wind',
@@ -60,7 +67,9 @@ Day (one per local date in the weather):
 | `status` | `'ok'`, `'closed'` or `'insufficient'`. `ok` is the `scored` status in ux-prd section 8 (`range`, `trend`, `failed` and `ended` belong to later phases and to the app, not this engine) |
 | `score` | Unrounded 0 to 100, or `null` unless `ok` |
 | `mean` | Mean of the ski-hour scores, or `null` |
+| `detail` | `'hourly'`, `'windows'`, `'range'`, `'trend'` or `'none'`: the finest detail the screens may show for this day (see Detail levels). Present on every day |
 | `window` | `{ start, end, mean }` best 3 consecutive ski hours (local hours, `end` exclusive), or `null` when there are none |
+| `broadWindow` | `{ part: 'morning' \| 'midday' \| 'afternoon', start, end, mean }`, the best third of the ski hours, when `detail` is `windows`, else `null`. Present on `ok` days only |
 | `peakHour` | `{ time, hour, score }` the single best ski hour, or `null` |
 | `skiHours` | `{ from, to, assumed, expected, withData }` (`withData` is absent on a closed day) |
 | `hours` | Every hour of the date, see Hour. Empty on a closed day |
@@ -70,7 +79,7 @@ Day (one per local date in the weather):
 | `windowConfidence` | Same shape, for the timing of the best window |
 | `insufficientReason` | `{ code, params }`, present only when `status` is `insufficient` |
 | `closureSource` | The `{ code, params }` the caller passed, or `null`, present only when `closed` |
-| `flags` | Strings: `snow_history_limited` (always), `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
+| `flags` | Strings: `snow_history_limited` (when the history before the forecast covers under 48 valid hours), `stale_source`, `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
 | `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
 | `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds] and `NT_OUT_OF_SEASON`. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
@@ -112,7 +121,7 @@ The wet and crust penalties are steep on purpose: steady moderate rain on snow l
 
 A grooming report (`opts.grooming`) is applied once, at the hour of its timestamp, before that hour's step: `crust` × 0.25 and `wet` × 0.7 (groomers break up a crust and firm a wet surface). The resort feed's report time is the time it updated the trail, so this is a deliberately small effect. A report mapped to the first hour of day 0 meets the starting surface (no crust, wet 0 or 0.2), so it changes little there and mostly sets the `grooming_reported` flag.
 
-Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the history is limited, and every day carries the flag `snow_history_limited` and a confidence that is never High.
+**History (1.3.0).** With `opts.history` the state is first stepped through the up to 72 valid hours before the first forecast hour, with the same rules, then continues into the forecast, so rain then refreeze, fresh snow over a firm base and overnight softening carry into the first hour. The state starts from the first history hour as it would from the first forecast hour. A site's history must cover the hours before the forecast starts; hours at or after the first forecast hour are ignored, so the overlap with today's earlier hours is harmless. Gaps are not filled: the state steps across the hours that exist. `inputs.historyHours` is the number of valid history hours used (the smaller of summit and base when both are scored) and `inputs.observedHours` is the largest count of those that a station measured, snowfall included (`observed[i]` is true only for such hours). With at least 48 valid hours the `snow_history_limited` flag and the `CR_SNOW_HISTORY_LIMITED` reason are dropped. Without history every day carries the flag and Medium at best.
 
 **Visibility (25).** The lowest of: distance (100 m → 0, 500 → 25, 2,000 → 60, 6,000 → 90, 12,000 and more → 100); snowfall in cm an hour (0 → 100, 0.5 → 92, 1.5 → 65, 3 → 35, 5 → 10); rain intensity (none 100, light 65, moderate 45, heavy 30); fog weather code (20). A null visibility counts as 100 for the distance term only; the other terms still apply. **Limitation:** the weather shape has no cloud cover, so v1 cannot tell fog on the summit from harmless high cloud. Fog comes only from visibility and the fog weather codes.
 
@@ -140,19 +149,41 @@ Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the histo
 - Dates are the date part of the weather's local time strings. Nothing is converted through UTC, so a daylight-saving change cannot move an hour to another date. The spring day has 23 hours; the fall day has 25, with the 01:00 label twice (both are kept in `hours`; in the ski-window statistics the first valid hour with a given label is used). Surface state is carried across every hour in order.
 - Peak hour: the best single ski hour, the earliest on a tie.
 
-## Confidence (placeholder)
+## Confidence
 
-Rated separately for the day and for the timing of its best window. High is not given in version 1, because the snow history is limited and no second forecast exists to compare.
+Rated separately for the day and for the timing of its best window. Every threshold is a first guess, uncalibrated, to be tuned in phase 8. There is still no second forecast to compare, so agreement between models is not a factor yet (phase 7).
 
 | Condition (first that applies) | Day level | Day reason |
 | --- | --- | --- |
 | One site estimate | Low | `CR_ONE_ESTIMATE` |
 | Some hours had only one site | Low | `CR_PARTIAL_SITES` |
-| `ageHours` of 6 or more | Low | `CR_STALE` `[hours]` |
-| 3 or more days ahead | Medium (Low from 6 days) | `CR_FAR_AHEAD` `[days]` |
-| Otherwise | Medium | `CR_SNOW_HISTORY_LIMITED` |
+| `stale`, or `ageHours` of 6 or more | Low | `CR_STALE` `[hours]` |
+| 6 or more days ahead | Low | `CR_FAR_AHEAD` `[days]` |
+| Model ground height 1,000 m or more off the resort | Low | `CR_ELEVATION_MISMATCH` `[metres]` |
+| 3 to 5 days ahead | Medium | `CR_FAR_AHEAD` `[days]` |
+| Model ground height 500 m or more off the resort | Medium | `CR_ELEVATION_MISMATCH` `[metres]` |
+| Coarse grid (`resolutionKm` 8 or more: MET Norway's global model outside the Nordics and the USA) | Medium | `CR_COARSE_GRID` `[km]` |
+| Under 48 valid history hours | Medium | `CR_SNOW_HISTORY_LIMITED` |
+| Under 24 history hours measured by a station, snowfall included (an hour whose station gave no precipitation total does not count) | Medium | `CR_NO_OBSERVATIONS` |
+| Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured with snowfall, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
 
-Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; otherwise Medium, `WR_HOURS_ASSUMED` when the hours are assumed, else `WR_STABLE`.
+High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+
+Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale` or `ageHours` of 6 or more → Low, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
+
+## Detail levels
+
+`day.detail` says the finest detail the screens may show, counted in days from `today` (day 0). The engine still computes the hourly rows for every day it is given, so the screens, not the engine, hide what a day's level does not allow. The engine invents no hourly precision, ranges or percentages.
+
+| `daysAhead` | `detail` | What the screen may show |
+| --- | --- | --- |
+| 0 to 1 | `hourly` | The full hourly view, the best 3-hour window and the peak hour. Day 1 ends at most 48 hours after the first hour of day 0, so hourly stops at 48 hours; day 2 reaches 72 hours and therefore uses `windows` |
+| 2 to 5 | `windows` | The day score and `broadWindow` (morning, midday or afternoon), no hours |
+| 6 to 9 | `range` | A range only. The engine has one deterministic forecast and cannot make a range, so until ensemble members exist (phase 7) show the day as an outlook with no hours, no window and no range |
+| 10 to 14 | `trend` | A trend only (phase 7 or later); nothing numeric from this engine |
+| 15 or more | `none` | Nothing |
+
+The weather source gives 7 days of hours today, so `range` and later levels do not occur yet.
 
 ## Codes
 
@@ -182,7 +213,8 @@ The engine returns `{ code, params }` and never a sentence. A parameter is a raw
 `confReason` and `windowReason` and `insufficientReason`:
 
 - `CR_ONE_ESTIMATE`, `CR_PARTIAL_SITES` (new), `CR_STALE` [hours], `CR_FAR_AHEAD` [days], `CR_SNOW_HISTORY_LIMITED` (new)
-- `WR_HOURS_ASSUMED`, `WR_STABLE`, `WR_TOO_FAR_AHEAD`, `WR_NO_WINDOW` (new)
+- New in 1.3.0 (need ten translations in the screens' pull request): `CR_HISTORY_COVERED` (High: a measured, complete recent history), `CR_NO_OBSERVATIONS` (history is model hours only), `CR_COARSE_GRID` [km], `CR_ELEVATION_MISMATCH` [metres]
+- `WR_HOURS_ASSUMED`, `WR_STABLE`, `WR_TOO_FAR_AHEAD`, `WR_NO_WINDOW` (new), `WR_STALE` [hours] (new in 1.3.0)
 - `IR_TOO_FEW_HOURS` [hours with data], `IR_SUMMIT_MISSING`, `IR_SERVICE_UNAVAILABLE`
 
 `factor` (hour main factor, day factors, and what moved the score):
@@ -218,16 +250,18 @@ Which factor is chosen: each component's weighted distance from its reference (s
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 
-Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (later, phase 4, when history exists), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
+Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (not needed: missing history lowers confidence, it does not block a score), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
 
 `outlook` codes (days 6 to 9) are not produced in phase 1.
 
 ## Not in version 1
 
-Snow history before the forecast (phase 4), several forecasts or ensemble members and with them `uncertainty` and a High confidence (phase 7), calibration of the numbers against real days (phase 8), days 3 to 5 as time blocks and days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7), calibration of the numbers against real days (phase 8), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
 `tests/forecast-score.test.js` with fixtures in `tests/fixtures/forecast/`. `real-stowe-2026-11-22.json` is a real `/api/weather` response (hourly blocks only). The five `scenario-*.json` files are derived from it by editing values; each says so in `_label`.
+
+`tests/forecast-history.test.js` covers the engine's history, confidence and detail levels (version 1.3.0); `tests/forecast-store.test.js` covers the server side (history store, observations, archive, stale fallback) with recorded NWS stations and observations (`nws-stations-stowe.json`, `nws-obs-kmvl.json`, real responses trimmed to the fields the app reads).
 
 `tests/forecast-status.test.js` covers the resort-status side with recorded feeds `status-mtnpowder-*.json` (trimmed real responses): the normaliser, an assumed window, a confirmed closure, a short operating day, a confirmed lift hold kept apart from wind, and out of season without a closure. See `docs/FORECAST_SOURCES.md` for where the status comes from.
