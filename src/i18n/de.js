@@ -507,4 +507,6 @@ export default {
   1400: 'Am Fuß wahrscheinlich Regen, weiter oben trockener.',
   1401: 'Sie sind hier',
   1402: 'In meiner Liste behalten',
+  1410: 'Neue Version bereit',
+  1411: 'Neu laden',
 };

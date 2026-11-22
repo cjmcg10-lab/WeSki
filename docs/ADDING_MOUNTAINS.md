@@ -181,6 +181,20 @@ Read the map's legend first (Telluride: two diamonds = expert only, EX = extreme
 After a mountain goes live, the owner's own use and the in-app "Report a map mistake" button are the last
 line: reports arrive at `/api/reports/<id>`. Fix reported runs first in the next session.
 
+- **Reading the reports:** `python3 tools/reports.py <id>` (or `--all` for every mountain in `public/data/index.json`)
+  lists the reports not seen before: kind, note, date, the run or lift it is about (named from `resort.json`; with no
+  run given, the nearest run or lift within 60 m is shown as a guess) and an OpenStreetMap link to the spot. It
+  remembers the last report listed per mountain in `tools/.reports_seen.json` (kept out of git, so each machine or
+  session starts from the beginning). `--since 2026-12-01` lists by date instead, `--everything` lists all,
+  `--keep-marker` leaves the marker alone, `--json` prints JSON. Pull the maps first so run names can be looked up.
+- **Skiers' anonymous counts:** `python3 tools/evidence.py <id>` now also reads `/api/heat/<id>` (from skiers who
+  switched on "Help improve the maps"; a run or 20 m square is published only once 5 different ski days reached it)
+  and prints, per run, the public GPS traces next to the app's ski days, then groups of three or more touching
+  squares skied off the shown runs as possible missing runs (size, ski days, nearest run, OpenStreetMap link). Both go
+  into `tools/evidence/<id>.json` (`"ski"` per run and `"ski": {"days", "k", "off"}`). `--heat-only` refreshes only
+  the ski counts without downloading GPS traces again. With nothing published yet (or the server unreachable) it
+  carries on with zero counts.
+
 ## Map storage (Cloudflare R2)
 
 Since 2026-11-21 every mountain's map files live in Cloudflare R2 (bucket `skiwithme-maps`), except Jay Peak, which

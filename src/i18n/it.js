@@ -507,4 +507,6 @@ export default {
   1400: 'Pioggia probabile alla base, più asciutto in quota.',
   1401: 'Sei qui',
   1402: 'Tieni nella mia lista',
+  1410: 'Nuova versione pronta',
+  1411: 'Ricarica',
 };
