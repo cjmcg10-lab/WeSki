@@ -68,7 +68,7 @@ export class SkiMap {
     this.clock = new THREE.Clock();
     this.t = 0;
 
-    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' }));
+    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: true }));
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(r.domElement);
     this.overlay = document.createElement('canvas');
@@ -243,7 +243,10 @@ export class SkiMap {
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setIndex(new THREE.BufferAttribute(idx, 1));
     g.computeVertexNormals();
-    this.terrain = new THREE.Mesh(g, this.groundMaterial(zmin));
+    const gm = this.groundMaterial(zmin);
+    // stencil: where the ground is the nearest thing it clears the "tree here" mark (see buildTrails)
+    Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    this.terrain = new THREE.Mesh(g, gm);
     this.scene.add(this.terrain);
     this.buildSurround();
   }
@@ -485,7 +488,9 @@ vec3 groundColour() {
       if (rnd() < 0.3) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
     }
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
-    const mesh = new THREE.InstancedMesh(M.treeGeometry(), new THREE.MeshLambertMaterial({ flatShading: true }), spots.length);
+    // stencil: trees mark the pixels they cover, so runs can be drawn through them (see buildTrails)
+    const treeMat = new THREE.MeshLambertMaterial({ flatShading: true, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    const mesh = new THREE.InstancedMesh(M.treeGeometry(), treeMat, spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
     spots.forEach(([x, y, r, tall], i) => {
@@ -557,12 +562,24 @@ vec3 groundColour() {
       this.segs(a.pts.concat(a.pts.slice(0, 2)), 3.2, (edges[cls(R, t || a)] ||= []));
     }
     for (const [c, pos] of Object.entries(edges)) G.add(this.fatLine(pos, scheme(R).colors[+c], 1.6, { order: 4, dash: [3, 6], opacity: 0.75 }));
-    G.add(this.fatLine(casing, '#ffffff', 5.5, { order: 3 }));
+    const runs = [this.fatLine(casing, '#ffffff', 5.5, { order: 3 })];
     for (const [key, pos] of Object.entries(byStyle)) {
       const glade = key.endsWith('g');
-      G.add(this.fatLine(pos, scheme(R).colors[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
+      runs.push(this.fatLine(pos, scheme(R).colors[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
     }
-    G.add(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
+    runs.push(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
+    // Runs through the woods: drawn a second time only where a tree is in front of them (the trees mark their
+    // pixels, the ground clears the mark where it is nearer), so a glade or a run hidden by the canopy still shows,
+    // in its true place, while a run behind a ridge stays hidden.
+    for (const l of runs) {
+      G.add(l);
+      const x = new LineSegments2(l.geometry, l.material.clone());
+      Object.assign(x.material, { depthTest: false, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc,
+        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp, stencilWriteMask: 0 });
+      x.material.opacity = l.material.opacity * 0.9;
+      x.renderOrder = l.renderOrder + 2; x.frustumCulled = false;
+      G.add(x);
+    }
     this.scene.add(G);
     // label anchors: one per trail name (longest segment)
     const best = new Map();
