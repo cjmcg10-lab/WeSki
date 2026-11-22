@@ -148,6 +148,7 @@ export class SkiMap {
     document.removeEventListener('visibilitychange', this.onVis);
     this.controls.dispose();
     this.scene.traverse((o) => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose()); });
+    this.groundTex?.dispose(); this.zoneTex?.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss?.();
     this.renderer.domElement.remove();
@@ -196,71 +197,149 @@ export class SkiMap {
       }
     }
     this.snowMask = mask;
-    // One flat colour per triangle (no blending between vertices): crisp snow / glade / forest /
-    // rock facets. Face normals are baked in, so the shader does no per-pixel flat-shading work.
-    const tris = (nx - 1) * (ny - 1) * 2;
-    const pos = new Float32Array(tris * 9), col = new Float32Array(tris * 9);
-    // Colours go through THREE.Color so they are in the same colour space as the surrounding
-    // land (otherwise the detailed map renders visibly paler than what is around it).
-    const rgb = (r, g, b) => { const c = new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace); return [c.r, c.g, c.b]; };
-    const SNOW = rgb(246, 250, 253), GLADE = rgb(176, 205, 190), ROCK = rgb(124, 132, 141);
-    const F_HIGH = rgb(150, 182, 176), F_MID = rgb(44, 104, 80), F_LOW = rgb(52, 122, 78);
-    // zone tints, by code; later codes win where zones overlap
-    const ZONE = [null, rgb(...ZONES.free.rgb), rgb(...ZONES.extreme.rgb), rgb(...ZONES.sled.rgb), rgb(...ZONES.race.rgb),
-      rgb(...ZONES.learn.rgb), rgb(...ZONES.family.rgb), rgb(...ZONES.slow.rgb), rgb(...ZONES.park.rgb)];
-    const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
-    // three clean elevation bands: valley hardwoods, mid-mountain spruce, rimed summit trees
-    // Forest bands hang off the resort's treeline; above it the open mountain is snow and rock.
-    const tl = this.resort.treeline || 1300, ALPINE = rgb(226, 234, 240);
-    const forest = (alt) => (alt > tl + 60 ? ALPINE : alt > tl - 260 ? F_HIGH : alt > tl - 440 ? F_MID : F_LOW);
-    // Zones are painted into the snow itself so nothing floats above the ground to hide
-    // trails, lift chairs or people.
-    const zone = new Uint8Array(nx * ny), offPiste = new Uint8Array(nx * ny);   // offPiste: may tint outside the groomed snow
-    const paint = (pts, rad, v, off = 0) => {
-      const r = Math.ceil(rad / cell), reach = Math.max(rad, cell * 0.75);
+    // Smoothly shaded mesh whose corners are shared (indexed): far less memory than one separate
+    // triangle per face. Its colours come from groundMaterial().
+    const n = nx * ny;
+    const pos = new Float32Array(n * 3);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
+      const o = j * nx + i;
+      pos[o * 3] = i * cell - geo.W / 2; pos[o * 3 + 1] = h[o] / 10; pos[o * 3 + 2] = -(j * cell - geo.H / 2);
+    }
+    const idx = new Uint32Array((nx - 1) * (ny - 1) * 6);
+    let k = 0;
+    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
+      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
+      idx[k++] = a; idx[k++] = b; idx[k++] = e; idx[k++] = a; idx[k++] = e; idx[k++] = d;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
+    g.computeVertexNormals();
+    this.terrain = new THREE.Mesh(g, this.groundMaterial(zmin));
+    this.scene.add(this.terrain);
+    this.buildSurround();
+  }
+
+  /**
+   * The ground's look. Instead of one flat colour per triangle (saw-toothed squares along every run),
+   * the snow, glade and zone shapes are stored as distance fields: each pixel holds how far it is
+   * from the nearest edge. The graphics chip draws the edge exactly where that distance is zero, so
+   * runs, glades and zones have smooth, crisp edges at any zoom from a small image (about half a mesh
+   * cell a pixel). Forest bands, alpine snow and rock are worked out per pixel from the height and
+   * steepness of the ground itself. Same palette as before.
+   */
+  groundMaterial(zmin) {
+    const { nx, ny, cell } = this.resort.grid, geo = this.geo;
+    const W = (nx - 1) * cell, H = (ny - 1) * cell;
+    const tw = Math.ceil(W / Math.max(cell / 2, Math.max(W, H) / 2048)), th = Math.ceil(H / Math.max(cell / 2, Math.max(W, H) / 2048));
+    const sx = W / tw, sy = H / th, N = tw * th;
+    const RW = Math.max(12, 2 * Math.max(sx, sy));                  // distance covered by the field each side of an edge
+    const field = new Uint8Array(N * 4), zc = new Uint8Array(N);
+    for (let o = 3; o < field.length; o += 4) field[o] = 255;
+    // field value: 0.5 on the edge `rad` from the line, 1 well inside, 0 well outside
+    const stroke = (pts, rad, fn) => {
+      const R = rad + RW;
       for (let q = 0; q < pts.length; q += 2) {
-        const ci = Math.round(pts[q] / cell), cj = Math.round(pts[q + 1] / cell);
-        for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
-          for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++)
-            if (Math.hypot(i * cell - pts[q], j * cell - pts[q + 1]) <= reach && v >= zone[j * nx + i]) { zone[j * nx + i] = v; offPiste[j * nx + i] = off; }
+        const x1 = pts[q], y1 = pts[q + 1], last = q + 2 >= pts.length, x2 = last ? x1 : pts[q + 2], y2 = last ? y1 : pts[q + 3];
+        const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy;
+        const i0 = Math.max(0, Math.floor((Math.min(x1, x2) - R) / sx)), i1 = Math.min(tw - 1, Math.ceil((Math.max(x1, x2) + R) / sx));
+        const j0 = Math.max(0, Math.floor((Math.min(y1, y2) - R) / sy)), j1 = Math.min(th - 1, Math.ceil((Math.max(y1, y2) + R) / sy));
+        for (let j = j0; j <= j1; j++) {
+          const y = (j + 0.5) * sy;
+          for (let i = i0; i <= i1; i++) {
+            const x = (i + 0.5) * sx, t = L2 ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L2)) : 0;
+            const d = Math.hypot(x - x1 - t * dx, y - y1 - t * dy);
+            if (d < R) fn(j * tw + i, Math.min(1, 0.5 + (rad - d) / (2 * RW)));
+          }
+        }
       }
     };
-    for (const t of this.resort.trails) {
-      if (t.hide) continue;
+    const into = (ch) => (o, f) => { const v = f * 255; if (v > field[o * 4 + ch]) field[o * 4 + ch] = v; };
+    const T = this.resort.trails.filter((t) => !t.hide);
+    for (const t of T) stroke(t.pts, t.glade ? 16 : t.d === 0 ? 30 : 25, into(t.glade ? 1 : 0));
+    for (const b of this.resort.buildings) stroke([b.pts[0], b.pts[1]], 30, into(0));
+    for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(1));
+    // zones, by code; later codes win where zones overlap (as before). +16: may tint off the groomed snow
+    const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
+    const paint = (pts, rad, v, off) => stroke(pts, rad, (o, f) => {
+      const cur = zc[o] & 15;
+      const fv = f * 255;
+      if (v > cur && f > 0.5) { zc[o] = v | (off ? 16 : 0); field[o * 4 + 2] = fv; } else if (v === cur && fv > field[o * 4 + 2]) field[o * 4 + 2] = fv;
+    });
+    for (const t of T) {
       const z = t.z || (t.slow ? 'slow' : null);
       if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 30, CODE[z], z === 'free' || z === 'extreme' ? 1 : 0);
     }
     for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind], 1);
     for (const p of this.resort.parks) paint(p.pts, 17, CODE.park, p.trail >= 0 ? 0 : 1);
-    let k = 0;
-    const put = (o, c) => {
-      const i = o % nx, j = (o / nx) | 0;
-      pos[k] = i * cell - geo.W / 2; pos[k + 1] = h[o] / 10; pos[k + 2] = -(j * cell - geo.H / 2);
-      col[k] = c[0]; col[k + 1] = c[1]; col[k + 2] = c[2];
-      k += 3;
+    const fieldTex = new THREE.DataTexture(field, tw, th, THREE.RGBAFormat);
+    fieldTex.minFilter = THREE.LinearMipmapLinearFilter; fieldTex.magFilter = THREE.LinearFilter; fieldTex.generateMipmaps = true;
+    fieldTex.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
+    fieldTex.needsUpdate = true;
+    const zoneTex = new THREE.DataTexture(zc, tw, th, THREE.RedIntegerFormat, THREE.UnsignedByteType);
+    zoneTex.internalFormat = 'R8UI'; zoneTex.minFilter = zoneTex.magFilter = THREE.NearestFilter; zoneTex.needsUpdate = true;
+    this.groundTex = fieldTex; this.zoneTex = zoneTex;
+
+    const lin = (r, g, b) => new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
+    const Z = ['free', 'extreme', 'sled', 'race', 'learn', 'family', 'slow', 'park'].map((k) => lin(...ZONES[k].rgb));
+    const tl = (this.resort.treeline || 1300) - zmin;                // treeline in the mesh's height units
+    const U = {
+      uField: { value: fieldTex }, uZone: { value: zoneTex },
+      uOrigin: { value: new THREE.Vector2(geo.W / 2, geo.H / 2) }, uSize: { value: new THREE.Vector2(W, H) },
+      uTl: { value: tl }, uCell: { value: cell },
+      cSnow: { value: lin(246, 250, 253) }, cGlade: { value: lin(176, 205, 190) }, cRock: { value: lin(124, 132, 141) }, cAlpine: { value: lin(226, 234, 240) },
+      cHigh: { value: lin(150, 182, 176) }, cMid: { value: lin(44, 104, 80) }, cLow: { value: lin(52, 122, 78) }, cZone: { value: Z },
     };
-    const face = (a, b, c) => {
-      const m = (mask[a] + mask[b] + mask[c]) / 3, alt = zmin + (h[a] + h[b] + h[c]) / 30;
-      const zs = [h[a], h[b], h[c]], relief = (Math.max(...zs) - Math.min(...zs)) / 10 / cell;
-      // a zone colours a face when at least two of its corners are in it; freeride and extreme
-      // terrain is striped (every other row of cells) so it reads as hatching, not a solid fill
-      const za = zone[a], zb = zone[b], zc = zone[c];
-      const zn = za === zb || za === zc ? za : zb === zc ? zb : 0;
-      const hatch = zn === 1 || zn === 2 ? (((a % nx) + ((a / nx) | 0)) & 1) === 0 : true;
-      const colr = zn && hatch && (m >= 0.5 || offPiste[a] || offPiste[b] || offPiste[c]) ? ZONE[zn] : m >= 0.5 ? SNOW : relief > (alt > tl + 60 ? 0.7 : 0.95) ? ROCK : m >= 0.2 ? (alt > tl + 60 ? SNOW : GLADE) : forest(alt);
-      put(a, colr); put(b, colr); put(c, colr);
-    };
-    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
-      face(a, b, e); face(a, e, d);
+    const mat = new THREE.MeshLambertMaterial();
+    mat.onBeforeCompile = (sh) => {
+      Object.assign(sh.uniforms, U);
+      sh.vertexShader = sh.vertexShader
+        .replace('#include <common>', '#include <common>\nvarying vec3 vGPos;\nvarying vec3 vGNrm;')
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGPos = position;\nvGNrm = normal;');
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <common>', `#include <common>
+varying vec3 vGPos;
+varying vec3 vGNrm;
+uniform sampler2D uField;
+uniform highp usampler2D uZone;
+uniform vec2 uOrigin, uSize;
+uniform float uTl, uCell;
+uniform vec3 cSnow, cGlade, cRock, cAlpine, cHigh, cMid, cLow, cZone[8];
+// crisp but anti-aliased edge where a field crosses 0.5
+float edgeOf(float f, float fw) { float w = max(fw * 0.5, 0.002); return smoothstep(0.5 - w, 0.5 + w, f); }
+vec3 groundColour() {
+  vec2 uv = vec2((vGPos.x + uOrigin.x) / uSize.x, (uOrigin.y - vGPos.z) / uSize.y);
+  vec4 f = texture2D(uField, uv);
+  vec3 fw = fwidth(f.rgb);
+  float hu = (vGPos.x - vGPos.z) / 9.0, hw = fwidth(hu);
+  float alt = vGPos.y;
+  vec3 n = normalize(vGNrm);
+  float relief = 1.2 * sqrt(max(0.0, 1.0 - n.y * n.y)) / max(n.y, 0.05);   // rise over run, as the old per-triangle measure
+  bool alpine = alt > uTl + 60.0;
+  // forest bands by height, blended over ~40 m; alpine snow above the treeline; rock on steep ground
+  vec3 c = alt > uTl - 260.0 ? mix(cHigh, cAlpine, smoothstep(uTl + 40.0, uTl + 80.0, alt))
+                             : mix(mix(cLow, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
+  c = mix(c, alt > uTl + 60.0 ? cSnow : cGlade, edgeOf(f.g, fw.g));
+  c = mix(c, cRock, smoothstep(-0.06, 0.06, relief - (alpine ? 0.7 : 0.95)));
+  float s = edgeOf(f.r, fw.r);
+  c = mix(c, cSnow, s);
+  uint code = texture(uZone, uv).r;
+  uint zn = code & 15u;
+  if (zn > 0u) {
+    float k = edgeOf(f.b, fw.b) * ((code & 16u) > 0u ? 1.0 : s);
+    if (zn <= 2u) {            // freeride and extreme terrain: diagonal hatching
+      float u = hu, w = min(hw * 0.6, 0.2);   // a stripe every ~6 m
+      float t = fract(u);
+      // thin stripes up close; from far away (stripes below a pixel) an even lighter tint instead
+      k *= mix(smoothstep(0.6 - w, 0.6 + w, t) * (1.0 - smoothstep(0.95 - w, 0.95 + w, t)), 0.35, smoothstep(0.15, 0.4, hw));
     }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.computeVertexNormals();
-    this.terrain = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
-    this.scene.add(this.terrain);
-    this.buildSurround();
+    c = mix(c, cZone[zn - 1u], k);
+  }
+  return c;
+}`)
+        .replace('#include <map_fragment>', 'diffuseColor.rgb = groundColour();');
+    };
+    return mat;
   }
 
   /**
@@ -299,7 +378,8 @@ export class SkiMap {
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setIndex(idx);
-    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true })));
+    g.computeVertexNormals();     // smooth shading, like the detailed map (it used to be faceted)
+    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true })));
     // short skirt under the edge of the detailed map hides any sliver between the two meshes
     const { nx: fx, ny: fy, cell: fc } = this.resort.grid, sk = [];
     const edge = (x1, y1, x2, y2) => {
