@@ -1,0 +1,36 @@
+{
+ "_label": "Real api.met.no metalerts/2.0/current.json?lang=en&lat=69.4&lon=16.9 (northern Norway), recorded 2026-11-22T18:2xZ; description, consequences, instruction and geometry removed",
+ "features": [
+  {
+   "when": {
+    "interval": [
+     "2026-11-23T14:00:00+00:00",
+     "2026-11-23T23:00:00+00:00"
+    ]
+   },
+   "properties": {
+    "altitude_above_sea_level": 0,
+    "area": "Parts of Troms and Finnmark",
+    "awarenessResponse": "Be aware",
+    "awarenessSeriousness": "Challenging situation",
+    "awareness_level": "2; yellow; Moderate",
+    "awareness_type": "2; snow-ice",
+    "ceiling_above_sea_level": 2743,
+    "certainty": "Likely",
+    "contact": "https://www.met.no/en/contact-us",
+    "event": "ice",
+    "eventAwarenessName": "Ice",
+    "eventEndingTime": "2026-11-23T23:00:00+00:00",
+    "geographicDomain": "land",
+    "id": "2.49.0.1.578.0.20261122081858.009",
+    "riskMatrixColor": "Yellow",
+    "severity": "Moderate",
+    "status": "Actual",
+    "title": "Ice, yellow level, Parts of Troms and Finnmark, 2026-11-23T14:00:00+00:00, 2026-11-23T23:00:00+00:00",
+    "triggerLevel": "0,5mm/3h",
+    "type": "Alert",
+    "web": "https://www.met.no/vaer-og-klima/ekstremvaervarsler-og-andre-farevarsler/vaerfenomener-som-kan-gi-farevarsel-fra-met/is"
+   }
+  }
+ ]
+}
