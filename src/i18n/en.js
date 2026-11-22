@@ -1015,4 +1015,6 @@ export default {
   1402: 'Keep on my list',
   1450: 'Season dates unknown. This score assumes the lifts are running.',
   1451: 'Season dates are unknown for some mountains: their scores assume the lifts are running.',
+  1410: 'New version ready',
+  1411: 'Reload',
 };

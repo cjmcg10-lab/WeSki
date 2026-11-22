@@ -509,4 +509,6 @@ export default {
   1402: 'Garder dans ma liste',
   1450: 'Dates de saison inconnues. Cette note suppose que les remontées fonctionnent.',
   1451: 'Les dates de saison de certaines montagnes sont inconnues : leurs notes supposent que les remontées fonctionnent.',
+  1410: 'Nouvelle version prête',
+  1411: 'Recharger',
 };

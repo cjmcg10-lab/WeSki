@@ -509,4 +509,6 @@ export default {
   1402: 'Manter na minha lista',
   1450: 'Datas da temporada desconhecidas. Esta pontuação pressupõe que os teleféricos estão a funcionar.',
   1451: 'As datas da temporada de algumas montanhas são desconhecidas: as pontuações pressupõem que os teleféricos estão a funcionar.',
+  1410: 'Nova versão pronta',
+  1411: 'Recarregar',
 };

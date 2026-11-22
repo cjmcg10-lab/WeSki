@@ -509,4 +509,6 @@ export default {
   1402: 'Guardar en mi lista',
   1450: 'Fechas de temporada desconocidas. Esta puntuación supone que los remontes funcionan.',
   1451: 'Se desconocen las fechas de temporada de algunas montañas: sus puntuaciones suponen que los remontes funcionan.',
+  1410: 'Nueva versión lista',
+  1411: 'Recargar',
 };

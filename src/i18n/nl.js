@@ -509,4 +509,6 @@ export default {
   1402: 'Bewaren in mijn lijst',
   1450: 'Seizoensdata onbekend. Deze score gaat ervan uit dat de liften draaien.',
   1451: 'Voor sommige bergen zijn de seizoensdata onbekend: hun scores gaan ervan uit dat de liften draaien.',
+  1410: 'Nieuwe versie klaar',
+  1411: 'Herladen',
 };
