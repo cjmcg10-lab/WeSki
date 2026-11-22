@@ -74,8 +74,17 @@ try {
   await page.locator('.fc-empty [data-act="fc-add"]').click();
   await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
   for (const [query, name] of [['Zermatt', 'Zermatt'], ['Mt Buller', 'Mount Buller']]) {
-    await page.locator('#fc-q').fill(query);
-    await page.locator('#fc-results .fc-res', { hasText: name }).first().waitFor({ state: 'visible', timeout: 15000 });
+    const box = page.locator('#fc-q');
+    await box.fill(query);
+    if ((await box.inputValue()) !== query) throw new Error(`search box holds "${await box.inputValue()}", not "${query}"`);
+    try {
+      await page.locator('#fc-results .fc-res', { hasText: name }).first().waitFor({ state: 'visible', timeout: 30000 });
+    } catch (e) {
+      const shown = await page.locator('#fc-results').innerText().catch(() => '(no results panel)');
+      mkdirSync(SHOT_DIR, { recursive: true });
+      await page.screenshot({ path: `${SHOT_DIR}/search-failure.png` }).catch(() => {});
+      throw new Error(`search for "${query}" never showed ${name}; results panel says: ${shown.slice(0, 300)}`);
+    }
   }
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);

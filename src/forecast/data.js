@@ -1,4 +1,5 @@
 import { scoreForecast, roundHalfUp } from './score/index.js';
+import { sourceAge } from './score/explain.js';
 import { loadWeather } from '../weather.js';
 import { prefs } from '../store.js';
 import { forecastPoints } from './catalog.js';
@@ -19,7 +20,7 @@ const STATUS_FRESH_MS = 20 * 60e3;
 const STATUS_GRACE_MS = 1500;
 const statusKey = (id) => `fcStatus:${id}`;
 
-const statusAgeHours = (status, now) => {
+export const statusAgeHours = (status, now) => {
   const at = Date.parse(status?.fetchedAt ?? '');
   return Number.isFinite(at) ? ageHoursOf(at, now) : Infinity;
 };
@@ -41,18 +42,21 @@ function scoreToday(resort, weather, now) {
 export function scoreResort(resort, weather, { now = Date.now(), at = now, status } = {}) {
   const today = scoreToday(resort, weather, now);
   const aged = agedStatus(status, now);
-  const weatherAge = ageHoursOf(at, now);
+  const fetchAgeHours = ageHoursOf(at, now);
   const opts = statusToScoreOpts(aged.status);
   if (aged.status?.hours?.assumed && opts.hours) opts.hours = { ...opts.hours, assumed: true };
-  const out = scoreForecast(resort, weather, { ...opts, today, ageHours: Math.max(weatherAge, aged.ageHours === Infinity ? 0 : aged.ageHours) });
-  return { ...out, today, band: bandOfAges(weatherAge, aged.ageHours), days: out.days.filter((d) => d.date >= today) };
+  const ageHours = weather?.ageHours == null ? null : weather.ageHours + fetchAgeHours;
+  const out = scoreForecast(resort, weather, { ...opts, today, ageHours, fetchAgeHours });
+  return { ...out, today, band: bandOfAges({ stale: weather?.stale, fetchAgeHours, ageHours }, aged.ageHours), days: out.days.filter((d) => d.date >= today) };
 }
 
-const bandOfAges = (weatherAge, statusAge) => `${isStale(weatherAge)}|${isStale(statusAge)}`;
+const bandOfAges = (source, statusAge) => `${sourceAge(source)?.level ?? ''}|${isStale(statusAge)}`;
 
 export function rescored(forecast, now = Date.now()) {
   const { resort, weather, at, status, scored } = forecast;
-  if (scoreToday(resort, weather, now) === scored.today && bandOfAges(ageHoursOf(at, now), agedStatus(status, now).ageHours) === scored.band) return forecast;
+  const fetchAgeHours = ageHoursOf(at, now);
+  const ageHours = weather?.ageHours == null ? null : weather.ageHours + fetchAgeHours;
+  if (scoreToday(resort, weather, now) === scored.today && bandOfAges({ stale: weather?.stale, fetchAgeHours, ageHours }, agedStatus(status, now).ageHours) === scored.band) return forecast;
   return { ...forecast, scored: scoreResort(resort, weather, { now, at, status }) };
 }
 
@@ -81,9 +85,10 @@ export async function loadForecast(resort, force = false, loader = loadWeather, 
   const saved = savedStatus(resort);
   const statusP = statusLoader(place);
   const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
-  const [w, status] = await Promise.all([loader(place, force), quick]);
-  const weather = { summit: w.summit, base: w.base };
-  return { resort: place, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(place, weather, { now, at: w.at, status }) };
+  const [w, status] = await Promise.all([loader(place, force, { allowStale: true }), quick]);
+  const serverStale = !!w.stale && !w.error;
+  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation };
+  return { resort: place, at: w.at, source: w.source, stale: !!w.stale, serverStale, weather, status, scored: scoreResort(place, weather, { now, at: w.at, status }) };
 }
 
 export function columnDates(forecasts, count = 7) {
@@ -116,12 +121,12 @@ export function timeBlocks(day) {
   }).filter((b) => b.score != null);
 }
 
-export const BROAD_FROM_DAYS_AHEAD = 3;
-
 export function windowSummary(day) {
+  if (day.detail && day.detail !== 'hourly' && day.detail !== 'windows') return { kind: 'hidden' };
   if (!day.window) return { kind: 'none' };
-  if (day.daysAhead >= BROAD_FROM_DAYS_AHEAD || day.windowConfidence?.level === 'Low') {
-    return { kind: 'broad', block: blockOfHour((day.window.start + day.window.end - 1) / 2) };
+  if (day.detail === 'windows' || day.windowConfidence?.level === 'Low') {
+    const part = day.broadWindow?.part;
+    return { kind: 'broad', block: BLOCKS.find((b) => b.id === part) ?? blockOfHour((day.window.start + day.window.end - 1) / 2) };
   }
   return { kind: 'exact', start: day.window.start, end: day.window.end };
 }

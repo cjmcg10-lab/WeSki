@@ -385,7 +385,7 @@ describe('scenario fixtures (derived from a real Stowe response)', () => {
   });
 
   it('a stale forecast lowers confidence and names its age', () => {
-    const d = run('scenario-clear-groomer', { ageHours: 8 }).days[0];
+    const d = run('scenario-clear-groomer', { fetchAgeHours: 8 }).days[0];
     expect(d.confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [8] } });
   });
 
@@ -432,7 +432,7 @@ describe('output contract', () => {
       }
     };
     for (const name of ['real-stowe-2026-11-22', 'scenario-clear-groomer', 'scenario-freeze-thaw', 'scenario-powder-morning', 'scenario-rain-day', 'scenario-wind-hold-afternoon']) {
-      walk(scoreForecast(RESORT, fixture(name), { ageHours: 7 }));
+      walk(scoreForecast(RESORT, fixture(name), { fetchAgeHours: 7 }));
     }
     walk(scoreForecast(RESORT, makeWeather(['2026-01-10'], () => ({}), () => ({}), (h) => h > 9)));
     walk(scoreForecast({ ...RESORT, top: 420 }, fixture('scenario-rain-day')));

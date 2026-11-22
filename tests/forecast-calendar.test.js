@@ -192,7 +192,7 @@ describe('scoring a watched mountain', () => {
       expect([days[0].skiHours.from, days[0].skiHours.to]).toEqual([9, 16]);
       expect(days.find((d) => d.date === '2026-11-23').status).not.toBe('closed');
       expect(days[0].notes.map((n) => n.code)).not.toContain('EX_LIFT_HOLD_CONFIRMED');
-      expect(days[0].confidence.reason.code).toBe('CR_STALE');
+      expect(days[0].confidence.reason.code).not.toBe('CR_STALE');
     });
   });
 
@@ -204,6 +204,34 @@ describe('scoring a watched mountain', () => {
     expect(nextDay.scored.days[0].date).toBe('2026-11-23');
     const aged = rescored(forecast, now + 7 * 3600e3);
     expect(aged.scored.days[0].confidence.reason.code).toBe('CR_STALE');
+  });
+
+  it('does not mark days Low for a model issued 11.5 hours ago when the copy was just fetched', async () => {
+    const live = { at: now, source: 'nws', summit: weather.summit, base: weather.base, ageHours: 11.5, stale: false, resolutionKm: 2.5 };
+    const out = await loadForecast(stowe, false, () => Promise.resolve(live), () => Promise.resolve({ id: 'stowe', assumed: true, closures: {}, liftHolds: [], grooming: [] }), now);
+    const near = out.scored.days.filter((d) => d.detail === 'hourly' && d.status === 'ok');
+    expect(near.length).toBeGreaterThan(0);
+    for (const d of near) {
+      expect(d.confidence.reason.code).not.toBe('CR_STALE');
+      expect(d.windowConfidence.reason.code).not.toBe('WR_STALE');
+    }
+    expect(out.serverStale).toBe(false);
+  });
+
+  it('marks a forecast the server served from its backup, and ignores the phone’s own offline fallback', async () => {
+    const served = { at: now, source: 'nws', summit: weather.summit, base: weather.base, ageHours: 14, stale: true };
+    const a = await loadForecast(stowe, false, () => Promise.resolve(served), () => Promise.resolve({ id: 'stowe', assumed: true, closures: {}, liftHolds: [], grooming: [] }), now);
+    expect(a.serverStale).toBe(true);
+    expect(a.scored.days[0].confidence.reason.code).toBe('CR_STALE');
+    const offline = await loadForecast(stowe, false, () => Promise.resolve({ ...served, stale: true, error: 'offline', ageHours: 1 }), () => Promise.resolve({ id: 'stowe', assumed: true, closures: {}, liftHolds: [], grooming: [] }), now);
+    expect(offline.serverStale).toBe(false);
+    expect(offline.scored.days[0].confidence.reason.code).not.toBe('CR_STALE');
+  });
+
+  it('asks the weather service for the backup copy only from Forecast', async () => {
+    const seen = [];
+    await loadForecast(stowe, false, (place, force, options) => { seen.push(options); return Promise.resolve({ at: now, summit: weather.summit, base: weather.base }); }, () => Promise.resolve({ id: 'stowe', assumed: true, closures: {}, liftHolds: [], grooming: [] }), now);
+    expect(seen).toEqual([{ allowStale: true }]);
   });
 
   it('never shows a day before today', () => {
@@ -227,8 +255,9 @@ describe('scoring a watched mountain', () => {
 
   it('uses broad time blocks for far days and exact hours near', () => {
     const days = scoreResort(stowe, weather, { now, at: now }).days;
-    const near = windowSummary({ ...days[0], daysAhead: 0, windowConfidence: { level: 'Medium' } });
-    const far = windowSummary({ ...days[0], daysAhead: 4 });
+    const near = windowSummary({ ...days[0], detail: 'hourly', windowConfidence: { level: 'Medium' } });
+    const far = windowSummary({ ...days[0], detail: 'windows' });
+    expect(windowSummary({ ...days[0], detail: 'range' }).kind).toBe('hidden');
     if (days[0].window) {
       expect(near.kind).toBe('exact');
       expect(far.kind).toBe('broad');

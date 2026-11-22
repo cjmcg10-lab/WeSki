@@ -1,4 +1,4 @@
-# Forecast scoring engine (version 1.3.0)
+# Forecast scoring engine (version 1.3.1)
 
 Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
@@ -37,8 +37,9 @@ const out = scoreForecast(resort, weather, opts);
 | `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
 | `history` | `{ summit, base }`, each `{ hourly }` in the weather's shape (optionally with `observed: boolean[]`): the hours before the forecast starts, as `GET /api/history/<id>` returns them. The engine ignores any hour at or after the first forecast hour, uses the last 72 valid ones, and carries the snow surface through them before the first forecast hour. Without it the surface starts clean (limited history) |
-| `ageHours` | Age of the forecast in hours, for the stale-source reason. Default: `weather.ageHours` |
-| `stale` | `true` when the forecast was served from the last good copy because no source answered. Default: `weather.stale`. Confidence is Low (`CR_STALE`) |
+| `ageHours` | Age in hours of the weather model's issue (when the source last updated). A loose signal only: NWS grids go 6 to 12 h between updates. 18 h or more caps confidence at Medium and 30 h or more makes it Low (`CR_STALE`). Default: `weather.ageHours` |
+| `fetchAgeHours` | Hours since the caller fetched this forecast (the phone's saved copy getting old). 6 or more is Low (`CR_STALE`). Never mixed with `ageHours`. Default: null |
+| `stale` | `true` when the backup was served because no source answered. Default: `weather.stale`. Confidence is Low (`CR_STALE`) |
 | `resolutionKm` | Nominal grid spacing of the weather model. Default: `weather.resolutionKm` |
 | `elevationMismatchM` | Largest gap in metres between the model grid's ground height and the resort's summit or base. Default: worked out from `weather.gridElevation` and `resort.top`/`resort.base`; null when the source does not say |
 
@@ -48,7 +49,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.3.0',
+  version: '1.3.1',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -157,9 +158,10 @@ Rated separately for the day and for the timing of its best window. Every thresh
 | --- | --- | --- |
 | One site estimate | Low | `CR_ONE_ESTIMATE` |
 | Some hours had only one site | Low | `CR_PARTIAL_SITES` |
-| `stale`, or `ageHours` of 6 or more | Low | `CR_STALE` `[hours]` |
+| `stale`, or `fetchAgeHours` of 6 or more, or `ageHours` of 30 or more | Low | `CR_STALE` `[hours]` |
 | 6 or more days ahead | Low | `CR_FAR_AHEAD` `[days]` |
 | Model ground height 1,000 m or more off the resort | Low | `CR_ELEVATION_MISMATCH` `[metres]` |
+| `ageHours` of 18 or more (under 30) | Medium | `CR_STALE` `[hours]` |
 | 3 to 5 days ahead | Medium | `CR_FAR_AHEAD` `[days]` |
 | Model ground height 500 m or more off the resort | Medium | `CR_ELEVATION_MISMATCH` `[metres]` |
 | Coarse grid (`resolutionKm` 8 or more: MET Norway's global model outside the Nordics and the USA) | Medium | `CR_COARSE_GRID` `[km]` |
@@ -169,7 +171,7 @@ Rated separately for the day and for the timing of its best window. Every thresh
 
 High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
 
-Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale` or `ageHours` of 6 or more → Low, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
+Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale`, `fetchAgeHours` of 6 or more or `ageHours` of 30 or more → Low, `WR_STALE` `[hours]`; `ageHours` of 18 or more → Medium, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
 
 ## Detail levels
 

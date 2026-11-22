@@ -113,6 +113,8 @@ export function dayExplanation(rows, drivers) {
 export const FAR_AHEAD_DAYS = 3;
 export const VERY_FAR_AHEAD_DAYS = 6;
 export const STALE_HOURS = 6;
+export const ISSUE_AGE_MEDIUM_HOURS = 18;
+export const ISSUE_AGE_LOW_HOURS = 30;
 export const SNOW_HISTORY_MIN_HOURS = 48;
 export const OBSERVED_MIN_HOURS = 24;
 export const COARSE_GRID_KM = 8;
@@ -121,12 +123,23 @@ export const ELEVATION_MISMATCH_LOW_M = 1000;
 
 const rated = (level, code, params = []) => ({ level, reason: { code, params } });
 
-export function dayConfidence({ single, partial, daysAhead, ageHours, stale = false, history = { hours: 0, observed: 0 }, resolutionKm = null, elevationMismatchM = null }) {
+/** `stale` (the backup was served) or a phone copy 6 h old is a problem (Low); the model's issue age is only a loose signal (18 h Medium, 30 h Low). */
+export function sourceAge({ stale = false, fetchAgeHours = null, ageHours = null }) {
+  if (stale) return { level: 'Low', hours: Math.round(Math.max(fetchAgeHours ?? 0, ageHours ?? 0)) };
+  if (fetchAgeHours != null && fetchAgeHours >= STALE_HOURS) return { level: 'Low', hours: Math.round(fetchAgeHours) };
+  if (ageHours != null && ageHours >= ISSUE_AGE_LOW_HOURS) return { level: 'Low', hours: Math.round(ageHours) };
+  if (ageHours != null && ageHours >= ISSUE_AGE_MEDIUM_HOURS) return { level: 'Medium', hours: Math.round(ageHours) };
+  return null;
+}
+
+export function dayConfidence({ single, partial, daysAhead, ageHours, fetchAgeHours = null, stale = false, history = { hours: 0, observed: 0 }, resolutionKm = null, elevationMismatchM = null }) {
   if (single) return rated('Low', 'CR_ONE_ESTIMATE');
   if (partial) return rated('Low', 'CR_PARTIAL_SITES');
-  if (stale || (ageHours != null && ageHours >= STALE_HOURS)) return rated('Low', 'CR_STALE', [Math.round(ageHours ?? 0)]);
+  const age = sourceAge({ stale, fetchAgeHours, ageHours });
+  if (age?.level === 'Low') return rated('Low', 'CR_STALE', [age.hours]);
   if (daysAhead >= VERY_FAR_AHEAD_DAYS) return rated('Low', 'CR_FAR_AHEAD', [daysAhead]);
   if (elevationMismatchM >= ELEVATION_MISMATCH_LOW_M) return rated('Low', 'CR_ELEVATION_MISMATCH', [Math.round(elevationMismatchM)]);
+  if (age) return rated('Medium', 'CR_STALE', [age.hours]);
   if (daysAhead >= FAR_AHEAD_DAYS) return rated('Medium', 'CR_FAR_AHEAD', [daysAhead]);
   if (elevationMismatchM >= ELEVATION_MISMATCH_MEDIUM_M) return rated('Medium', 'CR_ELEVATION_MISMATCH', [Math.round(elevationMismatchM)]);
   if (resolutionKm >= COARSE_GRID_KM) return rated('Medium', 'CR_COARSE_GRID', [resolutionKm]);
@@ -135,10 +148,12 @@ export function dayConfidence({ single, partial, daysAhead, ageHours, stale = fa
   return rated('High', 'CR_HISTORY_COVERED');
 }
 
-export function windowConfidence({ window, assumed, daysAhead, stale = false, ageHours, dayLevel }) {
+export function windowConfidence({ window, assumed, daysAhead, stale = false, ageHours, fetchAgeHours = null, dayLevel }) {
   if (!window) return rated('Low', 'WR_NO_WINDOW');
   if (daysAhead >= FAR_AHEAD_DAYS) return rated('Low', 'WR_TOO_FAR_AHEAD');
-  if (stale || (ageHours != null && ageHours >= STALE_HOURS)) return rated('Low', 'WR_STALE', [Math.round(ageHours ?? 0)]);
+  const age = sourceAge({ stale, fetchAgeHours, ageHours });
+  if (age?.level === 'Low') return rated('Low', 'WR_STALE', [age.hours]);
+  if (age) return rated('Medium', 'WR_STALE', [age.hours]);
   if (assumed) return rated('Medium', 'WR_HOURS_ASSUMED');
   return rated(dayLevel === 'High' && daysAhead <= 1 ? 'High' : 'Medium', 'WR_STABLE');
 }

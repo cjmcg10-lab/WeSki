@@ -32,6 +32,7 @@ export function elevationMismatch(resort, gridElevation) {
 function sourceInputs(resort, weather, opts) {
   return {
     ageHours: opts.ageHours ?? weather?.ageHours ?? null,
+    fetchAgeHours: opts.fetchAgeHours ?? null,
     stale: opts.stale ?? weather?.stale ?? false,
     resolutionKm: opts.resolutionKm ?? weather?.resolutionKm ?? null,
     elevationMismatchM: opts.elevationMismatchM ?? elevationMismatch(resort, weather?.gridElevation),

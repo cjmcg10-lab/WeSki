@@ -2,8 +2,8 @@ import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
 import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
-import { VIEW_KEY, loadList, saveList, add, has, sortRows, topPickId } from './watchlist.js';
-import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday } from './data.js';
+import { VIEW_KEY, loadList, saveList, add, sortRows, topPickId } from './watchlist.js';
+import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit'];
@@ -44,6 +44,8 @@ function current(resort) {
 }
 const rows = () => fc.list.map((resort) => { const e = current(resort); return { resort, entry: e, forecast: e.fc }; });
 const nextDay = (date) => { const d = new Date(`${date}T12:00:00Z`); d.setUTCDate(d.getUTCDate() + 1); return d.toISOString().slice(0, 10); };
+const canonicalId = (id) => fc.catalog?.getResort(id)?.id ?? id;
+const onList = (id) => fc.list.some((r) => canonicalId(r.id) === canonicalId(id));
 const dayOf = (forecast, date) => forecast?.scored?.days.find((d) => d.date === date);
 
 // ---------- units
@@ -141,6 +143,16 @@ const back = (act, label) => `<button class="fc-back" data-act="${act}">‹ ${t(
 
 const offlineBanner = () => (online() ? '' : `<div class="wx-note warn">${t('You’re offline. Showing saved forecasts.')}</div>`);
 
+function windowText(w) {
+  if (w.kind === 'exact') return fmtHourRange(w.start, w.end);
+  if (w.kind === 'broad') return t(w.block.label);
+  return w.kind === 'hidden' ? '' : t('Under 3 h of data');
+}
+
+const ageLine = (forecast) => (forecast.serverStale
+  ? t('Forecast is {0} h old: the weather service isn’t answering', Math.round(forecast.scored.inputs.ageHours ?? ageHoursOf(forecast.at)))
+  : ageText(ageHoursOf(forecast.at)));
+
 // ---------- S1 calendar
 function cellHtml(row, date) {
   const { resort, entry: e } = row;
@@ -155,9 +167,11 @@ function cellHtml(row, date) {
   if (day.status === 'insufficient') return plain('insuff', '–', t('Insufficient data'));
   const { shown, band, label: word } = bandOf(day.score);
   const w = windowSummary(day);
-  const winText = w.kind === 'exact' ? fmtHourRange(w.start, w.end) : w.kind === 'broad' ? t(w.block.label) : t('Under 3 h of data');
+  const winText = windowText(w);
   const level = CONF_LEVEL[day.confidence.level];
-  const aria = t('{0}, {1}: ski score {2}, {3}. Best window {4}. Confidence {5}.', label, long, shown, t(word), winText, t(day.confidence.level));
+  const aria = w.kind === 'hidden'
+    ? t('{0}, {1}: ski score {2}, {3}. Confidence {4}.', label, long, shown, t(word), t(day.confidence.level))
+    : t('{0}, {1}: ski score {2}, {3}. Best window {4}. Confidence {5}.', label, long, shown, t(word), winText, t(day.confidence.level));
   return `<td><button class="fc-cell b${band}" ${open} aria-label="${esc(aria)}"><span class="sc"><b>${shown}</b><span class="lb">${t(word)}</span></span><span class="win" aria-hidden="true">${esc(winText)}</span><span class="conf" aria-hidden="true">${bars(level)}${confWord(day.confidence.level, true)}</span></button></td>`;
 }
 
@@ -165,7 +179,7 @@ function rowHtml(row, dates, topId) {
   const { resort, entry: e } = row;
   const flash = fc.flash?.id === resort.id ? ` flash` : '';
   const newTag = fc.flash?.id === resort.id && fc.flash.isNew ? `<span class="tag fc-new">${t('New')}</span>` : '';
-  const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) ? ' old' : ''}">${ageText(ageHoursOf(row.forecast.at))}</small>` : '';
+  const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) || row.forecast.serverStale ? ' old' : ''}">${ageLine(row.forecast)}</small>` : '';
   const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.region)}</small>${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}</th>`;
   if (e.state === 'nodata') return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(unavailableText(resort))}</span></td></tr>`;
   if (e.state === 'error') {
@@ -189,7 +203,7 @@ export function sheetCalendar() {
   const shown = sortRows(all, sortDate);
   const topId = sortDate ? topPickId(all, sortDate) : null;
   const failedAll = all.length > 0 && all.every((r) => r.entry.state === 'error');
-  const todays = fc.list.map((r) => localToday(r.tz)).sort();
+  const todays = fc.list.filter((r) => r.tz).map((r) => localToday(r.tz)).sort();
   const dayLabel = (d) => (d === todays[0] ? t('Today') : d === nextDay(todays[0]) ? t('Tomorrow') : fmtWeekday(d));
   const head = dates.map((d) => `<th scope="col" aria-sort="${d === sortDate ? 'descending' : 'none'}"><button class="fc-datehead${d === sortDate ? ' on' : ''}" data-act="fc-sort" data-d="${d}"><span>${dayLabel(d)}</span><b>${fmtDayNumber(d)}</b><i aria-hidden="true">${d === sortDate ? '↓' : '↕'}</i></button></th>`).join('');
   const table = dates.length
@@ -276,23 +290,27 @@ function dayBody(resort, forecast, day) {
   if (day.status === 'insufficient') return `<div class="card fc-insuff"><h3>${t('Insufficient data')}</h3><p>${esc(codeText(day.insufficientReason, 'No explanation is available for this day.'))}</p></div>`;
   const { shown, band, label } = bandOf(day.score);
   const w = windowSummary(day);
-  const winText = w.kind === 'exact' ? fmtHourRange(w.start, w.end) : w.kind === 'broad' ? t(w.block.label) : t('Under 3 h of data');
+  const winText = windowText(w);
   const { from, to, assumed } = day.skiHours;
   const range = fmtHourRange(from, to);
   const cbox = (v, l) => `<div class="box cap"><b>${v}</b><span>${l}</span></div>`;
   const blocks = timeBlocks(day);
-  const detail = day.daysAhead >= 3
-    ? `<div class="card"><h3>${t('Time blocks')}</h3><p class="sub">${t('Hourly detail is less reliable this far ahead, so scores are shown in time blocks.')}</p><ul class="fc-blocks" role="list">${blocks.map((b) => { const s = bandOf(b.score); return `<li><b>${t(b.label)}</b><span>${esc(fmtHourRange(b.from, b.to))}</span><span>${s.shown} ${t(s.label)}</span></li>`; }).join('')}</ul></div>`
-    : `<div class="card"><h3>${t('Hourly scores')}</h3>${chartSvg(day)}<p class="fc-legend"><span aria-hidden="true">▲</span> ${t('Peak hour')} · <span aria-hidden="true">▬</span> ${t('Best window')}</p>${hourList(day)}</div>`;
+  const blockList = () => `<div class="card"><h3>${t('Time blocks')}</h3><p class="sub">${t('Hourly detail is less reliable this far ahead, so scores are shown in time blocks.')}</p><ul class="fc-blocks" role="list">${blocks.map((b) => { const s = bandOf(b.score); return `<li><b>${t(b.label)}</b><span>${esc(fmtHourRange(b.from, b.to))}</span><span>${s.shown} ${t(s.label)}</span>${day.broadWindow?.part === b.id ? tag('Best window') : ''}</li>`; }).join('')}</ul></div>`;
+  const hourly = () => `<div class="card"><h3>${t('Hourly scores')}</h3>${chartSvg(day)}<p class="fc-legend"><span aria-hidden="true">▲</span> ${t('Peak hour')} · <span aria-hidden="true">▬</span> ${t('Best window')}</p>${hourList(day)}</div>`;
+  const detail = day.detail === 'hourly' ? hourly() : day.detail === 'windows' ? blockList() : '';
+  const hidden = w.kind === 'hidden';
+  const boxes = [hidden ? '' : cbox(esc(winText), t('Best window')), day.detail === 'hourly' && day.peakHour ? cbox(esc(fmtHour(day.peakHour.hour)), t('Peak hour')) : '', cbox(esc(assumed ? t('Assumed {0}', range) : range), t('Ski hours'))].join('');
+  const statusOld = forecast.status && !forecast.status.assumed && isStale(statusAgeHours(forecast.status, Date.now()));
   return `
     <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
     <p class="fc-note">${esc(codeText(day.confidence.reason))}</p>
     ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(n))}</p>`).join('')}
-    <div class="boxes b3 fc-facts">${cbox(esc(winText), t('Best window'))}${cbox(day.peakHour ? `${esc(fmtHour(day.peakHour.hour))}` : '–', t('Peak hour'))}${cbox(esc(assumed ? t('Assumed {0}', range) : range), t('Ski hours'))}</div>
-    <p class="fc-note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>
+    ${statusOld ? `<p class="fc-notice">${t('Opening hours and closures are from an older check, so they are treated as assumed.')}</p>` : ''}
+    <div class="boxes b3 fc-facts">${boxes}</div>
+    ${hidden ? '' : `<p class="fc-note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>`}
     ${detail}
-    ${siteCard(resort, f, day)}`;
+    ${day.detail === 'hourly' || day.detail === 'windows' ? siteCard(resort, f, day) : ''}`;
 }
 
 export function sheetDay(arg) {
@@ -311,7 +329,7 @@ export function sheetDay(arg) {
   else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load this day. Check your connection and try again.') : t('This day isn’t saved on this device. It will load when you’re back online.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
   else body = dayBody(resort, forecast, dayOf(forecast, arg.date));
   const hours = forecast ? ageHoursOf(forecast.at) : 0;
-  const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageText(hours)}</b>${isStale(hours) ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
+  const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageLine(forecast)}</b>${isStale(hours) || forecast.serverStale ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
   return [resort.name, `${back('fc-home', 'Forecast')}${offlineBanner()}
     <p class="fc-dateline"><b>${esc(fmtLongDate(arg.date))}</b><br><span class="sub">${esc(t('Times are local to the mountain ({0}).', resort.tz))}</span></p>
     ${missingNotes(resort).map((n) => `<p class="fc-note">${esc(n)}</p>`).join('')}${stepper}${body}${foot}`, false];
@@ -329,8 +347,8 @@ function resultsHtml() {
     const full = resortFor(fc.catalog, r.id);
     const notes = full ? [...missingNotes(full), ...(canForecast(full) ? [] : [unavailableText(full)])] : [];
     const alias = r.match && r.match.field !== 'name' ? `<small translate="no">${esc(t('Also known as “{0}”', r.match.text))}</small>` : '';
-    const added = fc.added.includes(r.id), onList = has(fc.list, r.id) && !added;
-    const control = onList
+    const added = fc.added.includes(r.id), listed = onList(r.id) && !added;
+    const control = listed
       ? `<span class="sub">${t('On your list')}</span><button class="btn sm alt" data-act="fc-show" data-r="${esc(r.id)}" aria-label="${esc(t('Show {0} on the calendar', label))}">${t('Show')}</button>`
       : added
         ? `<span class="sub">${t('Added')}</span><button class="btn sm alt" data-act="fc-unadd" data-r="${esc(r.id)}" aria-label="${esc(t('Remove {0}', label))}">${t('Remove')}</button>`
@@ -367,7 +385,7 @@ function persist() {
 
 function addResort(id) {
   const resort = fc.catalog ? resortFor(fc.catalog, id) : null;
-  if (!resort) return;
+  if (!resort || onList(resort.id)) return;
   const next = add(fc.list, resort);
   const before = fc.list;
   fc.list = next;
