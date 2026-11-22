@@ -240,11 +240,12 @@ body.flying #topbar, body.flying #fabs, body.flying #tabs, body.flying #navbar, 
   --chip: rgba(10, 24, 38, .7); --seg-on: rgba(62, 230, 196, .22); --muted: #9fb2c4;
 }
 :root[data-theme="light"] {
-  --teal: #16b393; --teal2: #0e9b7e; --teal-ink: #ffffff; --teal-soft: rgba(22, 179, 147, .14);
+  --teal: #00715c; --teal2: #005f4d; --teal-ink: #ffffff; --teal-soft: rgba(0, 113, 92, .12);
   --edge: rgba(30, 70, 110, .16); --edge2: rgba(30, 70, 110, .3);
   --panel: linear-gradient(180deg, #ffffff 0%, #f3f6fa 100%);
-  --card: #ffffff; --card2: #ffffff; --bg: #f3f6fa; --head: #12202e; --cap: #4f6a84; --chip: #e7edf3; --seg-on: rgba(22, 179, 147, .2);
+  --card: #ffffff; --card2: #ffffff; --bg: #f3f6fa; --head: #12202e; --cap: #4f6a84; --chip: #e7edf3; --seg-on: rgba(0, 113, 92, .16);
 }
+:root[data-theme="light"] #start { --teal: #3ee6c4; --teal2: #22c9a8; --teal-ink: #04261f; --teal-soft: rgba(62, 230, 196, .16); --seg-on: rgba(62, 230, 196, .22); }
 
 /* header */
 #headbg { position: absolute; top: 0; left: 0; right: 0; height: calc(var(--sat) + 74px); z-index: 4; pointer-events: none;
