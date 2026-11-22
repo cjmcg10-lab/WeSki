@@ -25,32 +25,44 @@
   "flags"
  ],
  "countries": {
-  "NZ": "New Zealand",
+  "JP": "Japan",
   "FR": "France",
   "US": "United States",
-  "AR": "Argentina",
-  "CZ": "Czechia",
-  "CH": "Switzerland",
-  "CL": "Chile",
-  "AU": "Australia",
   "CA": "Canada",
-  "JP": "Japan",
+  "CL": "Chile",
+  "CZ": "Czechia",
+  "FI": "Finland",
+  "AU": "Australia",
+  "NO": "Norway",
+  "AR": "Argentina",
+  "CH": "Switzerland",
+  "NZ": "New Zealand",
   "AT": "Austria"
  },
  "tz": [
   "America/Argentina/Salta",
   "America/Denver",
+  "America/Los_Angeles",
   "America/New_York",
   "America/Santiago",
   "America/Toronto",
   "Asia/Tokyo",
+  "Australia/Melbourne",
   "Australia/Sydney",
+  "Europe/Helsinki",
+  "Europe/Oslo",
   "Europe/Paris",
   "Europe/Prague",
+  "Europe/Vienna",
   "Europe/Zurich",
-  "Pacific/Auckland",
-  "Europe/Vienna"
+  "Pacific/Auckland"
  ],
+ "idAliases": {
+  "osd-2c88b829f47e39a1ec21f81e37abb7d5b668": "osd-24ab41e1438aff639aa8ef5ad91c3e187e2f",
+  "osd-320399283a80967e546c20333d2abd884201": "osd-6ff3d800655f463f2ea8d24980630b01000c",
+  "osd-e1a32fce69402dd1c018c22b0216990d0775": "jay-peak",
+  "osd-fc76f378a2f19efc5228c60d97c895dde82a": "zermatt"
+ },
  "rows": [
   [
    "jay-peak",
@@ -67,7 +79,7 @@
    -72.5008,
    1166,
    560,
-   2,
+   3,
    8
   ],
   [
@@ -88,7 +100,7 @@
    7.624,
    3874,
    1558,
-   9,
+   14,
    8
   ],
   [
@@ -104,7 +116,7 @@
    -70.1365,
    3346,
    2578,
-   3,
+   4,
    0
   ],
   [
@@ -122,7 +134,7 @@
    168.8153,
    1986,
    1607,
-   10,
+   15,
    0
   ],
   [
@@ -140,7 +152,7 @@
    148.4073,
    2037,
    1604,
-   6,
+   8,
    0
   ],
   [
@@ -174,7 +186,7 @@
    15.5925,
    1233,
    693,
-   8,
+   12,
    0
   ],
   [
@@ -193,7 +205,7 @@
    140.6285,
    789,
    340,
-   5,
+   6,
    0
   ],
   [
@@ -211,7 +223,7 @@
    137.8388,
    1827,
    749,
-   5,
+   6,
    0
   ],
   [
@@ -229,7 +241,7 @@
    -77.6,
    null,
    108,
-   4,
+   5,
    5
   ],
   [
@@ -249,7 +261,7 @@
    6.9185,
    1501,
    1347,
-   7,
+   11,
    0
   ],
   [
@@ -269,7 +281,7 @@
    6.8676,
    2486,
    1047,
-   7,
+   11,
    0
   ],
   [
@@ -303,7 +315,114 @@
    13.7796,
    2004,
    723,
-   11,
+   13,
+   0
+  ],
+  [
+   "osd-6ff3d800655f463f2ea8d24980630b01000c",
+   "Levin hiihtokeskus",
+   [
+    "Levi Ski Resort",
+    "Levi"
+   ],
+   [
+    "Sirkka"
+   ],
+   "Lapland",
+   "FI",
+   67.7844,
+   24.8555,
+   67.7989,
+   24.8735,
+   530,
+   197,
+   9,
+   0
+  ],
+  [
+   "osd-24ab41e1438aff639aa8ef5ad91c3e187e2f",
+   "Trysil",
+   [],
+   [],
+   "Innlandet",
+   "NO",
+   61.3085,
+   12.1695,
+   61.3281,
+   12.2222,
+   1109,
+   407,
+   10,
+   0
+  ],
+  [
+   "osd-66e672470add74c3e6a2bd8d4c1bb07cc472",
+   "St. Anton/St. Christoph/Stuben",
+   [],
+   [
+    "St Anton am Arlberg"
+   ],
+   "Vorarlberg",
+   "AT",
+   47.1576,
+   10.213,
+   47.1347,
+   10.273,
+   2805,
+   1282,
+   13,
+   0
+  ],
+  [
+   "osd-6bf3bc3c072614f9516e18f26c1ad951ad14",
+   "St. Antönien",
+   [],
+   [
+    "St. Antönien"
+   ],
+   "Graubunden",
+   "CH",
+   46.9747,
+   9.7959,
+   46.9683,
+   9.8102,
+   1652,
+   1402,
+   14,
+   0
+  ],
+  [
+   "osd-fa08874099e7e3e2ae78ebd0e5a4c842d080",
+   "Mount Buller",
+   [],
+   [
+    "Mount Buller"
+   ],
+   "Victoria",
+   "AU",
+   -37.1441,
+   146.4282,
+   -37.1544,
+   146.4379,
+   1777,
+   1396,
+   7,
+   0
+  ],
+  [
+   "osd-effda1f2db54d33bc3770670cd4335bd56a4",
+   "Mt. Hood Meadows Ski Resort",
+   [],
+   [],
+   "Oregon",
+   "US",
+   45.3494,
+   -121.6818,
+   45.3255,
+   -121.6429,
+   2227,
+   1380,
+   2,
    0
   ]
  ]

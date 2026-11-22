@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { catalogFromIndex, loadCatalog, normalise } from '../src/forecast/catalog.js';
+import { catalogFromIndex, loadCatalog, normalise, forecastPoints } from '../src/forecast/catalog.js';
 
 const readJson = (url) => JSON.parse(readFileSync(new URL(url, import.meta.url), 'utf8'));
 const fixture = (name) => readJson(`./fixtures/forecast/${name}.json`);
@@ -51,6 +51,59 @@ describe('search ranking', () => {
     const many = synthetic(Array.from({ length: 30 }, (_, i) => row(`m-${i}`, `Maple ${i}`)));
     expect(many.search('maple')).toHaveLength(20);
     expect(many.search('maple', { limit: 5 })).toHaveLength(5);
+  });
+});
+
+describe('duplicates and word forms', () => {
+  const LEVIN = 'osd-6ff3d800655f463f2ea8d24980630b01000c';
+  const OLD_LEVI = 'osd-320399283a80967e546c20333d2abd884201';
+  const TRYSIL = 'osd-24ab41e1438aff639aa8ef5ad91c3e187e2f';
+  const OLD_TRYSIL = 'osd-2c88b829f47e39a1ec21f81e37abb7d5b668';
+
+  it('puts the real resort first when its empty duplicate was folded in as an alias', () => {
+    const hits = catalog().search('levi');
+    expect(hits[0]).toMatchObject({ id: LEVIN, name: 'Levin hiihtokeskus', match: { field: 'alias', text: 'Levi' } });
+    expect(catalog().getResort(OLD_LEVI)).toMatchObject({ id: LEVIN, top: 530, missing: [] });
+  });
+
+  it('returns one Trysil and resolves the folded id to it', () => {
+    expect(ids(catalog().search('trysil'))).toEqual([TRYSIL]);
+    expect(catalog().getResort(OLD_TRYSIL).id).toBe(TRYSIL);
+  });
+
+  it('ranks a resort with missing heights or approximate points below a complete one in the same tier', () => {
+    const flagged = (id, name, flags) => [id, name, [], [], 'Region', 'US', 40, -111, 40, -111, flags & 1 ? null : 2000, 1000, 0, flags];
+    const c = synthetic([flagged('a-empty', 'Pine Hill', 5), flagged('b-complete', 'Pine Mountain', 0), flagged('c-exact-empty', 'Pine', 1)]);
+    expect(ids(c.search('pine'))).toEqual(['c-exact-empty', 'b-complete', 'a-empty']);
+  });
+
+  it('treats Mt and Mount, and St, Saint and Sankt, as the same word on both sides', () => {
+    const c = catalog();
+    expect(normalise('St. Anton')).toBe(normalise('Sankt Anton'));
+    expect(c.search('mt buller')[0].name).toBe('Mount Buller');
+    expect(c.search('mount buller')[0].name).toBe('Mount Buller');
+    expect(c.search('mount hood meadows')[0].name).toBe('Mt. Hood Meadows Ski Resort');
+    expect(c.search('mt hood')[0].name).toBe('Mt. Hood Meadows Ski Resort');
+  });
+
+  it('ranks a whole-word match above a mid-word prefix, for every spelling of Saint', () => {
+    for (const q of ['st anton', 'sankt anton', 'saint anton', 'St. Anton']) {
+      expect(catalog().search(q).map((h) => h.name).slice(0, 2), q).toEqual(['St. Anton/St. Christoph/Stuben', 'St. Antönien']);
+    }
+  });
+
+  it('keeps a half-typed abbreviation matching names that start with those letters', () => {
+    const c = synthetic([row('a', 'Stowe'), row('b', 'St. Anton'), row('c', 'Sankt Moritz'), row('d', 'Whistler')]);
+    expect(ids(c.search('st')).sort()).toEqual(['a', 'b', 'c']);
+  });
+});
+
+describe('forecastPoints', () => {
+  it('falls back to the other height when one is missing and gives up when both are', () => {
+    const batawa = catalog().getResort('osd-001ec7c57bf7ee15d967293b14f9ba8dcf5c');
+    expect(forecastPoints(batawa)).toMatchObject({ top: 108, base: 108 });
+    expect(forecastPoints({ ...batawa, base: null })).toBeNull();
+    expect(forecastPoints(null)).toBeNull();
   });
 });
 
@@ -167,6 +220,15 @@ describe('the committed catalog', () => {
       expect(c.getResort(b.id), b.id).toMatchObject({ id: b.id, tz: b.tz, top: Math.round(b.top), base: Math.round(b.base), hasMap: true, missing: [] });
     }
     expect(c.search('jay peak')[0].id).toBe('jay-peak');
+  });
+
+  it('points every id alias at a resort in the catalog', () => {
+    const known = new Set(full.rows.map((r) => r[0]));
+    for (const [old, now] of Object.entries(full.idAliases)) {
+      expect(known.has(old), old).toBe(false);
+      expect(known.has(now), now).toBe(true);
+    }
+    expect(c.getResort('osd-e1a32fce69402dd1c018c22b0216990d0775').id).toBe('jay-peak');
   });
 
   it('gives every resort an id the server routes accept and a time zone', () => {

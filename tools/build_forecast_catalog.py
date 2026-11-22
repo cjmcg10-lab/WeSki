@@ -14,6 +14,9 @@ FIELDS = ["id", "name", "aliases", "towns", "region", "cc", "lat", "lon", "baseL
 F_TOP_MISSING, F_BASE_MISSING, F_APPROX, F_HAS_MAP, F_STATUS_UNKNOWN = 1, 2, 4, 8, 16
 SECTOR_LINK_M = 1500
 MAX_SECTORS = 8
+FOLD_RADIUS_M = 5000
+SAME_NAME_FOLD_RADIUS_M = 15000
+MAX_ALIASES = 8
 VERTICAL_MIN_M, VERTICAL_MAX_M = 5, 2800
 DEM_TOLERANCE_M = 150
 DEM_URL = "/vsicurl/https://copernicus-dem-30m.s3.amazonaws.com/{t}/{t}.tif"
@@ -202,9 +205,51 @@ def best_match(built, records):
     return best
 
 
+def host_of(url):
+    return fold(url or "").replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]
+
+
+def all_names(rec):
+    return [rec["name"], *rec["aliases"]]
+
+
+def fold_liftless(records):
+    lifted = [r for r in records if r["src"].get("base") == "lifts"]
+    folded = {}
+    for rec in records:
+        if "no_lifts" not in rec["flags"]:
+            continue
+        own_tokens = set().union(*(tokens(n) for n in all_names(rec)))
+        best = None
+        for other in lifted:
+            if abs(other["lat"] - rec["lat"]) * 111_320 > SAME_NAME_FOLD_RADIUS_M:
+                continue
+            near = min(metres(rec["lat"], rec["lon"], p["lat"], p["lon"]) for p in (other["base"], other["top"], other))
+            same_name = {fold(n) for n in all_names(rec)} & {fold(n) for n in all_names(other)}
+            if near > (SAME_NAME_FOLD_RADIUS_M if same_name else FOLD_RADIUS_M):
+                continue
+            shared = len(own_tokens & set().union(*(tokens(n) for n in all_names(other))))
+            same_site = bool(rec["website"]) and host_of(rec["website"]) == host_of(other["website"])
+            if not shared and not same_site:
+                continue
+            key = (shared + (2 if same_site else 0), -near)
+            if best is None or key > best[0]:
+                best = (key, other)
+        if best:
+            target = best[1]
+            known = {fold(n) for n in all_names(target)}
+            for name in all_names(rec):
+                if fold(name) not in known:
+                    known.add(fold(name))
+                    target["aliases"].append(name)
+            target["aliases"] = target["aliases"][:MAX_ALIASES]
+            folded[rec["id"]] = target["id"]
+    return [r for r in records if r["id"] not in folded], folded
+
+
 def merge_built(records, built_rows):
     by_id = {r["id"]: r for r in records}
-    absorbed, report = set(), []
+    absorbed, report, folds = set(), [], {}
     for row in built_rows:
         match = best_match(row, [r for r in by_id.values() if r["id"] not in absorbed])
         rec = {
@@ -218,6 +263,7 @@ def merge_built(records, built_rows):
         if match:
             _, area, near, sim = match
             absorbed.add(area["id"])
+            folds[area["id"]] = row["id"]
             rec.update(osd=area["osd"], aliases=[a for a in area["aliases"] + [area["name"]] if fold(a) != fold(row["name"])][:6],
                        towns=area["towns"], region=area["region"], country=area["country"], cc=area["cc"],
                        website=area["website"], sectors=area["sectors"])
@@ -227,6 +273,7 @@ def merge_built(records, built_rows):
                 other_sim = len(tokens(other["name"]) & tokens(row["name"])) / max(1, min(len(tokens(other["name"])), len(tokens(row["name"]))))
                 if other_sim >= 0.99 and tokens(other["name"]):
                     absorbed.add(other["id"])
+                    folds[other["id"]] = row["id"]
                     rec["aliases"] = (rec["aliases"] + [other["name"]])[:6]
             report.append((row["id"], area["name"], round(near), round(sim, 2)))
         else:
@@ -235,7 +282,7 @@ def merge_built(records, built_rows):
             rec["flags"].append("no_osd_match")
             report.append((row["id"], None, None, 0))
         by_id[row["id"]] = rec
-    return [r for r in by_id.values() if r["id"] not in absorbed], report
+    return [r for r in by_id.values() if r["id"] not in absorbed], report, folds
 
 
 def attach_zones(records):
@@ -258,30 +305,41 @@ def tile_name(lat, lon):
 def sample_tile(tile, pts):
     import rasterio
     out = {}
+    error = None
     try:
         with rasterio.Env(GDAL_HTTP_USERAGENT="weski-build", GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", CPL_VSIL_CURL_ALLOWED_EXTENSIONS=".tif"):
             with rasterio.open(DEM_URL.format(t=tile)) as ds:
                 for key, lat, lon in pts:
                     v = float(next(ds.sample([(lon, lat)]))[0])
                     out[key] = None if v == ds.nodata or v < -500 else round(v)
-    except Exception:
-        for key, _, _ in pts:
-            out[key] = None
-    return out
+    except Exception as exc:
+        error = f"{tile}: {type(exc).__name__}"
+        out = {}
+    return out, error
+
+
+def coord_key(lat, lon):
+    return f"{lat:.4f},{lon:.4f}"
 
 
 def dem_elevations(wanted, cache_path):
     cache = json.load(open(cache_path)) if cache_path and os.path.exists(cache_path) else {}
-    todo = defaultdict(list)
-    for key, lat, lon in wanted:
-        if key not in cache:
-            todo[tile_name(lat, lon)].append((key, lat, lon))
+    todo = defaultdict(dict)
+    for _, lat, lon in wanted:
+        ck = coord_key(lat, lon)
+        if ck not in cache:
+            todo[tile_name(lat, lon)][ck] = (ck, lat, lon)
+    errors = []
     with ThreadPoolExecutor(8) as pool:
-        for result in pool.map(lambda kv: sample_tile(*kv), todo.items()):
+        for result, error in pool.map(lambda kv: sample_tile(kv[0], list(kv[1].values())), todo.items()):
             cache.update(result)
+            if error:
+                errors.append(error)
+    if errors:
+        print(f"WARNING: {len(errors)} of {len(todo)} elevation tiles failed and were not cached: {', '.join(errors[:5])}", file=sys.stderr)
     if cache_path:
         json.dump(cache, open(cache_path, "w"))
-    return {k: cache.get(k) for k, _, _ in wanted}
+    return {k: cache.get(coord_key(lat, lon)) for k, lat, lon in wanted}
 
 
 def vertical_bad(rec):
@@ -359,8 +417,38 @@ def continent(rec):
     return {"Europe": "Europe", "Asia": "Asia", "Australia": "Oceania", "Pacific": "Oceania", "Africa": "Africa", "Atlantic": "Europe", "Antarctica": "Antarctica"}.get(prefix, "Unknown")
 
 
-def write_outputs(records, out, source):
-    os.makedirs(os.path.join(out, "detail"), exist_ok=True)
+def resolve_folds(folds, ids):
+    resolved = {}
+    for old, new in folds.items():
+        while new in folds:
+            new = folds[new]
+        if new in ids and new != old:
+            resolved[old] = new
+    return resolved
+
+
+def check_published_ids(path, ids, aliases, allow_loss):
+    previous = json.load(open(path)) if os.path.exists(path) else {"ids": [], "id_aliases": {}}
+    manual = previous.get("id_aliases", {})
+    for old, new in manual.items():
+        if new not in ids:
+            sys.exit(f"id_aliases in {path} points {old} at {new}, which is not in the catalog")
+    merged = {**aliases, **manual}
+    lost = sorted(i for i in previous["ids"] if i not in ids and i not in merged)
+    if lost:
+        message = f"{len(lost)} previously published ids are gone and have no id_aliases entry: {', '.join(lost[:10])}"
+        if not allow_loss:
+            sys.exit(f"{message}. Add them to id_aliases in {path} or pass --allow-id-loss")
+        print(f"WARNING: {message}", file=sys.stderr)
+    json.dump({"ids": sorted(ids), "id_aliases": manual}, open(path, "w"), indent=0, ensure_ascii=False)
+    return {old: new for old, new in merged.items() if old not in ids}
+
+
+def write_outputs(records, out, source, id_aliases):
+    detail_dir = os.path.join(out, "detail")
+    os.makedirs(detail_dir, exist_ok=True)
+    for stale in os.listdir(detail_dir):
+        os.remove(os.path.join(detail_dir, stale))
     records.sort(key=lambda r: r["id"])
     zones = sorted({r["tz"] for r in records if r["tz"]})
     zone_ix = {z: i for i, z in enumerate(zones)}
@@ -372,7 +460,7 @@ def write_outputs(records, out, source):
             r["id"], r["name"], r["aliases"], r["towns"], r["region"], r["cc"], t["lat"], t["lon"],
             b["lat"], b["lon"], t["elev"], b["elev"], zone_ix.get(r["tz"]), flag_bits(r),
         ])
-    index = {"v": 1, "source": source, "fields": FIELDS, "countries": countries, "tz": zones, "rows": rows}
+    index = {"v": 1, "source": source, "fields": FIELDS, "countries": countries, "tz": zones, "idAliases": dict(sorted(id_aliases.items())), "rows": rows}
     index_path = os.path.join(out, "catalog-index.json")
     json.dump(index, open(index_path, "w", encoding="utf-8"), ensure_ascii=False, separators=(",", ":"))
     shards = defaultdict(dict)
@@ -401,6 +489,8 @@ def main():
     ap.add_argument("--no-dem", action="store_true", help="skip the Copernicus GLO-30 cross-check")
     ap.add_argument("--audit", type=int, default=150, help="extra resorts whose lift elevations are checked against GLO-30 as a random sample")
     ap.add_argument("--seed", type=int, default=4)
+    ap.add_argument("--ids-file", default="tools/forecast_catalog_ids.json", help="published ids and manual id_aliases {old: new}")
+    ap.add_argument("--allow-id-loss", action="store_true", help="only print a warning when a published id disappears")
     args = ap.parse_args()
 
     areas = load_areas(args.areas)
@@ -410,14 +500,17 @@ def main():
     if len(set(ids)) != len(ids):
         sys.exit("duplicate catalog ids after prefixing")
     built_rows = json.load(open(args.index, encoding="utf-8"))
-    records, matches = merge_built(records, built_rows)
+    records, liftless_folds = fold_liftless(records)
+    records, matches, built_folds = merge_built(records, built_rows)
+    final_ids = {r["id"] for r in records}
+    id_aliases = check_published_ids(args.ids_file, final_ids, resolve_folds({**liftless_folds, **built_folds}, final_ids), args.allow_id_loss)
     attach_zones(records)
     stats = Counter() if args.no_dem else cross_check(records, args.dem_cache, args.audit, args.seed)
     source = {
         "name": "OpenSkiData / OpenSkiMap.org", "url": "https://openskidata.org", "licence": "ODbL 1.0 (OpenStreetMap contributors), Skimap.org",
         "dataDate": args.data_date, "elevationCheck": "Copernicus GLO-30", "timeZones": "timezonefinder 9.2.0",
     }
-    path = write_outputs(records, args.out, source)
+    path = write_outputs(records, args.out, source, id_aliases)
 
     both = sum(1 for r in records if r["src"]["base"] in ("lifts", "lifts+glo30", "glo30", "built") and r["src"]["top"] in ("lifts", "lifts+glo30", "glo30", "built") and "approximate_points" not in r["flags"])
     summary = {
@@ -426,7 +519,7 @@ def main():
         "missingTop": sum(1 for r in records if r["top"]["elev"] is None), "missingBase": sum(1 for r in records if r["base"]["elev"] is None),
         "approximatePoints": sum(1 for r in records if "approximate_points" in r["flags"]), "noTimeZone": sum(1 for r in records if not r["tz"]),
         "indexBytes": os.path.getsize(path), "indexGzipBytes": gz_size(path), "demCheck": dict(stats),
-        "builtMatches": matches,
+        "builtMatches": matches, "foldedLiftless": len(liftless_folds), "idAliases": len(id_aliases),
     }
     detail_dir = os.path.join(args.out, "detail")
     summary["detailBytes"] = sum(os.path.getsize(os.path.join(detail_dir, f)) for f in os.listdir(detail_dir))
