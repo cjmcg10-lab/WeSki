@@ -772,3 +772,4 @@ textarea.field { resize: vertical; font: inherit; }
 .fc-tod { margin: 6px 0; }
 @media (min-width: 700px) { .fc-scroll { max-height: 62vh; } #sheet.tall { max-width: 760px; margin: 0 auto; } }
 .fc-facts .box.cap b { font-size: 17px; white-space: normal; overflow-wrap: anywhere; line-height: 1.15; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+.fc-notice { margin: 6px 0; padding: 8px 12px; border-radius: 11px; background: var(--warn-bg); color: var(--warn-ink); font-size: 14px; font-weight: 600; }

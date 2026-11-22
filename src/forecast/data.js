@@ -1,5 +1,7 @@
 import { scoreForecast, roundHalfUp } from './score/index.js';
 import { loadWeather } from '../weather.js';
+import { prefs } from '../store.js';
+import { loadResortStatus, statusToScoreOpts } from './status.js';
 
 const HOUR_MS = 3600e3;
 const STALE_HOURS = 6;
@@ -12,18 +14,26 @@ export const ageHoursOf = (at, now = Date.now()) => Math.max(0, (now - at) / HOU
 
 export const isStale = (hours) => hours >= STALE_HOURS;
 
-export function scoreResort(resort, weather, { now = Date.now(), at = now, hours, closures } = {}) {
+export function scoreResort(resort, weather, { now = Date.now(), at = now, status } = {}) {
   const first = (weather?.base?.hourly?.time ?? weather?.summit?.hourly?.time ?? [])[0]?.slice(0, 10);
   const local = localToday(resort.tz, now);
   const today = first && local < first ? first : local;
-  const out = scoreForecast(resort, weather, { today, ageHours: ageHoursOf(at, now), hours, closures });
+  const out = scoreForecast(resort, weather, { ...statusToScoreOpts(status), today, ageHours: ageHoursOf(at, now) });
   return { ...out, days: out.days.filter((d) => d.date >= today) };
 }
 
-export async function loadForecast(resort, force = false, loader = loadWeather) {
-  const w = await loader(resort, force);
+const statusKey = (id) => `fcStatus:${id}`;
+
+export async function loadStatusSaved(resort, loader = loadResortStatus) {
+  const fresh = await loader(resort);
+  if (!fresh.assumed) { prefs.set(statusKey(resort.id), fresh); return fresh; }
+  return prefs.get(statusKey(resort.id), null) ?? fresh;
+}
+
+export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved) {
+  const [w, status] = await Promise.all([loader(resort, force), statusLoader(resort)]);
   const weather = { summit: w.summit, base: w.base };
-  return { resort, at: w.at, source: w.source, stale: !!w.stale, weather, scored: scoreResort(resort, weather, { at: w.at }) };
+  return { resort, at: w.at, source: w.source, stale: !!w.stale, weather, status, scored: scoreResort(resort, weather, { at: w.at, status }) };
 }
 
 export function columnDates(forecasts, count = 7) {

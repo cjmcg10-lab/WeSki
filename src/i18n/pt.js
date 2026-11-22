@@ -353,4 +353,9 @@ export default {
   960: 'Manhã',
   961: 'Meio-dia',
   962: 'Tarde',
+  963: 'O tempo quente amolece a neve.',
+  964: 'É provável que chova em toda a montanha.',
+  965: 'A estação confirmou {0} paralisação(ões) de elevadores para este dia.',
+  966: 'Este dia está fora da temporada publicada da estação.',
+  967: 'Quente demais',
 };

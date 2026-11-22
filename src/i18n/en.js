@@ -859,4 +859,9 @@ export default {
   960: 'Morning',
   961: 'Midday',
   962: 'Afternoon',
+  963: 'Warm weather softens the snow.',
+  964: 'Rain is likely across the whole mountain.',
+  965: 'The resort has confirmed {0} lift hold(s) for this day.',
+  966: 'This day is outside the resort’s published season.',
+  967: 'Too warm',
 };

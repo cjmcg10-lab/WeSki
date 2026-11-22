@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import EN from '../src/i18n/en.js';
 import { toResort, searchResorts, sameName, loadCatalog } from '../src/forecast/resorts.js';
 import { add, remove, move, insertAt, has, cleanList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
-import { scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
+import { loadForecast, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
 import { ageText, CODE_TEXT } from '../src/forecast/text.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
@@ -126,6 +126,24 @@ describe('scoring a watched mountain', () => {
     expect(old.confidence.reason.code).toBe('CR_STALE');
   });
 
+  it('uses published hours, a confirmed closure and the out-of-season note from the resort status', () => {
+    const status = { id: 'stowe', hours: { from: 8, to: 15 }, closures: { '2026-11-23': { code: 'EX_COLD', params: [] } }, liftHolds: [{ lift: 'Gondola', status: 'delayed', date: '2026-11-22' }], season: { open: null, close: null, state: 'closed_for_season' }, grooming: [], assumed: false };
+    const days = scoreResort(stowe, weather, { now, at: now, status }).days;
+    expect(days[0].skiHours.assumed).toBe(false);
+    expect([days[0].skiHours.from, days[0].skiHours.to]).toEqual([8, 15]);
+    expect(days.find((d) => d.date === '2026-11-23').status).toBe('closed');
+    expect(days[0].notes.map((n) => n.code)).toEqual(expect.arrayContaining(['EX_LIFT_HOLD_CONFIRMED', 'NT_OUT_OF_SEASON']));
+    expect(scoreResort(stowe, weather, { now, at: now }).days[0].skiHours.assumed).toBe(true);
+  });
+
+  it('keeps the last real status when a refresh falls back to assumed', async () => {
+    const real = { id: 'stowe', hours: { from: 9, to: 16 }, closures: {}, liftHolds: [], grooming: [], season: null, assumed: false };
+    const loadWx = () => Promise.resolve({ at: now, source: 'nws', summit: weather.summit, base: weather.base });
+    const first = await loadForecast(stowe, false, loadWx, () => Promise.resolve(real));
+    expect(first.status).toBe(real);
+    expect(first.scored.days[0].skiHours.assumed).toBe(false);
+  });
+
   it('never shows a day before today', () => {
     const later = Date.parse('2026-11-24T17:00:00Z');
     expect(scoreResort(stowe, weather, { now: later, at: later }).days[0].date).toBe('2026-11-24');
@@ -221,10 +239,7 @@ describe('forecast text is translated', () => {
   });
 
   it('covers every code the scoring engine can return', async () => {
-    const codes = await import('../src/forecast/score/codes.js');
-    const all = [...(codes.ALL_CODES ?? [])];
-    expect(all.length).toBeGreaterThan(0);
-    const unmapped = all.filter((c) => !(c in CODE_TEXT) && !/^(none|F_|EX_|CR_|WR_|IR_)/.test(c));
-    expect(unmapped.filter((c) => /^(precip|surf)\./.test(c))).toEqual([]);
+    const { ALL_CODES } = await import('../src/forecast/score/codes.js');
+    expect(ALL_CODES.filter((c) => !(c in CODE_TEXT))).toEqual([]);
   });
 });

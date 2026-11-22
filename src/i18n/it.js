@@ -353,4 +353,9 @@ export default {
   960: 'Mattina',
   961: 'Mezzogiorno',
   962: 'Pomeriggio',
+  963: 'Il tempo caldo ammorbidisce la neve.',
+  964: 'È probabile pioggia su tutta la montagna.',
+  965: 'Il comprensorio ha confermato {0} sospensione/i degli impianti per questo giorno.',
+  966: 'Questo giorno è fuori dalla stagione pubblicata del comprensorio.',
+  967: 'Troppo caldo',
 };

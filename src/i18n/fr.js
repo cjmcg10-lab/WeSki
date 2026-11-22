@@ -353,4 +353,9 @@ export default {
   960: 'Matin',
   961: 'Midi',
   962: 'Après-midi',
+  963: 'Le temps doux ramollit la neige.',
+  964: 'La pluie est probable sur toute la montagne.',
+  965: 'La station a confirmé {0} arrêt(s) de remontées pour ce jour.',
+  966: 'Ce jour est hors de la saison publiée de la station.',
+  967: 'Trop chaud',
 };

@@ -353,4 +353,9 @@ export default {
   960: 'Mañana',
   961: 'Mediodía',
   962: 'Tarde',
+  963: 'El tiempo cálido ablanda la nieve.',
+  964: 'Es probable que llueva en toda la montaña.',
+  965: 'La estación ha confirmado {0} retención(es) de remontes para este día.',
+  966: 'Este día queda fuera de la temporada publicada de la estación.',
+  967: 'Demasiado cálido',
 };

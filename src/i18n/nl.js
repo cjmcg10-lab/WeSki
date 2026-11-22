@@ -353,4 +353,9 @@ export default {
   960: 'Ochtend',
   961: 'Middag',
   962: 'Namiddag',
+  963: 'Warm weer maakt de sneeuw zacht.',
+  964: 'Op de hele berg is regen waarschijnlijk.',
+  965: 'Het skigebied heeft {0} liftonderbreking(en) voor deze dag bevestigd.',
+  966: 'Deze dag valt buiten het gepubliceerde seizoen van het skigebied.',
+  967: 'Te warm',
 };

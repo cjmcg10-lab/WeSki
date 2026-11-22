@@ -2,9 +2,9 @@ import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
 import { loadCatalog, searchResorts, sameName } from './resorts.js';
-import { VIEW_KEY, loadList, saveList, add, has, move, sortRows, topPickId } from './watchlist.js';
+import { VIEW_KEY, loadList, saveList, add, has, sortRows, topPickId } from './watchlist.js';
 import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale } from './data.js';
-import { esc, codeText, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
+import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit'];
 const FLASH_MS = 4000;
@@ -236,7 +236,7 @@ function siteCard(resort, forecast, day) {
 function dayBody(resort, forecast, day) {
   const f = forecast;
   if (!day) return `<div class="card"><p class="sub">${t('No forecast for this date.')}</p></div>`;
-  if (day.status === 'closed') return `<div class="card"><h3>${t('Closed on this day')}</h3>${day.closureSource ? `<p class="sub">${esc(codeText(day.closureSource, ''))}</p>` : ''}</div>`;
+  if (day.status === 'closed') return `<div class="card"><h3>${t('Closed on this day')}</h3>${day.closureSource && CODE_TEXT[day.closureSource.code] ? `<p class="sub">${esc(codeText(day.closureSource))}</p>` : ''}</div>`;
   if (day.status === 'insufficient') return `<div class="card fc-insuff"><h3>${t('Insufficient data')}</h3><p>${esc(codeText(day.insufficientReason, 'No explanation is available for this day.'))}</p></div>`;
   const { shown, band, label } = bandOf(day.score);
   const w = windowSummary(day);
@@ -252,6 +252,7 @@ function dayBody(resort, forecast, day) {
     <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
     <p class="note">${esc(codeText(day.confidence.reason))}</p>
+    ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(n))}</p>`).join('')}
     <div class="boxes b3 fc-facts">${cbox(esc(winText), t('Best window'))}${cbox(day.peakHour ? `${esc(fmtHour(day.peakHour.hour))}` : '–', t('Peak hour'))}${cbox(esc(assumed ? t('Assumed {0}', range) : range), t('Ski hours'))}</div>
     <p class="note">${t('Window timing confidence: {0}.', t(day.windowConfidence.level))} ${esc(codeText(day.windowConfidence.reason))}</p>
     ${detail}

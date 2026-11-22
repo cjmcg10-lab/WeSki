@@ -353,4 +353,9 @@ export default {
   960: 'Vormittag',
   961: 'Mittag',
   962: 'Nachmittag',
+  963: 'Warmes Wetter macht den Schnee weich.',
+  964: 'Am ganzen Berg ist Regen wahrscheinlich.',
+  965: 'Das Skigebiet hat {0} Liftunterbrechung(en) für diesen Tag bestätigt.',
+  966: 'Dieser Tag liegt außerhalb der veröffentlichten Saison des Skigebiets.',
+  967: 'Zu warm',
 };

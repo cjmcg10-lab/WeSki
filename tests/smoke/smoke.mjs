@@ -68,6 +68,11 @@ try {
 
   await page.locator('#map canvas').first().waitFor({ state: 'visible', timeout: 60000 });
   await page.waitForTimeout(3000);
+
+  await page.locator('[data-act="tab"][data-tab="forecast"]').click();
+  await page.locator('.fc-empty').waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.fc-empty [data-act="fc-add"]').click();
+  await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }
@@ -83,5 +88,5 @@ if (problems.length) {
   console.error('Smoke test FAILED:\n' + problems.map((p) => ' - ' + p).join('\n'));
   process.exit(1);
 }
-console.log('Smoke test passed: start screen shown, Jay Peak opened, map canvas drawn, no errors.');
+console.log('Smoke test passed: start screen shown, Jay Peak opened, map canvas drawn, Forecast tab opened, no errors.');
 process.exit(0);
