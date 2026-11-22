@@ -1,0 +1,84 @@
+import { COMPONENTS, initialSurface, normalizeHour, scoreSite, stepSurface } from './components.js';
+import { hourFactor } from './explain.js';
+
+export const MIN_VERTICAL_M = 100;
+
+const hourOf = (time) => +time.slice(11, 13);
+
+function occurrenceKeys(times) {
+  const seen = {};
+  return times.map((t) => {
+    seen[t] = (seen[t] || 0) + 1;
+    return `${t}#${seen[t]}`;
+  });
+}
+
+function rawAt(h, i) {
+  return { t: h.temperature_2m?.[i], feels: h.apparent_temperature?.[i], snow: h.snowfall?.[i], wind: h.wind_speed_10m?.[i], gust: h.wind_gusts_10m?.[i], vis: h.visibility?.[i], code: h.weather_code?.[i] };
+}
+
+export function siteSeries(block) {
+  const h = block?.hourly;
+  const bySlot = new Map();
+  if (!h?.time) return bySlot;
+  const keys = occurrenceKeys(h.time);
+  let state = null;
+  h.time.forEach((time, i) => {
+    const x = normalizeHour(rawAt(h, i));
+    if (!x) return;
+    state = stepSurface(state ?? initialSurface(x), x, hourOf(time));
+    bySlot.set(keys[i], scoreSite(x, state));
+  });
+  return bySlot;
+}
+
+function sameWind(summit, base) {
+  const s = summit.hourly, b = base.hourly;
+  let compared = 0;
+  for (let i = 0; i < Math.min(s.time.length, b.time.length); i++) {
+    if (s.wind_speed_10m?.[i] == null || b.wind_speed_10m?.[i] == null) continue;
+    compared++;
+    const g = (s.wind_gusts_10m?.[i] ?? s.wind_speed_10m[i]) - (b.wind_gusts_10m?.[i] ?? b.wind_speed_10m[i]);
+    if (Math.abs(s.wind_speed_10m[i] - b.wind_speed_10m[i]) > 1e-6 || Math.abs(g) > 1e-6) return false;
+  }
+  return compared >= 6;
+}
+
+export function chooseSites(resort, weather, upper, base) {
+  if (!upper.size && !base.size) return { mode: 'both', reason: null };
+  if (!upper.size) return { mode: 'single', use: 'base', reason: 'summit_missing' };
+  if (!base.size) return { mode: 'single', use: 'upper', reason: 'base_missing' };
+  if (resort.top - resort.base < MIN_VERTICAL_M) return { mode: 'single', use: 'base', reason: 'small_vertical' };
+  if (sameWind(weather.summit, weather.base)) return { mode: 'single', use: 'base', reason: 'identical_wind' };
+  return { mode: 'both', reason: null };
+}
+
+const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+
+export function scoreHours(resort, weather) {
+  const block = weather.summit?.hourly?.time ? weather.summit : weather.base;
+  if (!block?.hourly?.time) return { rows: [], sites: { mode: 'both', reason: null } };
+  const times = block.hourly.time;
+  const keys = occurrenceKeys(times);
+  const upper = siteSeries(weather.summit);
+  const base = siteSeries(weather.base);
+  const sites = chooseSites(resort, weather, upper, base);
+  const rows = times.map((time, i) => {
+    const key = keys[i];
+    let u = upper.get(key) ?? null;
+    let b = base.get(key) ?? null;
+    if (sites.mode === 'single') {
+      if (sites.use === 'base') u = null;
+      else b = null;
+    }
+    const used = [b, u].filter(Boolean);
+    const row = { time, date: time.slice(0, 10), hour: hourOf(time), score: null, components: null, sites: null, factor: null, base: b, upper: u };
+    if (!used.length) return row;
+    row.score = mean(used.map((s) => s.score));
+    row.components = Object.fromEntries(COMPONENTS.map((c) => [c, mean(used.map((s) => s.components[c]))]));
+    row.sites = sites.mode === 'single' ? 'single' : used.length === 2 ? 'both' : b ? 'base' : 'upper';
+    row.factor = hourFactor(used);
+    return row;
+  });
+  return { rows, sites };
+}
