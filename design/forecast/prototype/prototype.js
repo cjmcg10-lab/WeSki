@@ -22,7 +22,7 @@
   // What each state shows, and the stated reason where a state cannot occur.
   const STATE_NOTES = {
     s1: {
-      default: 'Six fixture mountains, nine days. Look for the Closed day (Cannon, Monday), Insufficient data (Niseko, Wednesday; Burklyn Hill today, too few hours with data), "Under 3 h of data" (Cannon, today), "Day over" (Niseko, today), the Pinned mountain and Cardrona (New Zealand, out of season: closed every day). Panel option "Refresh fails" shows the failed-Refresh line.',
+      default: 'Six fixture mountains, nine days. Look for the Closed day (Cannon, Monday), Insufficient data (Niseko, Wednesday; Burklyn Hill today, too few hours with data), "Under 3 h of data" (Cannon, today), "Day over" (Niseko, today), the Pinned mountain and Cardrona (New Zealand, out of season: closed every day). Panel option "Simulate a failed update" shows the failed-Refresh line.',
       loading: 'Mountain names show at once; score cells are placeholders. Tapping a cell opens the day view in its loading state.',
       empty: 'No mountains on the list yet.',
       error: 'No forecast could be loaded. The first "Try again" fails again (to show that wording); the second recovers.',
@@ -149,8 +149,10 @@
     notYet: ['{n} not yet in forecast range: {span}.', '{n} not yet in forecast range: {span}.'],
     // The Coverage line, visible and spoken, one whole string per plural form of the picked-day count {n}.
     cov: ['Coverage {cov} of {n} day', 'Coverage {cov} of {n} days'], covClosed: ['Coverage {cov} of {n} day · {closed} closed', 'Coverage {cov} of {n} days · {closed} closed'],
-    rank: ['Rank {rank}. Average {avg}, {label}. Strongest: {strong}, {sday}. Weakest: {weak}, {wday}. Coverage {cov} of {n} day.', 'Rank {rank}. Average {avg}, {label}. Strongest: {strong}, {sday}. Weakest: {weak}, {wday}. Coverage {cov} of {n} days.'],
-    rankClosed: ['Rank {rank}. Average {avg}, {label}. Strongest: {strong}, {sday}. Weakest: {weak}, {wday}. Coverage {cov} of {n} day, {closed} closed.', 'Rank {rank}. Average {avg}, {label}. Strongest: {strong}, {sday}. Weakest: {weak}, {wday}. Coverage {cov} of {n} days, {closed} closed.'],
+    // Spoken twins of the Coverage line (Part 0 §0.9.7).
+    covSay: ['Coverage {cov} of {n} day.', 'Coverage {cov} of {n} days.'], covClosedSay: ['Coverage {cov} of {n} day, {closed} closed.', 'Coverage {cov} of {n} days, {closed} closed.'],
+    // A card closed on every picked day (F1): the sentence, then the spoken Coverage line.
+    rankAllClosed: ['Rank {rank}. Closed on all your days. Coverage 0 of {n} day, {closed} closed.', 'Rank {rank}. Closed on all your days. Coverage 0 of {n} days, {closed} closed.'],
     // Refresh where some rows still fail (decision H4): no "Forecasts updated" toast.
     updPartial: ["Updated. 1 mountain couldn't load.", "Updated. {n} mountains couldn't load."],
     // The grid caption, one whole sentence per variant and plural form of the mountain count (the calendar always has 9 or 15 days).
@@ -181,8 +183,8 @@
     chip: ', {date}, pick this day',
     cellWho: { plain: '{name}, {date}', tag: '{name}, {tag}, {date}' },
     cell: {
-      loading: '{who}: Loading.', none: "{who}: couldn't load.", closed: '{who}: Closed.',
-      insufficient: '{who}: Insufficient data.', offline: '{who}: Offline. No forecast saved.',
+      loading: '{who}: loading.', none: "{who}: couldn't load.", closed: '{who}: closed.',
+      insufficient: '{who}: insufficient data.', offline: '{who}: Offline. No forecast saved.',
       range: '{who}: ski score between {lo} and {hi}. Outlook. {conf}.',
       rangeLabel: '{who}: ski score between {lo} and {hi}, {label}. Outlook. {conf}.',
       over: '{who}: ski score {n}, {label}. Day over. {conf}.',
@@ -193,14 +195,50 @@
       afternoon: '{who}: ski score {n}, {label}. Best window afternoon. {conf}.'
     },
     shortWin: 'Best window: under 3 hours of data',
-    allClosed: 'Closed on all your days.', rankAllClosed: 'Rank {rank}. Closed on all your days.',
+    allClosed: 'Closed on all your days.',
     refreshFail: "Couldn't refresh. Showing forecasts as of {time}.",
     dayBtn: {
       scored: ': ski score {n}, {label}. {name}.', range: ': ski score between {lo} and {hi}. {name}.',
       closed: ': Closed. {name}.', insufficient: ': Insufficient data. {name}.', notYet: ': Not yet. {name}.'
     },
     span: '{a} – {b}', spanSay: '{a} to {b}', noDays: 'No days picked.',
-    rankNone: 'Rank {rank}. Insufficient data on every picked day.'
+    rankNone: 'Rank {rank}. Insufficient data on every picked day.',
+    // N-S6-01, all-closed variant (H3): no mountain is named as first when every one is closed on all picked days.
+    rankFirst: 'Ranking updated. {name} is first.', rankAllShut: 'Ranking updated. Every mountain is closed on all your days.',
+    rankAllShutFailed: ["Ranking updated. Every mountain that loaded is closed on all your days. 1 mountain couldn't load.", "Ranking updated. Every mountain that loaded is closed on all your days. {n} mountains couldn't load."],
+    // F2 / Part 0 §0.9.1: the back control's name is built from its text: hidden "Back to ", then the visible screen name.
+    backTo: 'Back to {visible}',
+    // S6 card: Strongest and Weakest (low end compared), visible and spoken, one whole template per form.
+    statShow: { scored: '{n} {label}, {wd}', range: '{lo}–{hi}, {wd}' },
+    statSay: {
+      strong: { scored: 'Strongest: {n} {label}, {wd}.', range: 'Strongest: score between {lo} and {hi}, {wd}.' },
+      weak: { scored: 'Weakest: {n} {label}, {wd}.', range: 'Weakest: score between {lo} and {hi}, {wd}.' }
+    },
+    rankHead: 'Rank {rank}. Average {avg}, {label}.',
+    // S4 banners and announcements (N-S4-02, N-S4-03 and N-S4-04 copied from the register).
+    s4Offline: "You're offline. The map needs a connection, but you can enter coordinates now.",
+    s4Error: "The map couldn't load. Enter the coordinates instead, or try again.",
+    mapMoved: 'Map moved to {place}. The pin is at its centre.', mapMovedMe: 'Map moved to your location.',
+    locOff: "Location is off for SkiWithMe, so we can't centre the map on you. Search for a nearby town instead.",
+    pinUpdated: '{name} updated.', pinAdded: '{name} added to your list as a pin.',
+    s6Error: "Couldn't load scores for your trip. Your dates are saved. Check your connection and try again.",
+    // F4: for the same-name rule a pin's region is "Dropped pin" and its country is its coordinates, 4 decimals.
+    pinRegion: 'Dropped pin', pinCountry: '{lat}, {lon}',
+    // F5: S4 "Go here" or "Use my location" while the map is not shown; focus stays on the control used.
+    pinMovedNoMap: "Pin moved to {place}. The map isn't showing; the coordinates are filled in.", yourLocation: 'your location',
+    // F5: S2 out-of-season card: heading, reason, then the month as a following sentence.
+    seasonHead: 'Closed', seasonReason: 'Closed for the season.', seasonOpens: 'Opens {month}.',
+    // Footer and inline banner sentences, each one whole template.
+    updated: 'Updated {time}', updating: 'Updating…', loadingFc: 'Loading forecasts…',
+    s1Offline: "You're offline. Showing forecasts as of {time}. We'll refresh when you're back online.",
+    s2Offline: "You're offline. Showing the forecast as of {time}.",
+    s2RefreshFail: "Couldn't refresh this day. Showing the forecast as of {time}.",
+    s6Offline: "You're offline. Ranking uses forecasts as of {time}.",
+    staleSay: 'Forecast as of {h} hours ago', staleShort: '◷ As of {h} h ago',
+    staleNote: 'The weather service is delayed. Forecast as of {h} h ago. Confidence is lowered.',
+    staleNoteSay: 'The weather service is delayed. Forecast as of {h} hours ago. Confidence is lowered.',
+    dayOver: 'Skiing has ended for this day at {name} (local time {time}). This is the forecast as it stood.',
+    pinNote: "Pinned mountain: we only know one point at {elev}. There's no separate base and summit, and ski hours are assumed."
   };
   const band = (s) => M.bands.filter((b) => s >= b.min)[0] || M.bands[M.bands.length - 1];
   // Each confidence level has its own visible and spoken strings; nothing is lower-cased in code.
@@ -231,13 +269,15 @@
   function nameOf(id) {
     const m = mt(id); if (!m) return '';
     const twins = listed().filter((x) => x !== id && mt(x) && same(mt(x).name, m.name));
-    return fill(!twins.length ? T.name.one : twins.some((x) => same(mt(x).region, m.region)) ? T.name.three : T.name.two, m);
+    const who = (x) => { const k = mt(x); return k.kind === 'pin' ? { name: k.name, region: T.pinRegion, country: fill(T.pinCountry, { lat: (+k.lat).toFixed(4), lon: (+k.lon).toFixed(4) }) } : k; };
+    const me = who(id);
+    return fill(!twins.length ? T.name.one : twins.some((x) => same(who(x).region, me.region)) ? T.name.three : T.name.two, me);
   }
   const top = () => app.stack[app.stack.length - 1];
   const inForecast = () => !!top() && /^s[1-7]$/.test(top().screen);
   const st = () => app.pstate;
-  const staleSay = () => `Forecast as of ${M.staleHours} hours ago`;
-  const staleHTML = () => `<span aria-hidden="true">◷ As of ${M.staleHours} h ago</span><span class="sr">${staleSay()}</span>`;
+  const staleSay = () => fill(T.staleSay, { h: M.staleHours });
+  const staleHTML = () => `<span aria-hidden="true">${esc(fill(T.staleShort, { h: M.staleHours }))}</span><span class="sr">${staleSay()}</span>`;
 
   // The best 3 hours in a row; with no 3-hour run of data, the best run of 2, else 1 (decision H2): "short".
   function bestWindow(hours) {
@@ -433,9 +473,10 @@
       let line = '';
       if (st() === 'partial' && id === M.staleId) line = `<span class="st stale">${staleHTML()}</span>`;
       else if (st() === 'offline' && m.uncached) line = '<span class="st">Forecast loads when you\'re back online.</span>';
-      // Out of season (Southern Hemisphere in December): the season line, then the zone line.
-      if (m.season && !line) line = `<span class="st">${esc(tx({ code: 'closed.season', args: [{ mo: m.season.opens }] }))}</span>`;
-      if (m.tz !== M.phoneTz && (!line || m.season)) line += `<span class="st"><span aria-hidden="true">${esc(zoneOf(m.tz))} time</span><span class="sr">Times in ${esc(zoneOf(m.tz))} local time</span></span>`;
+      // Reading order (§6, Part 0 §0.9.2): the zone line, then last, out of season, "Season closed. Opens {month}."
+      const base = line;
+      if (m.tz !== M.phoneTz && !base) line += `<span class="st"><span aria-hidden="true">${esc(zoneOf(m.tz))} time</span><span class="sr">Times in ${esc(zoneOf(m.tz))} local time</span></span>`;
+      if (m.season && !base) line += `<span class="st">${esc(tx({ code: 'closed.season', args: [{ mo: m.season.opens }] }))}</span>`;
       // Row headers take focus after an add or a save (data-c -1), and Left Arrow from the first day reaches them.
       body += `<tr class="${app.highlight === id ? 'new' : ''}"><th scope="row" class="rowhead" data-rowhead="${id}" data-r="${r}" data-c="-1" tabindex="-1"><span class="nm" translate="no">${esc(m.name)}</span>${tags.join(' ')}<span class="rg">${esc(place(m))}</span>${line}</th>`;
       if (failed) {
@@ -464,7 +505,7 @@
   const CREDITS = `<span>${CREDIT.met}</span><span>${CREDIT.nws}</span>`;
   const STILL = (key) => `<span class="still">${esc(T.still[key])}</span>`;
   // Refresh outcomes (decision H4). The footer line appears once Refresh has ended on this screen, and then stays:
-  // offline, the "will refresh" line; a failed refresh (panel option "Refresh fails"), N-S1-05; some rows still failing,
+  // offline, the "will refresh" line; a failed refresh (panel option "Simulate a failed update"), N-S1-05; some rows still failing,
   // "Updated. {n} mountains couldn't load." In the error state nothing goes in the footer: the error card's text changes instead.
   const OFFLINE_REFRESH = "You're offline. Forecasts will refresh when you're back online.";
   const refreshBtn = () => `<button type="button" class="btn sm alt" data-act="refresh" data-fkey="refresh">${st() === 'offline' ? 'Refresh when online' : 'Refresh'}</button>`;
@@ -483,7 +524,7 @@
       return { title: 'Forecast', body: `<div class="empty">${EMPTY_ART}<h3 class="title">Where should you ski?</h3><p>Add the mountains you're thinking about. We'll score each day so you can compare them at a glance.</p><button type="button" class="btn" data-act="go" data-v="s3">Add a mountain</button>${edit}</div>` };
     }
     let h = '', alert = '';
-    if (s === 'offline') h += `<div class="wx-note warn">You're offline. Showing forecasts as of ${updatedAt()}. We'll refresh when you're back online.</div>`;
+    if (s === 'offline') h += `<div class="wx-note warn">${esc(fill(T.s1Offline, { time: updatedAt() }))}</div>`;
     if (s === 'error') {
       // A failed "Try again" or Refresh replaces the card's text; the sentence never shows twice.
       alert = "Couldn't load any forecasts. Your mountains are saved. Check your connection and try again.";
@@ -498,7 +539,7 @@
     h += app.sortCol == null ? '<p class="sortline">Your order · tap a date to sort by it</p>'
       : `<p class="sortline"><span>Sorted by ${esc(shortDate(app.sortCol))}</span><button type="button" class="link" data-act="unsort">Show your order</button></p>`;
     h += gridHTML();
-    h += `<div class="wx-foot"><div class="line"><span>${s === 'loading' ? 'Loading forecasts…' : s === 'error' ? '' : 'Updated ' + updatedAt()}</span>${refreshBtn()}</div>${refreshNote()}
+    h += `<div class="wx-foot"><div class="line"><span>${s === 'loading' ? T.loadingFc : s === 'error' ? '' : esc(fill(T.updated, { time: updatedAt() }))}</span>${refreshBtn()}</div>${refreshNote()}
       <div class="line">${unitsSeg()}</div>
       ${s === 'partial' ? '<p>Some forecasts are older than usual. The weather service is delayed.</p>' : ''}
       <p>All times are each mountain's local time.</p><div class="line">${CREDITS}</div></div>`;
@@ -634,7 +675,7 @@
     h += `<div><h3 class="plain">${esc(longDate(day))}</h3><p class="sub">Times are local to <span translate="no">${esc(m.name)}</span> (${esc(zoneOf(m.tz))}).</p></div>`;
     // A stepper that has nowhere to go is not drawn (no disabled buttons).
     h += `<div class="stepper" role="group" aria-label="Change day">${day > 0 ? `<button type="button" class="btn sm alt" data-act="step" data-v="-1" data-fkey="step-prev"><span aria-hidden="true">‹ </span>${wkday(day - 1)}<span class="sr">, previous day, ${esc(longDate(day - 1))}</span></button>` : ''}${day < last ? `<button type="button" class="btn sm alt next" data-act="step" data-v="1" data-fkey="step-next">${wkday(day + 1)}<span aria-hidden="true"> ›</span><span class="sr">, next day, ${esc(longDate(day + 1))}</span></button>` : ''}</div>`;
-    const foot = `<div class="wx-foot"><div class="line"><span>${s === 'loading' ? 'Updating…' : 'Updated ' + updatedAt()}</span><span>${CREDIT[m.source === 'nws' ? 'nws' : 'met']}</span>${refreshBtn()}</div>${refreshNote('day')}
+    const foot = `<div class="wx-foot"><div class="line"><span>${s === 'loading' ? T.updating : esc(fill(T.updated, { time: updatedAt() }))}</span><span>${CREDIT[m.source === 'nws' ? 'nws' : 'met']}</span>${refreshBtn()}</div>${refreshNote('day')}
       <div class="inline-links"><button type="button" class="link" data-act="go" data-v="s7">How scores work</button>${m.built ? `<button type="button" class="link" data-act="open-map">Open the <span translate="no">${esc(m.name)}</span> map</button>` : ''}</div></div>`;
     // The title is the mountain (with its region when two listed mountains share a name); the day follows it, hidden,
     // so focus on the title reads both. It changes on every day step.
@@ -649,7 +690,7 @@
     // Offline: the banner sentence is also spoken once when the day opens or is stepped to (N-S2-05).
     if (s === 'offline') {
       if (!cached) { const t = "This day isn't saved on this device. It will load when you're back online."; return Object.assign(title, { alert: t, polite: true, body: h + `<div class="wx-note warn">${t}</div>` + foot }); }
-      const t = `You're offline. Showing the forecast as of ${updatedAt()}.`;
+      const t = fill(T.s2Offline, { time: updatedAt() });
       h += `<div class="wx-note warn">${t}</div>`;
       title.alert = t; title.polite = true;
       d = mt(p.id).days[day];
@@ -666,7 +707,7 @@
         alert = "Couldn't load this day. Check your connection and try again.";
         return Object.assign(title, { alert: alert, body: h + `<div class="wx-note bad">${again ? STILL('day') : alert}${tryBtn}</div>` + foot });
       }
-      alert = `Couldn't refresh this day. Showing the forecast as of ${updatedAt()}.`;
+      alert = fill(T.s2RefreshFail, { time: updatedAt() });
       title.alert = alert; title.polite = true;         // the saved day still shows, so this one is not urgent
       h += `<div class="wx-note bad">${again ? STILL('day') : alert}${tryBtn}</div>`;
     }
@@ -678,8 +719,8 @@
     }
     // Closed and Insufficient data have one way on: the next-day stepper above.
     if (d.status === 'closed') {
-      // Out of season (Southern Hemisphere in December): "Closed for the season." and the month it opens.
-      h += d.season ? `<div class="card empty"><p class="glyph" aria-hidden="true">⦸</p><h3 class="plain">Closed for the season.</h3><p>${esc(tx(d.reason))}</p></div>`
+      // Out of season (Southern Hemisphere in December): heading "Closed", reason "Closed for the season.", then "Opens {month}."
+      h += d.season ? `<div class="card empty"><p class="glyph" aria-hidden="true">⦸</p><h3 class="plain">${T.seasonHead}</h3><p>${esc(T.seasonReason)} ${esc(fill(T.seasonOpens, { month: monthName(m.season.opens) }))}</p></div>`
         : `<div class="card empty"><p class="glyph" aria-hidden="true">⦸</p><h3 class="plain">Closed on this day</h3><p>${esc(tx({ code: 'closed.ops_report', args: [m.name] }))}</p></div>`;
       return Object.assign(title, { body: h + foot });
     }
@@ -687,9 +728,9 @@
       h += `<div class="card empty"><h3 class="plain">Insufficient data</h3><p>There isn't enough weather data to score this day.</p><p>${esc(tx(d.reason || 'insuff.not_loaded'))}</p><p class="note">This is not a low score.</p></div>`;
       return Object.assign(title, { body: h + foot });
     }
-    if (d.ended) h += `<div class="wx-note warn">Skiing has ended for this day at <span translate="no">${esc(m.name)}</span> (local time ${nowIn(m.tz)}). This is the forecast as it stood.</div>`;
-    if (d.stale) h += `<div class="wx-note warn">The weather service is delayed. <span aria-hidden="true">Forecast as of ${M.staleHours} h ago.</span><span class="sr">${staleSay()}.</span> Confidence is lowered.</div>`;
-    if (m.kind === 'pin') h += `<div class="wx-note warn">Pinned mountain: we only know one point at ${elev(m.baseFt)}. There's no separate base and summit, and ski hours are assumed.</div>`;
+    if (d.ended) h += `<div class="wx-note warn">${fill(esc(T.dayOver), { name: `<span translate="no">${esc(m.name)}</span>`, time: esc(nowIn(m.tz)) })}</div>`;
+    if (d.stale) h += `<div class="wx-note warn"><span aria-hidden="true">${esc(fill(T.staleNote, { h: M.staleHours }))}</span><span class="sr">${esc(fill(T.staleNoteSay, { h: M.staleHours }))}</span></div>`;
+    if (m.kind === 'pin') h += `<div class="wx-note warn">${esc(fill(T.pinNote, { elev: elev(m.baseFt) }))}</div>`;
     h += SCORE_H + heroHTML(d);
     const skiBox = m.hoursPublished ? `<div class="box"><span class="cap">Ski hours</span><b>${rangeHTML(M.skiHours[0], M.skiHours[1])}</b></div>`
       : `<div class="box"><span class="cap">Ski hours</span><b>Assumed ${rangeHTML(M.skiHours[0], M.skiHours[1])}</b><small>No published hours</small></div>`;
@@ -779,7 +820,7 @@
     let polite = false;
     if (s === 'error') {
       alert = "Couldn't load the worldwide list. You can still search SkiWithMe mountains.";
-      h += `<div class="wx-note bad">${alert}${app.tries.s3 ? STILL('list') : ''}<button type="button" class="btn sm alt" data-act="recover" data-what="list">Try loading the list again</button></div>`;
+      h += `<div class="wx-note bad">${app.tries.s3 ? STILL('list') : alert}<button type="button" class="btn sm alt" data-act="recover" data-what="list">Try loading the list again</button></div>`;
     }
     if (s === 'offline') {
       // Spoken once when the screen opens (N-S3-10; the other wording is N-S3-06).
@@ -844,10 +885,10 @@
     const noMap = s === 'error' || s === 'offline', coordsOpen = pin.coords == null ? noMap : pin.coords;
     let h = '', alert = '';
     if (s === 'no-permission' || pin.denied) h += '<div class="wx-note warn" id="pin-denied">Location is off for SkiWithMe, so we can\'t centre the map on you. Search for a nearby town instead. To allow location, change it in your browser\'s settings for this site.</div>';
-    if (s === 'offline') { alert = "You're offline. The map needs a connection, but you can enter coordinates now."; h += `<div class="wx-note warn">${alert}</div>`; }   // N-S4-08, spoken once
+    if (s === 'offline') { alert = T.s4Offline; h += `<div class="wx-note warn">${alert}</div>`; }   // N-S4-08, spoken once
     if (s === 'error') {
-      alert = "The map couldn't load. Enter the coordinates instead, or try again.";
-      h += `<div class="wx-note bad">${alert}${app.tries.s4 ? STILL('map') : ''}<button type="button" class="btn sm alt" data-act="recover" data-what="map">Try again</button></div>`;
+      alert = T.s4Error;
+      h += `<div class="wx-note bad">${app.tries.s4 ? STILL('map') : alert}<button type="button" class="btn sm alt" data-act="recover" data-what="map">Try again</button></div>`;
     }
     const pq = s === 'empty' && !pin.pq ? 'Nowhereville' : pin.pq;
     h += `<div><label class="lbl" for="pin-q">Find the area</label><p class="hint" id="pin-q-hint">Places show as you type.</p><div class="search">${SEARCH_ICON}<input id="pin-q" type="search" placeholder="Town, lake or peak" autocomplete="off" aria-describedby="pin-q-hint" value="${esc(pq)}"></div><div id="pin-found">${foundHTML()}</div></div>`;
@@ -879,12 +920,13 @@
     if (n) p.name = n.value;
     if (q) p.pq = q.value;
   }
-  const NAME_ERR = 'Give this mountain a name.';
+  const NAME_ERR = 'Give this mountain a name';            // AC-30, exactly
   // A pin may not take the name of a mountain already on the list (same name, ignoring case); the pin being edited is not counted.
+  // A mountain waiting on an Undo row counts as on your list (F4). The error names it as the list shows it (AC-106).
   function nameErr(v) {
     const t = v.trim(); if (!t) return NAME_ERR;
-    const taken = app.watch.some((x) => x !== (app.pin && app.pin.editId) && mt(x) && same(mt(x).name, t));
-    return taken ? fill(T.dupName, { name: t }) : '';
+    const taken = listed().filter((x) => x !== (app.pin && app.pin.editId) && mt(x) && same(mt(x).name, t))[0];
+    return taken ? fill(T.dupName, { name: mt(taken).name }) : '';
   }
   // The name is checked when the field is left, in place, so a tap that is already under way is not lost.
   // Once the field has an error, it is checked again on every change.
@@ -962,7 +1004,8 @@
     const f = app.later.from ? isoDay(app.later.from) : null, t = app.later.to ? isoDay(app.later.to) : f;
     if (f == null || t == null || t < f) return [];
     const out = [];
-    for (let i = Math.max(f, M.days); i <= t && out.length < MAX_LATER; i++) out.push(i);
+    // AC-109: 14 days counted from From, so the last day is From + 13.
+    for (let i = Math.max(f, M.days); i <= Math.min(t, f + MAX_LATER - 1); i++) out.push(i);
     return out;
   }
   // The days a range adds are remembered, so changing or clearing the range unpicks them and leaves the chips the user pressed.
@@ -973,7 +1016,7 @@
     app.tripDays = app.tripDays.filter((d) => (L.added || []).indexOf(d) < 0);
     L.added = [];
     if (f == null) return;
-    for (let i = Math.max(0, f); i <= Math.min(t, M.days - 1); i++) if (app.tripDays.indexOf(i) < 0) { app.tripDays.push(i); L.added.push(i); }
+    for (let i = Math.max(0, f); i <= Math.min(t, f + MAX_LATER - 1, M.days - 1); i++) if (app.tripDays.indexOf(i) < 0) { app.tripDays.push(i); L.added.push(i); }
   }
   function tripRank(days) {
     const out = [], failed = [];
@@ -981,20 +1024,24 @@
       if (isFailed(id)) { failed.push(id); return; }
       const cells = days.map((i) => {
         const d = eff(id, i);
-        if (d.status === 'scored') return { i: i, v: d.score, txt: String(d.score), lab: band(d.score).label, b: band(d.score).n, k: 'scored', o: { n: d.score, label: band(d.score).label } };
-        if (d.status === 'range') { const v = Math.round((d.lo + d.hi) / 2); return { i: i, v: v, txt: d.lo + '–' + d.hi, lab: 'Outlook', b: band(v).n, k: 'range', o: { lo: d.lo, hi: d.hi } }; }
+        // v counts toward the average (a range at its midpoint); low is what Strongest, Weakest and the tie-break compare (a range's low end).
+        if (d.status === 'scored') return { i: i, v: d.score, low: d.score, txt: String(d.score), lab: band(d.score).label, b: band(d.score).n, k: 'scored', o: { n: d.score, label: band(d.score).label } };
+        if (d.status === 'range') { const v = Math.round((d.lo + d.hi) / 2); return { i: i, v: v, low: d.lo, lo: d.lo, hi: d.hi, txt: d.lo + '–' + d.hi, lab: 'Outlook', b: band(v).n, k: 'range', o: { lo: d.lo, hi: d.hi } }; }
         // Owner decision H3: a closed day is shown as "Closed", never a number, and counts toward neither coverage nor the average.
         if (d.status === 'closed') return { i: i, v: null, txt: '⦸', lab: 'Closed', b: 0, na: true, closed: true, k: 'closed', o: {} };
         return { i: i, v: null, txt: '–', lab: 'Insufficient data', b: 0, na: true, k: 'insufficient', o: {} };
       });
       const have = cells.filter((c) => c.v != null), closed = cells.filter((c) => c.closed).length;
       const avg = have.length ? Math.round(have.reduce((a, c) => a + c.v, 0) / have.length) : null;
-      const strong = have.slice().sort((a, b) => b.v - a.v)[0], weak = have.slice().sort((a, b) => a.v - b.v)[0];
+      // By low end; on a tie a scored day beats a range day, then the earlier date wins (PRD §3.2 S6, AC-37).
+      const tie = (a, b) => ((a.k === 'range') - (b.k === 'range')) || (a.i - b.i);
+      const strong = have.slice().sort((a, b) => (b.low - a.low) || tie(a, b))[0], weak = have.slice().sort((a, b) => (a.low - b.low) || tie(a, b))[0];
       out.push({ id: id, order: order, cells: cells, cov: have.length, closed: closed, allClosed: closed === cells.length, avg: avg, strong: strong, weak: weak });
     });
     // A mountain closed on every picked day is listed last; the rest rank on their open days: coverage, average, weakest day, your order.
-    out.sort((a, b) => (a.allClosed - b.allClosed) || (b.cov - a.cov) || ((b.avg || 0) - (a.avg || 0)) || ((b.weak ? b.weak.v : 0) - (a.weak ? a.weak.v : 0)) || (a.order - b.order));
-    return { ranked: out, failed: failed };
+    out.sort((a, b) => (a.allClosed - b.allClosed) || (b.cov - a.cov) || ((b.avg || 0) - (a.avg || 0)) || ((b.weak ? b.weak.low : 0) - (a.weak ? a.weak.low : 0)) || (a.order - b.order));
+    // Shown in the order open (scored) cards, failed cards, all-closed cards in list order (AC-37).
+    return { ranked: out, open: out.filter((r) => !r.allClosed), shut: out.filter((r) => r.allClosed), failed: failed };
   }
   // The visible short date: "Fri 4" inside the calendar, "Dec 16" beyond it (Part 0 §0.9.7).
   const visDate = (i) => (i < M.days ? `${wkday(i)} ${fmt(i, { day: 'numeric' })}` : fmt(i, { month: 'short', day: 'numeric' }));
@@ -1016,7 +1063,7 @@
   function viewS6() {
     const s = st(), days = s === 'empty' ? [] : app.tripDays.slice().sort((a, b) => a - b), out = s === 'empty' ? [] : laterOut();
     let h = '', alert = '', polite = false;
-    if (s === 'offline') { alert = `You're offline. Ranking uses forecasts as of ${updatedAt()}.`; polite = true; h += `<div class="wx-note warn">${alert}</div>`; }   // N-S6-04, spoken once
+    if (s === 'offline') { alert = fill(T.s6Offline, { time: updatedAt() }); polite = true; h += `<div class="wx-note warn">${alert}</div>`; }   // N-S6-04, spoken once
     let chips = '';
     // The first chip reads "Today"; the others the weekday and date.
     for (let i = 0; i < M.days; i++) chips += `<button type="button" class="chip" data-act="chip" data-v="${i}" aria-pressed="${days.indexOf(i) >= 0}">${i === 0 ? '<span>Today</span>' : `<span>${wkday(i)}</span> <b>${fmt(i, { day: 'numeric' })}</b>`}<span class="sr">${esc(fill(T.chip, { date: longDate(i) }))}</span></button>`;
@@ -1031,8 +1078,8 @@
       <div class="learn-text stack" id="trip-later"${L.open ? '' : ' hidden'}><p class="hint">Planning further ahead? Pick the dates and we'll rank them as soon as they are in forecast range.</p><div class="pair"><div><label class="lbl" for="trip-from">From</label><input class="field" type="date" id="trip-from" value="${esc(L.from)}"></div><div><label class="lbl" for="trip-to">To</label><input class="field" type="date" id="trip-to" value="${esc(L.to)}"${L.err ? ' aria-invalid="true" aria-describedby="trip-to-e"' : ''}>${L.err ? `<p class="err" id="trip-to-e">${L.err}</p>` : ''}</div></div>
       <p><button type="button" class="btn sm alt" data-act="later-clear" data-fkey="later-clear">Clear dates</button></p></div></div>`;
     if (s === 'error') {
-      alert = "Couldn't load scores for your trip. Your dates are saved. Check your connection and try again.";
-      h += `<div class="wx-note bad">${alert}${app.tries.s6 ? STILL('trip') : ''}<button type="button" class="btn sm alt" data-act="recover" data-what="trip">Try again</button></div>`;
+      alert = T.s6Error;
+      h += `<div class="wx-note bad">${app.tries.s6 ? STILL('trip') : alert}<button type="button" class="btn sm alt" data-act="recover" data-what="trip">Try again</button></div>`;
       return { title: 'Plan a trip', body: h, alert: alert };
     }
     if (app.watch.length < 2) {
@@ -1048,14 +1095,16 @@
       return { title: 'Plan a trip', body: h };
     }
     const t = tripRank(days), near = (a, b) => a && b && a.cov === b.cov && a.avg != null && b.avg != null && Math.abs(a.avg - b.avg) <= M.tripUncertainty;
-    const stat = (c) => (c ? String(c.v) : '–');
+    // Strongest / Weakest: "62 Good, Mon" or "58–74, Thu" on screen; the spoken form uses the long weekday.
+    const statO = (c, long) => ({ n: c.v, label: c.lab, lo: c.lo, hi: c.hi, wd: long ? fmt(c.i, { weekday: 'long' }) : wkday(c.i) });
+    const statBox = (cap, c) => `<dl class="box"><dt class="cap">${cap}</dt><dd>${c ? esc(fill(T.statShow[c.k], statO(c))) : '–'}</dd></dl>`;
+    const statSay = (which, c) => fill(T.statSay[which][c.k], statO(c, true));
     let list = '';
-    t.ranked.forEach((r, i) => {
-      const m = mt(r.id), b = r.avg == null ? null : band(r.avg), prev = t.ranked[i - 1];
-      const wd = (x) => fmt(x.i, { weekday: 'long' });
-      // Spoken twin of the four boxes below: one whole sentence set per variant and plural form.
-      const srSum = r.allClosed ? fill(T.rankAllClosed, { rank: i + 1 }) : r.avg == null ? fill(T.rankNone, { rank: i + 1 })
-        : count(r.closed ? 'rankClosed' : 'rank', days.length, { rank: i + 1, avg: r.avg, label: b.label, strong: stat(r.strong), sday: wd(r.strong), weak: stat(r.weak), wday: wd(r.weak), cov: r.cov, closed: r.closed });
+    const card = (r, i, prev) => {
+      const m = mt(r.id), b = r.avg == null ? null : band(r.avg);
+      // Spoken twin of the four boxes below: whole sentences per variant and plural form.
+      const srSum = r.allClosed ? count('rankAllClosed', days.length, { rank: i + 1, closed: r.closed }) : r.avg == null ? fill(T.rankNone, { rank: i + 1 })
+        : [fill(T.rankHead, { rank: i + 1, avg: r.avg, label: b.label }), statSay('strong', r.strong), statSay('weak', r.weak), count(r.closed ? 'covClosedSay' : 'covSay', days.length, { cov: r.cov, closed: r.closed })].join(' ');
       // A day button's name starts with the date on it ("Sat 6"), then the score, and ends with the mountain (and its region
       // when two listed mountains share a name): "Sat 6: ski score 86, Epic. Jay Peak." No two buttons and no day chip share a name.
       const btnName = (k, i2, o) => esc(fill(T.dayBtn[k], Object.assign({ name: nameOf(r.id) }, o)));
@@ -1065,17 +1114,20 @@
       const why = app.notYet && app.notYet.id === r.id ? `<p class="note">${esc(longDate(app.notYet.i))} enters forecast range on ${esc(longDate(app.notYet.i - (M.days - 1)))}.</p>` : '';
       // The Coverage box holds the whole line ("Coverage 3 of 4 days · 1 closed"), one string per plural form.
       const covLine = count(r.closed ? 'covClosed' : 'cov', days.length, { cov: r.cov, closed: r.closed });
-      const boxes = r.allClosed ? `<p aria-hidden="true">${T.allClosed}</p>`
-        : `<div class="boxes b4" aria-hidden="true"><div class="box"><span class="cap">Average</span><b>${r.avg == null ? '–' : r.avg}</b><small>${b ? b.label : 'Insufficient data'}</small></div><div class="box"><b class="whole">${esc(covLine)}</b></div><div class="box"><span class="cap">Strongest</span><b>${stat(r.strong)}</b><small>${r.strong ? wkday(r.strong.i) : ''}</small></div><div class="box"><span class="cap">Weakest</span><b>${stat(r.weak)}</b><small>${r.weak ? wkday(r.weak.i) : ''}</small></div></div>`;
+      // All closed (F1): "Closed on all your days." in place of Average, Strongest and Weakest, then the Coverage line.
+      const boxes = r.allClosed ? `<div aria-hidden="true"><p>${T.allClosed}</p><p>${esc(covLine)}</p></div>`
+        : `<div class="boxes b4" aria-hidden="true"><div class="box"><span class="cap">Average</span><b>${r.avg == null ? '–' : r.avg}</b><small>${b ? b.label : 'Insufficient data'}</small></div><div class="box"><b class="whole">${esc(covLine)}</b></div>${statBox('Strongest', r.strong)}${statBox('Weakest', r.weak)}</div>`;
       list += `<li class="card rank-card"><div class="rank-head"><span class="no" aria-hidden="true">${i + 1}</span><h4 id="rk-${r.id}" tabindex="-1" translate="no">${esc(nameOf(r.id))}</h4>${m.kind === 'pin' ? '<span class="tag">Pinned</span>' : ''}${st() === 'partial' && r.id === M.staleId ? `<span class="tag warn">${staleHTML()}</span>` : ''}</div>
         ${near(prev, r) ? `<p class="closecall">Close call: <span translate="no">${esc(nameOf(prev.id))}</span> and <span translate="no">${esc(nameOf(r.id))}</span> are closer than the forecast can tell apart.</p>` : ''}<p class="sr">${esc(srSum)}</p>
         ${boxes}
         <ul class="daybtns" role="list">${r.cells.map(dayBtn).join('')}${out.map(notYet).join('')}</ul>${why}</li>`;
-    });
+    };
+    t.open.forEach((r, i) => card(r, i, t.open[i - 1]));
     t.failed.forEach((id) => {
       const again = app.tries['row:' + id], who = esc(nameOf(id));
       list += `<li class="card rank-card"><h4 id="rk-${id}" tabindex="-1" translate="no">${who}</h4><p>${fill(esc(again ? T.still.row : T.cardFail), { name: `<span translate="no">${who}</span>` })}</p><button type="button" class="btn sm alt" data-act="retry" data-id="${id}">Try again<span class="sr">: ${who}</span></button></li>`;
     });
+    t.shut.forEach((r, j) => card(r, t.open.length + j, null));
     h += `<section aria-labelledby="h-rank"><h3 id="h-rank">Ranking</h3><ol class="stack" role="list">${list}</ol></section><p class="note">Closed days and days without a score don't count. A mountain closed on all your days is listed last.</p>`;
     return { title: 'Plan a trip', body: h, alert: alert, polite: polite };
   }
@@ -1151,7 +1203,11 @@
       const prev = app.stack[app.stack.length - 2];
       // The back control names where it goes; from the explainer opened on a day, that is the mountain.
       const backTo = !prev ? '' : prev.screen === 's2' && mt(prev.p.id) ? `<span translate="no">${esc(nameOf(prev.p.id))}</span>` : esc(SCREENS[prev.screen].label);
-      $('#back-slot').innerHTML = prev ? `<button type="button" class="back" data-act="back"><span aria-hidden="true">‹ </span>${backTo}</button>` : '';
+      // F2 / Part 0 §0.9.1: "‹ Forecast" is named "Back to Forecast" from its own text (glyph hidden, "Back to " visually
+      // hidden, "Forecast" visible), so it never shares a name with the Forecast tab.
+      const bt = T.backTo.split('{visible}');
+      const backHTML = prev && prev.screen === 's1' ? `${bt[0] ? `<span class="sr">${esc(bt[0])}</span>` : ''}${backTo}${bt[1] ? `<span class="sr">${esc(bt[1])}</span>` : ''}` : backTo;
+      $('#back-slot').innerHTML = prev ? `<button type="button" class="back" data-act="back"><span aria-hidden="true">‹ </span>${backHTML}</button>` : '';
       body.innerHTML = v.body + (inForecast() ? `<p class="fixture-flag">${esc(M.fixtureNote)}</p>` : '');
       if (v.after) v.after();
       if (same) { body.scrollTop = sc; const gw = $('#grid-wrap'); if (gw && gs) { gw.scrollLeft = gs[0]; gw.scrollTop = gs[1]; } }
@@ -1246,7 +1302,7 @@
   }
 
   /* ---------- actions ---------- */
-  let downXY = null;
+  let downXY = null, pinSeq = 0;
   const focusSel = (sel) => () => { const e = $(sel); if (e) e.focus(); else focusTitle(); };
   function act(el, e) {
     const a = el.getAttribute('data-act'), id = el.getAttribute('data-id'), v = el.getAttribute('data-v');
@@ -1287,7 +1343,7 @@
             app.tries[scr] = Math.max(1, app.tries[scr] || 0); render('keep'); alertMsg(T.still[scr === 's2' ? 'day' : 'forecasts']);
             return;
           }
-          if (app.refreshFails && st() === 'default') {                 // panel option "Refresh fails": N-S1-05, polite, the line stays
+          if (app.refreshFails && st() === 'default') {                 // panel option "Simulate a failed update": N-S1-05, polite, the line stays
             app.refreshOut = { key: topKey(), kind: 'fail' }; render('keep'); say(fill(T.refreshFail, { time: updatedAt() }));
             return;
           }
@@ -1324,6 +1380,12 @@
         const nm = nameOf(id), s1 = top().screen === 's1', s2 = top().screen === 's2';
         if (!secondTry('row:' + id)) { render('keep'); (s2 ? alertMsg : say)(s2 ? T.still.day : fill(T.still.row, { name: nm })); break; }
         app.retried[id] = true;
+        // F3: recount the rows still failing. With some left, the partial-Refresh line shows the new count; at 0 it goes
+        // away and the ordinary "Updated {time}" footer remains. Nothing extra is announced.
+        if (app.refreshOut && app.refreshOut.kind === 'partial') {
+          const left = app.watch.filter(isFailed).length;
+          if (left) app.refreshOut.n = left; else app.refreshOut = null;
+        }
         if (s2) render('title');
         else if (s1) { app.cell = { r: rowOrder().indexOf(id), c: 0 }; render(focusSel('#fc-grid [tabindex="0"]')); }
         else render(focusSel('#rk-' + id));
@@ -1369,7 +1431,12 @@
         else showRow(ids[0], msg);                                 // focus: the row header of the first mountain added
         break;
       }
-      case 'place': { readPinInputs(); const x = app.pin.found[+v]; app.pin.lat = x.lat; app.pin.lon = x.lon; app.pin.found = null; render(focusSel('#pinmap')); say(`Map moved to ${x.name}. ${readoutText()}`); break; }
+      case 'place': {
+        readPinInputs(); const x = app.pin.found[+v]; app.pin.lat = x.lat; app.pin.lon = x.lon;
+        // With no map on screen (tiles failed or offline), focus stays on "Go here" and the coordinates fill in (F5).
+        if (!$('#pinmap')) { render(focusSel(`[data-act="place"][data-v="${v}"]`)); say(fill(T.pinMovedNoMap, { place: x.name })); break; }
+        app.pin.found = null; render(focusSel('#pinmap')); say(fill(T.mapMoved, { place: x.name })); break;   // N-S4-02
+      }
       case 'pan': movePin(v === 'n' ? 1 : v === 's' ? -1 : 0, v === 'e' ? 1 : v === 'w' ? -1 : 0); break;
       case 'zoom': {
         app.pin.zoom = Math.max(1, Math.min(6, app.pin.zoom + (+v)));
@@ -1381,8 +1448,13 @@
       }
       case 'locate':
         readPinInputs();
-        if (st() === 'no-permission') { app.pin.denied = true; render(focusSel('#pin-q')); say("Location is off for SkiWithMe, so we can't centre the map on you. Search for a nearby town instead."); }
-        else { app.pin.lat = 44.588; app.pin.lon = -71.944; render('keep'); say(`Map centred on your location. ${readoutText()}`); }
+        if (st() === 'no-permission') { app.pin.denied = true; render(focusSel('#pin-q')); say(T.locOff); }
+        else {
+          // Map shown: focus moves to the map, N-S4-03. No map: focus stays on "Use my location", N-S4-17.
+          const noMap = !$('#pinmap');
+          app.pin.lat = 44.588; app.pin.lon = -71.944; render(noMap ? 'keep' : focusSel('#pinmap'));
+          say(noMap ? fill(T.pinMovedNoMap, { place: T.yourLocation }) : T.mapMovedMe);
+        }
         break;
       case 'coords': {
         readPinInputs();
@@ -1404,7 +1476,9 @@
         readPinInputs(); const p = app.pin; p.errs = { lat: p.errs.lat, lon: p.errs.lon };
         // An empty name, or the name of a mountain already on the list: inline error, focus stays in the field, announced assertively.
         const bad = nameErr(p.name);
-        if (bad) { p.errs.name = bad; render(focusSel('#pin-name')); alertMsg(bad); break; }
+        // N-S4-16 / N-S4-05: spoken only when focus is already in the name field (Enter to save). When Save moves focus
+        // into the field, the field's description reads the error, so it is not announced a second time.
+        if (bad) { const inField = document.activeElement && document.activeElement.id === 'pin-name'; p.errs.name = bad; render(focusSel('#pin-name')); if (inField) alertMsg(bad); break; }
         if (st() === 'error' && p.saveFail < 2) {                  // fails twice (the second shows "still couldn't"), then saves
           p.saveFail++; render('keep');
           alertMsg(p.saveFail > 1 ? fill(T.pinSaveStill, { name: p.name.trim() }) : T.pinSaveFail);
@@ -1416,14 +1490,16 @@
           Object.assign(mt(pid), { name: p.name.trim(), lat: p.lat, lon: p.lon });
           app.pin = null;
           popTo(app.stack.length - 1, focusSel(`[data-act="edit-pin"][data-id="${pid}"]`));
-          say(`${nameOf(pid)} updated.`);
+          say(fill(T.pinUpdated, { name: nameOf(pid) }));
           break;
         }
-        const pid = 'pin-' + p.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + app.watch.length;
+        // Pin ids come from a counter, never from the list length, so a removed pin's id is never reused.
+        let pid;
+        do { pid = 'pin-' + p.name.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + (++pinSeq); } while (app.mountains[pid]);
         app.mountains[pid] = { id: pid, kind: 'pin', name: p.name.trim(), region: 'Dropped pin', country: fmtLL(p.lat, p.lon), tz: M.phoneTz, baseFt: unknown ? null : fakeElev(p.lat, p.lon), summitFt: null, lat: p.lat, lon: p.lon, built: false, source: 'nws', hoursPublished: false, uncached: true, days: JSON.parse(JSON.stringify(M.makeForecast(p.name.length + 3, true))) };
         app.watch.push(pid);
         app.pin = null; app.draft = null;                          // the draft ends when the pin is saved
-        showRow(pid, `${nameOf(pid)} added to your list as a pin.`);
+        showRow(pid, fill(T.pinAdded, { name: nameOf(pid) }));
         break;
       }
       case 'remove-pin': {
@@ -1462,8 +1538,10 @@
         else app.tripDays.push(i);
         app.later.added = (app.later.added || []).filter((x) => x !== i);   // a chip the user touched is theirs, not the range's
         render('keep');
-        const days = app.tripDays.slice().sort((x, y) => x - y), t = days.length && app.watch.length > 1 && st() !== 'loading' && st() !== 'error' ? tripRank(days).ranked[0] : null;
-        say(tripSummary(days, laterOut(), true) + (t ? ` Ranking updated. ${nameOf(t.id)} is first.` : ''));
+        const days = app.tripDays.slice().sort((x, y) => x - y), tr = days.length && app.watch.length > 1 && st() !== 'loading' && st() !== 'error' ? tripRank(days) : null;
+        // Only an open (scored) card can be named first; when every mountain is closed on all picked days, the H3 sentence.
+        const rk = !tr ? '' : tr.open.length ? fill(T.rankFirst, { name: nameOf(tr.open[0].id) }) : !tr.shut.length ? '' : !tr.failed.length ? T.rankAllShut : fill(T.rankAllShutFailed[tr.failed.length === 1 ? 0 : 1], { n: tr.failed.length });
+        say(tripSummary(days, laterOut(), true) + (rk ? ' ' + rk : ''));
         break;
       }
       case 'later': app.later.open = !app.later.open; render('keep'); break;                 // focus stays on the disclosure button
@@ -1539,8 +1617,8 @@
       <p class="proto-note" id="proto-msg" role="status"></p>
       <h2 id="pp-theme">Theme</h2><div class="proto-row" role="group" aria-labelledby="pp-theme">${btn('p-theme', 'dark', 'Dark', app.theme === 'dark')}${btn('p-theme', 'light', 'Light', app.theme === 'light')}</div>
       <h2 id="pp-bg">Entry points</h2><div class="proto-row" role="group" aria-labelledby="pp-bg">${btn('p-bg', 'map', 'Map and tab bar', app.bg === 'map' && !app.stack.length)}${btn('p-bg', 'start', 'Start screen', app.bg === 'start' && !app.stack.length)}${btn('p-wx', 'wx', 'Mountain weather row', !!top() && top().screen === 'wx')}</div>
-      <h2 id="pp-opt">Options</h2><div class="proto-row" role="group" aria-labelledby="pp-opt">${btn('p-rfail', 'on', 'Refresh fails', app.refreshFails)}</div>
-      <p class="proto-note">"Refresh fails" applies to the default state: Refresh on the calendar or a day view then ends with "${esc(fill(T.refreshFail, { time: updatedAt() }))}"</p>
+      <h2 id="pp-opt">Options</h2><div class="proto-row" role="group" aria-labelledby="pp-opt">${btn('p-rfail', 'on', 'Simulate a failed update', app.refreshFails)}</div>
+      <p class="proto-note">"Simulate a failed update" applies to the default state: Refresh on the calendar or a day view then ends with "${esc(fill(T.refreshFail, { time: updatedAt() }))}"</p>
       <h2 id="pp-fx">Fixtures</h2><div class="proto-row" role="group" aria-labelledby="pp-fx"><button type="button" class="proto-btn" data-act="p-reset" data-v="reset">Reset fixtures</button></div>
       <p class="proto-note">${esc(M.fixtureNote)} Fixture "today" is ${esc(longDate(0))}.</p></details>`;
     if (app.proMsg) setTimeout(() => setProMsg(app.proMsg), 0);

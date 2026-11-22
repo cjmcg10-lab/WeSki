@@ -256,6 +256,7 @@ label.lbl { display: block; font-weight: var(--fw-heavy); margin-bottom: var(--s
 .box b { display: block; font-size: var(--fs-h4); font-weight: var(--fw-heavy); color: var(--head); overflow-wrap: anywhere; }
 .box.big b { font-size: var(--fs-box); }
 .box small { display: block; color: var(--muted); font-size: var(--fs-small); }
+dl.box, .box dd { margin: 0; }
 /* A box that holds one whole sentence ("Coverage 3 of 4 days · 1 closed", "Best window: under 3 hours of data"). */
 .box b.whole { font-size: var(--fs-sub); overflow-wrap: normal; }
 

@@ -81,7 +81,7 @@ Variants inside a state:
 | Insufficient data | S1: Niseko Hirafu, Wednesday. Or `?m=niseko-hirafu&day=5` |
 | Insufficient data: too few hours with data | S1: Burklyn Hill, today (4 of 7 ski hours missing: "Not enough hourly data to score this day."). Or `?m=pin-burklyn-hill&day=0` |
 | Best window with under 3 hours of data | S1: Cannon Mountain, today (cell "Under 3 h of data"); the day view shows "Best window: under 3 hours of data". Or `?m=cannon-mountain&day=0` |
-| Southern Hemisphere, out of season | Cardrona (Otago, New Zealand), last row on S1: every cell "Closed", row lines "Season closed. Opens June." and its own time zone. Day view "Closed for the season." (`?m=cardrona`). Also in S3: type "cardrona" |
+| Southern Hemisphere, out of season | Cardrona (Otago, New Zealand), last row on S1: every cell "Closed", row lines "Season closed. Opens June." and its own time zone. Day view: heading "Closed", then "Closed for the season. Opens June." (`?m=cardrona`). Also in S3: type "cardrona" |
 | Day over (another time zone) | Niseko Hirafu, today. Or `?m=niseko-hirafu&day=0` |
 | Time blocks (days 3–5) / range (days 6–9) | In S2 step forward with the `›` button. Or `?day=3`, `?day=6` |
 | Pinned mountain (tag "Pinned") | Burklyn Hill row; `?m=pin-burklyn-hill` |
@@ -90,16 +90,18 @@ Variants inside a state:
 | Error with no saved copy | `screens/s2-day-view.html?state=error&m=pin-burklyn-hill`, or tap any "–" cell on S1 in state `error` |
 | Offline, score saved but no hourly detail | `screens/s2-day-view.html?state=offline&m=cannon-mountain&day=2` |
 | Day view with a placeholder score | S1 in state `loading`, tap any cell |
-| Refresh outcomes | State `offline`: the button reads "Refresh when online"; pressing it shows a line under it that stays. State `error`: Refresh replaces the error card's text with "Still couldn't load …. Try again later." and puts nothing in the footer. State `partial` (S1): Refresh before Burke's retry ends with "Updated. 1 mountain couldn't load." and no toast. State `default` with the panel option **Options → Refresh fails** on: Refresh ends with "Couldn't refresh. Showing forecasts as of 6:40 AM." Otherwise it ends with the "Forecasts updated" toast |
+| Refresh outcomes | State `offline`: the button reads "Refresh when online"; pressing it shows a line under it that stays. State `error`: Refresh replaces the error card's text with "Still couldn't load …. Try again later." and puts nothing in the footer. State `partial` (S1): Refresh before Burke's retry ends with "Updated. 1 mountain couldn't load." and no toast; once Burke's own Try again succeeds the line goes away and "Updated {time}" remains. State `default` with the panel option **Options → Simulate a failed update** on: Refresh ends with "Couldn't refresh. Showing forecasts as of 6:40 AM." Otherwise it ends with the "Forecasts updated" toast |
 | Empty list with a removal still undoable | S5: remove every mountain, go back. The calendar's empty state keeps "Edit list" |
 | S6 "fewer than two mountains" | Remove mountains in Edit list, then open Plan a trip |
 | S6 "Not yet" days | Plan a trip → Later dates → set From and To so some days fall after December 12, 2026. Days in range press their chips; later days show as "Not yet" in the summary and on every card, and the "enters forecast range" note shows under the summary. Tap a "Not yet" day to see when it enters range. At most 14 later days are listed, as the line under the chips says |
 | S6 end date before start date | Later dates → set To earlier than From: the error shows under To |
-| S6 closed days | Default state: Cannon Mountain is closed Monday; its card ranks on its open days only and reads "Coverage 3 of 4 days · 1 closed". Cardrona is closed on all four days: it is listed last and its card reads "Closed on all your days." |
+| S6 closed days | Default state: Cannon Mountain is closed Monday; its card ranks on its open days only and reads "Coverage 3 of 4 days · 1 closed". Cardrona is closed on all four days: it is listed last, after any failed card, and its card reads "Closed on all your days." and "Coverage 0 of 4 days · 4 closed", with no Average, Strongest or Weakest box. Closed days never appear in Strongest or Weakest. Both compare covered days by their low end (a range's lower number); on a tie a scored day beats a range day, then the earlier date wins. They read "62 Good, Mon", or "58–74, Thu" for a range: pick only days 6–9 (Wed 9 to Sat 12) to see the range form. Ranked cards are numbered first, failed cards carry no number, and all-closed cards continue the numbering |
 | A second failure | States `error` and `partial`: the first "Try again" fails on purpose and the message changes to "Still couldn't load …. Try again later."; the second one succeeds |
 | Saving fails (S3, S4) | `screens/s3-add-a-mountain.html?state=error`, tap Add on Stowe: the message and "Try again: add Stowe" stay under that row. The first retry fails again ("Still couldn't save Stowe. Try again later."); the second saves. Saving a pin in S4 `error` behaves the same |
 | Same-name mountains | S3: type "snow" (two Snow Valley rows, told apart by region and country). Add both: on the calendar, in Edit list and in Plan a trip every cell and button name, the day-view title, the trip card headings and the announcements then add the region ("Remove Snow Valley, Ontario") |
-| Pin name already on the list | S4: name the pin "jay peak" (any case) and save: "You already have a mountain called jay peak. Choose another name." shows under the field, focus stays there. Enter in the name field saves |
+| Pin name already on the list | S4: name the pin "jay peak" (any case) and save: "You already have a mountain called Jay Peak. Choose another name." (the name as your list shows it) shows under the field and focus moves there; the error is announced only when you pressed Enter in the field. A mountain waiting on an Undo row in Edit list counts as on your list |
+| Pin with the same name as a catalog mountain | Save a pin "Jay Peak" after removing Jay Peak and closing Forecast, then add Jay Peak in S3: the names read "Jay Peak, Dropped pin" and "Jay Peak, Vermont" |
+| Drop a pin with no map | S4 in `error` or `offline`: "Go here" or "Use my location" keeps focus on the button used, fills in the coordinates and announces "Pin moved to … The map isn't showing; the coordinates are filled in." |
 | Search opened from Plan a trip | Plan a trip → (fewer than two mountains) Add a mountain: rows already on your list show "On your list" without "Show" |
 | "Near you" | S3 with the search field empty (a fixture list; location is never asked for) |
 | Removed from the worldwide list | S5, state `partial`: Hogback Mountain has "Keep as a pin" and "Remove" |
@@ -150,7 +152,7 @@ first control in the sheet goes to the same link. Mouse and touch users reach th
   in the `error` state works the same way. On a full-screen error the second press switches the prototype back to
   default to show recovery.
 - **Refresh** shows "Updating…" for about a second, then one of the outcomes in the variants table; nothing is
-  fetched. A failed refresh in the `default` state is only shown when the panel option "Refresh fails" is on.
+  fetched. A failed refresh in the `default` state is only shown when the panel option "Simulate a failed update" is on.
 - **Sentences from the scoring engine** (reasons, explanations, hourly factors) are stored in the fixtures as codes
   and turned into words by a table in `mock/data.js`, the way the app will translate them.
 - **Saving.** Nothing is stored. Reloading the page resets everything.
@@ -178,6 +180,10 @@ first control in the sheet goes to the same link. Mouse and touch users reach th
 - **Calendar cell for a day with under 3 hours of data.** The decision only sets the day-view wording ("Best window:
   under 3 hours of data"). The prototype's cell shows "Under 3 h of data" and its name says "Best window: under 3
   hours of data"; this cell wording is an assumption, not yet in the PRD.
+- **Pin place line.** For the same-name rule a pin reads "{name}, Dropped pin" and then "{lat}, {lon}" to 4 decimals
+  (F4). The visible line under a new pin's name still shows "Dropped pin, 44.588° N, 71.944° W" (3 decimals with
+  hemisphere letters). The Burklyn Hill fixture shows "Vermont, USA" there, although names treat it as a dropped pin.
+- **States panel while the sheet is open.** The panel outside the phone stays usable (it is scaffolding, not inert).
 
 Not tested on a real phone or with a real screen reader. The checks run were automated only: page validation, a
 script syntax check, and a headless-browser pass that opened all 49 screen-and-state pairs in both themes (looking
