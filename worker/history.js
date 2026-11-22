@@ -144,8 +144,9 @@ export class HistoryStore {
     const nextMeta = { ...(meta ?? {}), place: snap.place, histHash };
     if (histHash !== meta?.histHash) writes.hist = hist;
     if (!meta || !(meta.issuedAt >= snap.issuedAt)) {
-      writes.last = { issuedAt: snap.issuedAt, weather: snap.weather };
       nextMeta.issuedAt = snap.issuedAt;
+      nextMeta.lastHash = hashOf({ summit: snap.weather.summit?.hourly, base: snap.weather.base?.hourly });
+      if (nextMeta.lastHash !== meta?.lastHash) writes.last = { issuedAt: snap.issuedAt, weather: snap.weather };
     }
     const archiving = !meta?.archivedAt || snap.issuedAt - meta.archivedAt >= ARCHIVE_MIN_GAP_MS;
     if (archiving) {
@@ -154,10 +155,8 @@ export class HistoryStore {
       writes[`a:${pad(snap.issuedAt)}`] = archiveEntry(snap, scored);
       nextMeta.archivedAt = snap.issuedAt;
     }
-    if (Object.keys(writes).length) {
-      writes.meta = { ...nextMeta, recordedAt: now };
-      await this.storage.put(writes);
-    }
+    writes.meta = { ...nextMeta, recordedAt: now };
+    await this.storage.put(writes);
     if (archiving) await this.pruneArchive(now);
     return { recorded: true, wrote: Object.keys(writes) };
   }
@@ -188,8 +187,9 @@ export class HistoryStore {
   /** The last forecast that was fetched successfully, labelled stale, or null once it is older than LAST_GOOD_MAX_AGE_MS. */
   async lastGood(now = Date.now()) {
     const last = await this.storage.get('last');
-    if (!last || now - last.issuedAt > LAST_GOOD_MAX_AGE_MS) return null;
-    return { ...last.weather, stale: true, ageHours: round((now - last.issuedAt) / HOUR, 1) };
+    const issuedAt = Math.max(last?.issuedAt ?? 0, (await this.storage.get('meta'))?.issuedAt ?? 0);
+    if (!last || now - issuedAt > LAST_GOOD_MAX_AGE_MS) return null;
+    return { ...last.weather, stale: true, ageHours: round((now - issuedAt) / HOUR, 1) };
   }
 
   /** Archived forecasts issued at or after `sinceMs`, oldest first. */

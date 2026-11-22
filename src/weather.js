@@ -49,13 +49,15 @@ export async function loadWeather(place, force = false, { allowStale = false } =
 }
 
 const historyKey = (id) => `history1:${id}`;
+const NONE_MS = 2 * 60 * 1000;
+const hasHours = (site) => Array.isArray(site?.hourly?.time);
 const historyId = (place) => (/^[a-z0-9-]{2,40}$/.test(place.id || '') && !place.id.startsWith('pin-') ? place.id : null);
 
 /** The history kept on the phone for a place if it is under 20 minutes old: `{ at, data }`, where `data` is null when the server has none yet. */
 export function savedHistory(place, now = Date.now()) {
   const id = historyId(place);
   const hit = id ? prefs.get(historyKey(id), null) : null;
-  return hit && now - hit.at < CACHE_MS ? hit : null;
+  return hit && now - hit.at < (hit.ttl ?? CACHE_MS) ? hit : null;
 }
 
 /** The server's 72 hour history for a listed resort (`/api/history/<id>`), or null: offline, a pin, none recorded yet or any failure. */
@@ -67,11 +69,11 @@ export async function loadHistory(place, force = false, now = Date.now()) {
   try {
     const res = await fetch(`/api/history/${id}`);
     if (res.status === 404) {
-      prefs.set(historyKey(id), { at: now, data: null });
+      prefs.set(historyKey(id), { at: now, data: null, ttl: NONE_MS });
       return null;
     }
     const body = await res.json();
-    if (!res.ok || body.error) throw new Error('History service error');
+    if (!res.ok || body.error || !hasHours(body.summit) || !hasHours(body.base)) throw new Error('History service error');
     const data = { summit: body.summit, base: body.base };
     prefs.set(historyKey(id), { at: now, data });
     return data;

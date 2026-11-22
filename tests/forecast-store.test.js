@@ -225,8 +225,8 @@ describe('history store', () => {
     const writes = storage.writes;
     expect(await store.record(snap(NOW - 40 * 60e3), NOW)).toEqual({ recorded: false, reason: 'too_soon' });
     expect(storage.writes).toBe(writes);
-    expect((await store.record(snap(NOW - 40 * 60e3), later(1))).wrote).toEqual([]);
-    expect(storage.writes).toBe(writes);
+    expect((await store.record(snap(NOW - 40 * 60e3), later(1))).wrote).toEqual(['meta']);
+    expect(storage.writes).toBe(writes + 1);
     const observed = observationRows(kmvl.features, 'KMVL').filter((r) => r.ms > NOW - 72 * HOUR && r.ms <= NOW);
     await store.record(snap(NOW - 40 * 60e3, { observed: { summit: [], base: observed } }), later(2));
     expect((await store.history(NOW)).coverage.base.observedHours).toBe(0);
@@ -243,10 +243,24 @@ describe('history store', () => {
     expect((await store.record(snap(NOW - 40 * 60e3), NOW)).wrote).toEqual(expect.arrayContaining(['hist', 'last', 'meta']));
     const newer = snap(NOW - 10 * 60e3);
     newer.forecast.base[0] = { ...newer.forecast.base[0], snow: 4 };
-    expect((await store.record(newer, later(1))).wrote).toEqual(['hist', 'last', 'meta']);
+    expect((await store.record(newer, later(1))).wrote).toEqual(['hist', 'meta']);
     const before = storage.writes;
-    expect((await store.record(newer, later(2))).wrote).toEqual([]);
-    expect(storage.writes).toBe(before);
+    expect((await store.record(newer, later(2))).wrote).toEqual(['meta']);
+    expect(storage.writes).toBe(before + 1);
+    const content = snap(NOW - 5 * 60e3);
+    content.weather = { ...content.weather, summit: { ...content.weather.summit, hourly: { ...content.weather.summit.hourly, temperature_2m: content.weather.summit.hourly.temperature_2m.map((x) => x + 1) } } };
+    expect((await store.record(content, later(3))).wrote).toEqual(expect.arrayContaining(['last', 'meta']));
+  });
+
+  it('closes the gate for 30 minutes after every recording, even one that changed nothing, and saves a change of place', async () => {
+    const storage = new MemoryStorage();
+    const store = new HistoryStore(storage);
+    await store.record(snap(NOW - 40 * 60e3), NOW);
+    await store.record(snap(NOW - 40 * 60e3), later(1));
+    expect(await store.due(later(1) + 29 * 60e3)).toBe(false);
+    expect(await store.due(later(1) + 30 * 60e3)).toBe(true);
+    await store.record(snap(NOW - 40 * 60e3, { place: { ...place, top: 1200 } }), later(2));
+    expect((await storage.get('meta')).place.top).toBe(1200);
   });
 
   it('says whether the 30 minute gate is open without writing', async () => {
@@ -493,7 +507,33 @@ describe('who may be recorded', () => {
     expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, top: 1116 + 251 })).toBe(false);
     expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, tz: 'UTC' })).toBe(false);
     expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, blat: 44.6 })).toBe(false);
-    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, top: 1130, lat: 44.54 })).toBe(true);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE })).toBe(true);
+    expect(samePlace({ ...LISTED_PLACE, top: 1116.4 }, { ...LISTED_PLACE })).toBe(true);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, top: 1216 })).toBe(false);
+    expect(samePlace(LISTED_PLACE, { ...LISTED_PLACE, lat: 44.54 })).toBe(false);
+  });
+
+  it('records only the exact listed place: a 1 km offset or a 100 m height offset records nothing and gets no stale copy', async () => {
+    const attempt = async (href) => {
+      const { env, store } = fakeEnv();
+      const ctx = context();
+      await weatherResponse(new URL(href), env, ctx, { forecastFn: async () => result(), observe: async () => ({ station: null, rows: [] }), now: NOW });
+      await Promise.all(ctx.pending);
+      return store.history(NOW);
+    };
+    const exact = URL_STOWE('&id=stowe').href;
+    expect(await attempt(exact)).not.toBeNull();
+    expect(await attempt(exact.replace('lat=44.53', 'lat=44.54'))).toBeNull();
+    expect(await attempt(exact.replace('top=1116', 'top=1216'))).toBeNull();
+    const { env } = fakeEnv();
+    const ctx = context();
+    await weatherResponse(new URL(exact), env, ctx, { forecastFn: async () => result(), observe: async () => ({ station: null, rows: [] }), now: NOW });
+    await Promise.all(ctx.pending);
+    const down = async () => { throw new Error('down'); };
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    expect((await weatherResponse(new URL(exact.replace('lat=44.53', 'lat=44.54') + '&stale=1'), env, ctx, { forecastFn: down, now: NOW + HOUR })).status).toBe(502);
+    expect((await weatherResponse(new URL(`${exact}&stale=1`), env, ctx, { forecastFn: down, now: NOW + HOUR })).status).toBe(200);
+    vi.restoreAllMocks();
   });
 
   it('claims the 30 minute gate only after a recording succeeds', async () => {

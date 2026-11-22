@@ -268,7 +268,11 @@ describe('scoring a watched mountain', () => {
       vi.stubGlobal('navigator', { onLine: true });
       vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 })));
       expect(await loadHistory({ ...stowe, id: 'fresh' }, false, now)).toBeNull();
-      expect(savedHistory({ ...stowe, id: 'fresh' }, now)).toEqual({ at: now, data: null });
+      expect(savedHistory({ ...stowe, id: 'fresh' }, now).data).toBeNull();
+      expect(savedHistory({ ...stowe, id: 'fresh' }, now + 3 * 60e3)).toBeNull();
+      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ summit: {}, base: { hourly: { time: [] } } }))));
+      expect(await loadHistory({ ...stowe, id: 'malformed' }, false, now)).toBeNull();
+      expect(savedHistory({ ...stowe, id: 'malformed' }, now)).toBeNull();
       vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
       expect(await loadHistory({ ...stowe, id: 'broken' }, false, now)).toBeNull();
     });

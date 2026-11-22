@@ -1,12 +1,10 @@
 import { RESORT_RE } from './evidence.js';
 import { forecastRows, pendingRows } from './history.js';
 import { resortPlace } from './catalog.js';
-import { distanceKm, siteObservations } from './observations.js';
+import { siteObservations } from './observations.js';
 import { forecast, placeFrom } from './weather.js';
 
 const RECORD_GATE_S = 1800;
-export const PLACE_TOLERANCE_KM = 5;
-export const HEIGHT_TOLERANCE_M = 250;
 const FRESH_CACHE = 'public, max-age=900';
 const STALE_CACHE = 'public, max-age=60';
 const HISTORY_CACHE = 'public, max-age=300';
@@ -28,12 +26,10 @@ async function closeGate(id, now) {
   await edgeCache()?.put(gateKey(id, now), new Response('1', { headers: { 'cache-control': `max-age=${RECORD_GATE_S}` } }));
 }
 
-/** The weather request is for the listed resort: same area, same heights, same time zone. */
+/** The weather request is for exactly the listed place, as the app sends it: same points and time zone, heights rounded to metres. */
 export function samePlace(listed, asked) {
-  return distanceKm(listed, asked) <= PLACE_TOLERANCE_KM
-    && distanceKm({ lat: listed.blat, lon: listed.blon }, { lat: asked.blat, lon: asked.blon }) <= PLACE_TOLERANCE_KM
-    && Math.abs(listed.top - asked.top) <= HEIGHT_TOLERANCE_M && Math.abs(listed.base - asked.base) <= HEIGHT_TOLERANCE_M
-    && listed.tz === asked.tz;
+  return ['lat', 'lon', 'blat', 'blon', 'tz'].every((k) => listed[k] === asked[k])
+    && Math.round(listed.top) === asked.top && Math.round(listed.base) === asked.base;
 }
 
 async function observationsFor(site, now, observe) {

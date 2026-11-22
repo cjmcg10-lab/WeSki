@@ -95,11 +95,14 @@ async function loadOne(resort, force) {
 }
 
 async function addHistory(resort, forecast, force) {
-  const history = await loadHistory(forecast.resort, force);
-  const shown = entry(resort.id).fc;
-  if (!history || shown?.at !== forecast.at || shown.history === history) return;
-  setEntry(resort, { fc: withHistory(shown, history) });
-  redraw();
+  if (forecast.history && !force) return;
+  try {
+    const history = await loadHistory(forecast.resort, force);
+    const shown = entry(resort.id).fc;
+    if (!history || shown?.at !== forecast.at) return;
+    setEntry(resort, { fc: withHistory(shown, history) });
+    redraw();
+  } catch { /* the forecast stays as drawn */ }
 }
 
 export async function loadAll(force = false) {
