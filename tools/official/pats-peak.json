@@ -30,5 +30,22 @@
   "Zephyr": 0
  },
  "blue_black": [],
- "note": "The map's printed list gives every run's rating. Its unnamed gladed areas carry no name and keep their OpenStreetMap rating; Microburst and Turbulence are terrain parks."
+ "note": "The map's printed list gives every run's rating. Its unnamed gladed areas carry no name and keep their OpenStreetMap rating; Microburst and Turbulence are terrain parks.",
+ "lifts": [
+  "Beginner Carpet",
+  "Beginner Tow I",
+  "Bluster Carpet",
+  "Cascade Basin Triple Chair",
+  "F5 Tow",
+  "Gusty J-Bar",
+  "Hurricane Quad Chair",
+  "Peak Triple Chair",
+  "Turbulence Triple Chair",
+  "Valley Double Chair",
+  "Vortex Double Chair"
+ ],
+ "lifts_source": "Pats Peak 2026 trail map by James Niehues (skimap.org map 44067): the printed Lifts list 1 to 11",
+ "lifts_explained": {
+  "Beginner Tow I": "beginner tow; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
+ }
 }

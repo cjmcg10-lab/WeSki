@@ -44,5 +44,14 @@
   "War Dance": 1
  },
  "blue_black": [],
- "note": "Little Mohawk is blue at the top and green lower down; the whole run takes the harder rating. Upper Exhibition is freestyle terrain on the map; it is listed at the OpenStreetMap rating (blue) so that Exhibition's green does not carry over to it. Gronk Glades and Horace's Grove are not in OpenStreetMap yet."
+ "note": "Little Mohawk is blue at the top and green lower down; the whole run takes the harder rating. Upper Exhibition is freestyle terrain on the map; it is listed at the OpenStreetMap rating (blue) so that Exhibition's green does not carry over to it. Gronk Glades and Horace's Grove are not in OpenStreetMap yet.",
+ "lifts": [
+  "Bobcat Magic Carpet",
+  "Summit Quad",
+  "T-Bar Express Quad",
+  "Top Notch Double",
+  "Tubing Magic Carpet",
+  "Wilderness Quad"
+ ],
+ "lifts_source": "Berkshire East 2026 trail map by E. R. Oyen (skimap.org map 39213), lift labels read by hand"
 }

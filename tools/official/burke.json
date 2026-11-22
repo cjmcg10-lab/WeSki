@@ -55,5 +55,13 @@
   "Y-Knot": 2
  },
  "blue_black": [],
- "note": "Lew's Leap has no symbol on the map and keeps its OpenStreetMap rating. Dashney Mile, Jester and Progression Park are terrain parks. Toll Road, CCC Road, DH Trail, Camptown and Camper's Carry are not on the resort's map and keep their OpenStreetMap ratings."
+ "note": "Lew's Leap has no symbol on the map and keeps its OpenStreetMap rating. Dashney Mile, Jester and Progression Park are terrain parks. Toll Road, CCC Road, DH Trail, Camptown and Camper's Carry are not on the resort's map and keep their OpenStreetMap ratings.",
+ "lifts": [
+  "Carpet",
+  "J-Bar",
+  "Mid-Burke Express",
+  "Sherburne Express",
+  "T-Bar"
+ ],
+ "lifts_source": "Burke Mountain 2025 trail map by Senan Gorman (skimap.org map 37220), lift labels read by hand ('Lifts: 4, Magic Carpets: 1')"
 }

@@ -17,5 +17,19 @@
   "Turkey Turn": 1,
   "Whoopee": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Avalanche",
+  "Glacier",
+  "Northstar",
+  "Snowball",
+  "Snowflake",
+  "Stardust",
+  "Thunderbolt",
+  "Whoopee"
+ ],
+ "lifts_source": "Mount Southington 2025 trail map by Senan Gorman (skimap.org map 37432), lift labels read by hand",
+ "lifts_explained": {
+  "Snowball": "a small surface lift in the Snowball terrain park; not in OpenStreetMap"
+ }
 }

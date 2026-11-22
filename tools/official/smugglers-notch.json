@@ -80,5 +80,16 @@
   "Upper Rumrunner": 1,
   "Waterfall": 1
  },
- "note": "Smugglers' colours each run label: green easier, blue more difficult, black most difficult; expert runs carry diamond marks on the line and are listed as 3. Midway is green on Morse and blue on Madonna, so it is left unlisted (the map data already rates the two parts that way)."
+ "note": "Smugglers' colours each run label: green easier, blue more difficult, black most difficult; expert runs carry diamond marks on the line and are listed as 3. Midway is green on Morse and blue on Madonna, so it is left unlisted (the map data already rates the two parts that way).",
+ "lifts": [
+  "Madonna I Lift",
+  "Madonna II Lift",
+  "Mogul Mouse's Magic Lift",
+  "Morse Highlands Lift",
+  "Sterling Lift",
+  "Sterling T-Bar",
+  "The Glider Surface Lift",
+  "Village Lift"
+ ],
+ "lifts_source": "Smugglers' Notch trail map (skimap.org map 30415, the resort's PDF): the printed Lift Key (A to H); the Wonder Carpets are not named"
 }

@@ -149,5 +149,35 @@
  "blue_black": [],
  "same_as": {
   "The Taco": "The Taco / Curecanti"
+ },
+ "lifts": [
+  "Alpine",
+  "American Eagle",
+  "American Flyer",
+  "Blackjack",
+  "Celebrity Ridge",
+  "Easy Rider",
+  "Excelerator",
+  "Gem",
+  "Glide",
+  "Kokomo Express",
+  "Lumberjack",
+  "Mountain Chief",
+  "Pitchfork",
+  "Rendezvous",
+  "Resolution",
+  "Rugrat",
+  "Sierra",
+  "Slingshot",
+  "Stinger",
+  "Storm King",
+  "Super Bee",
+  "Three Bears",
+  "Timberline Express",
+  "Woodward Express"
+ ],
+ "lifts_source": "Copper Mountain winter trail map (skimap.org map 36383, the resort's PDF), lift labels read by hand",
+ "lifts_explained": {
+  "Glide": "small beginner lift on the resort's map; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
  }
 }

@@ -76,5 +76,20 @@
   "Upper Walking Boss Woods": 2,
   "Wildwood": 1
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "East Basin Double",
+  "Kancamagus 8",
+  "Kissin' Cousin Double",
+  "Lincoln Express Quad",
+  "Little Sister",
+  "North Peak Express Quad",
+  "River's Edge Double",
+  "Sarsaparilla Carpet",
+  "Seven Brothers Express Quad",
+  "Timbertown Quad",
+  "Tote Road Quad",
+  "White Mountain Express Gondola"
+ ],
+ "lifts_source": "Loon Mountain 2026 trail map with the Black Ridge expansion area (skimap.org map 43681, the resort's PDF), lift labels read by hand; the Black Ridge expansion and the 'future gondola' drawn on it are not lifts yet and are left out"
 }

@@ -124,7 +124,11 @@ def resort(feats, areas, cfg, buffer_m=None):
     if listed is None and cfg.get("id"):
         offp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "official", f"{cfg['id']}.json")
         listed = json.load(open(offp)).get("lifts", []) if os.path.exists(offp) else []
-    from official_ratings import missing_lifts
+    from official_ratings import missing_lifts, lift_key
+    # a listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12") cannot be told apart by name:
+    # missing_lifts treats it as always present, which made every lift match (Park City's Cabriolet once
+    # pulled in all of Deer Valley and the Cottonwood canyons)
+    listed = [n for n in listed or [] if lift_key(n)]
 
     def ours_by_name(f):
         return bool(listed) and bool(f["name"]) and len(missing_lifts([f["name"]], [])) == 1 and \

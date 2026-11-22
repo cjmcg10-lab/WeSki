@@ -72,5 +72,17 @@
  },
  "same_as": {
   "Casablanca Glades": "Casablanca Glades and Chutes"
+ },
+ "lifts": [
+  "Cupsuptic T-Bar",
+  "Kennebago Quad",
+  "Molly Chunkamunk Moving Carpet",
+  "Rangeley Hi-Speed Quad",
+  "Sandy Quad",
+  "South Branch Quad"
+ ],
+ "lifts_source": "Saddleback 2024-25 winter trail map (skimap.org map 31382, the resort's PDF): lift names in the map's text ('4 chairlifts, 1 t-bar and 1 moving carpet')",
+ "lifts_explained": {
+  "Molly Chunkamunk Moving Carpet": "new beginner carpet; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
  }
 }

@@ -127,5 +127,28 @@
   "Willie's Way": 1,
   "Zip": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "A Quad",
+  "B Quad",
+  "Black Ridge Triple",
+  "Coleman Brook Express Quad",
+  "Evergreen Summit Express",
+  "F-10 Carpet",
+  "Glades Peak Quad",
+  "Morning Star Triple",
+  "Orion's Belt Carpet",
+  "Quantum Six",
+  "Sachem Quad",
+  "Ski School Carpet",
+  "Skywalker Carpet",
+  "Snow Star Carpet",
+  "Solitude Express Quad",
+  "South Face Express Quad",
+  "Stargazer Carpet",
+  "Starlight Carpet",
+  "Sunburst Six",
+  "Sunshine Quad"
+ ],
+ "lifts_source": "Okemo 2025-26 trail map (skimap.org map 36372, the resort's PDF): the printed Lift Stats table"
 }

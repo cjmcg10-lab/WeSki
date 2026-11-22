@@ -135,5 +135,26 @@
   "Winter's Way Extension": 3,
   "Yarder": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Bateau T-Bar",
+  "Bucksaw Express",
+  "CVA Colby T-Bar",
+  "Double Runner East",
+  "Double Runner West",
+  "King Pine",
+  "Moosecalator",
+  "Sawduster",
+  "Skidway",
+  "Skyline",
+  "Snubber",
+  "Sugarloaf SuperQuad",
+  "Timberline",
+  "West Mountain",
+  "Whiffletree"
+ ],
+ "lifts_source": "Sugarloaf 2024-25 winter trail map by James Niehues (skimap.org map 36784, the resort's PDF): the printed Lifts table (15 lifts; the 2026 map on skimap.org is the bike park map)",
+ "lifts_explained": {
+  "CVA Colby T-Bar": "Carrabassett Valley Academy's training T-bar; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
+ }
 }

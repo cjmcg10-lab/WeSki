@@ -20,5 +20,13 @@
   "Temptor": 2,
   "Tom's Treat": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Big Easy Conveyor",
+  "Exhibition Quad",
+  "Little Easy Conveyor",
+  "Sunnyside Express Triple Chair",
+  "Triple Barrel Chair"
+ ],
+ "lifts_source": "Ski Sundown 2024-25 trail map (skimap.org map 29257): the printed lift legend"
 }

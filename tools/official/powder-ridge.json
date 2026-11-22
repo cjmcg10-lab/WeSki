@@ -14,5 +14,16 @@
   "Upper 747 Trail": 1,
   "Upper Middlefield": 0
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "747 Lift",
+  "Festival Lift",
+  "Middlefield Lift",
+  "Mini Field Lift",
+  "Riglet Carpet",
+  "Tubing Lift #1",
+  "Tubing Lift #2",
+  "Wonder Carpet"
+ ],
+ "lifts_source": "Powder Ridge 2026 trail map (skimap.org map 43939, the resort's PDF): the printed numbered lift list (1 to 8, tubing lifts included)"
 }

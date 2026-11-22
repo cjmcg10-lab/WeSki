@@ -57,5 +57,11 @@
   "Village Green": 0
  },
  "blue_black": [],
- "note": "The map marks glades only with a green tree symbol, which is not a rating; glades without a printed symbol keep their OpenStreetMap rating. Wild Side, Wild Ride and Wanna Be Wild are terrain parks. Triple Take and Double Take are not in OpenStreetMap yet."
+ "note": "The map marks glades only with a green tree symbol, which is not a rating; glades without a printed symbol keep their OpenStreetMap rating. Wild Side, Wild Ride and Wanna Be Wild are terrain parks. Triple Take and Double Take are not in OpenStreetMap yet.",
+ "lifts": [
+  "Barnyard Triple",
+  "Spear Mountain Express",
+  "Summit Six Express"
+ ],
+ "lifts_source": "Ragged Mountain 2023 trail map by Senan Gorman (skimap.org map 29746), lift labels read by hand; the two carpets (Meadows, Wanna Be Wild areas) are shown by symbol only"
 }

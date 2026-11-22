@@ -84,5 +84,20 @@
   "Milky Way": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
   "One Small Step": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)",
   "Dark Side of the Moon": "Sunbrook, shown in the inset of the 2025-26 trail map (all blue there; labels too small to read, names from OpenStreetMap)"
- }
+ },
+ "lifts": [
+  "Bluebird Express",
+  "Canyon Express",
+  "Challenger",
+  "Covered Bridge",
+  "Ego Alley",
+  "Grand Summit Express",
+  "Grommet",
+  "Heavy Metal",
+  "Nitro Express",
+  "Outpost",
+  "Seasons",
+  "Sundance Express"
+ ],
+ "lifts_source": "Mount Snow 2025-26 winter trail map (skimap.org map 36371, the resort's PDF, a low-resolution image), lift labels read by hand; the small numbered learning-area lifts (5, 24, 25, 27, 28) and the Sunbrook inset's lift label are too small to read on this copy and are left out"
 }

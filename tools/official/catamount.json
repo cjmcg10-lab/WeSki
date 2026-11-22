@@ -50,5 +50,17 @@
  "note": "Race Slope was renamed Toni Matt on the 2024-25 map. Kelli's Run shows no rating symbol and keeps its OpenStreetMap rating. Panther Park (a terrain park) was removed on the 2025-26 map but is still in OpenStreetMap. The Birch Glades (East and West) on the 2025-26 map are not in OpenStreetMap yet. Terrain on the New York side comes from the NY Hudson 2022 survey.",
  "not_runs": {
   "Birch Glade": "The resort's list has this line besides Birch Glades (East) and (West); the trail map shows only those two glades, which are on the map."
+ },
+ "lifts": [
+  "Catamount Quad",
+  "Glade Triple",
+  "Meadows Triple",
+  "Promenade Triple",
+  "Ridge Quad",
+  "Tubing Lift"
+ ],
+ "lifts_source": "Catamount 2025-26 trail map (skimap.org map 37806), lift labels read by hand ('Lifts: 8, 2 Quads, 3 Triples, and 3 Wonder Carpets'; the carpets are not named); the snow-tubing park's lift is listed too",
+ "lifts_explained": {
+  "Tubing Lift": "the snow-tubing park's lift, not a ski lift; not on the map"
  }
 }

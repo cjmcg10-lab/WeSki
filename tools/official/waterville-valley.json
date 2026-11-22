@@ -67,5 +67,23 @@
   "White Caps": 1
  },
  "blue_black": [],
- "note": "The map prints 'Pysched' for the run between Psyched Out and The Chute (OpenStreetMap 'Psycho'); it is stored as Psyched. Unlabelled glades (Psycho Glades, Old T Trees, True Grit Trees, Furgal's Forest) keep their OpenStreetMap rating: the map marks glades only with tree symbols."
+ "note": "The map prints 'Pysched' for the run between Psyched Out and The Chute (OpenStreetMap 'Psycho'); it is stored as Psyched. Unlabelled glades (Psycho Glades, Old T Trees, True Grit Trees, Furgal's Forest) keep their OpenStreetMap rating: the map marks glades only with tree symbols.",
+ "lifts": [
+  "Exhibition T-Bar",
+  "Green Peak Triple",
+  "High Country T-Bar",
+  "Lower Meadows",
+  "Lower Pasture Carpet",
+  "Northside",
+  "Sunnyside",
+  "Tecumseh Express",
+  "Upper Pasture Carpet",
+  "Valley Run Quad"
+ ],
+ "lifts_source": "Waterville Valley 2025-26 trail map by James Niehues (skimap.org map 36609), lift labels read by hand ('10 lifts')",
+ "lifts_explained": {
+  "Exhibition T-Bar": "on the map as an unnamed surface lift (Surface lift) beside the Tecumseh Express",
+  "Lower Pasture Carpet": "on the map as Pasture J-Bar / Kinder Park Lift (the base-area beginner lifts)",
+  "Upper Pasture Carpet": "see Lower Pasture Carpet"
+ }
 }

@@ -121,5 +121,20 @@
   "Whirlaway": 2
  },
  "blue_black": [],
- "note": "Main Street, Jug Handle, Armando's Alley and the #1 and #2 Cut Across have no label of their own on the map: they are drawn as black (most difficult) lines in the upper Spruce Peak area, which the map says has more and most difficult terrain only. Toll Road: the upper part carries blue squares, the lower part green circles; the map's 'Upper Toll Road' covers both, so it takes blue. Glades carry only the glade symbol, no rating, and keep the OpenStreetMap rating. Lower Gulch and Lower Standard are freestyle terrain and are left out."
+ "note": "Main Street, Jug Handle, Armando's Alley and the #1 and #2 Cut Across have no label of their own on the map: they are drawn as black (most difficult) lines in the upper Spruce Peak area, which the map says has more and most difficult terrain only. Toll Road: the upper part carries blue squares, the lower part green circles; the map's 'Upper Toll Road' covers both, so it takes blue. Glades carry only the glade symbol, no rating, and keep the OpenStreetMap rating. Lower Gulch and Lower Standard are freestyle terrain and are left out.",
+ "lifts": [
+  "Adventure Carpet",
+  "Adventure Triple",
+  "FourRunner Quad",
+  "Gondola",
+  "Lookout Double",
+  "Meadows Carpet",
+  "Meadows Quad",
+  "Over Easy Gondola",
+  "Sensation Quad",
+  "Sunny Spruce Quad",
+  "Sunrise Six",
+  "Toll House Double"
+ ],
+ "lifts_source": "Stowe 2026-27 winter trail map (skimap.org map 49172, the resort's PDF), lift labels read by hand"
 }

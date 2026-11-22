@@ -111,5 +111,17 @@
  "note": "Baron's Run is black on its upper part and blue below; the map draws it as one run, so the whole run is rated black here (the safe side).",
  "same_as": {
   "Tossup Park": "Toss-Up Freestyle Terrain"
- }
+ },
+ "lifts": [
+  "Brookside Triple Chairlift",
+  "Cannonball Quad Chairlift",
+  "Eagle Cliff Triple Chairlift",
+  "Huckerbrook Handle Tow",
+  "Mittersill Double Chairlift",
+  "Peabody Express Quad Chairlift",
+  "Tuckerbrook Quad Chairlift",
+  "Valar T-bar",
+  "Zoomer Triple Chairlift"
+ ],
+ "lifts_source": "Cannon Mountain 2025-26 trail map, 'no tram this season' (skimap.org map 36374): the printed Lifts table A to T (9 lifts); the Aerial Tramway is closed this season and not on the list"
 }

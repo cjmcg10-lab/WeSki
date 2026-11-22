@@ -33,5 +33,19 @@
  "blue_black": [],
  "not_runs": {
   "Mass Pike": "The resort lists the whole trail and also its East and West parts; both parts are on the map."
+ },
+ "lifts": [
+  "Easy Rider Carpet Lift",
+  "Minuteman High Speed Quad",
+  "Monadnock High Speed Quad",
+  "Ollie's Carpet Lift",
+  "Polar Express High Speed 6-Pack",
+  "Polar Playground Carpet Lift",
+  "Shorty Carpet",
+  "Vickery Bowl Triple"
+ ],
+ "lifts_source": "Wachusett trail map by James Niehues (skimap.org map 36785): the printed Lifts list A to H",
+ "lifts_explained": {
+  "Shorty Carpet": "60 ft beginner carpet; not in OpenStreetMap (checked 2026-11-22); position unknown: add as extra_lifts when found"
  }
 }

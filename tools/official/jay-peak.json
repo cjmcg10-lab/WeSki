@@ -93,5 +93,15 @@
   "Wedelmaster": 1,
   "Willard": 1
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Aerial Tram",
+  "Bonaventure Quad",
+  "Flyer Express Quad",
+  "Jet Triple Chair",
+  "Metro Quad",
+  "Taxi Quad",
+  "Village Double Chair"
+ ],
+ "lifts_source": "Jay Peak 2025-26 printable trail map (skimap.org map 45607, the resort's PDF): lift names in the map's text and its stats box ('Lifts: 9'); the two moving carpets are not named on the map"
 }

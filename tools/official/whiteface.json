@@ -103,5 +103,19 @@
   "Wolf Run": 0,
   "Yellow Dot": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Cloudsplitter Gondola",
+  "Coyote Cruiser",
+  "Cub Carpet",
+  "Face Lift",
+  "Falcon Flyer",
+  "Freeway",
+  "Little Whiteface",
+  "Lookout Mountain",
+  "Summit Quad",
+  "The Notch",
+  "Warhorse"
+ ],
+ "lifts_source": "Whiteface 2025-26 trail map by K.M. Mastin (skimap.org map 37629, the resort's PDF), lift labels read by hand"
 }

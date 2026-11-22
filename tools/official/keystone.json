@@ -143,5 +143,21 @@
   "Schoolmarm Family Ski Trail": "Schoolmarm",
   "Jacques": "St. James"
  },
- "same_as_note": "OpenStreetMap draws Jacques and St. James as one line (renamed St. James in the resort config); Schoolmarm Family Ski Trail is the resort's long name for Schoolmarm."
+ "same_as_note": "OpenStreetMap draws Jacques and St. James as one line (renamed St. James in the resort config); Schoolmarm Family Ski Trail is the resort's long name for Schoolmarm.",
+ "lifts": [
+  "A51",
+  "Bergman Express",
+  "Discovery",
+  "Montezuma Express",
+  "Outback Express",
+  "Outpost Gondola",
+  "Peru Express",
+  "Ranger",
+  "River Run Gondola",
+  "Ruby Express",
+  "Santiago Express",
+  "Summit Express",
+  "Wayback"
+ ],
+ "lifts_source": "Keystone 2026-27 trail map (skimap.org map 46357, the resort's PDF), lift labels read by hand; the map counts 21 lifts, the rest being magic carpets shown by symbol only"
 }

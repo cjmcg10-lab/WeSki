@@ -71,5 +71,13 @@
   "Valley Girl": 2,
   "Warren's Way": 2
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "Bear Chair",
+  "Bluebird Express",
+  "Centennial Express",
+  "Easy Rider Conveyor",
+  "Easy Street Triple Chair"
+ ],
+ "lifts_source": "Brundage Mountain 2025-26 front side map (skimap.org map 45848) and Beartopia map (skimap.org map 43963), lift labels read by hand; the Lakeview Bowl lift is on the separate Lakeview Bowl map, not read for this list"
 }

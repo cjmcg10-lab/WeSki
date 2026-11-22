@@ -193,5 +193,32 @@
   "Deja Vu": "Déjà Vu",
   "North Bowl": "North Bowl Traverse"
  },
- "same_as_note": "Barton Breezeway is printed twice on the map (with and without the apostrophe). North Bowl is open bowl terrain on Peak 8; OpenStreetMap draws it only as the traverse line that leads into it, so that line carries the bowl's black rating."
+ "same_as_note": "Barton Breezeway is printed twice on the map (with and without the apostrophe). North Bowl is open bowl terrain on Peak 8; OpenStreetMap draws it only as the traverse line that leads into it, so that line carries the bowl's black rating.",
+ "lifts": [
+  "6-Chair",
+  "A-Chair",
+  "Beaver Run SuperChair",
+  "BreckConnect Gondola",
+  "C-Chair",
+  "Camelback Platter",
+  "Colorado SuperChair",
+  "E-Chair",
+  "Eldorado Platter",
+  "Falcon SuperChair",
+  "FIVE SuperChair",
+  "Freedom SuperChair",
+  "Horseshoe Bowl T-Bar",
+  "Imperial SuperChair",
+  "Independence SuperChair",
+  "Kensho SuperChair",
+  "Mercury SuperChair",
+  "Peak 8 SuperConnect",
+  "Quicksilver SuperChair",
+  "Rip's Ride",
+  "Rocky Mountain SuperChair",
+  "Snowflake",
+  "Trygve's Platter",
+  "Zendo Chair"
+ ],
+ "lifts_source": "Breckenridge 2026-27 trail map (skimap.org map 47907, the resort's PDF): the printed Lift Stats table, plus the platters labelled on the map; learning-area carpets are not named on the map and are left out (the map counts 35 lifts in all)"
 }
