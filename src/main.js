@@ -1392,7 +1392,7 @@ function openSheet(name, arg) {
   if (fcUi.isForecastSheet(S.sheet) && !fcUi.isForecastSheet(name)) fcUi.onClose();
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast', fcpin: 'forecast' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast', fcpin: 'forecast', fctrip: 'forecast' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();

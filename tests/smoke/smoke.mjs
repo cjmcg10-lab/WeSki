@@ -96,6 +96,8 @@ try {
   await page.locator('#fc-hbase').press('Tab');
   await page.locator('[data-act="fc-pin-save"]').click();
   await page.locator('.fc-rowhead', { hasText: 'Pinned' }).waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('[data-act="fc-trip"]').click();
+  await page.locator('#fc-trip-out', { hasText: 'Add at least two mountains' }).waitFor({ state: 'visible', timeout: 15000 });
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }
