@@ -37,9 +37,9 @@ const markerEl = (letter) => {
   return el;
 };
 
-export async function mountMap(container, { lat, lon, zoom }) {
+export async function mountMap(container, { lat, lon, zoom }, label = 'Map') {
   const gl = await loadMapLibre();
-  const map = new gl.Map({ container, style: STYLE_URL, center: [lon, lat], zoom, attributionControl: false, dragRotate: false, pitchWithRotate: false });
+  const map = new gl.Map({ container, style: STYLE_URL, center: [lon, lat], zoom, attributionControl: false, dragRotate: false, pitchWithRotate: false, locale: { 'Map.Title': label } });
   map.addControl(new gl.AttributionControl({ compact: false }));
   map.addControl(new gl.NavigationControl({ showCompass: false }), 'top-right');
   map.touchZoomRotate.disableRotation();

@@ -25,7 +25,7 @@ export function distanceKm(lat1, lon1, lat2, lon2) {
   return 2 * EARTH_KM * Math.asin(Math.sqrt(h));
 }
 
-export const normalise =(text) => plain(text).split(' ').map((w) => WORD_FORMS[w] ?? w).join(' ');
+export const normalise = (text) => plain(text).split(' ').map((w) => WORD_FORMS[w] ?? w).join(' ');
 
 function queryForms(text) {
   const words = plain(text).split(' ');

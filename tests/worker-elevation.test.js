@@ -150,6 +150,24 @@ describe('GET /api/elevation', () => {
     const again = await ask('?lat=45.97630&lon=7.658600', { fetchImpl });
     expect(await again.json()).toEqual({ elevation: 4274, source: 'terrain-tiles' });
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect([...stored.keys()]).toEqual(['https://elevation.invalid/v1/45.9763/7.6586']);
+    expect([...stored.keys()]).toContain('https://elevation.invalid/v1/45.9763/7.6586');
+  });
+
+  it('keeps the map tile by its address, so another place in the same tile does not fetch it again', async () => {
+    const stored = new Map();
+    vi.stubGlobal('caches', { default: { match: async (r) => stored.get(r.url)?.clone(), put: async (r, res) => { stored.set(r.url, res); } } });
+    const fetchImpl = tileFetch();
+    await ask('?lat=45.9763&lon=7.6586', { fetchImpl });
+    const other = await ask('?lat=45.9770&lon=7.6590', { fetchImpl });
+    expect(other.status).toBe(200);
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect([...stored.keys()]).toContain('https://s3.amazonaws.com/elevation-tiles-prod/terrarium/12/2135/1457.png');
+  });
+
+  it('answers no height for the sea floor instead of a depth', async () => {
+    const row = Array.from({ length: 256 }, () => [124, 24, 0]).flat();
+    const deep = encodePng(Array.from({ length: 256 }, () => row), 3, [0]);
+    const res = await ask('?lat=45.9763&lon=7.6586', { fetchImpl: vi.fn(async () => new Response(deep)) });
+    expect((await res.json()).elevation).toBeNull();
   });
 });

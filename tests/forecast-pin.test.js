@@ -103,6 +103,7 @@ describe('time zone for a pin', () => {
   it('takes the nearest resort within 300 km, else guesses from longitude and says so', () => {
     expect(zoneFor(44, -72, [{ tz: TZ, km: 20 }])).toEqual({ tz: TZ, guessed: false });
     expect(zoneFor(44, -72, [{ tz: TZ, km: 450 }])).toEqual({ tz: 'Etc/GMT+5', guessed: true });
+    expect(zoneFor(44, -72, [{ tz: TZ, km: 120 }])).toEqual({ tz: TZ, guessed: true });
     expect(zoneFor(46, 8, [])).toEqual({ tz: 'Etc/GMT-1', guessed: true });
     expect(zoneFor(0, 2, [])).toEqual({ tz: 'Etc/GMT', guessed: true });
   });
@@ -127,6 +128,8 @@ describe('elevation lookup from the app', () => {
   it('returns the height, or null on any failure so the person can type it', async () => {
     expect(await fetchElevation(44.5, -72.78, ok({ elevation: 399 }))).toBe(399);
     expect(await fetchElevation(44.5, -72.78, ok({ elevation: null }))).toBeNull();
+    expect(await fetchElevation(44.5, -72.78, ok({ elevation: -3000 }))).toBeNull();
+    expect(await fetchElevation(44.5, -72.78, ok({ elevation: 12000 }))).toBeNull();
     expect(await fetchElevation(44.5, -72.78, vi.fn(async () => ({ ok: false, json: async () => ({}) })))).toBeNull();
     expect(await fetchElevation(44.5, -72.78, vi.fn(async () => { throw new Error('offline'); }))).toBeNull();
   });

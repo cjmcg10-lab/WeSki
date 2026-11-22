@@ -16,7 +16,7 @@ const show = (sel, on) => { const el = $(sel); if (el) el.hidden = !on; };
 export function createPinScreen(ctx) {
   const { fc } = ctx;
   const H = () => ctx.host();
-  const ui = { map: 'loading', coordsOpen: false, errors: {}, saving: false, saveFails: 0, mapFails: 0, locNote: false };
+  const ui = { map: 'loading', coordsOpen: false, errors: {}, saving: false, saveFails: 0, mapFails: 0, locNote: false, keep: null };
   const seq = { base: 0, top: 0 };
   const busy = { base: false, top: false };
   let map = null;
@@ -28,6 +28,8 @@ export function createPinScreen(ctx) {
   function freshDraft() {
     return { mode: 'new', id: null, name: fc.q.trim(), base: null, top: null };
   }
+
+  const mapLabel = () => t('Map. Move the map to put the cross on the ski area. Arrow keys move the map; plus and minus zoom.');
 
   function startView() {
     const d = draft();
@@ -42,7 +44,8 @@ export function createPinScreen(ctx) {
 
   function match() {
     const d = draft();
-    return d?.base && fc.catalog ? fc.catalog.nearby(d.base.lat, d.base.lon, { maxKm: MATCH_KM, limit: 1 })[0] ?? null : null;
+    const near = d?.base && fc.catalog ? fc.catalog.nearby(d.base.lat, d.base.lon, { maxKm: MATCH_KM, limit: 1 })[0] ?? null : null;
+    return near && near.id !== ui.keep ? near : null;
   }
 
   function refresh() {
@@ -64,18 +67,21 @@ export function createPinScreen(ctx) {
     show('#fc-pin-clear', !!d.top);
     show('#fc-hbase-wrap', !!d.base);
     show('#fc-htop-wrap', !!d.top);
-    const hb = $('#fc-hbase'), ht = $('#fc-htop'), la = $('#fc-lat'), lo = $('#fc-lon');
+    const hb = $('#fc-hbase'), ht = $('#fc-htop'), la = $('#fc-lat'), lo = $('#fc-lon'), tla = $('#fc-tlat'), tlo = $('#fc-tlon');
     if (hb && document.activeElement !== hb) hb.value = d.base?.elev ?? '';
     if (ht && document.activeElement !== ht) ht.value = d.top?.elev ?? '';
     if (la && document.activeElement !== la && d.base) la.value = d.base.lat;
     if (lo && document.activeElement !== lo && d.base) lo.value = d.base.lon;
+    if (tla && document.activeElement !== tla && d.top) tla.value = d.top.lat;
+    if (tlo && document.activeElement !== tlo && d.top) tlo.value = d.top.lon;
     show('#fc-terrain-one', !d.top);
     show('#fc-terrain-two', !!d.top);
     const near = match();
     const box = $('#fc-pin-match');
-    if (box) box.innerHTML = near ? matchHtml(near, null) : '';
+    const matchMarkup = near ? matchHtml(near, d.mode === 'edit' ? d.id : null) : '';
+    if (box && box.dataset.html !== matchMarkup) { box.innerHTML = matchMarkup; box.dataset.html = matchMarkup; }
     const err = ui.errors;
-    for (const [id, field] of [['#fc-name', 'name'], ['#fc-hbase', 'hbase'], ['#fc-htop', 'htop'], ['#fc-lat', 'coords'], ['#fc-lon', 'coords']]) $(id)?.setAttribute('aria-invalid', String(Boolean(err[field])));
+    for (const [id, field] of [['#fc-name', 'name'], ['#fc-hbase', 'hbase'], ['#fc-htop', 'htop'], ['#fc-lat', 'coords'], ['#fc-lon', 'coords'], ['#fc-tlat', 'coords'], ['#fc-tlon', 'coords']]) $(id)?.setAttribute('aria-invalid', String(Boolean(err[field])));
     setText('#fc-name-err', err.name ?? '');
     setText('#fc-height-err', err.hbase ?? err.htop ?? '');
     setText('#fc-coord-err', err.coords ?? '');
@@ -87,7 +93,7 @@ export function createPinScreen(ctx) {
   }
 
   function matchHtml(near, pinId) {
-    return `<span>${t('Is this {0}?', `<b translate="no">${esc(near.name)}</b>`)}</span> <button class="btn sm alt" data-act="fc-pin-usecat" data-r="${esc(near.id)}"${pinId ? ` data-p="${esc(pinId)}"` : ''} aria-label="${esc(t('Use {0} instead of the pin', near.name))}">${t('Use {0}', esc(near.name))}</button>`;
+    return `<span>${t('Is this {0}?', `<b translate="no">${esc(near.name)}</b>`)}</span> <button class="btn sm alt" data-act="fc-pin-usecat" data-r="${esc(near.id)}"${pinId ? ` data-p="${esc(pinId)}"` : ''} aria-label="${esc(t('Use {0} instead of the pin', near.name))}">${t('Use {0}', esc(near.name))}</button> <button class="btn sm alt" data-act="fc-pin-keep" data-r="${esc(near.id)}">${t('Keep as a pin')}</button>`;
   }
 
   async function lookUp(key) {
@@ -119,19 +125,27 @@ export function createPinScreen(ctx) {
   async function save() {
     const d = draft();
     fieldsToDraft();
+    if (busy.base || busy.top) {
+      ui.errors = { save: t('Still finding the height… Try again in a moment.') };
+      refresh();
+      H().announce(ui.errors.save);
+      return;
+    }
     const problem = draftProblem(d, nameList());
     if (problem) {
+      const noMap = ui.map !== 'ready';
+      if (problem.field === 'base' && noMap) ui.coordsOpen = true;
       const text = {
         name: t('Give this mountain a name'),
         duplicate: t('You already have a mountain called {0}. Choose another name.', problem.name),
-        nobase: t('Set the base pin on the map first.'),
+        nobase: noMap ? t('Enter the base coordinates first.') : t('Set the base pin on the map first.'),
         baseheight: t('Enter the base height in metres. We couldn’t look it up.'),
         topheight: t('Enter the top height in metres, or remove the top pin.'),
         toplow: t('The top pin must be higher than the base pin.'),
       }[problem.key];
       ui.errors = { [problem.field]: text };
       refresh();
-      const target = { name: '#fc-name', hbase: '#fc-hbase', htop: '#fc-htop', base: '[data-act="fc-pin-set"]' }[problem.field];
+      const target = { name: '#fc-name', hbase: '#fc-hbase', htop: '#fc-htop', base: noMap ? '#fc-lat' : '[data-act="fc-pin-set"]' }[problem.field];
       $(target)?.focus();
       return;
     }
@@ -158,11 +172,18 @@ export function createPinScreen(ctx) {
     navigator.geolocation.getCurrentPosition((pos) => {
       ui.locNote = false;
       const { latitude, longitude } = pos.coords;
-      if (map) map.flyTo(latitude, longitude, LOCATE_ZOOM);
-      else place('base', latitude, longitude);
+      if (map) {
+        map.flyTo(latitude, longitude, LOCATE_ZOOM);
+        refresh();
+        H().announce(t('Map moved to your location.'));
+        return;
+      }
+      ui.coordsOpen = true;
       refresh();
-      H().announce(t('Map moved to your location.'));
-    }, () => { ui.locNote = true; refresh(); $('#fc-name')?.focus(); });
+      $('#fc-lat').value = pointAt(latitude, longitude).lat;
+      $('#fc-lon').value = pointAt(latitude, longitude).lon;
+      H().announce(t('Your location is in the coordinate fields. Check it, then choose “Set pins from coordinates”.'));
+    }, () => { ui.locNote = true; refresh(); });
   }
 
   function applyCoordinates() {
@@ -171,8 +192,12 @@ export function createPinScreen(ctx) {
       if ($('#fc-lat')?.value.trim() || $('#fc-lon')?.value.trim()) { ui.errors = { coords: t('Enter a latitude between -85 and 85 and a longitude between -180 and 180.') }; refresh(); }
       return;
     }
+    const tl = $('#fc-tlat')?.value.trim() ?? '', to = $('#fc-tlon')?.value.trim() ?? '';
+    const tlat = parseCoordinate(tl, 85), tlon = parseCoordinate(to, 180);
+    if ((tl || to) && (tlat == null || tlon == null)) { ui.errors = { coords: t('Enter both top coordinates, or leave both empty.') }; refresh(); return; }
     map?.flyTo(lat, lon, FLY_MIN_ZOOM);
     place('base', lat, lon);
+    if (tlat != null) place('top', tlat, tlon);
   }
 
   function applyHeight(key, text) {
@@ -195,7 +220,7 @@ export function createPinScreen(ctx) {
     if (navigator.onLine === false) { ui.map = 'offline'; refresh(); return; }
     ui.map = 'loading';
     refresh();
-    mountMap(el, startView()).then((ctl) => {
+    mountMap(el, startView(), mapLabel()).then((ctl) => {
       if (token !== mounting || !el.isConnected) { ctl.destroy(); return; }
       map = ctl;
       ui.map = 'ready';
@@ -215,6 +240,7 @@ export function createPinScreen(ctx) {
   }
 
   function open(arg) {
+    ui.keep = null;
     if (arg?.mode === 'edit') {
       const resort = fc.list.find((r) => r.id === arg.id);
       if (resort) fc.pinDraft = draftFrom(resort);
@@ -232,7 +258,7 @@ export function createPinScreen(ctx) {
     if (!draft()) fc.pinDraft = freshDraft();
     const d = draft(), edit = d.mode === 'edit';
     ctx.ensureCatalog();
-    const label = t('Map. Move the map to put the cross on the ski area. Arrow keys move the map; plus and minus zoom.');
+    const label = mapLabel();
     return [t(edit ? 'Edit pin' : 'Drop a pin'), `${ctx.back('fc-pin-back', edit ? 'Edit list' : 'Add a mountain')}${ctx.offlineBanner()}
       <p class="sub">${t('Move the map so the cross marks the base of the skiing, not the town or the summit. Then tap “Set base pin here”. You can add a top pin as well.')}</p>
       <div class="fc-mapwrap">
@@ -251,30 +277,43 @@ export function createPinScreen(ctx) {
       <p id="fc-pin-top" class="fc-readout" hidden></p>
       <p id="fc-pin-match" class="fc-match"></p>
       <button id="fc-coord-toggle" class="btn sm alt" data-act="fc-pin-coords" aria-expanded="false" aria-controls="fc-coord-box">${t('Enter coordinates')}</button>
-      <fieldset id="fc-coord-box" class="fc-fields" hidden><legend>${t('Base coordinates')}</legend>
+      <div id="fc-coord-box" hidden><fieldset class="fc-fields"><legend>${t('Base coordinates')}</legend>
         <label class="lbl" for="fc-lat">${t('Latitude')}</label><input class="field" id="fc-lat" inputmode="decimal" autocomplete="off" aria-describedby="fc-coord-err" />
         <label class="lbl" for="fc-lon">${t('Longitude')}</label><input class="field" id="fc-lon" inputmode="decimal" autocomplete="off" aria-describedby="fc-coord-err" />
         <p class="fc-note">${t('For example 44.936 and -72.485')}</p>
-        <p id="fc-coord-err" class="fc-error" role="alert"></p>
       </fieldset>
+      <fieldset class="fc-fields"><legend>${t('Top coordinates (optional)')}</legend>
+        <label class="lbl" for="fc-tlat">${t('Top latitude')}</label><input class="field" id="fc-tlat" inputmode="decimal" autocomplete="off" aria-describedby="fc-coord-err" />
+        <label class="lbl" for="fc-tlon">${t('Top longitude')}</label><input class="field" id="fc-tlon" inputmode="decimal" autocomplete="off" aria-describedby="fc-coord-err" />
+      </fieldset>
+      <p id="fc-coord-err" class="fc-error" role="alert"></p>
+      <button class="btn sm alt" data-act="fc-pin-coords-set">${t('Set pins from coordinates')}</button></div>
       <div id="fc-hbase-wrap" hidden><label class="lbl" for="fc-hbase">${t('Base height (metres)')}</label><input class="field" id="fc-hbase" inputmode="numeric" autocomplete="off" aria-describedby="fc-height-err" /></div>
       <div id="fc-htop-wrap" hidden><label class="lbl" for="fc-htop">${t('Top height (metres)')}</label><input class="field" id="fc-htop" inputmode="numeric" autocomplete="off" aria-describedby="fc-height-err" /></div>
       <p id="fc-height-err" class="fc-error" role="alert"></p>
       <label class="lbl" for="fc-name">${t('Name this mountain')}</label>
       <input class="field" id="fc-name" autocomplete="off" value="${esc(d.name)}" aria-describedby="fc-name-err" />
       <p id="fc-name-err" class="fc-error" role="alert"></p>
-      <div class="card"><h3>${t('Provisional mountain · terrain unverified')}</h3>
+      <div class="card"><h3>${t('Pinned mountain · terrain unverified')}</h3>
         <p id="fc-terrain-one" class="sub">${t('One point only: we don’t know where the lifts, base and summit are, so you’ll see one estimate for the whole mountain, with lower confidence. Ski hours are assumed. You can move the pin later.')}</p>
         <p id="fc-terrain-two" class="sub" hidden>${t('Two points: you’ll see base and summit estimates at the heights of your pins. Lift and run positions are not checked, so use it as a guide. Ski hours are assumed. You can move the pins later.')}</p></div>
       <p id="fc-pin-err" class="fc-error" role="alert"></p>
-      <button class="btn" data-act="fc-pin-save">${t(edit ? 'Save changes' : 'Save mountain')}</button>`, false];
+      <button class="btn" data-act="fc-pin-save">${t(edit ? 'Save changes' : 'Save mountain')}</button>${edit ? `<button class="btn danger" data-act="fc-pin-remove">${t('Remove this mountain')}</button>` : ''}`, false];
   }
 
   function onClick(act, d) {
     switch (act) {
       case 'fc-pin-new': open({ mode: 'new' }); ctx.focusSel('#fc-name'); return true;
       case 'fc-pin-edit': open({ mode: 'edit', id: d.r }); return true;
-      case 'fc-pin-back': H().open(draft()?.mode === 'edit' ? 'fcedit' : 'fcadd'); return true;
+      case 'fc-pin-back': {
+        const edit = draft()?.mode === 'edit';
+        if (edit) ctx.focusSel(`[data-act="fc-pin-edit"][data-r="${draft().id}"]`);
+        H().open(edit ? 'fcedit' : 'fcadd');
+        return true;
+      }
+      case 'fc-pin-remove': { const id = draft().id; fc.pinDraft = null; ctx.removeRow(id); return true; }
+      case 'fc-pin-keep': ui.keep = d.r; refresh(); $('#fc-name')?.focus(); H().announce(t('Keeping this as a pin.')); return true;
+      case 'fc-pin-coords-set': applyCoordinates(); return true;
       case 'fc-pin-set': {
         const c = map?.center();
         if (c) { place(d.v, c.lat, c.lon); H().announce(d.v === 'base' ? t('Base pin set.') : t('Top pin set.')); }
@@ -285,7 +324,7 @@ export function createPinScreen(ctx) {
       case 'fc-pin-coords': ui.coordsOpen = !ui.coordsOpen; refresh(); return true;
       case 'fc-pin-retry': ui.mapFails++; startMap(); return true;
       case 'fc-pin-save': save(); return true;
-      case 'fc-pin-usecat': ctx.useCatalog(d.r, d.p || null, !d.p); return true;
+      case 'fc-pin-usecat': ctx.useCatalog(d.r, d.p || null, H().sheet() === 'fcpin'); return true;
       default: return false;
     }
   }
@@ -294,10 +333,10 @@ export function createPinScreen(ctx) {
     const d = draft();
     if (!d) return false;
     if (el.id === 'fc-name') { if (type === 'input') { d.name = el.value; if (ui.errors.name) { ui.errors = {}; refresh(); } } return true; }
-    if (type !== 'change') return ['fc-hbase', 'fc-htop', 'fc-lat', 'fc-lon'].includes(el.id);
+    if (type !== 'change') return ['fc-hbase', 'fc-htop', 'fc-lat', 'fc-lon', 'fc-tlat', 'fc-tlon'].includes(el.id);
     if (el.id === 'fc-hbase') applyHeight('base', el.value);
     else if (el.id === 'fc-htop') applyHeight('top', el.value);
-    else if (el.id === 'fc-lat' || el.id === 'fc-lon') applyCoordinates();
+    else if (['fc-lat', 'fc-lon', 'fc-tlat', 'fc-tlon'].includes(el.id)) applyCoordinates();
     else return false;
     return true;
   }

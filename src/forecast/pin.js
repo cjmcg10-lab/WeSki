@@ -1,6 +1,7 @@
 export const PIN_PREFIX = 'pin-';
 export const MATCH_KM = 3;
 export const TZ_MAX_KM = 300;
+export const TZ_SURE_KM = 50;
 const ID_RE = /^[a-z0-9-]{1,40}$/;
 const ELEVATION_TIMEOUT_MS = 8000;
 const MAX_HEIGHT_M = 9000;
@@ -39,7 +40,7 @@ export const pointAt = (lat, lon) => ({ lat: round5(lat), lon: round5(lon), elev
 
 export function zoneFor(lat, lon, nearest = []) {
   const near = nearest.find((r) => r.tz && r.km <= TZ_MAX_KM);
-  if (near) return { tz: near.tz, guessed: false };
+  if (near) return { tz: near.tz, guessed: near.km > TZ_SURE_KM };
   const hours = Math.round(lon / 15);
   return { tz: hours === 0 ? 'Etc/GMT' : `Etc/GMT${hours > 0 ? '-' : '+'}${Math.abs(hours)}`, guessed: true };
 }
@@ -92,7 +93,7 @@ export async function fetchElevation(lat, lon, fetchImpl = globalThis.fetch) {
     const res = await fetchImpl(`/api/elevation?lat=${lat}&lon=${lon}`, { signal: AbortSignal.timeout(ELEVATION_TIMEOUT_MS) });
     if (!res.ok) return null;
     const { elevation } = await res.json();
-    return Number.isFinite(elevation) ? elevation : null;
+    return Number.isFinite(elevation) && elevation >= MIN_HEIGHT_M && elevation <= MAX_HEIGHT_M ? elevation : null;
   } catch {
     return null;
   }

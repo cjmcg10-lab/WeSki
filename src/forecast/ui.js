@@ -36,10 +36,10 @@ const regionOf = (r) => (r.pin ? t('Dropped pin') : r.region);
 const nameOf = (r) => (sameName(fc.list, r) ? `${r.name}, ${regionOf(r)}` : r.name);
 const coords = (r) => `${r.baseLat.toFixed(3)}, ${r.baseLon.toFixed(3)}`;
 const place = (r) => (r.pin ? coords(r) : [r.region, r.country].filter(Boolean).join(' · '));
-const pinTags = (r) => (r.pin ? `<span class="tag">${t('Provisional')}</span> <span class="tag warn">${t('Terrain unverified')}</span>` : '');
+const pinTags = (r) => (r.pin ? `<span class="tag">${t('Pinned')}</span> <span class="tag warn">${t('Terrain unverified')}</span>` : '');
 const MISSING = { top: () => t('Summit height estimated'), base: () => t('Base height estimated'), points: () => t('Location approximate') };
 const pinNotes = (r) => [
-  t('Provisional mountain, terrain unverified: this forecast is for the point you pinned, not for checked lifts and runs.'),
+  t('Pinned mountain, terrain unverified: this forecast is for the point you pinned, not for checked lifts and runs.'),
   r.top == null ? t('One point only, so this is one estimate for the whole mountain, with lower confidence.') : '',
   r.tzGuessed ? t('Time zone estimated from the pin’s position.') : '',
 ].filter(Boolean);
@@ -422,6 +422,7 @@ const pin = createPinScreen({
   focusSel: (sel) => focusSel(sel),
   commitPin: (resort, edit) => commitPin(resort, edit),
   useCatalog: (catalogId, pinId, fromPinScreen) => useCatalog(catalogId, pinId, fromPinScreen),
+  removeRow: (id) => removeRow(id),
 });
 
 function updateResults() {
@@ -503,6 +504,17 @@ function focusSel(sel) {
   fc.focusSel = sel;
 }
 
+function removeRow(id) {
+  syncEditRows();
+  const name = fc.list.find((r) => r.id === id)?.name ?? '';
+  fc.editRows = fc.editRows.map((r) => (r.resort.id === id ? { ...r, removed: true } : r));
+  fc.list = fc.editRows.filter((r) => !r.removed).map((r) => r.resort);
+  persist();
+  focusSel(`[data-act="fc-undo"][data-r="${id}"]`);
+  host.announce(t('{0} removed. Undo is available.', name));
+  host.open('fcedit');
+}
+
 function applyList(rowsNext) {
   fc.editRows = rowsNext;
   fc.list = rowsNext.filter((r) => !r.removed).map((r) => r.resort);
@@ -558,7 +570,8 @@ function useCatalog(catalogId, pinId, fromPinScreen) {
   fc.editRows = [];
   if (pinId) fc.data.delete(pinId);
   if (!already) { setEntry(resort, { state: 'loading' }); loadOne(resort, false); }
-  host.announce(already ? t('{0} is already on your list. The pin was removed.', resort.name) : t('{0} is now on your list instead of the pin.', resort.name));
+  host.announce(already ? t('{0} is already on your list.', resort.name) : t('{0} is now on your list instead of the pin.', resort.name));
+  if (already) { fc.pinDraft = null; fc.flash = { id: resort.id, isNew: false }; fc.added = []; openCalendar(); focusSel(`[data-row="${resort.id}"]`); setTimeout(clearFlash, FLASH_MS); return; }
   if (fromPinScreen) { fc.pinDraft = null; showNew(resort.id); } else { host.render(); focusSel('[data-act="fc-home"]'); }
 }
 

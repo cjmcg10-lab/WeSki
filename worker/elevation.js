@@ -4,6 +4,8 @@ const TILE_SIZE = 256;
 const FETCH_TIMEOUT_MS = 6000;
 const CACHE_S = 30 * 86400;
 const MAX_LAT = 85;
+const MIN_HEIGHT_M = -500;
+const MAX_HEIGHT_M = 9000;
 const SOURCE = 'terrain-tiles';
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const CHANNELS = { 2: 3, 6: 4 };
@@ -81,9 +83,20 @@ export const terrariumMetres = ([r, g, b]) => r * 256 + g + b / 256 - 32768;
 
 export async function elevationAt(lat, lon, fetchImpl = fetch) {
   const { z, x, y, px, py } = tileOf(lat, lon);
-  const res = await fetchImpl(tileUrl(z, x, y), { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
-  if (!res.ok) throw new Error(`terrain tile ${res.status}`);
-  return Math.round(terrariumMetres(await pngPixel(new Uint8Array(await res.arrayBuffer()), px, py)));
+  const url = tileUrl(z, x, y);
+  const cache = typeof caches !== 'undefined' ? caches.default : null;
+  const key = new Request(url);
+  const hit = cache && (await cache.match(key));
+  let bytes;
+  if (hit) bytes = new Uint8Array(await hit.arrayBuffer());
+  else {
+    const res = await fetchImpl(url, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    if (!res.ok) throw new Error(`terrain tile ${res.status}`);
+    bytes = new Uint8Array(await res.arrayBuffer());
+  }
+  const metres = Math.round(terrariumMetres(await pngPixel(bytes, px, py)));
+  if (!hit && cache) await cache.put(key, new Response(bytes, { headers: { 'content-type': 'image/png', 'cache-control': `public, max-age=${CACHE_S}` } }));
+  return metres >= MIN_HEIGHT_M && metres <= MAX_HEIGHT_M ? metres : null;
 }
 
 const cacheKey = ({ lat, lon }) => new Request(`https://elevation.invalid/v1/${lat.toFixed(4)}/${lon.toFixed(4)}`);
