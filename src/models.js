@@ -422,12 +422,9 @@ export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4) {
 
 /** Small conifer, base at y=0. */
 export function treeGeometry() {
-  // two stacked 6-sided cones, smooth shaded, no bottoms (they sit in the snow or inside the tier below and are
-  // not seen from above): 12 triangles a tree. Same overall size as before: 4.2 tall, radius 1 at the foot.
-  return mergeGeometries([
-    new THREE.ConeGeometry(1, 2.9, 6, 1, true).translate(0, 1.45, 0),
-    new THREE.ConeGeometry(0.72, 2.7, 6, 1, true).rotateY(Math.PI / 6).translate(0, 1.5 + 1.35, 0),
-  ]);
+  // one 6-sided cone, smooth shaded, no bottom (it sits in the snow and is never seen): 6 triangles a tree,
+  // half the two-tier fir and only 2 more than the old faceted cone, so 9,000 trees stay cheap on phones
+  return new THREE.ConeGeometry(1, 4.2, 6, 1, true).translate(0, 2.1, 0);
 }
 
 /** Map pin (dropped pin) and flag (meeting point), base at y=0, ~3 units tall. */
