@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { readdirSync, readFileSync, writeFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { createHash } from 'node:crypto';
+import { packResort } from './tools/heights_pack.mjs';
 
 // After the build, stamp the service worker with the list of files to precache
 // so the whole app (code + resort map data) works offline.
@@ -17,6 +18,8 @@ function swManifest() {
         const f = join(dist, 'data', id, 'resort.json');
         let R;
         try { R = JSON.parse(readFileSync(f, 'utf8')); } catch { continue; }
+        // compact copies of the height grids, which the app downloads instead of the .bin (src/heights.js)
+        for (const [name, buf] of Object.entries(packResort(join(dist, 'data', id), R))) writeFileSync(join(dist, 'data', id, name), buf);
         if (!R.graph) continue;
         writeFileSync(join(dist, 'data', id, 'graph.json'), JSON.stringify(R.graph));
         delete R.graph;
@@ -31,7 +34,7 @@ function swManifest() {
             const url = '/' + relative(dist, p).replace(/\\/g, '/');
             // each resort's map (data/<id>/...) is fetched and cached when that resort is opened,
             // not up front: only the app shell, globe and resort list are precached
-            if (!/^\/data\/[^/]+\//.test(url)) files.push(url);
+            if (!/^\/(data\/[^/]+|forecast)\//.test(url)) files.push(url);
           }
         }
       };

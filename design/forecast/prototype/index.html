@@ -1,0 +1,49 @@
+<!-- PROTOTYPE — design artifact from /sdlc:generate-ux. Not production code.
+     Implementation is produced by /sdlc:generate-code from ux-prd.md. -->
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Screen index · SkiWithMe Forecast prototype</title>
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body data-screen="s1" data-root="">
+  <header class="proto-head">
+    <h1>SkiWithMe Forecast: design prototype</h1>
+    <p>A design artifact with hand-made fixture data. It is not a live forecast and not the real app.</p>
+  </header>
+  <main class="proto-layout">
+    <div id="phone" class="phone">
+      <noscript><p>This prototype draws its screens with JavaScript. Turn JavaScript on to view it.</p></noscript>
+    </div>
+    <aside class="proto-side" aria-label="Prototype controls">
+      <div id="proto-panel"></div>
+      <nav class="proto-index" aria-label="Screen index">
+        <h2>Screen index</h2>
+        <p class="proto-note">Each link opens one screen in its own file. The small links open that screen in one state.</p>
+        <ul>
+        <li><a href="screens/s1-forecast.html">S1 Forecast</a> <span>The calendar: mountains down the side, nine days across.</span>
+          <span class="states"><a href="screens/s1-forecast.html?state=default" aria-label="S1 Forecast, default state">default</a> <a href="screens/s1-forecast.html?state=loading" aria-label="S1 Forecast, loading state">loading</a> <a href="screens/s1-forecast.html?state=empty" aria-label="S1 Forecast, empty state">empty</a> <a href="screens/s1-forecast.html?state=error" aria-label="S1 Forecast, error state">error</a> <a href="screens/s1-forecast.html?state=partial" aria-label="S1 Forecast, partial state">partial</a> <a href="screens/s1-forecast.html?state=offline" aria-label="S1 Forecast, offline state">offline</a> <a href="screens/s1-forecast.html?state=no-permission" aria-label="S1 Forecast, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s2-day-view.html">S2 Day view</a> <span>One mountain on one day: score, best window, hours.</span>
+          <span class="states"><a href="screens/s2-day-view.html?state=default" aria-label="S2 Day view, default state">default</a> <a href="screens/s2-day-view.html?state=loading" aria-label="S2 Day view, loading state">loading</a> <a href="screens/s2-day-view.html?state=empty" aria-label="S2 Day view, empty state">empty</a> <a href="screens/s2-day-view.html?state=error" aria-label="S2 Day view, error state">error</a> <a href="screens/s2-day-view.html?state=partial" aria-label="S2 Day view, partial state">partial</a> <a href="screens/s2-day-view.html?state=offline" aria-label="S2 Day view, offline state">offline</a> <a href="screens/s2-day-view.html?state=no-permission" aria-label="S2 Day view, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s3-add-a-mountain.html">S3 Add a mountain</a> <span>Search the worldwide list and add to the calendar.</span>
+          <span class="states"><a href="screens/s3-add-a-mountain.html?state=default" aria-label="S3 Add a mountain, default state">default</a> <a href="screens/s3-add-a-mountain.html?state=loading" aria-label="S3 Add a mountain, loading state">loading</a> <a href="screens/s3-add-a-mountain.html?state=empty" aria-label="S3 Add a mountain, empty state">empty</a> <a href="screens/s3-add-a-mountain.html?state=error" aria-label="S3 Add a mountain, error state">error</a> <a href="screens/s3-add-a-mountain.html?state=partial" aria-label="S3 Add a mountain, partial state">partial</a> <a href="screens/s3-add-a-mountain.html?state=offline" aria-label="S3 Add a mountain, offline state">offline</a> <a href="screens/s3-add-a-mountain.html?state=no-permission" aria-label="S3 Add a mountain, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s4-drop-a-pin.html">S4 Drop a pin</a> <span>Add a mountain that is not in the list.</span>
+          <span class="states"><a href="screens/s4-drop-a-pin.html?state=default" aria-label="S4 Drop a pin, default state">default</a> <a href="screens/s4-drop-a-pin.html?state=loading" aria-label="S4 Drop a pin, loading state">loading</a> <a href="screens/s4-drop-a-pin.html?state=empty" aria-label="S4 Drop a pin, empty state">empty</a> <a href="screens/s4-drop-a-pin.html?state=error" aria-label="S4 Drop a pin, error state">error</a> <a href="screens/s4-drop-a-pin.html?state=partial" aria-label="S4 Drop a pin, partial state">partial</a> <a href="screens/s4-drop-a-pin.html?state=offline" aria-label="S4 Drop a pin, offline state">offline</a> <a href="screens/s4-drop-a-pin.html?state=no-permission" aria-label="S4 Drop a pin, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s5-edit-list.html">S5 Edit list</a> <span>Reorder and remove mountains.</span>
+          <span class="states"><a href="screens/s5-edit-list.html?state=default" aria-label="S5 Edit list, default state">default</a> <a href="screens/s5-edit-list.html?state=loading" aria-label="S5 Edit list, loading state">loading</a> <a href="screens/s5-edit-list.html?state=empty" aria-label="S5 Edit list, empty state">empty</a> <a href="screens/s5-edit-list.html?state=error" aria-label="S5 Edit list, error state">error</a> <a href="screens/s5-edit-list.html?state=partial" aria-label="S5 Edit list, partial state">partial</a> <a href="screens/s5-edit-list.html?state=offline" aria-label="S5 Edit list, offline state">offline</a> <a href="screens/s5-edit-list.html?state=no-permission" aria-label="S5 Edit list, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s6-plan-a-trip.html">S6 Plan a trip</a> <span>Pick days and rank the mountains for them.</span>
+          <span class="states"><a href="screens/s6-plan-a-trip.html?state=default" aria-label="S6 Plan a trip, default state">default</a> <a href="screens/s6-plan-a-trip.html?state=loading" aria-label="S6 Plan a trip, loading state">loading</a> <a href="screens/s6-plan-a-trip.html?state=empty" aria-label="S6 Plan a trip, empty state">empty</a> <a href="screens/s6-plan-a-trip.html?state=error" aria-label="S6 Plan a trip, error state">error</a> <a href="screens/s6-plan-a-trip.html?state=partial" aria-label="S6 Plan a trip, partial state">partial</a> <a href="screens/s6-plan-a-trip.html?state=offline" aria-label="S6 Plan a trip, offline state">offline</a> <a href="screens/s6-plan-a-trip.html?state=no-permission" aria-label="S6 Plan a trip, no-permission state">no-permission</a></span></li>
+        <li><a href="screens/s7-how-scores-work.html">S7 How scores work</a> <span>The plain-language explainer.</span>
+          <span class="states"><a href="screens/s7-how-scores-work.html?state=default" aria-label="S7 How scores work, default state">default</a> <a href="screens/s7-how-scores-work.html?state=loading" aria-label="S7 How scores work, loading state">loading</a> <a href="screens/s7-how-scores-work.html?state=empty" aria-label="S7 How scores work, empty state">empty</a> <a href="screens/s7-how-scores-work.html?state=error" aria-label="S7 How scores work, error state">error</a> <a href="screens/s7-how-scores-work.html?state=partial" aria-label="S7 How scores work, partial state">partial</a> <a href="screens/s7-how-scores-work.html?state=offline" aria-label="S7 How scores work, offline state">offline</a> <a href="screens/s7-how-scores-work.html?state=no-permission" aria-label="S7 How scores work, no-permission state">no-permission</a></span></li>
+        </ul>
+        <p class="proto-note">Entry points: <a href="index.html?screen=map">map and tab bar</a>, <a href="index.html?screen=start">start screen</a>, <a href="index.html?screen=wx">Mountain weather row</a>. Add <code>&amp;theme=light</code> or <code>?theme=light</code> for the light theme.</p>
+      </nav>
+    </aside>
+  </main>
+  <script src="mock/data.js"></script>
+  <script src="prototype.js"></script>
+</body>
+</html>

@@ -11,7 +11,7 @@ self.addEventListener('install', (event) => {
   );
 });
 
-const RESORT_DATA = /^\/data\/[^/]+\//;   // one folder of map data per resort, cached when first opened
+const RESORT_DATA = /^\/(data\/[^/]+|forecast)\//;   // one folder of map data per resort, and the Forecast resort catalog, cached when first opened
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {

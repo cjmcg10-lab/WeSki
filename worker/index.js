@@ -4,10 +4,12 @@ import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
-import { cleanSummary, cleanReport, RESORT_RE } from './evidence.js';
+import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
-import { weather } from './weather.js';
-export { Accounts, ResortLog } from './stores.js';
+import { weatherResponse, historyResponse } from './capture.js';
+import { statusResponse } from './resort-status.js';
+import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
+export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
 const CODE_RE = /^[A-Z2-9]{6}$/;
@@ -20,7 +22,7 @@ const accounts = (env) => env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main'));
 const resortLog = (env, id) => env.RESORTLOG.get(env.RESORTLOG.idFromName(id));
 const session = (request) => sessionFromCookie(request.headers.get('cookie'));
 // a rough, daily-changing key for rate limits: the address itself is never stored
-const ipKey = async (request) => (await sha256((request.headers.get('cf-connecting-ip') || '') + new Date().toISOString().slice(0, 10))).slice(0, 16);
+const ipKey = async (request, env) => (await sha256(networkOf(request.headers.get('cf-connecting-ip') || '') + (env.IP_SALT || '') + new Date().toISOString().slice(0, 10))).slice(0, 16);
 const readJson = async (request, max = 200000) => {
   const raw = await request.text();
   if (raw.length > max) return null;
@@ -41,20 +43,21 @@ async function groupOk(url, env, resort) {
   return env.GROUPS.get(env.GROUPS.idFromName(code)).isMember(member, resort);
 }
 
-async function api(request, env, url) {
+async function api(request, env, url, ctx) {
   const path = url.pathname, method = request.method;
   // state-changing requests must come from the app's own pages (cookies are SameSite=Lax as well)
   if (method === 'POST' && path !== '/api/paddle/webhook') {
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
-  if (path === '/api/weather' && method === 'GET') {
-    try {
-      const r = await weather(url);
-      if (r.error) return json({ error: r.error }, r.status);
-      return new Response(JSON.stringify(r), { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=900' } });
-    } catch (e) { return json({ error: 'The weather service did not answer.' }, 502); }
-  }
+  if (path === '/api/weather' && method === 'GET') return weatherResponse(url, env, ctx);
+  const historyId = method === 'GET' && /^\/api\/history\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (historyId) return historyResponse(historyId, env);
+  const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (statusId) return statusResponse(statusId);
+  if (path === '/api/feedback' && method === 'POST') return feedbackResponse(await request.text(), env, await ipKey(request, env));
+  const archiveId = method === 'GET' && /^\/api\/forecast-archive\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (archiveId) return archiveExportResponse(request, url, archiveId, env);
   if (path === '/api/config' && method === 'GET') {
     const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));
     return json({
@@ -67,7 +70,7 @@ async function api(request, env, url) {
     const b = await readJson(request, 2000), email = normEmail(b?.email);
     if (!EMAIL_RE.test(email)) return json({ error: 'Enter a valid email address' }, 400);
     if (!env.RESEND_API_KEY || !env.MAIL_FROM) return json({ error: 'Sign-in is not open yet' }, 503);
-    const login = await accounts(env).startLogin(email, await ipKey(request));
+    const login = await accounts(env).startLogin(email, await ipKey(request, env));
     if (!login) return json({ error: 'Too many sign-in emails. Try again in an hour.' }, 429);
     const mail = signInEmail(`${url.origin}/api/auth/finish?t=${login.token}`, login.code);
     const res = await fetch('https://api.resend.com/emails', {
@@ -128,14 +131,14 @@ async function api(request, env, url) {
   if (path === '/api/contrib' && method === 'POST') {
     const s = cleanSummary(await readJson(request));
     if (s.error) return json({ error: s.error }, 400);
-    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request)));
+    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request, env)));
   }
   const heat = path.match(/^\/api\/heat\/([a-z0-9-]{2,40})$/);
   if (heat && method === 'GET') return json(await resortLog(env, heat[1]).heat());
   if (path === '/api/reports' && method === 'POST') {
     const r = cleanReport(await readJson(request, 4000));
     if (r.error) return json({ error: r.error }, 400);
-    const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request));
+    const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request, env));
     return json(out, out.ok ? 200 : 429);
   }
   const reps = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})$/);
@@ -144,7 +147,7 @@ async function api(request, env, url) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // directions data is part of the paid tier: served only with a pass when the paywall is on
     const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
@@ -153,7 +156,7 @@ export default {
     const map = await fromR2(request, env, url);
     if (map) return map;
     if (url.pathname.startsWith('/api/') && !url.pathname.startsWith('/api/groups')) {
-      const res = await api(request, env, url);
+      const res = await api(request, env, url, ctx);
       if (res) return res;
     }
     if (url.pathname === '/api/groups' && request.method === 'POST') {

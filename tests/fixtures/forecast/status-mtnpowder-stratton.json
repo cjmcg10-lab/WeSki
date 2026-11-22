@@ -1,0 +1,134 @@
+{
+ "_label": "Recorded mtnpowder.com feed for Stratton (resortId 1), 2026-11-22, trimmed to the fields the normaliser reads and a few lifts and trails.",
+ "Name": "Stratton",
+ "LastUpdate": "2026-11-22T11:58:48-0500",
+ "OperatingStatus": "Closed",
+ "MountainAreas": [
+  {
+   "Name": "Area",
+   "Lifts": [
+    {
+     "Name": "Cub Carpet",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-10-29T13:10:53-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    },
+    {
+     "Name": "Villager",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-10-29T13:10:53-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    },
+    {
+     "Name": "Tamarack",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-10-29T13:10:53-0400",
+     "Hours": {
+      "Sunday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      },
+      "Monday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Tuesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Wednesday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Thursday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Friday": {
+       "Open": "9:00 AM",
+       "Close": "4:00 PM"
+      },
+      "Saturday": {
+       "Open": "8:30 AM",
+       "Close": "4:00 PM"
+      }
+     }
+    }
+   ],
+   "Trails": [
+    {
+     "Name": "Buck Shot",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-03-11T18:52:17-0400",
+     "Grooming": "No",
+     "Difficulty": "Intermediate"
+    },
+    {
+     "Name": "Cabin Fever",
+     "StatusEnglish": "closed",
+     "UpdateDate": "2026-03-11T18:52:20-0400",
+     "Grooming": "No",
+     "Difficulty": "Expert"
+    }
+   ]
+  }
+ ]
+}

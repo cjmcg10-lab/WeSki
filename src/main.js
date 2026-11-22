@@ -1,6 +1,8 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
+import { fetchHeights } from './heights.js';
+const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
@@ -19,6 +21,8 @@ import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { placeTr } from './placenames.js';
 import * as acct from './account.js';
+import * as fcUi from './forecast/ui.js';
+import { FEEDBACK_TAGS, FEEDBACK_LABELS, FEEDBACK_MAX_AGE_DAYS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -37,6 +41,7 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
 // On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
 const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
 function fitScreen() {
+  if (window.visualViewport && window.visualViewport.scale > 1.01) return;
   const portrait = window.innerHeight >= window.innerWidth;
   const h = COLUMN.matches ? Math.min(window.innerHeight - 32, 932)
     : navigator.standalone === true && portrait ? Math.max(window.innerHeight, screen.height) : window.innerHeight;
@@ -161,10 +166,11 @@ function initMap(id) {
     await loadPlaces();
     const pl = placeById(id);
     if (!pl?.available) throw new Error('no map for ' + id);
+    const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
     const [resort, buf, sur] = await Promise.all([
-      fetchOk(`/data/${id}/resort.json`).then((r) => r.json()),
-      fetchOk(`/data/${id}/terrain.bin`).then((r) => r.arrayBuffer()),
-      fetchOk(`/data/${id}/surround.bin`).then((r) => r.arrayBuffer()).catch(() => null),
+      resortP,
+      fetchHeights(`/data/${id}/terrain`, resortP.then((R) => R.grid), undefined, noZ16),
+      fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     if (S.map) {                              // leaving the previous mountain
@@ -199,6 +205,7 @@ function initMap(id) {
     if (!ticking) { ticking = true; setInterval(tick, 1000); }
     window.skiwithme = S; // handy for debugging from the Safari console
     flushContrib().catch(() => {});
+    flushFeedback(prefs).catch(() => {});
   })().catch((e) => { if (mapId === id) { mapP = null; mapId = null; } throw e; }));
 }
 
@@ -701,6 +708,14 @@ onLangChange(() => {
   if (!$('#sheet').classList.contains('hidden')) renderSheet();
   if (S.map) { renderChrome(); S.map.overlayDirty = true; }
 });
+fcUi.init({
+  sheet: () => S.sheet,
+  open: (name, arg) => openSheet(name, arg),
+  render: () => { if (fcUi.isForecastSheet(S.sheet)) renderSheet(); },
+  toast: (msg, ms) => toast(msg, ms),
+  announce: (msg) => { const el = $('#fc-live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 50); } },
+  units: () => S.units,
+});
 document.addEventListener('click', onClick);
 // Legal pages and the About page open in a viewer over the app (an installed app has no browser Back button),
 // so Back returns to exactly where the person was: same map, same group, same panel.
@@ -861,7 +876,7 @@ function startSession(kind) {
   if (S.tracker) { if (kind === 'group') { S.session.kind = 'group'; S.session.group = S.group?.code; } return; }
   S.tracker = new Tracker(S.geo, S.resort.lifts);
   stopCrumbs();                               // stats tracking records the track itself from here on
-  S.session = { id: 's' + Date.now(), resort: S.place.id, kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
+  S.session = { id: 's' + Date.now(), resort: S.place.id, kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), sim: S.testMode, end: null, active: true, routes: [], points: S.tracker.points, stats: null };
   ensureLocation();
   wakeLock();
 }
@@ -1376,13 +1391,14 @@ function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
   renderChrome();
 }
 function closeSheet() {
+  if (fcUi.isForecastSheet(S.sheet)) fcUi.onClose();
   $('#sheet').classList.remove('over-start');
   S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
@@ -1410,12 +1426,13 @@ function renderAcctChip() {
 function renderSheet() {
   renderAcctChip();
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety, ...fcUi.sheets }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = S.sheetTitle === title && S.sheetLang === getLang();
   S.sheetTitle = title; S.sheetLang = getLang();
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
+  $('#sheet').classList.toggle('tall', fcUi.isForecastSheet(S.sheet));
   $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
@@ -1426,6 +1443,7 @@ function renderSheet() {
   S.sheetHtml = html;
   body.innerHTML = html;
   if (same) body.scrollTop = keep;
+  if (fcUi.isForecastSheet(S.sheet)) fcUi.afterRender(S.sheet);
   const pv = $('#av-preview');
   if (pv) { try { mountPreview(pv, S.profile.avatar, S.profile.color); } catch { pv.innerHTML = avatarSvg(S.profile.avatar.split('~')[0], S.profile.color); } }
 }
@@ -1637,12 +1655,38 @@ function sheetSession(id) {
   const runs = s.stats.runs.map((r, i) => `<button class="list-item" data-act="replay" data-id="${s.id}" data-run="${i}"><div class="grow"><div class="t">Run ${i + 1} · ${fmtClock(r.t0)}</div><div class="s">${fmtDist(r.dist)} · ${fmtVert(r.vert)} · top ${fmtSpeed(r.top)} ${speedUnit()} · ${fmtDur(r.time)}</div></div><span class="chev">▶</span></button>`).join('');
   const routes = (s.routes || []).map((r, i) => routeRow(r, s.id, i)).join('');
   return [`${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}`, `
+    ${feedbackCard(s)}
     <button class="btn" data-act="replay" data-id="${s.id}" ${s.points.length < 2 ? 'disabled' : ''}>▶ Replay on map</button>
     ${statGrid(s.stats, false)}
     <div class="card"><h3>Runs</h3>${runs || '<p class="sub">No complete runs in this session.</p>'}</div>
     ${routes ? `<div class="card"><h3>Routes</h3>${routes}</div>` : ''}
     <button class="btn alt" data-act="tab" data-tab="history">Back to history</button>
     <button class="btn danger" data-act="delete-session" data-id="${s.id}">Delete session</button>`];
+}
+
+const skiDayOf = (s) => new Date(s.start).toLocaleDateString('en-CA');
+
+/** "How was it?" on a saved day: optional, asked once per mountain and day, sent without identity, place or time of day. */
+function feedbackCard(s) {
+  if (s.sim || Date.now() - s.start > (FEEDBACK_MAX_AGE_DAYS - 2) * 864e5 || feedbackAsked(prefs, resortOf(s), skiDayOf(s))) return '';
+  const f = S.fb?.id === s.id ? S.fb : (S.fb = { id: s.id, rating: 0, tags: [] });
+  const rate = [1, 2, 3, 4, 5].map((n) => `<button data-act="fb-rate" data-v="${n}" aria-pressed="${f.rating === n}" aria-label="${f.rating === n ? t('Rated {0} of 5', n) : t('Rate {0} of 5', n)}" class="${f.rating === n ? 'on' : ''}">${n}</button>`).join('');
+  const tags = FEEDBACK_TAGS.map((k) => `<button data-act="fb-tag" data-v="${k}" aria-pressed="${f.tags.includes(k)}" class="${f.tags.includes(k) ? 'on' : ''}">${FEEDBACK_LABELS[k]}</button>`).join('');
+  return `<div class="card" role="group" aria-labelledby="fb-h"><h3 id="fb-h">How was it?</h3>
+    <p class="sub">Optional. Rate the day from 1 (poor) to 5 (great). It is sent without your name, location or time of day: only the mountain, the date and your answer.</p>
+    <div class="seg" role="group" aria-label="${t('How was it?')}">${rate}</div>
+    <div class="seg wrap" role="group" aria-label="${t('What was it like?')}">${tags}</div>
+    <button class="btn" data-act="fb-send" data-id="${s.id}" ${f.rating ? '' : 'disabled'}>Send</button>
+    <button class="btn alt" data-act="fb-skip" data-id="${s.id}">Skip</button></div>`;
+}
+
+async function answerSkiDayFeedback(id, send) {
+  const s = (S.history || []).find((x) => x.id === id);
+  if (!s) return;
+  answerFeedback(prefs, resortOf(s), skiDayOf(s), send && S.fb?.id === id && S.fb.rating ? S.fb : null);
+  S.fb = null;
+  if (send) { toast(navigator.onLine ? 'Thank you for the feedback.' : 'Thank you. It will be sent when you are online.'); await flushFeedback(prefs).catch(() => {}); }
+  renderSheet();
 }
 
 function routeRow(r, id, i) {
@@ -1766,6 +1810,7 @@ function sheetPrivacy() {
     <div class="card"><div class="rowf"><div class="grow"><h4 style="margin:0">Help improve the maps</h4><div class="sub">After each ski day, send which runs you skied and which spots off the mapped runs you crossed. Never your track, times or speed, and never who you are.</div></div><label class="switch"><input type="checkbox" id="f-contrib" ${prefs.get('contrib', null) ? 'checked' : ''} /><i></i></label></div>
       ${S.learn?.contrib ? '' : '<button class="learn" data-act="learn" data-k="contrib">How it works<i>›</i></button>'}
       ${S.learn?.contrib ? '<p class="learn-text">Off unless you switch it on. The day after a ski day, the phone sends a summary of the parts that look like skiing: moving at ski speed on the mountain, not on a lift, not standing still, and not in or near lodges, other buildings or car parks. It lists the run numbers you skied and the 20 m squares off the mapped runs you skied through. There is no account, device number or time on it. Our server only adds up counts, and a square or run is used only once at least 5 different ski days reached it, so one person’s day cannot be picked out. We use the counts to find runs missing from the map and lines drawn in the wrong place. Switching it off stops it at once.</p>' : ''}</div>
+    <div class="card"><h4>Ski-day feedback</h4><p class="sub">After a saved ski day you can rate it from 1 to 5 and tag what it was like. It is optional and asked once per day. Only the mountain, the date, your rating and tags are sent. No name, account, location or time of day.</p></div>
     <div class="card"><h4>Report a map mistake</h4><p class="sub">A run missing or in the wrong place, a wrong rating, a run that does not exist. Drop a pin on the spot first (tap the map), then report it from the pin.</p><button class="btn alt" data-act="report-open">Report a mistake</button></div>
     <div class="card"><h4>Your data</h4><p class="sub">Your ski days, settings and favorites stay on this phone. Group locations pass through our server only while you share them and are not stored after the group ends. Read the full privacy policy for what is kept and for how long.</p>
       <p class="foot" style="text-align:left"><a href="/legal/privacy" target="_blank">Privacy policy</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/credits" target="_blank">Map and data credits</a></p></div>
@@ -2128,20 +2173,23 @@ function stopReplay() {
 }
 
 // ---------- offline download
+/** The height-grid files this phone loads (see fetchHeights): compact where it can unzip them, plain otherwise. */
+const heightFiles = () => (typeof DecompressionStream !== 'undefined' ? ['terrain.z16', 'surround.z16'] : ['terrain.bin', 'surround.bin']);
 async function downloadOffline() {
   const box = $('#offline-box');
   try {
     // the app itself plus this mountain's map
-    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', 'terrain.bin', 'surround.bin', ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
+    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', ...heightFiles(), ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
     const cache = await caches.open('weski-map');
     let done = 0, bytes = 0;
     box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
     for (const url of list) {
-      const res = await fetch(url, { cache: 'reload' });
+      let at = url, res = await fetch(at, { cache: 'reload' });
+      if (!res.ok && at.endsWith('.z16')) res = await fetch(at = at.replace(/\.z16$/, '.bin'), { cache: 'reload' });
       if (!res.ok) throw new Error(url);
       const blob = await res.clone().blob();
       bytes += blob.size;
-      await cache.put(url, res);
+      await cache.put(at, res);
       done++;
       $('#dl-n').textContent = done; $('#dl-p').value = done;
     }
@@ -2156,6 +2204,7 @@ async function downloadOffline() {
 // ---------- events
 function onInput(e) {
   const t = e.target;
+  if (t.id === 'fc-q') { if (e.type === 'input') fcUi.onInput(t); return; }
   if (t.id === 'f-search') { if (e.type === 'input') { S.searchQ = t.value; $('#search-list').innerHTML = searchResults(); } return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-lang') { if (e.type === 'change') setLang(t.value); return; }
@@ -2210,6 +2259,7 @@ async function onClick(e) {
   const b = e.target.closest('[data-act]');
   if (!b) return;
   const act = b.dataset.act, d = b.dataset;
+  if (act.startsWith('fc-')) { fcUi.onClick(b); return; }
   switch (act) {
     case 'tab':
       if (d.tab === 'track' && !S.historyLoaded) loadHistory();
@@ -2238,6 +2288,7 @@ async function onClick(e) {
     case 'start-hist': S.histOnly = !S.histOnly; if (S.histOnly) { S.favOnly = false; S.nearMe = null; S.allDays = null; } renderResortList(); break;
     case 'start-day': openDay(d.r, d.id); break;
     case 'start-join': startJoinAsk(); break;
+    case 'start-forecast': $('#sheet').classList.add('over-start'); openSheet('forecast'); break;
     case 'acct-chip': $('#sheet').classList.add('over-start'); openSheet('pass'); break;
     case 'start-join-go': startJoinGo(b); break;
     case 'go-group-mtn': goGroupMountain(d.code, d.id); break;
@@ -2375,6 +2426,10 @@ async function onClick(e) {
     case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); trackNotice(); break;
     case 'end-track': if (confirm(t('End tracking and save this session?'))) { const s = await endSession('Tracking ended.'); S.historyLoaded = false; if (s) { await loadHistory(); openSheet('session', s.id); } else { toast('Nothing recorded yet, so nothing was saved.'); renderSheet(); } } break;
     case 'open-session': openSheet('session', d.id); break;
+    case 'fb-rate': if (S.fb) { S.fb.rating = +d.v; renderSheet(); } break;
+    case 'fb-tag': if (S.fb) { S.fb.tags = S.fb.tags.includes(d.v) ? S.fb.tags.filter((k) => k !== d.v) : [...S.fb.tags, d.v]; renderSheet(); } break;
+    case 'fb-send': await answerSkiDayFeedback(d.id, true); break;
+    case 'fb-skip': await answerSkiDayFeedback(d.id, false); break;
     case 'delete-session': if (confirm(t('Delete this session from this phone?'))) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
     case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s) startReplay(s, d.run != null ? +d.run : null); break; }
     case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts, r.walk); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }

@@ -1,0 +1,24 @@
+{
+ "_label": "Real api.weather.gov alerts/active?point=47.9700,-123.5000 (Hurricane Ridge area, Olympics), recorded 2026-11-22T18:2xZ; description and instruction text removed",
+ "features": [
+  {
+   "properties": {
+    "id": "urn:oid:2.49.0.1.840.0.c86737037a9bceaa93f13ee7577617c1cfc91dc8.001.1",
+    "areaDesc": "Olympics",
+    "sent": "2026-11-22T03:04:00-08:00",
+    "effective": "2026-11-22T03:04:00-08:00",
+    "onset": "2026-11-22T18:00:00-08:00",
+    "expires": "2026-11-22T16:00:00-08:00",
+    "ends": "2026-11-23T16:00:00-08:00",
+    "status": "Actual",
+    "messageType": "Update",
+    "severity": "Moderate",
+    "certainty": "Likely",
+    "urgency": "Expected",
+    "event": "Winter Weather Advisory",
+    "senderName": "NWS Seattle WA",
+    "headline": "Winter Weather Advisory issued November 22 at 3:04AM PST until November 23 at 4:00PM PST by NWS Seattle WA"
+   }
+  }
+ ]
+}

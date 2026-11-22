@@ -23,12 +23,14 @@
     "bindings": [
       { "name": "GROUPS", "class_name": "GroupRoom" },
       { "name": "ACCOUNTS", "class_name": "Accounts" },
-      { "name": "RESORTLOG", "class_name": "ResortLog" }
+      { "name": "RESORTLOG", "class_name": "ResortLog" },
+      { "name": "FORECASTHIST", "class_name": "ForecastHistory" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["GroupRoom"] },
-    { "tag": "v2", "new_sqlite_classes": ["Accounts", "ResortLog"] }
+    { "tag": "v2", "new_sqlite_classes": ["Accounts", "ResortLog"] },
+    { "tag": "v3", "new_sqlite_classes": ["ForecastHistory"] }
   ],
   // Launch switches. PAYWALL "on" makes groups (creating), directions and the 7-day forecast need a pass.
   // Secrets (set by the owner in the Cloudflare dashboard, never in this file): RESEND_API_KEY,

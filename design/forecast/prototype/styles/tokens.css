@@ -1,0 +1,264 @@
+/* PROTOTYPE — design artifact from /sdlc:generate-ux. Not production code.
+   Implementation is produced by /sdlc:generate-code from ux-prd.md. */
+
+/* Tokens for the SkiWithMe Forecast prototype.
+   No brand pack was supplied: the host's "2026-11 look" in src/styles.css is the visual system.
+   - "host" = value copied from src/styles.css (final, last-declared value).
+   - "inferred" = new token named by the approved design (Part 1 §6.2, Part 2 §3), provenance: inferred.
+   - "prototype" = token that exists only to draw the prototype chrome around the phone. */
+
+:root {
+  color-scheme: dark;
+
+  /* ---- host colour tokens, dark (default) ---- */
+  --page: #030b16;
+  --ink: #eef2f6;
+  --muted: #9fb2c4;
+  --cap: #a8c1d8;
+  --head: #e9f1f8;
+  --bg: #0b1a2a;
+  --card: rgba(28, 52, 76, .55);
+  --card2: rgba(34, 60, 86, .6);
+  --panel: linear-gradient(180deg, #14293e 0%, #0b1a2a 60%, #081422 100%);
+  --edge: rgba(150, 190, 230, .26);
+  --edge2: rgba(150, 190, 230, .4);
+  --teal: #3ee6c4;
+  --teal2: #22c9a8;
+  --teal-ink: #04261f;
+  --teal-soft: rgba(62, 230, 196, .16);
+  --seg-on: rgba(62, 230, 196, .22);
+  --line2: #3a4b5d;
+  --chip: rgba(10, 24, 38, .7);
+  --warn-bg: #3b2d12;
+  --warn-ink: #ffc266;
+  --bad-bg: #401c1a;
+  --bad-ink: #ffa39a;
+  --good-bg: #133726;
+  --good-ink: #84e3aa;
+  --danger-bg: #43201d;
+  --danger-ink: #ff9d94;
+
+  /* ---- host literals named as tokens (inferred from src/styles.css) ---- */
+  --btn-fill: linear-gradient(180deg, var(--teal), var(--teal2));
+  --btn-glow: 0 4px 16px rgba(62, 230, 196, .22);
+  --btn-alt-bg: rgba(40, 66, 92, .55);
+  --btn-outline-bg: rgba(8, 22, 36, .5);
+  --field-bg: rgba(5, 16, 28, .6);
+  --seg-bg: rgba(5, 16, 28, .55);
+  --learn-bg: rgba(5, 16, 28, .35);
+  --tabs-bg: rgba(6, 17, 29, .96);
+  --x-bg: rgba(40, 66, 92, .9);
+  --x-ink: #ffffff;
+  --grab: rgba(120, 170, 220, .55);
+  --title-shadow: 0 2px 10px rgba(0, 0, 0, .35);
+  --peaks-opacity: 1;
+  --peak-1: #3c5a78;
+  --peak-2: #7d9bb8;
+  --peak-3: #a9c2da;
+  --peak-4: #5f7f9f;
+  --peak-5: #f2f7fc;
+  --peak-6: #2c4865;
+  --shadow-sheet: 0 -8px 30px rgba(0, 0, 0, .45);
+  --glass: linear-gradient(180deg, rgba(30, 58, 86, .92), rgba(12, 30, 48, .94));
+  --glass-ink: #eef4fa;
+  --start-bg: #001530;
+  --start-panel: linear-gradient(180deg, rgba(22, 44, 68, .96), rgba(9, 24, 40, .98));
+  --start-ink: #ffffff;
+  /* The start panel stays dark in both themes, so its controls use tokens that never change with the theme (D26). */
+  --start-btn-bg: rgba(8, 22, 36, .5);
+  --start-edge: #3ee6c4;          /* 9.0:1 on the start panel; also the focus ring on every surface that stays dark in both themes */
+  --pin-ink: #ffc266;             /* pin-map centre pin: the map tile is dark in both themes, so this never changes with the theme */
+  --start-muted: #b9c8d6;         /* 8.3:1 to 10.5:1 on the start panel */
+  --toast-bg: #0b1a2a;
+  --toast-ink: #eef2f6;
+  --toast-edge: #6f879e;
+  --shadow-toast: 0 6px 20px rgba(0, 0, 0, .45);
+
+  /* ---- new tokens from the approved design (provenance: inferred) ---- */
+  --band-5: rgba(62, 230, 196, .34);
+  --band-4: rgba(62, 230, 196, .24);
+  --band-3: rgba(62, 230, 196, .14);
+  --band-2: rgba(62, 230, 196, .06);
+  --band-1: transparent;
+  --teal-text: #3ee6c4;
+  --focus: #3ee6c4;
+  --warn-text: #ffc266;
+  --control-edge: #6f879e;
+  --chart-bar: var(--muted);
+  --chart-bar-best: var(--teal-text);
+  --surface-solid: #14283d;       /* --card composited on --bg, for sticky grid heads */
+  --skeleton: rgba(150, 190, 230, .2);
+  --tab-on: var(--teal-text);
+
+  /* ---- type ---- */
+  --font-body: "Nunito Sans Variable", "Nunito Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  --font-head: "Montserrat Variable", "Montserrat", "Nunito Sans Variable", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-glyph: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --fs-cap: 11.5px;
+  --fs-tab: 12px;
+  --fs-small: 12.5px;
+  --fs-sub: 13.5px;
+  --fs-body: 15px;
+  --fs-lead: 16.5px;
+  --fs-btn: 17px;
+  --fs-h4: 19px;
+  --fs-cell: 22px;
+  --fs-box: 25px;
+  --fs-title: 28px;
+  --fs-empty: 30px;
+  --fs-hero: 48px;
+  --fw-regular: 500;
+  --fw-medium: 600;
+  --fw-bold: 700;
+  --fw-heavy: 800;
+  --lh-body: 1.35;
+  --lh-tight: 1.15;
+
+  /* ---- spacing (host literals) ---- */
+  --space-0: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 10px;
+  --space-4: 12px;
+  --space-5: 14px;
+  --space-6: 16px;
+  --space-7: 22px;
+  --space-8: 32px;
+
+  /* ---- radius ---- */
+  --radius-cell: 10px;
+  --radius-seg: 11px;
+  --radius-btn-sm: 12px;
+  --radius-box: 14px;
+  --radius-btn: 16px;
+  --radius-card: 18px;
+  --radius-sheet: 26px;
+  --radius-frame: 34px;
+  --radius-pill: 999px;
+  --radius-tag: 6px;
+
+  /* ---- borders ---- */
+  --bw-1: 1px;
+  --bw-15: 1.5px;
+  --bw-2: 2px;
+  --bw-3: 3px;
+
+  /* ---- sizes ---- */
+  --tap-min: 44px;
+  --cell-w: 78px;
+  --cell-min-h: 92px;
+  --date-h: 56px;
+  --head-w: clamp(96px, 30vw, 140px);
+  --grid-max-h: 62vh;
+  --box-min: 150px;
+  --chip-min: 52px;
+  --row-min: 56px;
+  --map-h: 250px;
+  --art-w: 210px;
+  --art-h: 120px;
+  --icon-s: 16px;
+  --icon-m: 22px;
+  --icon-l: 26px;
+  --logo: 44px;
+  --peaks-h: 78px;
+  --grab-w: 54px;
+  --grab-h: 6px;
+  --tile: 48px;
+  --pin-s: 36px;
+  --progress-h: 8px;
+  --toast-max: 360px;
+  --zoom-base: .6;
+  --zoom-step: .2;
+  --read-max: 75ch;
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --tabs: calc(58px + var(--sab));
+  --frame-w: 430px;
+  --frame-h: 900px;
+  --app-h: min(var(--frame-h), calc(100vh - var(--space-8) * 4));
+  --panel-w: 360px;
+
+  /* ---- motion ---- */
+  --dur-micro: 150ms;
+  --dur-move: 200ms;
+  --dur-sheet: 300ms;
+  --dur-pulse: 1200ms;
+  --z-toast: 6;
+  --ease-out: cubic-bezier(.2, .8, .2, 1);
+
+  /* ---- prototype chrome (always dark; the page behind the phone never changes theme) ---- */
+  --page-glow: radial-gradient(ellipse at 50% 30%, #163a5c 0%, #071a2e 55%, #010c1b 100%);
+  --page-ink: #e8f1fa;
+  --page-muted: #a9bccd;
+  --page-card: rgba(28, 52, 76, .55);
+  --page-edge: rgba(150, 190, 230, .4);
+  --page-link: #3ee6c4;
+  --page-focus: #3ee6c4;
+  --page-on-bg: rgba(62, 230, 196, .16);
+  --frame-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 24px 70px rgba(0, 0, 0, .55);
+  --map-sky: linear-gradient(180deg, #1d4f7c 0%, #12304f 55%, #0b2239 100%);
+  --map-rock: #5d7f9e;
+  --map-snow: #eef4fa;
+  --map-shade: #2c4865;
+  --map-tile-a: #1b3a57;
+  --map-tile-b: #234868;
+  --map-line: rgba(238, 244, 250, .28);
+  --map-blank: #3a4b5d;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  /* ---- host colour tokens, light ---- */
+  --ink: #14202c;
+  --muted: #5d6b79;
+  --cap: #4f6a84;
+  --head: #12202e;
+  --bg: #f3f6fa;
+  --card: #ffffff;
+  --card2: #ffffff;
+  --panel: linear-gradient(180deg, #ffffff 0%, #f3f6fa 100%);
+  --edge: rgba(30, 70, 110, .16);
+  --edge2: rgba(30, 70, 110, .3);
+  --teal: #16b393;
+  --teal2: #0e9b7e;
+  --teal-ink: #04261f;            /* approved design C1: host value #ffffff fails 4.5:1 on the teal fill */
+  --teal-soft: rgba(22, 179, 147, .14);
+  --seg-on: rgba(22, 179, 147, .2);
+  --line2: #c9d1da;
+  --chip: #e7edf3;
+  --warn-bg: #fff1d6;
+  --warn-ink: #b25e00;
+  --bad-bg: #fde3e1;
+  --bad-ink: #9b1c14;
+  --good-bg: #e2f6e9;
+  --good-ink: #0b6b31;
+  --danger-bg: #fde3e1;
+  --danger-ink: #b3261e;
+
+  --btn-glow: 0 4px 16px rgba(22, 179, 147, .22);
+  --btn-alt-bg: #ffffff;
+  --btn-outline-bg: #ffffff;
+  --field-bg: #ffffff;
+  --seg-bg: #eef2f6;
+  --learn-bg: #ffffff;
+  --tabs-bg: rgba(255, 255, 255, .96);
+  --x-bg: #e7edf3;
+  --x-ink: #14202c;
+  --grab: rgba(30, 70, 110, .4);
+  --title-shadow: none;
+  --peaks-opacity: .55;
+  --shadow-sheet: 0 -8px 30px rgba(11, 34, 57, .25);
+
+  /* ---- new tokens, light (approved design Part 0 §0.5 row 5: Part 2 values) ---- */
+  --band-5: rgba(22, 179, 147, .34);
+  --band-4: rgba(22, 179, 147, .24);
+  --band-3: rgba(22, 179, 147, .14);
+  --band-2: rgba(22, 179, 147, .06);
+  --teal-text: #00715c;
+  --focus: #00715c;
+  --warn-text: #9a5200;
+  --control-edge: #6b7d90;        /* D26: 3.59:1 on --chip #e7edf3, 3.76:1 on --seg-bg #eef2f6, 4.23:1 on white */
+  --surface-solid: #ffffff;
+  --skeleton: rgba(30, 70, 110, .16);
+}

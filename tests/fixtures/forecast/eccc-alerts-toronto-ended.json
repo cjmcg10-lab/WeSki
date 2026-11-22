@@ -1,0 +1,27 @@
+{
+ "_label": "Real api.weather.gc.ca weather-alerts items for bbox -79.40,43.70 (Toronto), recorded 2026-11-22T18:2xZ: an advisory that has ended; text and geometry removed",
+ "features": [
+  {
+   "properties": {
+    "alert_code": "FGA",
+    "alert_type": "advisory",
+    "alert_name_en": "fog advisory",
+    "alert_name_fr": "avis de brouillard",
+    "alert_short_name_en": "Fog (advisory)",
+    "alert_short_name_fr": "Brouillard (avis)",
+    "publication_datetime": "2026-11-22T17:07:08.123Z",
+    "expiration_datetime": "2026-11-22T21:00:08.123Z",
+    "validity_datetime": "2026-11-22T17:06:00.000Z",
+    "event_end_datetime": "2026-11-22T19:00:00.000Z",
+    "risk_colour_en": "yellow",
+    "risk_colour_fr": "jaune",
+    "feature_name_en": "City of Toronto",
+    "feature_name_fr": "ville de Toronto",
+    "province": "ON",
+    "status_en": "ended",
+    "status_fr": "termin\u00e9",
+    "feature_id": "fea1-1185"
+   }
+  }
+ ]
+}

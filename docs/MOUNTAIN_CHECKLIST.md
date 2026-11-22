@@ -4,7 +4,7 @@ Every mountain in SkiWithMe, new or already live, should pass every item on this
 mountain is added, copy the "New mountain" list into the commit or session notes and tick it off.
 When a mountain already live is improved, update its row in "Where each mountain stands" at the end.
 
-The commands are in `tools/` and are explained in `README.md` and `CLAUDE.md` ("Building and checking a
+The commands are in `tools/` and are explained in `docs/MAPS.md` and `CLAUDE.md` ("Building and checking a
 resort"). The owner does not need to run them; this list is also how to see what is left.
 
 ## New mountain

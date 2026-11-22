@@ -2,16 +2,16 @@
 
 An installable web app for ski resorts: 3D mountain from LiDAR, friend groups with live GPS,
 directions, voice, stats. Vanilla JS + three.js + Vite, tests in vitest, hosted on Cloudflare.
-`README.md` describes the app and the data pipeline in full. Read it first. This file holds what a new
+`README.md` gives the short overview and `docs/MAPS.md` the full detail of the maps, directions and data pipeline.
+Read both first. This file holds what a new
 session needs that the README does not: the rules, the state of the work, and what is next.
 
 ## Rules for working here
 
 - **Follow `docs/DEVELOPMENT_PROCESS.md` (agreed 2026-11-21):** every change starts from a GitHub issue, is claimed,
-  built on its own `claude/...` branch, and reaches the deploy branch only through a pull request that passes the
-  "Checks" workflow and is reviewed by the other person (Zach or Connor). Never push straight to
-  `claude/ecstatic-hamilton-2gsp2q` or `main`: merging there deploys (GitHub Actions runs tests, builds, and deploys
-  to https://skiwithme.cjmcg10.workers.dev).
+  built on its own `claude/...` branch, and reaches `main` only through a pull request that passes the
+  "Checks" workflow and is reviewed by the other person (Zach or Connor). Never push straight to `main`: merging there
+  deploys (GitHub Actions runs tests, builds, and deploys to https://skiwithme.builtbyroger.app).
 - Never ask for secrets in chat. The Cloudflare token is a GitHub secret and an environment network secret.
 - Outside requests use the User-Agent `weski-build` and never carry the owner's name or email.
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
@@ -21,12 +21,10 @@ session needs that the README does not: the rules, the state of the work, and wh
 
 ## Starting a new session (read this first)
 
-- **Deploys only happen from two branches.** `.github/workflows/deploy.yml` deploys on pushes to `main` and to
-  `claude/ecstatic-hamilton-2gsp2q`. A new session is usually given a new `claude/...` branch name, and pushes to it
-  will NOT reach the live site until that branch name is added to the `branches:` line of the workflow. Changing the
-  workflow needs the owner's go-ahead: ask them once, in plain words ("May I make this session's branch deploy to the
-  live site?"), then edit that one line. Start the new branch from the tip of `claude/ecstatic-hamilton-2gsp2q`, which
-  holds all the work (`main` may be behind).
+- **Deploys only happen from `main`.** `.github/workflows/deploy.yml` deploys on pushes to `main`, which holds all the
+  work. Start every branch from the tip of `main` and reach the live site by a reviewed pull request into it (see
+  `docs/DEVELOPMENT_PROCESS.md`). Pushes to a session's own `claude/...` branch never deploy. (The earlier working
+  branch `claude/ecstatic-hamilton-2gsp2q` was folded into `main` and deleted on 2026-11-22.)
 - **Confirm a deploy** by checking the GitHub Actions "Deploy" run succeeded, then having a `web-fetch` agent read a
   changed file from the live site, for example `https://skiwithme.cjmcg10.workers.dev/data/<id>/resort.json`. The new
   address is on the environment's allowed hosts, so curl from the container works. A deploy takes one to four minutes.

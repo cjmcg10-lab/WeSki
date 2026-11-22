@@ -130,7 +130,7 @@ function picture(t, r) {
   for (const u of resort.lifts) line(u.pts, [200, 40, 40], 0);
   line(r.from, [255, 0, 0], 1); line(r.pts, [0, 230, 255], 1);
   mkdirSync(PIC, { recursive: true });
-  writeFileSync(`${PIC}/${(t.name || t.osm + '').replace(/[\/ ]/g, '_')}_${t.osm}.ppm`, Buffer.concat([Buffer.from(`P6 ${W} ${H} 255\n`), img]));
+  writeFileSync(`${PIC}/${(t.name || t.osm + '').replace(/[/ ]/g, '_')}_${t.osm}.ppm`, Buffer.concat([Buffer.from(`P6 ${W} ${H} 255\n`), img]));
 }
 
 const want = new Set(list.split(','));
