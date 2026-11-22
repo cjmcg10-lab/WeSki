@@ -71,6 +71,44 @@ No free, commercially licensed source of season open and close dates or of lift 
 
 `assumed: true` means nothing real is known (unmapped resort, source not live, stale feed, or the phone could not reach the server); the engine then keeps its labelled assumed window. `src/forecast/status.js` has `loadResortStatus(resort)` and `statusToScoreOpts(status)`. A feed failure (including a body that is not JSON, which is never cached) returns 502 with `no-store`, and the phone falls back to the assumed status after a 6 second timeout. `assumedStatus` is defined once in `src/forecast/status.js` and imported by the Worker.
 
+## Resort catalog source (#4)
+
+The worldwide list of resorts the Forecast can watch. Checked on 2026-11-22.
+
+| | |
+| --- | --- |
+| Provider | OpenSkiData (openskidata.org), the data behind OpenSkiMap.org. Built from OpenStreetMap with ski area records from Skimap.org and place names from Who's On First |
+| Files | `https://tiles.openskimap.org/geojson/ski_areas.geojson` (21 MB) and `lifts.geojson` (120 MB, lift ends carry a height). Data timestamp 2026-11-21. Sent with User-Agent `weski-build` only. Raw downloads stay out of the repository |
+| Licence | The site states the data is free to use, including commercially, and is ODbL because it derives from OpenStreetMap. A modified version that is distributed must be shared alike, and each source needs crediting. The credit is on `/legal/credits` (Worldwide resort list). The catalog files in `public/forecast/` are the derived database and are covered by the offer on that page |
+| Time zones | `timezonefinder` 9.2.0 (code MIT, boundary data `timezonefinder-data` 4.2026.6, ODbL), offline, at the base point |
+| Elevation check | Copernicus GLO-30 (public AWS bucket `copernicus-dem-30m`, free including commercial use with the credit on the credits page), read with `rasterio` over HTTP range requests, only for the resorts listed below |
+
+What goes in (`tools/build_forecast_catalog.py`):
+
+- Downhill ski areas that are operating or have no status, with a name. Cross-country-only, abandoned, disused, proposed and unnamed areas are left out.
+- Ids are `osd-` plus the first 36 characters of the OpenSkiData id (the server routes allow 40). The 60 built resorts keep their built ids (`jay-peak`) and their verified points from `public/data/index.json`, are matched to their OpenSkiData area by proximity and name, and take its region, country, aliases and town names. Duplicate areas of the same name next to them are folded in. They get the map flag and nothing else special.
+- Base point: the lowest bottom station of the main sector's lifts. Top point: the highest top station in that sector. The main sector is the group of lifts (stations within 1.5 km of each other) with the most lift vertical. Other groups with at least two lifts are kept as `sectors` in the detail file.
+- An area with no mapped lifts takes its heights from its mapped runs, and a point at the area's centre (flag `approximate_points`). With no runs either, only the base height comes from GLO-30 and the top is missing.
+- Cross-check: every resort whose height is missing or whose vertical is under 5 m or over 2800 m is sampled against GLO-30, plus a random sample of 150 others as an audit. A lift height that differs from GLO-30 by more than 150 m is replaced and flagged `*_corrected`; a missing one is filled. The 2026-11-22 run checked 635 resorts: 336 agreed, 458 missing heights were filled, none needed correcting, 26 still have a questionable vertical (indoor and flat hills, or a lift mapped only at the base), the DEM had no data for one.
+- Each point records its source (`lifts`, `lifts+glo30`, `glo30`, `runs`, `built`).
+
+Files (all in git, served as static files):
+
+| File | Content |
+| --- | --- |
+| `public/forecast/catalog-index.json` | One row per resort: id, name, aliases, towns, region, country code, top point, base point, top and base height, time zone, flag bits (1 top height missing, 2 base height missing, 4 approximate points, 8 built map exists, 16 status unknown). About 735 KB, 346 KB gzipped |
+| `public/forecast/detail/<country>.json` | Per resort: OpenSkiData id, status, website, flags, the source of each point, the DEM check, sectors. Loaded only when a resort is opened. 79 files, 1.6 MB, 341 KB gzipped in all |
+
+Update method: download the two geojson files into an empty folder outside the repository, then run
+
+```
+python3 tools/build_forecast_catalog.py --areas <ski_areas.geojson> --lifts <lifts.geojson> --data-date <metadata.json dataTimestamp date> --dem-cache <cache.json>
+```
+
+in a virtual environment holding `timezonefinder==9.2.0` and `rasterio`. Commit the changed files in `public/forecast/`. `--no-dem` skips the elevation check. The page code is `src/forecast/catalog.js` (`loadCatalog`, `search`, `getResort`, `loadDetail`).
+
+Known limits: names and places are as OpenStreetMap has them, so a resort near a border can carry the neighbouring country's region name or town. A resort whose only mapped lifts are on one small hill has a small vertical (flagged). Season dates and opening hours are not in this source.
+
 ## Weather sources (#8)
 
 Placeholder. Phase 7 (#8) fills in the weather table: the sources behind `/api/weather` today (US National Weather Service, MET Norway), what a second forecast for comparison could be, licences and limits.
