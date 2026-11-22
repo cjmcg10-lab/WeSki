@@ -22,6 +22,7 @@ export const CODE_TEXT = {
   EX_LOW_VISIBILITY: 'Low visibility holds the score down.',
   EX_WARM_WET: 'Warm and wet, so the snow will be soft and heavy.',
   EX_WARM_SOFT: 'Warm weather softens the snow.',
+  EX_RAIN_AT_BASE_DRY: 'Rain is likely at the base; drier higher up.',
   EX_RAIN_WHOLE_MOUNTAIN: 'Rain is likely across the whole mountain.',
   EX_LIFT_HOLD_CONFIRMED: 'The resort has confirmed {0} lift hold(s) for this day.',
   NT_OUT_OF_SEASON: 'This day is outside the resort’s published season.',

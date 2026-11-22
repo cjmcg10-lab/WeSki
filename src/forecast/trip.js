@@ -64,8 +64,11 @@ export function classifyDay(forecast, date) {
 const lowestLevel = (levels) => levels.reduce((low, level) => (LEVEL_ORDER.indexOf(level) < LEVEL_ORDER.indexOf(low) ? level : low), 'High');
 
 export function summarize(forecast, dates) {
-  const days = dates.map((date) => ({ date, ...classifyDay(forecast, date) }));
-  const scored = days.filter((d) => d.kind === 'scored').map((d) => ({ ...d, shown: roundHalfUp(d.score) }));
+  const days = dates.map((date) => {
+    const day = { date, ...classifyDay(forecast, date) };
+    return day.kind === 'scored' ? { ...day, shown: roundHalfUp(day.score) } : day;
+  });
+  const scored = days.filter((d) => d.kind === 'scored');
   const closed = days.filter((d) => d.kind === 'closed').length;
   const later = days.filter((d) => d.kind === 'notyet' || d.kind === 'past').length;
   const total = dates.length - later;

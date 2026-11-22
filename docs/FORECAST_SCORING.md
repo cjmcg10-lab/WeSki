@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.5.0)
+# Forecast scoring engine (version 1.6.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Version 1.6.0 is issue #12 (a new explanation code, `EX_RAIN_AT_BASE_DRY`, found in the acceptance test). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -50,7 +50,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.5.0',
+  version: '1.6.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -205,14 +205,15 @@ The engine returns `{ code, params }` and never a sentence. A parameter is a raw
 - `EX_SOFTENING_SUN` [hour softening starts]
 - `EX_THAW_REFREEZE`
 - `EX_FLAT_LIGHT_GUSTS_PM`
-- `EX_RAIN_AT_BASE` (rain at the base while the upper site has snow and no rain)
+- `EX_RAIN_AT_BASE` (rain at the base while no hour has rain at the upper site and the upper site has snow)
+- `EX_RAIN_AT_BASE_DRY` (new in 1.6.0: rain at the base, no rain at the upper site and no snow there either; "drier higher up")
 - `EX_SUMMIT_WIND`
 - `EX_COLD`
 - `EX_MIXED`
 - `EX_LOW_VISIBILITY` (new, needs ten translations in phase 2)
 - `EX_WARM_WET` (new, needs ten translations in phase 2)
 - `EX_WARM_SOFT` (new in 1.1: comfort driven by warmth)
-- `EX_RAIN_WHOLE_MOUNTAIN` (new in 1.1: rain at every site used, or the only site)
+- `EX_RAIN_WHOLE_MOUNTAIN` (new in 1.1: rain at every site used, or the only site, or rain at the upper site in any hour)
 
 `confReason` and `windowReason` and `insufficientReason`:
 

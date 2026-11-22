@@ -504,4 +504,5 @@ export default {
   1133: 'Gereiht nach den {0} Tagen, die jeder Berg vorhersagt.',
   1134: 'Gereiht nach dem einen Tag, den jeder Berg vorhersagt.',
   1135: 'Nicht gereiht: Diese Berge haben keinen gemeinsamen Vorhersagetag.',
+  1400: 'Am Fuß wahrscheinlich Regen, weiter oben trockener.',
 };
