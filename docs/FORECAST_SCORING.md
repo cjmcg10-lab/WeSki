@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.4.0)
+# Forecast scoring engine (version 1.5.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -50,7 +50,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.4.0',
+  version: '1.5.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -250,7 +250,7 @@ Which factor is chosen: each component's weighted distance from its reference (s
 
 - `EX_LIFT_HOLD_CONFIRMED` [number of confirmed holds that date] (new, needs ten translations in phase 2)
 - `NT_OUT_OF_SEASON` (new, needs ten translations in phase 2)
-- `NT_WEATHER_ALERT` [event name, a string: the alert's own English name such as `Winter Storm Warning`] (new in 1.4.0, issue #8). A winter storm, snow, ice, wind chill, extreme cold, high wind or gale alert from the NWS, Environment Canada or MET Norway that covers the date. It is a fact shown beside the day, like a lift hold: it does not move the wind or any component, the score, the status or the confidence. English text `Weather alert: {0}.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1350) with the other nine languages; the alert name itself is the provider's and is not translated
+- `NT_WEATHER_ALERT` [event name, a string: the alert's own English name such as `Winter Storm Warning`] (new in 1.5.0, issue #8). A winter storm, snow, ice, wind chill, extreme cold, high wind or gale alert from the NWS, Environment Canada or MET Norway that covers the date. It is a fact shown beside the day, like a lift hold: it does not move the wind or any component, the score, the status or the confidence. English text `Weather alert: {0}.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1350) with the other nine languages; the alert name itself is the provider's and is not translated
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 
