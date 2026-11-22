@@ -1,10 +1,11 @@
-# Runs the tests and the build on every pull request, without deploying.
-# A pull request may only be merged once this passes (see docs/DEVELOPMENT_PROCESS.md).
+# Checks every pull request, without deploying anything.
+# A pull request may only be merged once these pass (see docs/DEVELOPMENT_PROCESS.md).
+# The jobs below run side by side, so the whole thing takes about as long as the slowest one.
 name: Checks
 
 on:
+  # every pull request, whatever branch it targets, so a pull request stacked on another one is checked too
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -15,6 +16,7 @@ permissions:
   contents: read
 
 jobs:
+  # Runs the automatic tests and builds the app (about 2 minutes).
   test-and-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -35,3 +37,82 @@ jobs:
       - run: npm test
       - run: node tools/maps_r2.mjs drop
       - run: npm run build:assets
+
+  # Looks through the code for likely bugs (a name that does not exist, a typo in a variable). No style rules (about 1 minute).
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  # Checks that the Python map tools have no syntax errors (about 30 seconds).
+  python-syntax:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python3 -m compileall -q tools
+
+  # Pretends to deploy the Worker (the server part) to make sure its settings and code are valid. Nothing is
+  # uploaded and no Cloudflare login is needed (about 2 minutes).
+  worker-dry-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      # the deploy settings point at the built app in "dist", so it is built first
+      - run: npm run build:assets
+      - name: Dry run with the settings the deploy uses
+        run: npx wrangler deploy -c wrangler.assets.jsonc --dry-run --outdir "$RUNNER_TEMP/worker-assets"
+      - name: Dry run with the other settings file
+        run: npx wrangler deploy -c wrangler.jsonc --dry-run --outdir "$RUNNER_TEMP/worker-plain"
+
+  # Opens the built app in a real (headless) Chrome at phone size: accepts the first-run agreement, opens Jay Peak
+  # and waits for the 3D map to draw. Fails on any error in the page (about 3 minutes).
+  smoke-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build:assets
+      # the downloaded browser is kept between runs, keyed on the Playwright version in package-lock.json
+      - name: Remember the downloaded browser
+        id: browser-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Download Chrome and the system pieces it needs
+        if: steps.browser-cache.outputs.cache-hit != 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Install only the system pieces (Chrome itself came from the cache)
+        if: steps.browser-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+      - run: npm run smoke
+      # if the smoke test fails, a picture of the screen at that moment is attached to the run
+      - name: Keep a screenshot of the failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-test-screenshot
+          path: smoke-output/
+          if-no-files-found: ignore

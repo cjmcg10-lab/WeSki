@@ -1,0 +1,24 @@
+# Once a week, looks for known security problems in the libraries the live app uses (not the developer tools).
+# This is a warning light, not a gate: it never blocks a pull request. If it turns red, someone should look at the
+# list it prints and update the library it names.
+name: Security audit
+
+on:
+  schedule:
+    # every Monday at 07:00 UTC
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  npm-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm audit --audit-level=high --omit=dev
