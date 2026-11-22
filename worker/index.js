@@ -8,6 +8,8 @@ import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';
+import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
+import { elevationResponse } from './elevation.js';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -21,7 +23,7 @@ const accounts = (env) => env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main'));
 const resortLog = (env, id) => env.RESORTLOG.get(env.RESORTLOG.idFromName(id));
 const session = (request) => sessionFromCookie(request.headers.get('cookie'));
 // a rough, daily-changing key for rate limits: the address itself is never stored
-const ipKey = async (request) => (await sha256((request.headers.get('cf-connecting-ip') || '') + new Date().toISOString().slice(0, 10))).slice(0, 16);
+const ipKey = async (request, env) => (await sha256(networkOf(request.headers.get('cf-connecting-ip') || '') + (env.IP_SALT || '') + new Date().toISOString().slice(0, 10))).slice(0, 16);
 const readJson = async (request, max = 200000) => {
   const raw = await request.text();
   if (raw.length > max) return null;
@@ -50,10 +52,14 @@ async function api(request, env, url, ctx) {
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
   if (path === '/api/weather' && method === 'GET') return weatherResponse(url, env, ctx);
+  if (path === '/api/elevation' && method === 'GET') return elevationResponse(url);
   const historyId = method === 'GET' && /^\/api\/history\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
   if (historyId) return historyResponse(historyId, env);
   const statusId = method === 'GET' && /^\/api\/resort-status\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
   if (statusId) return statusResponse(statusId);
+  if (path === '/api/feedback' && method === 'POST') return feedbackResponse(await request.text(), env, await ipKey(request, env));
+  const archiveId = method === 'GET' && /^\/api\/forecast-archive\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
+  if (archiveId) return archiveExportResponse(request, url, archiveId, env);
   if (path === '/api/config' && method === 'GET') {
     const prices = Object.fromEntries(Object.entries(priceMap(env)).map(([id, plan]) => [plan, id]));
     return json({
@@ -66,7 +72,7 @@ async function api(request, env, url, ctx) {
     const b = await readJson(request, 2000), email = normEmail(b?.email);
     if (!EMAIL_RE.test(email)) return json({ error: 'Enter a valid email address' }, 400);
     if (!env.RESEND_API_KEY || !env.MAIL_FROM) return json({ error: 'Sign-in is not open yet' }, 503);
-    const login = await accounts(env).startLogin(email, await ipKey(request));
+    const login = await accounts(env).startLogin(email, await ipKey(request, env));
     if (!login) return json({ error: 'Too many sign-in emails. Try again in an hour.' }, 429);
     const mail = signInEmail(`${url.origin}/api/auth/finish?t=${login.token}`, login.code);
     const res = await fetch('https://api.resend.com/emails', {
@@ -127,14 +133,14 @@ async function api(request, env, url, ctx) {
   if (path === '/api/contrib' && method === 'POST') {
     const s = cleanSummary(await readJson(request));
     if (s.error) return json({ error: s.error }, 400);
-    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request)));
+    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request, env)));
   }
   const heat = path.match(/^\/api\/heat\/([a-z0-9-]{2,40})$/);
   if (heat && method === 'GET') return json(await resortLog(env, heat[1]).heat());
   if (path === '/api/reports' && method === 'POST') {
     const r = cleanReport(await readJson(request, 4000));
     if (r.error) return json({ error: r.error }, 400);
-    const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request));
+    const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request, env));
     return json(out, out.ok ? 200 : 429);
   }
   const reps = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})$/);

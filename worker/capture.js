@@ -1,12 +1,10 @@
 import { RESORT_RE } from './evidence.js';
-import { forecastRows } from './history.js';
+import { forecastRows, pendingRows } from './history.js';
 import { resortPlace } from './catalog.js';
-import { distanceKm, siteObservations } from './observations.js';
+import { siteObservations } from './observations.js';
 import { forecast, placeFrom } from './weather.js';
 
 const RECORD_GATE_S = 1800;
-export const PLACE_TOLERANCE_KM = 5;
-export const HEIGHT_TOLERANCE_M = 250;
 const FRESH_CACHE = 'public, max-age=900';
 const STALE_CACHE = 'public, max-age=60';
 const HISTORY_CACHE = 'public, max-age=300';
@@ -28,12 +26,10 @@ async function closeGate(id, now) {
   await edgeCache()?.put(gateKey(id, now), new Response('1', { headers: { 'cache-control': `max-age=${RECORD_GATE_S}` } }));
 }
 
-/** The weather request is for the listed resort: same area, same heights, same time zone. */
+/** The weather request is for exactly the listed place, as the app sends it: same points and time zone, heights rounded to metres. */
 export function samePlace(listed, asked) {
-  return distanceKm(listed, asked) <= PLACE_TOLERANCE_KM
-    && distanceKm({ lat: listed.blat, lon: listed.blon }, { lat: asked.blat, lon: asked.blon }) <= PLACE_TOLERANCE_KM
-    && Math.abs(listed.top - asked.top) <= HEIGHT_TOLERANCE_M && Math.abs(listed.base - asked.base) <= HEIGHT_TOLERANCE_M
-    && listed.tz === asked.tz;
+  return ['lat', 'lon', 'blat', 'blon', 'tz'].every((k) => listed[k] === asked[k])
+    && Math.round(listed.top) === asked.top && Math.round(listed.base) === asked.base;
 }
 
 async function observationsFor(site, now, observe) {
@@ -53,6 +49,11 @@ async function capture(env, id, url, result, now, observe, resolve) {
     const { lat, lon, top, base, blat, blon } = listed.place;
     const { grid, summit, base: basePoints } = result.hours;
     const issuedAt = Date.parse(result.issuedAt);
+    const history = store(env, listed.id);
+    if (!(await history.due(now))) {
+      await closeGate(listed.id, now);
+      return;
+    }
     const tag = { issuedMs: issuedAt, source: result.source, model: result.model, now };
     const observing = result.source === 'nws';
     const [summitObs, baseObs] = await Promise.all([
@@ -61,9 +62,10 @@ async function capture(env, id, url, result, now, observe, resolve) {
     ]);
     const weather = { ...result };
     delete weather.hours;
-    const outcome = await store(env, listed.id).record({
+    const outcome = await history.record({
       id: listed.id, place: listed.place, source: result.source, model: result.model, issuedAt, fetchedAt: Date.parse(result.fetchedAt), ms0: grid[0],
       forecast: { summit: forecastRows(summit, grid, tag), base: forecastRows(basePoints, grid, tag) }, observed: { summit: summitObs, base: baseObs }, weather,
+      pending: observing ? undefined : { summit: pendingRows(summit, grid, tag), base: pendingRows(basePoints, grid, tag) },
     }, now);
     if (outcome.recorded) await closeGate(listed.id, now);
   } catch (e) {
@@ -73,7 +75,8 @@ async function capture(env, id, url, result, now, observe, resolve) {
 
 async function lastGood(env, id, now) {
   try {
-    return await store(env, id).lastGood(now);
+    const last = await store(env, id).lastGood(now);
+    return last && { ...last, alerts: [] };
   } catch (e) {
     console.error('last good forecast unavailable', { id, message: e.message });
     return null;

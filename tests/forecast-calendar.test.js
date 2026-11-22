@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import EN from '../src/i18n/en.js';
 import { toResort, searchResorts, sameName, loadCatalog, resortFor, canForecast } from '../src/forecast/resorts.js';
 import { catalogFromIndex, forecastPoints } from '../src/forecast/catalog.js';
-import { add, remove, move, insertAt, has, cleanList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
-import { loadForecast, loadStatusSaved, rescored, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
+import { add, remove, move, insertAt, has, cleanList, syncList, loadList, saveList, sortRows, topPickId, LIST_KEY } from '../src/forecast/watchlist.js';
+import { loadForecast, loadStatusSaved, withHistory, sourceAgeHours, rescored, scoreResort, ageHoursOf, isStale, columnDates, bandOf, windowSummary, timeBlocks, localToday } from '../src/forecast/data.js';
+import { loadHistory, savedHistory } from '../src/weather.js';
 import { ageText, CODE_TEXT, codeText } from '../src/forecast/text.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
@@ -239,6 +240,69 @@ describe('scoring a watched mountain', () => {
     expect(scoreResort(stowe, weather, { now: later, at: later }).days[0].date).toBe('2026-11-24');
   });
 
+  describe('server history', () => {
+    const hourly = (n) => ({ hourly: { time: Array.from({ length: n }, (_, i) => new Date(Date.parse(`${weather.base.hourly.time[0]}:00Z`) - (n - i) * 3600e3).toISOString().slice(0, 16)), temperature_2m: Array(n).fill(-4), apparent_temperature: Array(n).fill(-7), snowfall: Array(n).fill(0), wind_speed_10m: Array(n).fill(3), wind_gusts_10m: Array(n).fill(5), visibility: Array(n).fill(9000), weather_code: Array(n).fill(0), observed: Array(n).fill(true) } });
+    const long = { summit: hourly(72), base: hourly(72) };
+    const live = () => Promise.resolve({ at: now, source: 'nws', summit: weather.summit, base: weather.base, ageHours: 1, stale: false, resolutionKm: 2.5 });
+    const assumed = () => Promise.resolve({ id: 'stowe', assumed: true, closures: {}, liftHolds: [], grooming: [] });
+    let mem;
+    beforeEach(() => { mem = new Map(); globalThis.localStorage = { getItem: (k) => mem.get(k) ?? null, setItem: (k, v) => mem.set(k, v) }; });
+    afterEach(() => { delete globalThis.localStorage; vi.unstubAllGlobals(); });
+
+    it('fetches /api/history/<id> once for 20 minutes, treats 404 as none yet, and skips pins and offline', async () => {
+      const fetchMock = vi.fn(async () => new Response(JSON.stringify({ id: 'stowe', ...long })));
+      vi.stubGlobal('fetch', fetchMock);
+      expect((await loadHistory(stowe, false, now)).base.hourly.time).toHaveLength(72);
+      await loadHistory(stowe, false, now + 19 * 60e3);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(fetchMock).toHaveBeenCalledWith('/api/history/stowe');
+      expect(savedHistory(stowe, now + 19 * 60e3).data).toBeTruthy();
+      await loadHistory(stowe, false, now + 21 * 60e3);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      await loadHistory(stowe, true, now + 22 * 60e3);
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(await loadHistory({ ...stowe, id: 'pin-abc' }, false, now)).toBeNull();
+      vi.stubGlobal('navigator', { onLine: false });
+      expect(await loadHistory({ ...stowe, id: 'other' }, false, now)).toBeNull();
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      vi.stubGlobal('navigator', { onLine: true });
+      vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 404 })));
+      expect(await loadHistory({ ...stowe, id: 'fresh' }, false, now)).toBeNull();
+      expect(savedHistory({ ...stowe, id: 'fresh' }, now).data).toBeNull();
+      expect(savedHistory({ ...stowe, id: 'fresh' }, now + 3 * 60e3)).toBeNull();
+      vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({ summit: {}, base: { hourly: { time: [] } } }))));
+      expect(await loadHistory({ ...stowe, id: 'malformed' }, false, now)).toBeNull();
+      expect(savedHistory({ ...stowe, id: 'malformed' }, now)).toBeNull();
+      vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('offline'); }));
+      expect(await loadHistory({ ...stowe, id: 'broken' }, false, now)).toBeNull();
+    });
+
+    it('draws without waiting for history, and rescoring with it makes High confidence reachable', async () => {
+      const first = await loadForecast(stowe, false, live, assumed, now);
+      expect(first.history).toBeUndefined();
+      expect(first.scored.inputs.historyHours).toBe(0);
+      const better = withHistory(first, long, now);
+      expect(better.scored.inputs.historyHours).toBe(72);
+      expect(better.scored.days.some((d) => d.confidence.level === 'High')).toBe(true);
+      expect(rescored(better, now + 60e3)).toBe(better);
+      expect(withHistory(first, null, now)).toBe(first);
+      mem.set('weski:history1:stowe', JSON.stringify({ at: now, data: long }));
+      const cached = await loadForecast(stowe, false, live, assumed, now);
+      expect(cached.scored.inputs.historyHours).toBe(72);
+    });
+
+    it('keeps the history when a forecast is scored again for a new band', async () => {
+      const first = withHistory(await loadForecast(stowe, false, live, assumed, now), long, now);
+      expect(rescored(first, now + 7 * 3600e3).scored.inputs.historyHours).toBe(72);
+    });
+
+    it('counts the age of a served forecast from when it was issued, up to the moment it is drawn', () => {
+      const w = { ageHours: 14 };
+      expect(sourceAgeHours(w, now, now + 3 * 3600e3)).toBeCloseTo(17, 5);
+      expect(sourceAgeHours({}, now, now)).toBeNull();
+    });
+  });
+
   it('writes age text in steps', () => {
     expect(ageText(0.1)).toBe('Updated just now');
     expect(ageText(0.5)).toBe('Updated 30 min ago');
@@ -264,6 +328,29 @@ describe('scoring a watched mountain', () => {
     }
     expect(windowSummary({ window: null }).kind).toBe('none');
     expect(timeBlocks(days[0]).every((b) => b.score >= 0 && b.score <= 100)).toBe(true);
+  });
+});
+
+describe('saved list follows the catalog', () => {
+  const saved = (over = {}) => ({ id: 'stowe', name: 'Stowe', region: 'Vermont', country: 'USA', tz: 'America/New_York', lat: 44.5, lon: -72.8, baseLat: 44.45, baseLon: -72.7, top: 1116, base: 399, ...over });
+  const fresh = saved({ lat: 44.53, top: 1120 });
+  const find = (id) => (id === 'stowe' || id === 'old-stowe' ? fresh : null);
+
+  it('replaces a saved entry with the catalog values, and leaves unknown ids alone', () => {
+    const pin = { id: 'pin-1', name: 'Pin', lat: 1, lon: 2, top: 10, base: 5, tz: 'UTC' };
+    const { list, changed } = syncList([saved(), pin], find);
+    expect(changed).toBe(true);
+    expect(list[0]).toMatchObject({ lat: 44.53, top: 1120 });
+    expect(list[1]).toBe(pin);
+  });
+
+  it('turns a merged id into the new id, drops a duplicate, and reports no change when nothing differs', () => {
+    expect(syncList([saved({ id: 'old-stowe' })], find).list[0].id).toBe('stowe');
+    expect(syncList([saved(), saved({ id: 'old-stowe' })], find).list).toHaveLength(1);
+    const same = [fresh];
+    const out = syncList(same, find);
+    expect(out.changed).toBe(false);
+    expect(out.list).toBe(same);
   });
 });
 
@@ -333,6 +420,7 @@ describe('forecast text is translated', () => {
   it('translates the fallback text and the Tomorrow label', () => {
     expect(literals.has('No explanation is available for this day.')).toBe(true);
     expect(codeText(undefined)).toBe('No explanation is available for this day.');
+    expect(codeText({ code: 'NT_WEATHER_ALERT', params: [null] })).toBe('Weather alert: .');
     expect(known.has('Tomorrow')).toBe(true);
   });
 

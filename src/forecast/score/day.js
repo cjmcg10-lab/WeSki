@@ -63,13 +63,17 @@ function skiRowsOf(rows, from, to) {
 export const outOfSeason = (season, date) =>
   !!season && (season.state === 'closed_for_season' || season.state === 'not_open' || (!!season.open && date < season.open) || (!!season.close && date > season.close));
 
-export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours, fetchAgeHours = null, season, liftHolds = [], groomed = false, history = { hours: 0, observed: 0 }, stale = false, resolutionKm = null, elevationMismatchM = null }) {
+export const alertEventsOn = (alerts, date) =>
+  [...new Set(alerts.filter((a) => a.from.slice(0, 10) <= date && a.to.slice(0, 10) >= date).map((a) => a.event))];
+
+export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours, fetchAgeHours = null, season, liftHolds = [], alerts = [], groomed = false, history = { hours: 0, observed: 0 }, stale = false, resolutionKm = null, elevationMismatchM = null }) {
   const { from, to, assumed } = window;
   const expected = to - from;
   const holds = liftHolds.filter((h) => h.date === date).map(({ lift, status, from: heldFrom, to: heldTo }) => ({ lift, status, from: heldFrom ?? null, to: heldTo ?? null }));
   const notes = [];
   if (holds.length) notes.push({ code: 'EX_LIFT_HOLD_CONFIRMED', params: [holds.length] });
   if (outOfSeason(season, date)) notes.push({ code: 'NT_OUT_OF_SEASON', params: [] });
+  for (const event of alertEventsOn(alerts, date)) notes.push({ code: 'NT_WEATHER_ALERT', params: [event] });
   const detail = detailLevel(daysAhead);
   const base = { date, uncertainty: null, detail, skiHours: { from, to, assumed, expected }, daysAhead, liftHolds: holds, notes };
   if (closure) {

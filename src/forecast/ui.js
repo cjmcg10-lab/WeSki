@@ -1,12 +1,17 @@
 import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
+import { SNOW_HISTORY_MIN_HOURS } from './score/explain.js';
 import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
-import { VIEW_KEY, loadList, saveList, add, sortRows, topPickId } from './watchlist.js';
-import { loadForecast, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
+import { VIEW_KEY, loadList, saveList, syncList, add, insertAt, sortRows, topPickId } from './watchlist.js';
+import { loadHistory } from '../weather.js';
+import { createPinScreen } from './pinscreen.js';
+import { createTripScreen } from './tripscreen.js';
+import { MATCH_KM } from './pin.js';
+import { loadForecast, withHistory, sourceAgeHours, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
-const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit'];
+const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit', 'fcpin', 'fctrip'];
 const FLASH_MS = 4000;
 const CONF_LEVEL = { High: 3, Medium: 2, Low: 1 };
 
@@ -15,7 +20,7 @@ const fc = {
   list: [], data: new Map(), started: false, view: { sortDate: null }, updating: false, footer: '',
   scrollLeft: 0, scrollTop: 0, bodyScroll: 0, focusSel: null,
   catalog: null, catalogError: false, q: '', added: [], saveFailed: null, editRows: [], listSaveFailed: false,
-  flash: null, tod: null,
+  flash: null, tod: null, pinDraft: null, pinView: null, dayFrom: null,
 };
 
 export const isForecastSheet = (name) => SHEETS.includes(name);
@@ -28,10 +33,18 @@ export function init(h) {
 }
 
 const online = () => typeof navigator === 'undefined' || navigator.onLine !== false;
-const nameOf = (r) => (sameName(fc.list, r) ? `${r.name}, ${r.region}` : r.name);
-const place = (r) => [r.region, r.country].filter(Boolean).join(' · ');
+const regionOf = (r) => (r.pin ? t('Dropped pin') : r.region);
+const nameOf = (r) => (sameName(fc.list, r) ? `${r.name}, ${regionOf(r)}` : r.name);
+const coords = (r) => `${r.baseLat.toFixed(3)}, ${r.baseLon.toFixed(3)}`;
+const place = (r) => (r.pin ? coords(r) : [r.region, r.country].filter(Boolean).join(' · '));
+const pinTags = (r) => (r.pin ? `<span class="tag">${t('Pinned')}</span> <span class="tag warn">${t('Terrain unverified')}</span>` : '');
 const MISSING = { top: () => t('Summit height estimated'), base: () => t('Base height estimated'), points: () => t('Location approximate') };
-const missingNotes = (r) => (r.missing ?? []).map((k) => MISSING[k]?.()).filter(Boolean);
+const pinNotes = (r) => [
+  t('Pinned mountain, terrain unverified: this forecast is for the point you pinned, not for checked lifts and runs.'),
+  r.top == null ? t('One point only, so this is one estimate for the whole mountain, with lower confidence.') : '',
+  r.tzGuessed ? t('Time zone estimated from the pin’s position.') : '',
+].filter(Boolean);
+const missingNotes = (r) => (r.pin ? pinNotes(r) : (r.missing ?? []).map((k) => MISSING[k]?.()).filter(Boolean));
 const unavailableText = (r) => (hasHeights(r) ? t('Forecast unavailable: no time zone data for this mountain.') : t('Forecast unavailable: no height data for this mountain.'));
 const entry = (id) => fc.data.get(id) ?? { state: 'loading' };
 function current(resort) {
@@ -71,7 +84,7 @@ function focusKey() {
 
 function redraw() {
   const sheet = host.sheet();
-  if (sheet !== 'forecast' && sheet !== 'fcday') return;
+  if (sheet !== 'forecast' && sheet !== 'fcday' && sheet !== 'fctrip') return;
   const own = !fc.focusSel;
   if (own) fc.focusSel = focusKey();
   host.render();
@@ -84,11 +97,23 @@ async function loadOne(resort, force) {
   try {
     const forecast = await loadForecast(resort, force);
     setEntry(resort, { state: 'ok', fc: forecast, failedRefresh: force && forecast.stale });
+    addHistory(resort, forecast, force);
   } catch (e) {
     if (entry(resort.id).fc) setEntry(resort, { failedRefresh: true });
     else setEntry(resort, { state: 'error' });
   }
   redraw();
+}
+
+async function addHistory(resort, forecast, force) {
+  if (forecast.history && !force) return;
+  try {
+    const history = await loadHistory(forecast.resort, force);
+    const shown = entry(resort.id).fc;
+    if (!history || shown?.at !== forecast.at) return;
+    setEntry(resort, { fc: withHistory(shown, history) });
+    redraw();
+  } catch { /* the forecast stays as drawn */ }
 }
 
 export async function loadAll(force = false) {
@@ -111,14 +136,29 @@ export async function loadAll(force = false) {
   redraw();
 }
 
+function syncWatchlist() {
+  loadCatalog().then((c) => {
+    fc.catalog = c;
+    fc.catalogError = false;
+    const { list, changed } = syncList(fc.list, (id) => resortFor(c, id));
+    if (!changed) return;
+    fc.list = list;
+    saveList(prefs, list);
+    fc.data.clear();
+    loadAll(false);
+  }).catch(() => {});
+}
+
 function start() {
   if (fc.started) return;
   fc.started = true;
+  syncWatchlist();
   fc.list.filter((r) => !fc.data.has(r.id)).forEach((r) => setEntry(r, { state: 'loading' }));
   loadAll(false);
 }
 
 export function onClose() {
+  pin.leave();
   fc.started = false;
   fc.editRows = [];
   fc.added = [];
@@ -149,8 +189,10 @@ function windowText(w) {
   return w.kind === 'hidden' ? '' : t('Under 3 h of data');
 }
 
+const historyShort = (f) => f.scored.inputs.historyHours < SNOW_HISTORY_MIN_HOURS;
+
 const ageLine = (forecast) => (forecast.serverStale
-  ? t('Forecast is {0} h old: the weather service isn’t answering', Math.round(forecast.scored.inputs.ageHours ?? ageHoursOf(forecast.at)))
+  ? t('Forecast is {0} h old: the weather service isn’t answering', Math.round(sourceAgeHours(forecast.weather, forecast.at) ?? ageHoursOf(forecast.at)))
   : ageText(ageHoursOf(forecast.at)));
 
 // ---------- S1 calendar
@@ -180,7 +222,7 @@ function rowHtml(row, dates, topId) {
   const flash = fc.flash?.id === resort.id ? ` flash` : '';
   const newTag = fc.flash?.id === resort.id && fc.flash.isNew ? `<span class="tag fc-new">${t('New')}</span>` : '';
   const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) || row.forecast.serverStale ? ' old' : ''}">${ageLine(row.forecast)}</small>` : '';
-  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.region)}</small>${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}</th>`;
+  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.pin ? coords(resort) : resort.region)}</small>${pinTags(resort)}${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}</th>`;
   if (e.state === 'nodata') return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(unavailableText(resort))}</span></td></tr>`;
   if (e.state === 'error') {
     const msg = online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.');
@@ -219,9 +261,9 @@ export function sheetCalendar() {
   return [t('Forecast'), `
     ${offlineBanner()}
     ${failedAll && online() ? `<div class="card"><p class="sub">${t('Couldn’t load any forecasts. Your mountains are saved. Check your connection and try again.')}</p><button class="btn alt" data-act="fc-refresh">${t('Try again')}</button></div>` : ''}
-    <div class="fc-actions" role="group" aria-label="${esc(t('Forecast actions'))}"><button class="btn sm alt" data-act="fc-add">${t('Add a mountain')}</button><button class="btn sm alt" data-act="fc-edit">${t('Edit list')}</button><button class="btn sm alt" data-act="fc-today">${t('Back to today')}</button></div>
+    <div class="fc-actions" role="group" aria-label="${esc(t('Forecast actions'))}"><button class="btn sm alt" data-act="fc-add">${t('Add a mountain')}</button><button class="btn sm alt" data-act="fc-edit">${t('Edit list')}</button><button class="btn sm alt" data-act="fc-today">${t('Back to today')}</button><button class="btn sm alt" data-act="fc-trip">${t('Plan a trip')}</button></div>
     <p class="fc-legend">${t('Score out of 100')} · ${bars(2)} ${t('Bars show confidence')} · ${t('Tap a score for hourly detail')}</p>
-    <p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>
+    ${!forecasts.length || forecasts.some(historyShort) ? `<p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>` : ''}
     ${sortLine}
     ${table}
     <div class="wx-foot fc-foot"><div class="grow"><b>${esc(updated)}</b>${stale ? `<br>${t('Some forecasts are older than usual.')}` : ''}<br>${t('All times are each mountain’s local time.')}${fc.footer ? `<br><span class="fc-line">${esc(fc.footer)}</span>` : ''}</div><button class="btn" data-act="fc-refresh">${esc(refreshLabel)}</button></div>
@@ -330,7 +372,7 @@ export function sheetDay(arg) {
   else body = dayBody(resort, forecast, dayOf(forecast, arg.date));
   const hours = forecast ? ageHoursOf(forecast.at) : 0;
   const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageLine(forecast)}</b>${isStale(hours) || forecast.serverStale ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
-  return [resort.name, `${back('fc-home', 'Forecast')}${offlineBanner()}
+  return [resort.name, `${fc.dayFrom === 'trip' ? back('fc-trip-back', 'Plan a trip') : back('fc-home', 'Forecast')}${offlineBanner()}
     <p class="fc-dateline"><b>${esc(fmtLongDate(arg.date))}</b><br><span class="sub">${esc(t('Times are local to the mountain ({0}).', resort.tz))}</span></p>
     ${missingNotes(resort).map((n) => `<p class="fc-note">${esc(n)}</p>`).join('')}${stepper}${body}${foot}`, false];
 }
@@ -361,8 +403,28 @@ function resultsHtml() {
 function ensureCatalog() {
   if (fc.catalog || fc.catalogLoading) return;
   fc.catalogLoading = true;
-  loadCatalog().then((c) => { fc.catalog = c; fc.catalogError = false; }).catch(() => { fc.catalogError = true; }).finally(() => { fc.catalogLoading = false; updateResults(); });
+  loadCatalog().then((c) => { fc.catalog = c; fc.catalogError = false; }).catch(() => { fc.catalogError = true; }).finally(() => {
+    fc.catalogLoading = false;
+    updateResults();
+    if (host.sheet() === 'fcedit') host.render();
+    else if (host.sheet() === 'fcpin') pin.refresh();
+  });
 }
+
+const catalogIfAvailable = async () => fc.catalog ?? loadCatalog().catch(() => null);
+
+const pin = createPinScreen({
+  fc,
+  host: () => host,
+  back,
+  offlineBanner,
+  ensureCatalog,
+  catalogIfAvailable,
+  focusSel: (sel) => focusSel(sel),
+  commitPin: (resort, edit) => commitPin(resort, edit),
+  useCatalog: (catalogId, pinId, fromPinScreen) => useCatalog(catalogId, pinId, fromPinScreen),
+  removeRow: (id) => removeRow(id),
+});
 
 function updateResults() {
   const el = document.querySelector('#fc-results');
@@ -375,6 +437,7 @@ export function sheetAdd() {
   return [t('Add a mountain'), `${back('fc-home', 'Forecast')}
     <label class="lbl" for="fc-q">${t('Search mountains')}</label>
     <input class="field" id="fc-q" type="search" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(fc.q)}" placeholder="${esc(t('Search mountains'))}" />
+    <p class="fc-pinlink"><button class="btn sm alt" data-act="fc-pin-new">${t('Can’t find it? Add by map pin')}</button></p>
     <div id="fc-results" aria-live="polite">${resultsHtml()}</div>${bar}`, false];
 }
 
@@ -416,15 +479,21 @@ function syncEditRows() {
   }
 }
 
+const trip = createTripScreen({ fc, host: () => host, back, offlineBanner, rows, nameOf, pinTags, unavailableText, start, focusSel: (sel) => focusSel(sel) });
+
 export function sheetEdit() {
   syncEditRows();
+  if (fc.list.some((r) => r.pin)) ensureCatalog();
   const live = fc.editRows.filter((r) => !r.removed);
   const items = fc.editRows.map((r) => {
     const nm = nameOf(r.resort);
     if (r.removed) return `<li class="fc-edit-row undo"><span>${esc(t('{0} removed.', nm))}</span><button class="btn sm alt" data-act="fc-undo" data-r="${esc(r.resort.id)}" aria-label="${esc(t('Undo removing {0}', nm))}">${t('Undo')}</button></li>`;
     const k = live.indexOf(r);
     const mv = (dir, ok) => (ok ? `<button class="btn sm alt" data-act="fc-move" data-dir="${dir}" data-r="${esc(r.resort.id)}" aria-label="${esc(t(dir === 'up' ? 'Move up: {0}' : 'Move down: {0}', nm))}">${t(dir === 'up' ? 'Move up' : 'Move down')}</button>` : '<span class="spacer"></span>');
-    return `<li class="fc-edit-row"><div class="grow"><b translate="no">${esc(r.resort.name)}</b><small translate="no">${esc(place(r.resort))}</small></div><div class="ctl">${mv('up', k > 0)}${mv('down', k < live.length - 1)}<button class="btn sm danger" data-act="fc-remove" data-r="${esc(r.resort.id)}" aria-label="${esc(t('Remove {0}', nm))}">${t('Remove')}</button></div></li>`;
+    const near = r.resort.pin && fc.catalog ? fc.catalog.nearby(r.resort.baseLat, r.resort.baseLon, { maxKm: MATCH_KM, limit: 1 })[0] : null;
+    const pinPart = r.resort.pin ? `<p class="fc-pinline">${pinTags(r.resort)}</p>${near ? `<p class="fc-match">${pin.matchHtml(near, r.resort.id)}</p>` : ''}` : '';
+    const editPin = r.resort.pin ? `<button class="btn sm alt wide" data-act="fc-pin-edit" data-r="${esc(r.resort.id)}" aria-label="${esc(t('Edit pin: {0}', nm))}">${t('Edit pin')}</button>` : '';
+    return `<li class="fc-edit-row"><div class="grow"><b translate="no">${esc(r.resort.name)}</b><small translate="no">${esc(place(r.resort))}</small>${pinPart}</div><div class="ctl">${mv('up', k > 0)}${mv('down', k < live.length - 1)}<button class="btn sm danger" data-act="fc-remove" data-r="${esc(r.resort.id)}" aria-label="${esc(t('Remove {0}', nm))}">${t('Remove')}</button>${editPin}</div></li>`;
   }).join('');
   return [t('Edit list'), `${back('fc-home', 'Forecast')}
     ${fc.listSaveFailed ? `<div class="wx-note bad" role="alert">${t('Couldn’t save your changes. They’ll last until you close the app. This device may be in private browsing or out of space.')}</div>` : ''}
@@ -436,6 +505,24 @@ export function sheetEdit() {
 // ---------- interaction
 function focusSel(sel) {
   fc.focusSel = sel;
+}
+
+function removeRow(id) {
+  syncEditRows();
+  const name = fc.list.find((r) => r.id === id)?.name ?? '';
+  const before = { rows: fc.editRows, list: fc.list };
+  fc.editRows = fc.editRows.map((r) => (r.resort.id === id ? { ...r, removed: true } : r));
+  fc.list = fc.editRows.filter((r) => !r.removed).map((r) => r.resort);
+  if (!persist()) {
+    fc.editRows = before.rows;
+    fc.list = before.list;
+    host.announce(t('Couldn’t save {0}. This device may be in private browsing or out of space.', name));
+    return false;
+  }
+  focusSel(`[data-act="fc-undo"][data-r="${id}"]`);
+  host.announce(t('{0} removed. Undo is available.', name));
+  host.open('fcedit');
+  return true;
 }
 
 function applyList(rowsNext) {
@@ -455,13 +542,58 @@ function openCalendar() {
   host.open('forecast');
 }
 
+function showNew(id) {
+  fc.flash = { id, isNew: true };
+  fc.added = [];
+  openCalendar();
+  focusSel(`[data-row="${id}"]`);
+  setTimeout(clearFlash, FLASH_MS);
+}
+
+function commitPin(resort, edit) {
+  const before = fc.list;
+  fc.list = edit ? fc.list.map((r) => (r.id === resort.id ? resort : r)) : add(fc.list, resort);
+  if (!persist()) { fc.list = before; return false; }
+  fc.editRows = [];
+  setEntry(resort, { state: 'loading', fc: undefined, failedRefresh: false });
+  loadOne(resort, edit);
+  if (edit) {
+    host.announce(t('{0} updated.', resort.name));
+    host.open('fcedit');
+    focusSel(`[data-act="fc-pin-edit"][data-r="${resort.id}"]`);
+  } else {
+    host.announce(t('{0} added to your list as a pin.', resort.name));
+    showNew(resort.id);
+  }
+  return true;
+}
+
+function useCatalog(catalogId, pinId, fromPinScreen) {
+  const resort = fc.catalog ? resortFor(fc.catalog, catalogId) : null;
+  if (!resort) return;
+  const already = onList(resort.id);
+  const at = fc.list.findIndex((r) => r.id === pinId);
+  const rest = fc.list.filter((r) => r.id !== pinId);
+  const before = fc.list;
+  fc.list = already ? rest : insertAt(rest, resort, at < 0 ? rest.length : at);
+  if (!persist()) { fc.list = before; host.announce(t('Couldn’t save {0}. This device may be in private browsing or out of space.', resort.name)); return; }
+  fc.editRows = [];
+  if (pinId) fc.data.delete(pinId);
+  if (!already) { setEntry(resort, { state: 'loading' }); loadOne(resort, false); }
+  host.announce(already ? t('{0} is already on your list.', resort.name) : t('{0} is now on your list instead of the pin.', resort.name));
+  if (already) { fc.pinDraft = null; fc.flash = { id: resort.id, isNew: false }; fc.added = []; openCalendar(); focusSel(`[data-row="${resort.id}"]`); setTimeout(clearFlash, FLASH_MS); return; }
+  if (fromPinScreen) { fc.pinDraft = null; showNew(resort.id); } else { host.render(); focusSel('[data-act="fc-home"]'); }
+}
+
 export function onClick(b) {
   const d = b.dataset;
+  if (pin.onClick(d.act, d) || trip.onClick(d.act, d)) return;
   switch (d.act) {
     case 'fc-home': {
       const first = d.first;
       if (first) fc.flash = { id: first, isNew: true };
       fc.added = [];
+      if (!first && host.sheet() === 'fctrip') focusSel('[data-act="fc-trip"]');
       openCalendar();
       if (first) { focusSel(`[data-row="${first}"]`); setTimeout(clearFlash, FLASH_MS); }
       break;
@@ -494,11 +626,12 @@ export function onClick(b) {
       break;
     }
     case 'fc-refresh': if (!fc.updating) loadAll(true); break;
-    case 'fc-retry': { const r = fc.list.find((x) => x.id === d.r); if (r) { setEntry(r, { state: 'loading', fc: undefined }); host.render(); loadOne(r, true); } break; }
+    case 'fc-retry': { const r = fc.list.find((x) => x.id === d.r); if (r) { setEntry(r, { state: 'loading', fc: undefined }); focusSel(`[data-row="${r.id}"]`); host.render(); loadOne(r, true); } break; }
     case 'fc-day': {
       fc.bodyScroll = document.querySelector('#sheet-body')?.scrollTop ?? 0;
       fc.returnSel = `[data-act="fc-day"][data-r="${d.r}"][data-d="${d.d}"]`;
       fc.tod = null;
+      fc.dayFrom = null;
       host.open('fcday', { id: d.r, date: d.d });
       break;
     }
@@ -539,8 +672,9 @@ export function onClick(b) {
   }
 }
 
-export function onInput(el) {
-  if (el.id !== 'fc-q') return;
+export function onInput(el, type = 'input') {
+  if (el.id !== 'fc-q') { if (!trip.onInput(el, type)) pin.onInput(el, type); return; }
+  if (type !== 'input') return;
   fc.q = el.value;
   clearTimeout(onInput.timer);
   updateResults();
@@ -548,6 +682,7 @@ export function onInput(el) {
 }
 
 export function afterRender(name) {
+  if (name === 'fcpin') pin.startMap(); else pin.leave();
   const body = document.querySelector('#sheet-body');
   if (name === 'forecast') {
     const s = document.querySelector('.fc-scroll');
@@ -565,5 +700,5 @@ export function afterRender(name) {
   }
 }
 
-export const sheets = { forecast: sheetCalendar, fcday: sheetDay, fcadd: sheetAdd, fcedit: sheetEdit };
+export const sheets = { forecast: sheetCalendar, fcday: sheetDay, fcadd: sheetAdd, fcedit: sheetEdit, fcpin: pin.sheet, fctrip: trip.sheet };
 export const state = fc;

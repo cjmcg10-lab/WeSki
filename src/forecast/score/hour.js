@@ -1,4 +1,4 @@
-import { COMPONENTS, groomSurface, initialSurface, normalizeHour, scoreSite, stepSurface } from './components.js';
+import { COMPONENTS, UPPER_HOLD_CAP, groomSurface, initialSurface, normalizeHour, scoreSite, stepSurface } from './components.js';
 import { hourFactor } from './explain.js';
 
 export const MIN_VERTICAL_M = 100;
@@ -108,6 +108,11 @@ export function scoreHours(resort, weather, groomedAt = new Set(), history = nul
     row.sites = sites.mode === 'single' ? 'single' : used.length === 2 ? 'both' : b ? 'base' : 'upper';
     row.hold = Math.max(...used.map((s) => s.hold));
     row.holdLoss = mean(used.map((s) => s.holdLoss));
+    if (u && b && u.hold > 0) {
+      const upperLoss = u.hold * Math.max(0, row.score - UPPER_HOLD_CAP);
+      row.score -= upperLoss;
+      row.holdLoss += upperLoss;
+    }
     row.factor = hourFactor(used);
     return row;
   });

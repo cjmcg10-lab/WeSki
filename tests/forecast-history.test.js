@@ -190,7 +190,7 @@ describe('detail levels', () => {
 });
 
 describe('version', () => {
-  it('is 1.3.1', () => {
-    expect(SCORING_VERSION).toBe('1.3.1');
+  it('is 1.5.0', () => {
+    expect(SCORING_VERSION).toBe('1.5.0');
   });
 });

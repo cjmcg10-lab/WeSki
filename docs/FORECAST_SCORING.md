@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.3.1)
+# Forecast scoring engine (version 1.5.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -37,6 +37,7 @@ const out = scoreForecast(resort, weather, opts);
 | `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
 | `history` | `{ summit, base }`, each `{ hourly }` in the weather's shape (optionally with `observed: boolean[]`): the hours before the forecast starts, as `GET /api/history/<id>` returns them. The engine ignores any hour at or after the first forecast hour, uses the last 72 valid ones, and carries the snow surface through them before the first forecast hour. Without it the surface starts clean (limited history) |
+| `alerts` | `[{ event, level, from, to }]` weather alerts for the resort, `from` and `to` local `YYYY-MM-DDTHH:MM` (as `/api/weather` returns them in `alerts`). Each becomes a `NT_WEATHER_ALERT` note on every date from `from` to `to` inclusive. Never changes a score. Default: `weather.alerts`, else none |
 | `ageHours` | Age in hours of the weather model's issue (when the source last updated). A loose signal only: NWS grids go 6 to 12 h between updates. 18 h or more caps confidence at Medium and 30 h or more makes it Low (`CR_STALE`). Default: `weather.ageHours` |
 | `fetchAgeHours` | Hours since the caller fetched this forecast (the phone's saved copy getting old). 6 or more is Low (`CR_STALE`). Never mixed with `ageHours`. Default: null |
 | `stale` | `true` when the backup was served because no source answered. Default: `weather.stale`. Confidence is Low (`CR_STALE`) |
@@ -49,7 +50,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.3.1',
+  version: '1.5.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -82,7 +83,7 @@ Day (one per local date in the weather):
 | `closureSource` | The `{ code, params }` the caller passed, or `null`, present only when `closed` |
 | `flags` | Strings: `snow_history_limited` (when the history before the forecast covers under 48 valid hours), `stale_source`, `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
 | `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
-| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds] and `NT_OUT_OF_SEASON`. Always an array. Not part of `explain` and never changes `score` or `status` |
+| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds], `NT_OUT_OF_SEASON` and `NT_WEATHER_ALERT` [event name], one note per distinct alert event on that date. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
 | `uncertainty` | Always `null` in version 1. It stays null until there are several forecasts or ensemble members to compare, so no Close call shows |
 
@@ -128,7 +129,7 @@ A grooming report (`opts.grooming`) is applied once, at the hour of its timestam
 
 **Wind (20).** Strength = the larger of the wind speed and 0.65 × the gust, in m/s. Points: 0 → 100, 4 → 98, 8 → 86, 12 → 60, 16 → 30, 20 → 10, 26 and more → 0. This is a predicted wind effect only. A confirmed lift hold from the resort is a different thing: it is reported in `liftHolds` and `notes` with `EX_LIFT_HOLD_CONFIRMED`, it does not move the wind component or the day score, and the wind codes (`F_STRONG_GUSTS`, `EX_SUMMIT_WIND`) are never emitted because of it.
 
-**Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. Because the hour is the mean of base and upper, a gale at the summit alone leaves the base side scoring normally, so such a day can still land in the Good band.
+**Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. **Upper-lift hold (1.4.0).** When both sites are scored and the upper site has a hold risk, the hour score is also pulled toward a cap of 50 by the upper risk: `score − upperRisk × max(0, score − 50)`. The upper lifts are the way to the upper terrain, so a calm base cannot carry a day when they would stop. A full upper hold lands a day at 50 at best (Fair). The cap of 50 is a first guess, still uncalibrated. The extra loss is added to `holdLoss`. With a single estimate the rule does not apply, because there is only one site and the cap of 35 already covers it. Calibration round 1 below is the evidence.
 
 **Comfort (10).** Feels-like temperature (−35 °C → 0, −25 → 25, −18 → 58, −10 → 92, −4 to +3 → 100, 6 → 85, 9 → 60, 13 → 30), multiplied by a rain factor (1, 0.4, 0.25, 0.15 for none, light, moderate, heavy) and a snowfall factor (0 cm → 1, 1 → 0.92, 3 → 0.78).
 
@@ -169,7 +170,8 @@ Rated separately for the day and for the timing of its best window. Every thresh
 | Under 24 history hours measured by a station, snowfall included (an hour whose station gave no precipitation total does not count) | Medium | `CR_NO_OBSERVATIONS` |
 | Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured with snowfall, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
 
-High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached; phase 7 found no free second source with measured snowfall. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+A provisional mountain from a map pin (#6) with one point is passed to the engine with the same height for top and base, so it takes the one-estimate row above: Low, `CR_ONE_ESTIMATE`, and no separate summit value is ever shown. With two pins it is scored like any mountain with those two heights.
 
 Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale`, `fetchAgeHours` of 6 or more or `ageHours` of 30 or more → Low, `WR_STALE` `[hours]`; `ageHours` of 18 or more → Medium, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
 
@@ -249,16 +251,43 @@ Which factor is chosen: each component's weighted distance from its reference (s
 
 - `EX_LIFT_HOLD_CONFIRMED` [number of confirmed holds that date] (new, needs ten translations in phase 2)
 - `NT_OUT_OF_SEASON` (new, needs ten translations in phase 2)
+- `NT_WEATHER_ALERT` [event name, a string: the alert's own English name such as `Winter Storm Warning`] (new in 1.5.0, issue #8). A winter storm, snow, ice, wind chill, extreme cold, high wind or gale alert from the NWS, Environment Canada or MET Norway that covers the date. It is a fact shown beside the day, like a lift hold: it does not move the wind or any component, the score, the status or the confidence. English text `Weather alert: {0}.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1350) with the other nine languages; the alert name itself is the provider's and is not translated
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 
 Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (not needed: missing history lowers confidence, it does not block a score), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
 
-`outlook` codes (days 6 to 9) are not produced in phase 1.
+`outlook` codes (days 6 to 9) are not produced: phase 7 (#8) found no ensemble source that works from a Worker at no cost.
+
+## Trip planner (#7)
+
+`src/forecast/trip.js` compares the mountains on the list over the days someone picks. It reads the day results the engine already made (so it works offline from the saved forecasts) and does not change any score. The picked days live in prefs under `fcTrip` (`picked` days, plus `from` and `to` for a later range of up to 14 days).
+
+Each picked day, for one mountain, is one of: scored, `closed`, `insufficient`, or not yet (later than the mountain's last forecast day). Per mountain:
+
+- Covered days are the scored days. Closed days, insufficient days and not-yet days are not covered, and none of them is counted in the average, the strongest day or the weakest day. A closed day is never a zero.
+- Average is the mean of the covered days' scores, rounded half up for display. Strongest and weakest are the covered days with the highest and lowest displayed score; a tie goes to the earlier date.
+- Coverage reads "{covered} of {picked} days", with "· {n} closed" when any picked day is closed.
+
+Ranking rule, in order. The ranking looks only at the picked days that fall inside every loaded (non-failed) mountain's forecast window, the shared days. A day before a mountain's first forecast day or after its last one is out of window for that mountain ("Past forecast" or "Not yet"), so mountains in different time zones are compared on the same days. Every picked day still shows on each card, but days outside the shared set count toward neither the ranking nor the close-call margin. No coverage fraction is used.
+
+1. Coverage on the shared days first: a mountain with fewer covered shared days never ranks above one with more, whatever its average. Missing days therefore never help a mountain.
+2. Then the higher average over the shared days.
+3. Then the order on the person's list.
+4. A mountain whose forecast failed to load is listed after every ranked mountain and has no rank number.
+5. A mountain closed on every picked day is listed last and takes its rank numbers after the open ones.
+
+Too close to call. A mountain's uncertainty depends on its least confident covered day: High 5 points, Medium 8, Low 12 (first guesses, to be tuned in phase 8). Two neighbours in the ranking are "too close to call" when they have the same shared-day coverage and their shared-day averages differ by less than the larger of their two uncertainties. The second card of the pair says so. A provisional mountain from a map pin always scores Low confidence, so a pin is flagged against any mountain within 12 points.
+
+Dates outside the forecast. A picked day later than a mountain's own last forecast day is "Not yet" for that mountain, and one before its first forecast day is "Past forecast". It takes no part in the ranking and is left out of that mountain's coverage, so it reads "Coverage 3 of 3 days", not a missing day. This matters when mountains sit in different time zones and one window ends a day earlier. A mountain with no day inside the forecast says none of the days are in range yet. The note at the top uses the longest forecast on the list ("Forecasts for Mar 3 arrive on Feb 22."), but the arrival date is never earlier than today, and a "Not yet" button uses its own mountain's forecast. When every picked day is beyond range it says none are in range yet.
+
+Picking days. Tapping a day inside the From/To range removes it (the range remembers the exclusion in `skip`); tapping it again puts it back. "Clear dates" removes the range and its exclusions but keeps days picked by hand. Saved days before today are dropped on load, and a saved range that started before today but has not ended starts today. A score that is not a finite number counts as missing.
+
+Tests: `tests/forecast-trip.test.js`.
 
 ## Not in version 1
 
-Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7), calibration of the numbers against real days (phase 8), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7 checked every free source and found none feasible; `docs/FORECAST_SOURCES.md` says what would be needed, and `range: { low, high }` is not part of the output until members exist), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
@@ -266,4 +295,31 @@ Several forecasts or ensemble members and with them `uncertainty`, model agreeme
 
 `tests/forecast-history.test.js` covers the engine's history, confidence and detail levels (version 1.3.0); `tests/forecast-store.test.js` covers the server side (history store, observations, archive, stale fallback) with recorded NWS stations and observations (`nws-stations-stowe.json`, `nws-obs-kmvl.json`, real responses trimmed to the fields the app reads).
 
+`tests/weather-sources.test.js` covers the weather adapters, routing, alerts and the `NT_WEATHER_ALERT` notes on recorded responses (`nws-gridpoints-stowe.json`, `met-locationforecast-*.json`, `*-alerts-*.json`).
+
 `tests/forecast-status.test.js` covers the resort-status side with recorded feeds `status-mtnpowder-*.json` (trimmed real responses): the normaliser, an assumed window, a confirmed closure, a short operating day, a confirmed lift hold kept apart from wind, and out of season without a closure. See `docs/FORECAST_SOURCES.md` for where the status comes from.
+
+## Calibration round 1 (version 1.4.0)
+
+Done for #9. It is a first pass on past weather. Real calibration needs a season of archived forecasts and skier feedback, which does not exist yet.
+
+**Data.** Hourly airport observations from NOAA NCEI "global-hourly" (public domain, no key, User-Agent `weski-build`), turned into the engine's weather shape by `tools/forecast_backtest.mjs`: temperature, wind, gust and visibility are measured; snowfall is estimated from the intensity in the METAR present-weather code (light 0.4, moderate 1, heavy 2 cm an hour); feels-like is wind chill. Open-Meteo is not used. Recordings are in `tests/fixtures/forecast/backtest/` (Mammoth Lakes, a Stowe-area airport, Mount Washington summit with a valley airport). These are airports, not ski slopes: they show how the engine orders days, not how many points a slope earned.
+
+**Memorable days, before (1.3.1) and after (1.4.0).**
+
+| Day | What happened | Before | After |
+| --- | --- | --- | --- |
+| Mammoth 2023-02-24 | powder storm, heavy snow, visibility 400 m | 75.5 Great | 75.5 Great |
+| Mammoth 2023-02-26 | bluebird after the storm | 95.1 Epic | 95.1 Epic |
+| Stowe 2023-12-18 | rain on snow, 16 C, gusts to 22 m/s | 44.6 Fair | 44.6 Fair |
+| Stowe 2023-12-22 | cold and calm four days later | 82.8 Great | 82.8 Great |
+| Mount Washington 2023-02-03 | summit gale 45 m/s, valley calm | 56.5 Good | 50.0 Fair |
+| Mount Washington 2023-01-31 | summit gale 34 m/s, valley calm | 71.3 Great | 65.6 Good |
+| Mammoth 2023-03-14 | warm wet snow and rain | 51.7 Fair | 51.7 Fair |
+| Mammoth 2023-03-18 | clear day after the warm spell refroze | 79.7 Great | 79.7 Great |
+
+The ordering is right everywhere: bluebird over storm, calm cold over rain, clear after refreeze over warm and wet. The one clear fault was the summit gale. With the upper lifts almost certainly on hold, the day still scored Good or Great because the calm valley half pulled the mean up. That is the change in 1.4.0 (upper-lift hold above). Nothing else was changed: the other days had no evidence against them. Points still open, not changed for lack of evidence: very windy days with near-zero visibility scored 56 to 69, and comfort has only 10% weight.
+
+**An 80 means the same day everywhere.** The same recorded weather (Mount Washington summit and valley) was given to four resort profiles. Alpine (3,300 / 1,800 m), Japanese (1,400 / 700 m) and Southern Hemisphere (2,054 / 1,720 m) profiles score identically on every day, because the engine uses only the weather, the two heights' difference and no latitude or hemisphere. The small low hill (70 m vertical) scores from the valley data alone by design (`small_vertical`), so a summit gale does not reach it: 78.1 against 50.0 on the gale day. That is intended, a 70 m hill has no separate summit. Dates and season are local, so a Southern Hemisphere July day is scored as winter weather like any other.
+
+**Rerun.** `node tools/forecast_backtest.mjs` scores the recorded days; add `--fetch` to download them again. After a season, export each resort with `GET /api/forecast-archive/<id>` (needs the owner's `ARCHIVE_ADMIN_SECRET`, see `docs/PRIVACY_DATA.md`) and run `node tools/forecast_calibrate.mjs --fetch <origin> --ids a,b --since <date>` with `ARCHIVE_ADMIN_KEY` set. It reports score against skier ratings (rank correlation), resort order on the same day, best-window timing and lead-time error. Feedback counts can be inflated: an answer has no identity, so a person can send more than once (the limit is 20 a day per network). Check `--min-answers` and look for outlier days before trusting a correlation. Change a weight or threshold only when those numbers clearly support it, bump `SCORING_VERSION` and add a "Calibration round N" section here.

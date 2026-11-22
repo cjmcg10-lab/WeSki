@@ -5,6 +5,7 @@ import {
 } from './accounts.js';
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
 import { HistoryStore } from './history.js';
+import { addFeedbackCounts, FEEDBACK_PER_NETWORK_PER_DAY } from './calibration.js';
 
 /** One per watched resort: 72 hours of weather history, the last good forecast and the forecast archive (see docs/FORECAST_HISTORY.md). */
 export class ForecastHistory extends DurableObject {
@@ -13,6 +14,7 @@ export class ForecastHistory extends DurableObject {
     this.store = new HistoryStore(ctx.storage);
   }
 
+  due(now) { return this.store.due(now); }
   record(snapshot, now) { return this.store.record(snapshot, now); }
   history(now) { return this.store.history(now); }
   lastGood(now) { return this.store.lastGood(now); }
@@ -48,7 +50,9 @@ export class Accounts extends DurableObject {
 
   /** Simple counters: at most n actions per key per window. */
   allow(key, n, windowMs) {
-    const now = Date.now(), r = this.one('SELECT n, until FROM limits WHERE k = ?', key);
+    const now = Date.now();
+    this.sql.exec('DELETE FROM limits WHERE until < ?', now);
+    const r = this.one('SELECT n, until FROM limits WHERE k = ?', key);
     if (!r || r.until < now) { this.sql.exec('INSERT OR REPLACE INTO limits VALUES (?, 1, ?)', key, now + windowMs); return true; }
     if (r.n >= n) return false;
     this.sql.exec('UPDATE limits SET n = n + 1 WHERE k = ?', key);
@@ -207,11 +211,28 @@ export class ResortLog extends DurableObject {
       CREATE TABLE IF NOT EXISTS pending (id INTEGER PRIMARY KEY AUTOINCREMENT, v TEXT);
       CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER, kind TEXT, x INTEGER, y INTEGER, ref TEXT, name TEXT, text TEXT, status TEXT DEFAULT 'open');
       CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER, until INTEGER);
+      CREATE TABLE IF NOT EXISTS feedback (day TEXT PRIMARY KEY, ratings TEXT, tags TEXT);
     `);
   }
 
+  /** "How was it?" answers as counts per local date. No identity is stored; the network key only feeds the rate limit. */
+  addFeedback(f, ipKey) {
+    if (!this.allow('fb:' + ipKey, FEEDBACK_PER_NETWORK_PER_DAY, 86400e3)) return { error: 'too_many' };
+    const row = [...this.sql.exec('SELECT ratings, tags FROM feedback WHERE day = ?', f.day)][0];
+    const next = addFeedbackCounts(row && { ratings: JSON.parse(row.ratings), tags: JSON.parse(row.tags) }, f);
+    this.sql.exec('INSERT OR REPLACE INTO feedback VALUES (?, ?, ?)', f.day, JSON.stringify(next.ratings), JSON.stringify(next.tags));
+    return { ok: true };
+  }
+
+  feedback(sinceDay) {
+    return [...this.sql.exec('SELECT day, ratings, tags FROM feedback WHERE day >= ? ORDER BY day', sinceDay)]
+      .map((r) => ({ day: r.day, ratings: JSON.parse(r.ratings), tags: JSON.parse(r.tags) }));
+  }
+
   allow(key, n, windowMs) {
-    const now = Date.now(), r = [...this.sql.exec('SELECT n, until FROM limits WHERE k = ?', key)][0];
+    const now = Date.now();
+    this.sql.exec('DELETE FROM limits WHERE until < ?', now);
+    const r = [...this.sql.exec('SELECT n, until FROM limits WHERE k = ?', key)][0];
     if (!r || r.until < now) { this.sql.exec('INSERT OR REPLACE INTO limits VALUES (?, 1, ?)', key, now + windowMs); return true; }
     if (r.n >= n) return false;
     this.sql.exec('UPDATE limits SET n = n + 1 WHERE k = ?', key);

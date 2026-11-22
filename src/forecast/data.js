@@ -1,6 +1,6 @@
 import { scoreForecast, roundHalfUp } from './score/index.js';
 import { sourceAge } from './score/explain.js';
-import { loadWeather } from '../weather.js';
+import { loadWeather, savedHistory } from '../weather.js';
 import { prefs } from '../store.js';
 import { forecastPoints } from './catalog.js';
 import { loadResortStatus, statusToScoreOpts } from './status.js';
@@ -13,6 +13,8 @@ export function localToday(tz, now = Date.now()) {
 }
 
 export const ageHoursOf = (at, now = Date.now()) => Math.max(0, (now - at) / HOUR_MS);
+
+export const sourceAgeHours = (weather, at, now = Date.now()) => (weather?.ageHours == null ? null : weather.ageHours + ageHoursOf(at, now));
 
 export const isStale = (hours) => hours >= STALE_HOURS;
 
@@ -39,25 +41,31 @@ function scoreToday(resort, weather, now) {
   return first && local < first ? first : local;
 }
 
-export function scoreResort(resort, weather, { now = Date.now(), at = now, status } = {}) {
+export function scoreResort(resort, weather, { now = Date.now(), at = now, status, history } = {}) {
   const today = scoreToday(resort, weather, now);
   const aged = agedStatus(status, now);
   const fetchAgeHours = ageHoursOf(at, now);
   const opts = statusToScoreOpts(aged.status);
   if (aged.status?.hours?.assumed && opts.hours) opts.hours = { ...opts.hours, assumed: true };
-  const ageHours = weather?.ageHours == null ? null : weather.ageHours + fetchAgeHours;
-  const out = scoreForecast(resort, weather, { ...opts, today, ageHours, fetchAgeHours });
+  const ageHours = sourceAgeHours(weather, at, now);
+  const out = scoreForecast(resort, weather, { ...opts, today, ageHours, fetchAgeHours, ...(history ? { history } : {}) });
   return { ...out, today, band: bandOfAges({ stale: weather?.stale, fetchAgeHours, ageHours }, aged.ageHours), days: out.days.filter((d) => d.date >= today) };
 }
 
 const bandOfAges = (source, statusAge) => `${sourceAge(source)?.level ?? ''}|${isStale(statusAge)}`;
 
 export function rescored(forecast, now = Date.now()) {
-  const { resort, weather, at, status, scored } = forecast;
+  const { resort, weather, at, status, scored, history } = forecast;
   const fetchAgeHours = ageHoursOf(at, now);
-  const ageHours = weather?.ageHours == null ? null : weather.ageHours + fetchAgeHours;
+  const ageHours = sourceAgeHours(weather, at, now);
   if (scoreToday(resort, weather, now) === scored.today && bandOfAges({ stale: weather?.stale, fetchAgeHours, ageHours }, agedStatus(status, now).ageHours) === scored.band) return forecast;
-  return { ...forecast, scored: scoreResort(resort, weather, { now, at, status }) };
+  return { ...forecast, scored: scoreResort(resort, weather, { now, at, status, history }) };
+}
+
+export function withHistory(forecast, history, now = Date.now()) {
+  if (!history) return forecast;
+  const { resort, weather, at, status } = forecast;
+  return { ...forecast, history, scored: scoreResort(resort, weather, { now, at, status, history }) };
 }
 
 export function savedStatus(resort) {
@@ -79,7 +87,7 @@ export async function loadStatusSaved(resort, loader = loadResortStatus, now = D
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved, now = Date.now()) {
+export async function loadForecast(resort, force = false, loader = loadWeather, statusLoader = loadStatusSaved, now = Date.now(), peekHistory = savedHistory) {
   const place = forecastPoints(resort);
   if (!place || !resort.tz) throw new Error('no height or time zone data');
   const saved = savedStatus(resort);
@@ -87,8 +95,9 @@ export async function loadForecast(resort, force = false, loader = loadWeather, 
   const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
   const [w, status] = await Promise.all([loader(place, force, { allowStale: true }), quick]);
   const serverStale = !!w.stale && !w.error;
-  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation };
-  return { resort: place, at: w.at, source: w.source, stale: !!w.stale, serverStale, weather, status, scored: scoreResort(place, weather, { now, at: w.at, status }) };
+  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation, alerts: w.alerts ?? [] };
+  const history = peekHistory(place, now)?.data ?? undefined;
+  return { resort: place, at: w.at, source: w.source, stale: !!w.stale, serverStale, weather, status, history, scored: scoreResort(place, weather, { now, at: w.at, status, history }) };
 }
 
 export function columnDates(forecasts, count = 7) {
