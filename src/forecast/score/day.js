@@ -63,7 +63,7 @@ function skiRowsOf(rows, from, to) {
 export const outOfSeason = (season, date) =>
   !!season && (season.state === 'closed_for_season' || season.state === 'not_open' || (!!season.open && date < season.open) || (!!season.close && date > season.close));
 
-export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours, season, liftHolds = [], groomed = false, history = { hours: 0, observed: 0 }, stale = false, resolutionKm = null, elevationMismatchM = null }) {
+export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHours, fetchAgeHours = null, season, liftHolds = [], groomed = false, history = { hours: 0, observed: 0 }, stale = false, resolutionKm = null, elevationMismatchM = null }) {
   const { from, to, assumed } = window;
   const expected = to - from;
   const holds = liftHolds.filter((h) => h.date === date).map(({ lift, status, from: heldFrom, to: heldTo }) => ({ lift, status, from: heldFrom ?? null, to: heldTo ?? null }));
@@ -101,7 +101,7 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
   if (!window_) flags.push('window_under_3h');
   const score = window_ ? DAY_WEIGHTS.mean * dayMean + DAY_WEIGHTS.window * window_.mean : dayMean;
   const drivers = dayDrivers(ski);
-  const confidence = dayConfidence({ single, partial, daysAhead, ageHours, stale, history, resolutionKm, elevationMismatchM });
+  const confidence = dayConfidence({ single, partial, daysAhead, ageHours, fetchAgeHours, stale, history, resolutionKm, elevationMismatchM });
   const scoreByHour = new Map([...byHour].map(([h, r]) => [h, r.score]));
   return {
     ...base,
@@ -116,7 +116,7 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
     factors: drivers,
     explain: dayExplanation(ski, drivers),
     confidence,
-    windowConfidence: windowConfidence({ window: window_, assumed, daysAhead, stale, ageHours, dayLevel: confidence.level }),
+    windowConfidence: windowConfidence({ window: window_, assumed, daysAhead, stale, ageHours, fetchAgeHours, dayLevel: confidence.level }),
     flags,
   };
 }

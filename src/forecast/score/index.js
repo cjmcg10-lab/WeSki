@@ -32,6 +32,7 @@ export function elevationMismatch(resort, gridElevation) {
 function sourceInputs(resort, weather, opts) {
   return {
     ageHours: opts.ageHours ?? weather?.ageHours ?? null,
+    fetchAgeHours: opts.fetchAgeHours ?? null,
     stale: opts.stale ?? weather?.stale ?? false,
     resolutionKm: opts.resolutionKm ?? weather?.resolutionKm ?? null,
     elevationMismatchM: opts.elevationMismatchM ?? elevationMismatch(resort, weather?.gridElevation),
@@ -39,7 +40,7 @@ function sourceInputs(resort, weather, opts) {
 }
 
 export function scoreForecast(resort, weather, opts = {}) {
-  const window = opts.hours ? { from: opts.hours.from, to: opts.hours.to, assumed: false } : { ...ASSUMED_HOURS, assumed: true };
+  const window = opts.hours ? { from: opts.hours.from, to: opts.hours.to, assumed: !!opts.hours.assumed } : { ...ASSUMED_HOURS, assumed: true };
   const groomedAt = groomedHours(opts.grooming, weather);
   const { rows, sites, history } = scoreHours(resort, weather ?? {}, groomedAt, opts.history);
   const dates = [...new Set(rows.map((r) => r.date))];

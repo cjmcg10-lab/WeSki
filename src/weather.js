@@ -23,13 +23,14 @@ export function describeCode(c) {
  * place: {lat, lon, top (m), base (m), tz}. Returns {at, cached, summit, base} where each of
  * summit/base is the raw Open-Meteo object (metric units: °C, cm snowfall, m/s wind, m depth).
  */
-export async function loadWeather(place, force = false) {
+export async function loadWeather(place, force = false, { allowStale = false } = {}) {
   const key = 'weather2:' + place.id;
   const hit = prefs.get(key, null);
   if (hit && !force && Date.now() - hit.at < CACHE_MS) return { ...hit, cached: true };
   const url = `/api/weather?lat=${place.lat}&lon=${place.lon}&blat=${place.baseLat ?? place.lat}&blon=${place.baseLon ?? place.lon}`
     + `&top=${Math.round(place.top)}&base=${Math.round(place.base)}&tz=${encodeURIComponent(place.tz)}`
-    + (/^[a-z0-9-]{2,40}$/.test(place.id || '') ? `&id=${place.id}` : '');
+    + (/^[a-z0-9-]{2,40}$/.test(place.id || '') ? `&id=${place.id}` : '')
+    + (allowStale ? '&stale=1' : '');
   try {
     const res = await fetch(url);
     const data = await res.json();

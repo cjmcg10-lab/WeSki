@@ -68,6 +68,24 @@ try {
 
   await page.locator('#map canvas').first().waitFor({ state: 'visible', timeout: 60000 });
   await page.waitForTimeout(3000);
+
+  await page.locator('[data-act="tab"][data-tab="forecast"]').click();
+  await page.locator('.fc-empty').waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.fc-empty [data-act="fc-add"]').click();
+  await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
+  for (const [query, name] of [['Zermatt', 'Zermatt'], ['Mt Buller', 'Mount Buller']]) {
+    const box = page.locator('#fc-q');
+    await box.fill(query);
+    if ((await box.inputValue()) !== query) throw new Error(`search box holds "${await box.inputValue()}", not "${query}"`);
+    try {
+      await page.locator('#fc-results .fc-res', { hasText: name }).first().waitFor({ state: 'visible', timeout: 30000 });
+    } catch (e) {
+      const shown = await page.locator('#fc-results').innerText().catch(() => '(no results panel)');
+      mkdirSync(SHOT_DIR, { recursive: true });
+      await page.screenshot({ path: `${SHOT_DIR}/search-failure.png` }).catch(() => {});
+      throw new Error(`search for "${query}" never showed ${name}; results panel says: ${shown.slice(0, 300)}`);
+    }
+  }
 } catch (e) {
   problems.push(`smoke test stopped: ${e.message}`);
 }
@@ -83,5 +101,5 @@ if (problems.length) {
   console.error('Smoke test FAILED:\n' + problems.map((p) => ' - ' + p).join('\n'));
   process.exit(1);
 }
-console.log('Smoke test passed: start screen shown, Jay Peak opened, map canvas drawn, no errors.');
+console.log('Smoke test passed: start screen shown, Jay Peak opened, map canvas drawn, Forecast tab opened, no errors.');
 process.exit(0);

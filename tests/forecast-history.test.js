@@ -119,13 +119,25 @@ describe('confidence with history', () => {
     expect(elevationMismatch(RESORT, undefined)).toBeNull();
   });
 
-  it('is Low with the age when the source is stale or served from the last good copy', () => {
-    expect(scoreForecast(RESORT, weather({ ageHours: 9 }), { history: FULL }).days[0].confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [9] } });
+  it('is Low with the age when the phone copy is old or the source was served from the last good copy', () => {
+    expect(scoreForecast(RESORT, weather(), { history: FULL, fetchAgeHours: 9 }).days[0].confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [9] } });
     const served = scoreForecast(RESORT, weather({ ageHours: 30, stale: true }), { history: FULL });
     expect(served.days[0].confidence.reason).toEqual({ code: 'CR_STALE', params: [30] });
     expect(served.days[0].flags).toContain('stale_source');
     expect(served.days[0].windowConfidence).toEqual({ level: 'Low', reason: { code: 'WR_STALE', params: [30] } });
     expect(scoreForecast(RESORT, weather({ ageHours: 1 }), { history: FULL, ageHours: 12 }).inputs.ageHours).toBe(12);
+  });
+
+  it('treats the model issue age as a loose signal: 11.5 h is fine, 18 h is Medium, 30 h is Low', () => {
+    const live = (ageHours, opts = {}) => scoreForecast(RESORT, weather({ ageHours, stale: false }), { history: FULL, fetchAgeHours: 0, ...opts }).days;
+    for (const d of live(11.5).filter((x) => x.daysAhead <= 1 && x.status === 'ok')) {
+      expect(d.confidence.reason.code).not.toBe('CR_STALE');
+      expect(d.windowConfidence.reason.code).not.toBe('WR_STALE');
+      expect(d.confidence.level).toBe('High');
+    }
+    expect(live(18)[0].confidence).toEqual({ level: 'Medium', reason: { code: 'CR_STALE', params: [18] } });
+    expect(live(30)[0].confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [30] } });
+    expect(scoreForecast(RESORT, weather({ ageHours: 1 }), { history: FULL }).inputs.fetchAgeHours).toBeNull();
   });
 
   it('rates the best window separately from the day', () => {
@@ -178,7 +190,7 @@ describe('detail levels', () => {
 });
 
 describe('version', () => {
-  it('is 1.3.0', () => {
-    expect(SCORING_VERSION).toBe('1.3.0');
+  it('is 1.3.1', () => {
+    expect(SCORING_VERSION).toBe('1.3.1');
   });
 });
