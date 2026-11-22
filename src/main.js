@@ -19,6 +19,7 @@ import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { placeTr } from './placenames.js';
 import * as acct from './account.js';
+import * as fcUi from './forecast/ui.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -702,6 +703,14 @@ onLangChange(() => {
   if (!$('#sheet').classList.contains('hidden')) renderSheet();
   if (S.map) { renderChrome(); S.map.overlayDirty = true; }
 });
+fcUi.init({
+  sheet: () => S.sheet,
+  open: (name, arg) => openSheet(name, arg),
+  render: () => { if (fcUi.isForecastSheet(S.sheet)) renderSheet(); },
+  toast: (msg, ms) => toast(msg, ms),
+  announce: (msg) => { const el = $('#fc-live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 50); } },
+  units: () => S.units,
+});
 document.addEventListener('click', onClick);
 // Legal pages and the About page open in a viewer over the app (an installed app has no browser Back button),
 // so Back returns to exactly where the person was: same map, same group, same panel.
@@ -1377,13 +1386,14 @@ function openSheet(name, arg) {
   const fresh = S.sheet !== name || $('#sheet').classList.contains('hidden');
   S.sheet = name; S.sheetArg = arg;
   if (fresh) { S.sheetHtml = null; S.sheetTitle = null; $('#sheet-title').textContent = ''; $('#sheet-body').scrollTop = 0; }
-  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more' }[name];
+  const tab = { group: 'group', customize: 'group', track: 'track', history: 'history', session: 'history', more: 'more', routeprefs: 'more', advanced: 'more', closures: 'more', pass: 'more', privacy: 'more', report: 'more', forecast: 'forecast', fcday: 'forecast', fcadd: 'forecast', fcedit: 'forecast' }[name];
   if (tab) S.tab = tab;
   $('#sheet').classList.remove('hidden');
   renderSheet();
   renderChrome();
 }
 function closeSheet() {
+  if (fcUi.isForecastSheet(S.sheet)) fcUi.onClose();
   $('#sheet').classList.remove('over-start');
   S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
@@ -1411,12 +1421,13 @@ function renderAcctChip() {
 function renderSheet() {
   renderAcctChip();
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety, ...fcUi.sheets }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = S.sheetTitle === title && S.sheetLang === getLang();
   S.sheetTitle = title; S.sheetLang = getLang();
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
+  $('#sheet').classList.toggle('tall', fcUi.isForecastSheet(S.sheet));
   $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
@@ -1427,6 +1438,7 @@ function renderSheet() {
   S.sheetHtml = html;
   body.innerHTML = html;
   if (same) body.scrollTop = keep;
+  if (fcUi.isForecastSheet(S.sheet)) fcUi.afterRender(S.sheet);
   const pv = $('#av-preview');
   if (pv) { try { mountPreview(pv, S.profile.avatar, S.profile.color); } catch { pv.innerHTML = avatarSvg(S.profile.avatar.split('~')[0], S.profile.color); } }
 }
@@ -2157,6 +2169,7 @@ async function downloadOffline() {
 // ---------- events
 function onInput(e) {
   const t = e.target;
+  if (t.id === 'fc-q') { if (e.type === 'input') fcUi.onInput(t); return; }
   if (t.id === 'f-search') { if (e.type === 'input') { S.searchQ = t.value; $('#search-list').innerHTML = searchResults(); } return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-resort') { if (e.type === 'input') renderResortList(t.value); return; } // not on blur: that would redraw under the tap
   if (t.id === 'f-lang') { if (e.type === 'change') setLang(t.value); return; }
@@ -2211,6 +2224,7 @@ async function onClick(e) {
   const b = e.target.closest('[data-act]');
   if (!b) return;
   const act = b.dataset.act, d = b.dataset;
+  if (act.startsWith('fc-')) { fcUi.onClick(b); return; }
   switch (act) {
     case 'tab':
       if (d.tab === 'track' && !S.historyLoaded) loadHistory();
@@ -2239,6 +2253,7 @@ async function onClick(e) {
     case 'start-hist': S.histOnly = !S.histOnly; if (S.histOnly) { S.favOnly = false; S.nearMe = null; S.allDays = null; } renderResortList(); break;
     case 'start-day': openDay(d.r, d.id); break;
     case 'start-join': startJoinAsk(); break;
+    case 'start-forecast': $('#sheet').classList.add('over-start'); openSheet('forecast'); break;
     case 'acct-chip': $('#sheet').classList.add('over-start'); openSheet('pass'); break;
     case 'start-join-go': startJoinGo(b); break;
     case 'go-group-mtn': goGroupMountain(d.code, d.id); break;
