@@ -175,6 +175,26 @@ def stable_ids(rows):
     for g in collisions(rows):
         for r in g:
             r["id"] = f"{r['id']}-{r['osd'][:6]}"
+    # A suffixed id can equal another resort's plain id ("x-vermont"), and a short OpenSkiMap suffix can still clash:
+    # end with the full OpenSkiMap id, which is unique, so every id is safe to use as a folder name.
+    for g in collisions(rows):
+        for r in g:
+            r["id"] = f"{slug(r['name']) or 'resort'}-{r['osd']}"
+    assert not collisions(rows), "resort ids still repeat"
+
+
+def avoid_built_ids(rows, ours):
+    """A resort still to build must not take the folder name of one of our built maps (another resort with the same
+    name elsewhere): it would overwrite that map. It gets its OpenSkiMap id added."""
+    taken = {r["id"] for r in rows}
+    for r in rows:
+        if not r["built"] and r["id"] in ours:
+            new = f"{r['id']}-{r['osd'][:6]}"
+            if new in taken or new in ours:
+                new = f"{r['id']}-{r['osd']}"
+            print(f"renamed: {r['id']} ({r['name']}) is the id of a built map, now {new}")
+            taken.add(new)
+            r["id"] = new
 
 
 def main():
@@ -214,6 +234,7 @@ def main():
         })
     stable_ids(rows)
     mark_built(rows, ours, osd_file("lifts", opt["lifts"]))
+    avoid_built_ids(rows, ours)
     rank = {c: g for g, cs in enumerate(GROUPS) for c in cs}
     rows.sort(key=lambda r: (rank.get(r["cc"], len(GROUPS)), -(r["lifts"] * 3 + r["runs"]), r["id"]))
     with open(opt["out"], "w") as o:
