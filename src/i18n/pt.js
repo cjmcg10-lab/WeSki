@@ -444,7 +444,6 @@ export default {
   1049: 'Marcador da base definido.',
   1050: 'Marcador do topo definido.',
   1051: 'Marcador do topo removido.',
-  1052: 'Provisório',
   1053: 'Terreno não verificado',
   1054: 'Montanha provisória, terreno não verificado: esta previsão é para o ponto que você marcou, não para teleféricos e pistas verificados.',
   1055: 'Só um ponto, então é uma única estimativa para a montanha toda, com menos confiança.',

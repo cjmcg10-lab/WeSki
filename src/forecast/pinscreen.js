@@ -195,9 +195,11 @@ export function createPinScreen(ctx) {
     const tl = $('#fc-tlat')?.value.trim() ?? '', to = $('#fc-tlon')?.value.trim() ?? '';
     const tlat = parseCoordinate(tl, 85), tlon = parseCoordinate(to, 180);
     if ((tl || to) && (tlat == null || tlon == null)) { ui.errors = { coords: t('Enter both top coordinates, or leave both empty.') }; refresh(); return; }
+    const d = draft();
+    const moved = (point, la, lo) => !point || point.lat !== la || point.lon !== lo;
     map?.flyTo(lat, lon, FLY_MIN_ZOOM);
-    place('base', lat, lon);
-    if (tlat != null) place('top', tlat, tlon);
+    if (moved(d.base, lat, lon)) place('base', lat, lon);
+    if (tlat != null && moved(d.top, tlat, tlon)) place('top', tlat, tlon);
   }
 
   function applyHeight(key, text) {
@@ -311,7 +313,12 @@ export function createPinScreen(ctx) {
         H().open(edit ? 'fcedit' : 'fcadd');
         return true;
       }
-      case 'fc-pin-remove': { const id = draft().id; fc.pinDraft = null; ctx.removeRow(id); return true; }
+      case 'fc-pin-remove': {
+        const { id, name } = draft();
+        if (ctx.removeRow(id)) fc.pinDraft = null;
+        else { ui.errors = { save: t('Couldn’t save {0}. This device may be in private browsing or out of space.', name) }; refresh(); }
+        return true;
+      }
       case 'fc-pin-keep': ui.keep = d.r; refresh(); $('#fc-name')?.focus(); H().announce(t('Keeping this as a pin.')); return true;
       case 'fc-pin-coords-set': applyCoordinates(); return true;
       case 'fc-pin-set': {

@@ -444,7 +444,6 @@ export default {
   1049: 'Repère du bas placé.',
   1050: 'Repère du haut placé.',
   1051: 'Repère du haut retiré.',
-  1052: 'Provisoire',
   1053: 'Terrain non vérifié',
   1054: 'Montagne provisoire, terrain non vérifié : cette prévision concerne le point que vous avez placé, pas des remontées et pistes vérifiées.',
   1055: 'Un seul point : c’est donc une seule estimation pour toute la montagne, avec une fiabilité moindre.',

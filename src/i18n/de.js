@@ -444,7 +444,6 @@ export default {
   1049: 'Talpunkt gesetzt.',
   1050: 'Gipfelpunkt gesetzt.',
   1051: 'Gipfelpunkt entfernt.',
-  1052: 'Vorläufig',
   1053: 'Gelände nicht geprüft',
   1054: 'Vorläufiger Berg, Gelände nicht geprüft: Diese Vorhersage gilt für den von dir gesetzten Punkt, nicht für geprüfte Lifte und Pisten.',
   1055: 'Nur ein Punkt, daher ist dies eine Schätzung für den ganzen Berg mit geringerer Zuverlässigkeit.',

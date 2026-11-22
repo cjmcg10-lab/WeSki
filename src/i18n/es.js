@@ -444,7 +444,6 @@ export default {
   1049: 'Pin de la base colocado.',
   1050: 'Pin de la cima colocado.',
   1051: 'Pin de la cima quitado.',
-  1052: 'Provisional',
   1053: 'Terreno sin verificar',
   1054: 'Montaña provisional, terreno sin verificar: este pronóstico es para el punto que marcaste, no para remontes y pistas comprobados.',
   1055: 'Solo un punto, así que es una sola estimación para toda la montaña, con menos confianza.',

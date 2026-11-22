@@ -444,7 +444,6 @@ export default {
   1049: 'Basispin geplaatst.',
   1050: 'Toppin geplaatst.',
   1051: 'Toppin verwijderd.',
-  1052: 'Voorlopig',
   1053: 'Terrein niet gecontroleerd',
   1054: 'Voorlopige berg, terrein niet gecontroleerd: deze voorspelling geldt voor het punt dat je hebt gemarkeerd, niet voor gecontroleerde liften en pistes.',
   1055: 'Maar één punt, dus dit is één schatting voor de hele berg, met lagere betrouwbaarheid.',

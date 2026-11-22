@@ -950,7 +950,6 @@ export default {
   1049: 'Base pin set.',
   1050: 'Top pin set.',
   1051: 'Top pin removed.',
-  1052: 'Provisional',
   1053: 'Terrain unverified',
   1054: 'Provisional mountain, terrain unverified: this forecast is for the point you pinned, not for checked lifts and runs.',
   1055: 'One point only, so this is one estimate for the whole mountain, with lower confidence.',

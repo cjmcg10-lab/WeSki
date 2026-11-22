@@ -507,12 +507,19 @@ function focusSel(sel) {
 function removeRow(id) {
   syncEditRows();
   const name = fc.list.find((r) => r.id === id)?.name ?? '';
+  const before = { rows: fc.editRows, list: fc.list };
   fc.editRows = fc.editRows.map((r) => (r.resort.id === id ? { ...r, removed: true } : r));
   fc.list = fc.editRows.filter((r) => !r.removed).map((r) => r.resort);
-  persist();
+  if (!persist()) {
+    fc.editRows = before.rows;
+    fc.list = before.list;
+    host.announce(t('Couldn’t save {0}. This device may be in private browsing or out of space.', name));
+    return false;
+  }
   focusSel(`[data-act="fc-undo"][data-r="${id}"]`);
   host.announce(t('{0} removed. Undo is available.', name));
   host.open('fcedit');
+  return true;
 }
 
 function applyList(rowsNext) {

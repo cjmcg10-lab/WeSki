@@ -60,7 +60,7 @@ export async function pngPixel(png, px, py) {
   parts.reduce((offset, p) => { joined.set(p, offset); return offset + p.length; }, 0);
   const raw = await inflate(joined);
   const stride = width * channels;
-  if (raw.length < (stride + 1) * (py + 1)) throw new Error('PNG data is short');
+  if (raw.length < (stride + 1) * height) throw new Error('PNG data is short');
   let prev = new Uint8Array(stride);
   for (let y = 0; y <= py; y++) {
     const filter = raw[y * (stride + 1)];

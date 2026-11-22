@@ -444,7 +444,6 @@ export default {
   1049: 'Segnaposto base impostato.',
   1050: 'Segnaposto cima impostato.',
   1051: 'Segnaposto cima rimosso.',
-  1052: 'Provvisorio',
   1053: 'Terreno non verificato',
   1054: 'Montagna provvisoria, terreno non verificato: questa previsione riguarda il punto che hai segnato, non impianti e piste verificati.',
   1055: 'Un solo punto, quindi è una sola stima per tutta la montagna, con affidabilità minore.',
