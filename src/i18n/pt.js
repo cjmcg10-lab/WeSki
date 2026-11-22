@@ -390,4 +390,5 @@ export default {
   1212: 'Obrigado. Será enviado quando estiver online.',
   1213: 'Opinião sobre o dia de esqui',
   1214: 'Depois de um dia de esqui guardado pode avaliá-lo de 1 a 5 e indicar como foi. É opcional e perguntado uma vez por dia. Só são enviados a montanha, a data, a sua avaliação e as etiquetas. Sem nome, conta, localização nem hora do dia.',
+  1215: 'Avaliar {0} de 5',
 };

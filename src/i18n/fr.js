@@ -390,4 +390,5 @@ export default {
   1212: 'Merci. Il sera envoyé quand vous serez en ligne.',
   1213: 'Avis sur la journée de ski',
   1214: 'Après une journée de ski enregistrée, vous pouvez la noter de 1 à 5 et indiquer comment c’était. C’est facultatif et demandé une fois par jour. Seuls la montagne, la date, votre note et les étiquettes sont envoyées. Ni nom, ni compte, ni position, ni heure.',
+  1215: 'Noter {0} sur 5',
 };

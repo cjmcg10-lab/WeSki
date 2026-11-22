@@ -50,7 +50,9 @@ export class Accounts extends DurableObject {
 
   /** Simple counters: at most n actions per key per window. */
   allow(key, n, windowMs) {
-    const now = Date.now(), r = this.one('SELECT n, until FROM limits WHERE k = ?', key);
+    const now = Date.now();
+    this.sql.exec('DELETE FROM limits WHERE until < ?', now);
+    const r = this.one('SELECT n, until FROM limits WHERE k = ?', key);
     if (!r || r.until < now) { this.sql.exec('INSERT OR REPLACE INTO limits VALUES (?, 1, ?)', key, now + windowMs); return true; }
     if (r.n >= n) return false;
     this.sql.exec('UPDATE limits SET n = n + 1 WHERE k = ?', key);
@@ -228,7 +230,9 @@ export class ResortLog extends DurableObject {
   }
 
   allow(key, n, windowMs) {
-    const now = Date.now(), r = [...this.sql.exec('SELECT n, until FROM limits WHERE k = ?', key)][0];
+    const now = Date.now();
+    this.sql.exec('DELETE FROM limits WHERE until < ?', now);
+    const r = [...this.sql.exec('SELECT n, until FROM limits WHERE k = ?', key)][0];
     if (!r || r.until < now) { this.sql.exec('INSERT OR REPLACE INTO limits VALUES (?, 1, ?)', key, now + windowMs); return true; }
     if (r.n >= n) return false;
     this.sql.exec('UPDATE limits SET n = n + 1 WHERE k = ?', key);

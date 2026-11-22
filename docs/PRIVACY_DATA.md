@@ -57,7 +57,7 @@ Optional, never pre-filled, and not tied to the map-help switch: each answer is 
 - Server (`worker/calibration.js`, table `feedback` in the `ResortLog` Durable Object): `POST /api/feedback` checks the
   mountain is on the server-side resort list (`worker/catalog.js`), the date is a real date within 120 days, the rating is
   1 to 5 and every tag is on the list. It adds to one row per date: five rating counts and a count per tag. Nothing from the
-  request is kept. Rate limit: 20 answers a day per network (daily-salted hash of the IP, never stored as an address).
+  request is kept. Rate limit: 20 answers a day per network. The key is a 16-character hash of the network (IPv4 address, or the first 64 bits of an IPv6 address) plus the date plus the optional Worker secret `IP_SALT` (the date alone when unset; set it with `npx wrangler secret put IP_SALT -c wrangler.assets.jsonc` so the hashes cannot be guessed from the public date). Limiter rows (`limits` table, `ResortLog` and `Accounts`) are deleted whenever `allow()` runs after their time has passed, so the keys do not pile up; an unused resort keeps its few rows until its next request.
 - Counts are not public. They are read only through the admin export below, to compare scores with how days skied.
 - Because an answer has no identity it cannot be found or deleted later; the privacy policy says so.
 - Because no key is kept, a person can send twice for one day by reinstalling or clearing data. The rate limit bounds it and

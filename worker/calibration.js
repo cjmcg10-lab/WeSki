@@ -1,9 +1,9 @@
 import { resortPlace } from './catalog.js';
 import { RESORT_RE } from './evidence.js';
 import { sha256 } from './accounts.js';
-import { FEEDBACK_TAGS } from '../src/feedback.js';
+import { FEEDBACK_TAGS, FEEDBACK_MAX_AGE_DAYS } from '../src/feedback.js';
 
-export const FEEDBACK_MAX_AGE_DAYS = 120;
+export { FEEDBACK_MAX_AGE_DAYS };
 export const FEEDBACK_PER_NETWORK_PER_DAY = 20;
 export const EXPORT_MAX_ARCHIVE = 200;
 const DAY_MS = 864e5;
@@ -13,6 +13,15 @@ const respond = (data, status = 200) => new Response(JSON.stringify(data), { sta
 const validDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
 
 /** Check a "How was it?" answer. It carries a mountain, a local date, a 1 to 5 rating and tags: nothing else is read. */
+export function networkOf(ip) {
+  if (!ip.includes(':') || ip.includes('.')) return ip;
+  const [head, tail = null] = ip.toLowerCase().split('::');
+  const first = head ? head.split(':') : [];
+  const last = tail ? tail.split(':') : [];
+  const groups = tail === null ? first : [...first, ...Array(Math.max(0, 8 - first.length - last.length)).fill('0'), ...last];
+  return groups.slice(0, 4).map((g) => g.replace(/^0+(?=.)/, '')).join(':');
+}
+
 export function cleanFeedback(b, now = Date.now()) {
   if (!b || typeof b !== 'object') return { error: 'bad body' };
   if (!RESORT_RE.test(b.resort || '')) return { error: 'bad resort' };
@@ -65,7 +74,7 @@ export async function archiveExportResponse(request, url, id, env, { resolve = r
   if (!(await sameSecret(request.headers.get(ADMIN_HEADER) || '', env.ARCHIVE_ADMIN_SECRET))) return respond({ error: 'Not allowed' }, 401);
   const listed = await resolve(env, id, now);
   if (!listed) return respond({ error: 'Not found' }, 404);
-  const since = Math.max(0, Number(url.searchParams.get('since')) || 0);
+  const since = Math.min(Math.max(0, Number(url.searchParams.get('since')) || 0), now);
   const limit = Math.min(EXPORT_MAX_ARCHIVE, Math.max(1, Number(url.searchParams.get('limit')) || EXPORT_MAX_ARCHIVE));
   const store = env.FORECASTHIST.get(env.FORECASTHIST.idFromName(listed.id));
   const log = env.RESORTLOG.get(env.RESORTLOG.idFromName(listed.id));

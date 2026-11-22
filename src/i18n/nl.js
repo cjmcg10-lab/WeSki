@@ -390,4 +390,5 @@ export default {
   1212: 'Bedankt. Het wordt verstuurd zodra je online bent.',
   1213: 'Feedback over de skidag',
   1214: 'Na een opgeslagen skidag kun je die beoordelen van 1 tot 5 en aangeven hoe het was. Dit is optioneel en wordt één keer per dag gevraagd. Alleen de berg, de datum, je cijfer en de labels worden verstuurd. Geen naam, account, locatie of tijdstip.',
+  1215: 'Geef {0} van 5',
 };

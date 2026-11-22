@@ -1,6 +1,7 @@
 export const FEEDBACK_TAGS = ['icy', 'powder', 'slushy', 'windy', 'crowded', 'visibility'];
 export const FEEDBACK_LABELS = { icy: 'Icy', powder: 'Powder', slushy: 'Slushy', windy: 'Windy, lifts on hold', crowded: 'Crowded', visibility: 'Poor visibility' };
 
+export const FEEDBACK_MAX_AGE_DAYS = 120;
 const KEPT = 400;
 const askedKey = (resort, day) => `${resort}:${day}`;
 
@@ -14,16 +15,21 @@ export function answerFeedback(store, resort, day, answer) {
   store.set('feedbackQueue', [...store.get('feedbackQueue', []), { resort, day, rating: answer.rating, tags }].slice(-KEPT));
 }
 
-/** Send queued answers: kept on the phone while offline or busy, dropped once the server has taken them or refused them as invalid. */
-export async function flushFeedback(store, send = (body) => fetch('/api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body })) {
-  const queue = store.get('feedbackQueue', []);
-  const left = [];
-  for (const [i, item] of queue.entries()) {
+let flushing = null;
+
+/** Send queued answers: kept on the phone while offline or busy, dropped once the server has taken them or refused them. */
+export function flushFeedback(store, send = (body) => fetch('/api/feedback', { method: 'POST', headers: { 'content-type': 'application/json' }, body })) {
+  flushing ??= sendQueued(store, send).finally(() => { flushing = null; });
+  return flushing;
+}
+
+async function sendQueued(store, send) {
+  let done = 0;
+  for (const item of store.get('feedbackQueue', [])) {
     const res = await send(JSON.stringify(item)).catch(() => null);
-    if (res && (res.ok || res.status === 400)) continue;
-    left.push(...queue.slice(i));
-    break;
+    if (!res || !(res.ok || (res.status >= 400 && res.status < 500 && res.status !== 429))) break;
+    done++;
   }
-  if (left.length !== queue.length) store.set('feedbackQueue', left);
-  return queue.length - left.length;
+  if (done) store.set('feedbackQueue', store.get('feedbackQueue', []).slice(done));
+  return done;
 }

@@ -22,7 +22,7 @@ import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from
 import { placeTr } from './placenames.js';
 import * as acct from './account.js';
 import * as fcUi from './forecast/ui.js';
-import { FEEDBACK_TAGS, FEEDBACK_LABELS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
+import { FEEDBACK_TAGS, FEEDBACK_LABELS, FEEDBACK_MAX_AGE_DAYS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
 
 const $ = (s) => document.querySelector(s);
 
@@ -876,7 +876,7 @@ function startSession(kind) {
   if (S.tracker) { if (kind === 'group') { S.session.kind = 'group'; S.session.group = S.group?.code; } return; }
   S.tracker = new Tracker(S.geo, S.resort.lifts);
   stopCrumbs();                               // stats tracking records the track itself from here on
-  S.session = { id: 's' + Date.now(), resort: S.place.id, kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), end: null, active: true, routes: [], points: S.tracker.points, stats: null };
+  S.session = { id: 's' + Date.now(), resort: S.place.id, kind, group: kind === 'group' ? S.group?.code : null, start: Date.now(), sim: S.testMode, end: null, active: true, routes: [], points: S.tracker.points, stats: null };
   ensureLocation();
   wakeLock();
 }
@@ -1668,9 +1668,9 @@ const skiDayOf = (s) => new Date(s.start).toLocaleDateString('en-CA');
 
 /** "How was it?" on a saved day: optional, asked once per mountain and day, sent without identity, place or time of day. */
 function feedbackCard(s) {
-  if (feedbackAsked(prefs, resortOf(s), skiDayOf(s))) return '';
+  if (s.sim || Date.now() - s.start > (FEEDBACK_MAX_AGE_DAYS - 2) * 864e5 || feedbackAsked(prefs, resortOf(s), skiDayOf(s))) return '';
   const f = S.fb?.id === s.id ? S.fb : (S.fb = { id: s.id, rating: 0, tags: [] });
-  const rate = [1, 2, 3, 4, 5].map((n) => `<button data-act="fb-rate" data-v="${n}" aria-pressed="${f.rating === n}" aria-label="${t('Rated {0} of 5', n)}" class="${f.rating === n ? 'on' : ''}">${n}</button>`).join('');
+  const rate = [1, 2, 3, 4, 5].map((n) => `<button data-act="fb-rate" data-v="${n}" aria-pressed="${f.rating === n}" aria-label="${f.rating === n ? t('Rated {0} of 5', n) : t('Rate {0} of 5', n)}" class="${f.rating === n ? 'on' : ''}">${n}</button>`).join('');
   const tags = FEEDBACK_TAGS.map((k) => `<button data-act="fb-tag" data-v="${k}" aria-pressed="${f.tags.includes(k)}" class="${f.tags.includes(k) ? 'on' : ''}">${FEEDBACK_LABELS[k]}</button>`).join('');
   return `<div class="card" role="group" aria-labelledby="fb-h"><h3 id="fb-h">How was it?</h3>
     <p class="sub">Optional. Rate the day from 1 (poor) to 5 (great). It is sent without your name, location or time of day: only the mountain, the date and your answer.</p>

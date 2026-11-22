@@ -390,4 +390,5 @@ export default {
   1212: 'Danke. Es wird gesendet, sobald du online bist.',
   1213: 'Feedback zum Skitag',
   1214: 'Nach einem gespeicherten Skitag kannst du ihn von 1 bis 5 bewerten und angeben, wie er war. Das ist freiwillig und wird einmal pro Tag gefragt. Gesendet werden nur der Berg, das Datum, deine Bewertung und die Stichwörter. Kein Name, Konto, Standort oder Tageszeit.',
+  1215: '{0} von 5 vergeben',
 };

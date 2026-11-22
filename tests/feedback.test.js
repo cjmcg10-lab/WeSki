@@ -1,6 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { cleanFeedback, addFeedbackCounts, feedbackResponse, archiveExportResponse, FEEDBACK_PER_NETWORK_PER_DAY } from '../worker/calibration.js';
+import { ResortLog } from '../worker/stores.js';
+import { cleanFeedback, addFeedbackCounts, networkOf, feedbackResponse, archiveExportResponse, FEEDBACK_PER_NETWORK_PER_DAY } from '../worker/calibration.js';
 import { answerFeedback, feedbackAsked, flushFeedback, FEEDBACK_TAGS } from '../src/feedback.js';
+
+vi.mock('cloudflare:workers', () => ({ DurableObject: class {} }));
 
 const NOW = Date.UTC(2026, 10, 22, 18);
 const valid = { resort: 'stowe', day: '2026-11-21', rating: 4, tags: ['powder', 'crowded'] };
@@ -167,5 +170,68 @@ describe('the phone side', () => {
     expect(await flushFeedback(store, send)).toBe(1);
     expect(send).toHaveBeenCalledTimes(2);
     expect(store.get('feedbackQueue', []).map((q) => q.day)).toEqual(['2026-11-19', '2026-11-20']);
+  });
+});
+
+describe('limiter and network key', () => {
+  it('groups an IPv6 address by its first 64 bits, in short or long form, and leaves IPv4 alone', () => {
+    expect(networkOf('2001:db8:1:2:aaaa:bbbb:cccc:dddd')).toBe('2001:db8:1:2');
+    expect(networkOf('2001:0db8:0001:0002::1')).toBe('2001:db8:1:2');
+    expect(networkOf('2001:db8::')).toBe('2001:db8:0:0');
+    expect(networkOf('::1')).toBe('0:0:0:0');
+    expect(networkOf('203.0.113.7')).toBe('203.0.113.7');
+    expect(networkOf('::ffff:203.0.113.7')).toBe('::ffff:203.0.113.7');
+  });
+
+  it('removes expired limiter rows when it next runs and keeps live ones', () => {
+    const rows = new Map();
+    const sql = { exec: (q, ...a) => {
+      if (q.startsWith('DELETE')) { for (const [k, v] of rows) if (v.until < a[0]) rows.delete(k); return []; }
+      if (q.startsWith('SELECT')) return rows.has(a[0]) ? [{ ...rows.get(a[0]) }] : [];
+      if (q.startsWith('INSERT')) { rows.set(a[0], { n: 1, until: a[1] }); return []; }
+      rows.get(a[0]).n++; return [];
+    } };
+    const log = Object.create(ResortLog.prototype);
+    log.sql = sql;
+    rows.set('fb:old', { n: 3, until: Date.now() - 1000 });
+    rows.set('fb:live', { n: 3, until: Date.now() + 60000 });
+    expect(log.allow('fb:new', 5, 1000)).toBe(true);
+    expect([...rows.keys()].sort()).toEqual(['fb:live', 'fb:new']);
+  });
+
+  it('clamps a huge since instead of failing', async () => {
+    const env = { ARCHIVE_ADMIN_SECRET: 'right', FORECASTHIST: { idFromName: (n) => n, get: () => ({ archive: async (s) => [{ s }], history: async () => null }) }, RESORTLOG: { idFromName: (n) => n, get: () => ({ feedback: async () => [] }) } };
+    const res = await archiveExportResponse(new Request('https://x.test/', { headers: { 'x-admin-key': 'right' } }), new URL('https://x.test/?since=9e99'), 'stowe', env, { resolve: async () => ({ id: 'stowe', place: {} }), now: NOW });
+    expect(res.status).toBe(200);
+    expect((await res.json()).archive).toEqual([{ s: NOW }]);
+  });
+});
+
+describe('flushFeedback concurrency and refusals', () => {
+  it('sends each queued answer once when two flushes overlap', async () => {
+    const store = memory();
+    answerFeedback(store, 'stowe', '2026-11-20', { rating: 5, tags: [] });
+    let calls = 0;
+    const send = async () => { calls++; await new Promise((r) => setTimeout(r, 5)); return { ok: true, status: 200 }; };
+    const [a, b] = await Promise.all([flushFeedback(store, send), flushFeedback(store, send)]);
+    expect(calls).toBe(1);
+    expect(a).toBe(b);
+    expect(store.get('feedbackQueue', [])).toEqual([]);
+  });
+
+  it('keeps an answer added while a flush was running', async () => {
+    const store = memory();
+    answerFeedback(store, 'stowe', '2026-11-19', { rating: 5, tags: [] });
+    const send = async () => { answerFeedback(store, 'stowe', '2026-11-20', { rating: 2, tags: [] }); return { ok: true, status: 200 }; };
+    await flushFeedback(store, send);
+    expect(store.get('feedbackQueue', []).map((q) => q.day)).toEqual(['2026-11-20']);
+  });
+
+  it('drops any 4xx except 429 so one bad answer does not block the rest', async () => {
+    const store = memory();
+    for (const d of ['2026-11-18', '2026-11-19', '2026-11-20']) answerFeedback(store, 'stowe', d, { rating: 4, tags: [] });
+    const statuses = [404, 200, 429];
+    expect(await flushFeedback(store, async () => ({ ok: statuses[0] === 200, status: statuses.shift() }))).toBe(2);
+    expect(store.get('feedbackQueue', []).map((q) => q.day)).toEqual(['2026-11-20']);
   });
 });
