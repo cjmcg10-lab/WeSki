@@ -501,4 +501,7 @@ export default {
   1130: 'Dekking {0} van {1} dag · {2} gesloten',
   1131: 'Eén latere dag volgt daarna.',
   1132: 'Vóór de voorspelling',
+  1133: 'Gerangschikt op de {0} dagen die elke berg voorspelt.',
+  1134: 'Gerangschikt op de ene dag die elke berg voorspelt.',
+  1135: 'Niet gerangschikt: deze bergen hebben geen voorspelde dag gemeen.',
 };

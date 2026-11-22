@@ -501,4 +501,7 @@ export default {
   1130: 'Abdeckung {0} von {1} Tag · {2} geschlossen',
   1131: 'Ein späterer Tag folgt danach.',
   1132: 'Vor der Vorhersage',
+  1133: 'Gereiht nach den {0} Tagen, die jeder Berg vorhersagt.',
+  1134: 'Gereiht nach dem einen Tag, den jeder Berg vorhersagt.',
+  1135: 'Nicht gereiht: Diese Berge haben keinen gemeinsamen Vorhersagetag.',
 };

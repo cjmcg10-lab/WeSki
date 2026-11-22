@@ -90,9 +90,13 @@ export const isCloseCall = (a, b) => a.covered > 0 && a.covered === b.covered &&
 
 const inWindow = (forecast, date) => !['notyet', 'past'].includes(classifyDay(forecast, date).kind);
 
-export function rankTrip(entries, dates) {
+export const sharedDays = (entries, dates) => {
   const loaded = entries.filter((e) => e.forecast);
-  const shared = dates.filter((date) => loaded.every((e) => inWindow(e.forecast, date)));
+  return dates.filter((date) => loaded.every((e) => inWindow(e.forecast, date)));
+};
+
+export function rankTrip(entries, dates) {
+  const shared = sharedDays(entries, dates);
   const cards = entries.map((entry, order) => {
     if (!entry.forecast) return { ...entry, order, failed: true };
     const { covered, average, margin } = summarize(entry.forecast, shared);
@@ -102,6 +106,7 @@ export function rankTrip(entries, dates) {
     .sort((a, b) => b.ranked.covered - a.ranked.covered || (b.ranked.average ?? -1) - (a.ranked.average ?? -1) || a.order - b.order);
   const failed = cards.filter((c) => c.failed);
   const closed = cards.filter((c) => c.allClosed);
+  if (!shared.length) return [...open, ...failed, ...closed];
   open.forEach((card, i) => {
     card.rank = i + 1;
     if (i > 0 && isCloseCall(open[i - 1].ranked, card.ranked)) card.closeWith = open[i - 1].resort.id;

@@ -1007,4 +1007,7 @@ export default {
   1130: 'Coverage {0} of {1} day · {2} closed',
   1131: '1 later day arrives after that.',
   1132: 'Past forecast',
+  1133: 'Ranked on the {0} days every mountain forecasts.',
+  1134: 'Ranked on the 1 day every mountain forecasts.',
+  1135: 'Not ranked: these mountains have no forecast day in common.',
 };

@@ -501,4 +501,7 @@ export default {
   1130: 'Cobertura {0} de {1} dia · {2} fechado',
   1131: 'Um dia posterior chega depois.',
   1132: 'Antes da previsão',
+  1133: 'Classificado pelos {0} dias que todas as montanhas preveem.',
+  1134: 'Classificado pelo único dia que todas as montanhas preveem.',
+  1135: 'Sem classificação: estas montanhas não têm nenhum dia de previsão em comum.',
 };

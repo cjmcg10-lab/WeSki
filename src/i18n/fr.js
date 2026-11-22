@@ -501,4 +501,7 @@ export default {
   1130: 'Couverture {0} sur {1} jour · {2} fermé',
   1131: 'Un jour plus tardif arrive ensuite.',
   1132: 'Avant la prévision',
+  1133: 'Classement sur les {0} jours prévus pour chaque montagne.',
+  1134: 'Classement sur le seul jour prévu pour chaque montagne.',
+  1135: 'Pas de classement : ces montagnes n’ont aucun jour de prévision en commun.',
 };

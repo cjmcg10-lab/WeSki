@@ -2,7 +2,7 @@ import { t } from '../i18n.js';
 import { prefs } from '../store.js';
 import { bandOf, columnDates, localToday } from './data.js';
 import { esc, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate } from './text.js';
-import { TRIP_KEY, MAX_RANGE_DAYS, cleanTrip, tripDates, toggleDate, clearRange, rangeError, rankTrip, notYet, entersRangeOn } from './trip.js';
+import { TRIP_KEY, MAX_RANGE_DAYS, cleanTrip, tripDates, toggleDate, clearRange, rangeError, rankTrip, sharedDays, notYet, entersRangeOn } from './trip.js';
 
 export function createTripScreen(ctx) {
   const { fc } = ctx;
@@ -39,7 +39,7 @@ export function createTripScreen(ctx) {
       return `<button class="fc-cell fc-tripday b${band}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: ski score {1}, {2}. {3}.', vis, day.shown, t(label), name))}"><span class="win">${esc(vis)}</span><b>${day.shown} ${t(label)}</b></button>`;
     }
     if (day.kind === 'notyet') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Not yet'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Not yet')}</b></button>`;
-    if (day.kind === 'past') return `<button class="fc-cell fc-tripday none" data-act="fc-trip-notyet" ${open} aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Past forecast'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Past forecast')}</b></button>`;
+    if (day.kind === 'past') return `<div class="fc-cell fc-tripday none" role="group" aria-label="${esc(t('{0}: {1}. {2}.', fmtShortDate(day.date), t('Past forecast'), name))}"><span class="win">${esc(fmtShortDate(day.date))}</span><b>${t('Past forecast')}</b></div>`;
     const closed = day.kind === 'closed';
     const word = closed ? t('Closed') : t('Insufficient data');
     return `<button class="fc-cell fc-tripday ${closed ? 'closed' : 'insuff'}" data-act="fc-trip-day" ${open} aria-label="${esc(t('{0}: {1}. {2}.', vis, word, name))}"><span class="win">${esc(vis)}</span><b>${word}</b></button>`;
@@ -93,9 +93,13 @@ export function createTripScreen(ctx) {
       return parts.join('');
     }
     if (!picked.length) return parts.join('');
-    const ranked = rankTrip(rows.map((r) => ({ resort: r.resort, forecast: r.forecast, entry: r.entry })), picked);
+    const entries = rows.map((r) => ({ resort: r.resort, forecast: r.forecast, entry: r.entry }));
+    const ranked = rankTrip(entries, picked);
     const byId = new Map(ranked.map((c) => [c.resort.id, c]));
-    parts.push(`<h3>${t('Ranking')}</h3><p class="sub">${t('Closed days and days without a score don’t count. A mountain closed on all your days is listed last.')}</p><ol class="fc-tripranking" role="list">${ranked.map((c) => cardHtml(c, byId)).join('')}</ol>`);
+    const shared = sharedDays(entries, picked).length;
+    const sharedNote = !shared ? t('Not ranked: these mountains have no forecast day in common.')
+      : shared === picked.length ? '' : shared === 1 ? t('Ranked on the 1 day every mountain forecasts.') : t('Ranked on the {0} days every mountain forecasts.', shared);
+    parts.push(`<h3>${t('Ranking')}</h3>${sharedNote ? `<p class="fc-note">${esc(sharedNote)}</p>` : ''}<p class="sub">${t('Closed days and days without a score don’t count. A mountain closed on all your days is listed last.')}</p><ol class="fc-tripranking" role="list">${ranked.map((c) => cardHtml(c, byId)).join('')}</ol>`);
     return parts.join('');
   }
 

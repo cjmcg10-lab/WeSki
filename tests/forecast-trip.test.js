@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
-  MARGIN, MAX_RANGE_DAYS, daysBetween, shiftDate, classifyDay, clearRange, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, summarize, toggleDate, tripDates,
+  MARGIN, MAX_RANGE_DAYS, daysBetween, shiftDate, classifyDay, clearRange, cleanTrip, entersRangeOn, isCloseCall, notYet, rangeDays, rangeError, rankTrip, sharedDays, summarize, toggleDate, tripDates,
 } from '../src/forecast/trip.js';
 
 const DATES = ['2026-12-05', '2026-12-06', '2026-12-07', '2026-12-08'];
@@ -230,6 +230,15 @@ describe('staggered forecast windows', () => {
     expect(ranked[0].covered).toBe(6);
     expect(ranked[1].covered).toBe(7);
     expect(ranked[1].closeWith).toBeUndefined();
+  });
+
+  it('counts the shared days, and gives no ranks when there are none', () => {
+    expect(sharedDays([japan, us], picked)).toHaveLength(6);
+    const apart = { resort: resort('far'), forecast: window('2026-12-20', '2026-12-22', 50), entry: { state: 'ok' } };
+    const ranked = rankTrip([us, apart], picked);
+    expect(sharedDays([us, apart], picked)).toEqual([]);
+    expect(ranked.map((c) => c.rank)).toEqual([undefined, undefined]);
+    expect(order(ranked)).toEqual(['us', 'far']);
   });
 
   it('keeps the unshared days on the card but out of the average used for ranking', () => {
