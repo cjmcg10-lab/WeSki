@@ -208,3 +208,11 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
 - The deploy downloads every R2 map before `npm test`, so the tests still check every mountain, then drops them
   before the app build. If the GitHub token cannot read R2 the deploy warns and tests only Jay Peak.
 - `build_index.py` keeps index entries for R2 mountains that are not downloaded.
+
+## Automatic builder (in progress, issue #45)
+
+The goal is thousands of mountains with no AI in the loop. Phase 1: `python3 tools/bulk/candidates.py` lists every
+operating downhill resort in OpenSkiMap with at least 10 runs and 2 lifts (1,882 on 2026-11-22, 1,816 not yet built)
+into `tools/bulk/candidates.json` (not in git), in build order. A resort counts as built when most of its lifts (by
+OpenStreetMap id, from OpenSkiMap's `lifts.geojson`) are already on one of our maps. The builder starts from these
+entries rather than names typed by hand: matching by name and distance once picked Park City for Deer Valley.
