@@ -1,13 +1,14 @@
 name: iPhone beta
 on:
   push:
-    branches: [ios/testflight-beta]
+    branches: [main]
+    paths-ignore: ['docs/**', '**/*.md', 'design/**']
   workflow_dispatch:
 permissions:
   contents: read
 concurrency:
   group: skiwithme-ios-beta
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
   build:
     runs-on: macos-26
@@ -62,7 +63,7 @@ jobs:
             ${{ runner.temp }}/SkiWithMe-unsigned.zip
             ${{ runner.temp }}/SkiWithMe-launch.png
       - name: Sign and upload to TestFlight
-        if: github.ref == 'refs/heads/ios/testflight-beta'
+        if: github.ref == 'refs/heads/main'
         working-directory: ios-beta
         shell: bash
         env:

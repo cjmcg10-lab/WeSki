@@ -39,7 +39,7 @@ window.fetch = async function(input, options = {}) {
     return new Response(result.status === 204 ? null : JSON.stringify(result.data), {status: result.status, headers:{'content-type':'application/json'}});
   }
   const [, prefix, id, name] = url.pathname.split('/');
-  if (prefix !== 'data' || !(await remoteMaps).has(id) || !['resort.json','graph.json','terrain.bin','surround.bin'].includes(name)) return bundledFetch(input, options);
+  if (prefix !== 'data' || !(await remoteMaps).has(id) || !['resort.json','graph.json','terrain.bin','surround.bin','terrain.z16','surround.z16'].includes(name)) return bundledFetch(input, options);
   const json = name.endsWith('.json');
   if (options.cache !== 'reload') {
     const hit = await mapFile(url.pathname);

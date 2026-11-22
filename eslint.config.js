@@ -10,7 +10,7 @@ export default [
       'no-control-regex': 'off',
     },
   },
-  { files: ['src/**/*.js', 'public/**/*.js'], languageOptions: { globals: globals.browser } },
+  { files: ['src/**/*.js', 'public/**/*.js', 'ios-beta/native.js'], languageOptions: { globals: globals.browser } },
   { files: ['public/sw.js'], languageOptions: { globals: globals.serviceworker } },
   { files: ['worker/**/*.js'], languageOptions: { globals: { ...globals.serviceworker, ...globals.node, WebSocketPair: 'readonly' } } },
   {

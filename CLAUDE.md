@@ -24,7 +24,9 @@ session needs that the README does not: the rules, the state of the work, and wh
 - **Deploys only happen from `main`.** `.github/workflows/deploy.yml` deploys on pushes to `main`, which holds all the
   work. Start every branch from the tip of `main` and reach the live site by a reviewed pull request into it (see
   `docs/DEVELOPMENT_PROCESS.md`). Pushes to a session's own `claude/...` branch never deploy. (The earlier working
-  branch `claude/ecstatic-hamilton-2gsp2q` was folded into `main` and deleted on 2026-11-22.)
+  branch `claude/ecstatic-hamilton-2gsp2q` was folded into `main` and deleted on 2026-11-22.) Every push to `main`
+  also builds the iPhone app and uploads it to TestFlight (`.github/workflows/ios-beta.yml`, about 15 minutes); the PR
+  check `ios-prepare` fails when `ios-beta/prepare.mjs` no longer matches `src/` (see "iPhone app" in the process doc).
 - **Confirm a deploy** by checking the GitHub Actions "Deploy" run succeeded, then having a `web-fetch` agent read a
   changed file from the live site, for example `https://skiwithme.cjmcg10.workers.dev/data/<id>/resort.json`. The new
   address is on the environment's allowed hosts, so curl from the container works. A deploy takes one to four minutes.
