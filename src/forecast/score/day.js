@@ -58,7 +58,7 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
 
   if (withData < MIN_HOURS_WITH_DATA || expected - withData > expected / 2) {
     const summitMissing = !single && ski.some((r) => r.sites === 'base');
-    const code = withData === 0 ? 'IR_SERVICE_UNAVAILABLE' : summitMissing ? 'IR_SUMMIT_MISSING' : 'IR_TOO_FEW_HOURS';
+    const code = !rows.some((r) => r.score != null) ? 'IR_SERVICE_UNAVAILABLE' : summitMissing ? 'IR_SUMMIT_MISSING' : 'IR_TOO_FEW_HOURS';
     return { ...base, skiHours, status: 'insufficient', score: null, mean: null, window: null, peakHour: null, hours, factors: [], explain: null, confidence: null, windowConfidence: null, insufficientReason: { code, params: code === 'IR_TOO_FEW_HOURS' ? [withData] : [] }, flags };
   }
 

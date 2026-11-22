@@ -23,5 +23,5 @@ export function scoreForecast(resort, weather, opts = {}) {
       daysAhead: daysBetween(today, date),
       ageHours: opts.ageHours,
     }));
-  return { version: SCORING_VERSION, resortId: resort.id, siteMode: sites.mode, siteReason: sites.reason, hours: window, days };
+  return { version: SCORING_VERSION, resortId: resort.id, siteMode: sites.mode, siteReason: sites.reason, ageHours: opts.ageHours ?? null, hours: window, days };
 }

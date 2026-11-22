@@ -19,7 +19,9 @@ export function curve(points) {
   };
 }
 
-const RAIN_LEVEL = { 51: 1, 53: 1, 55: 1, 56: 2, 57: 2, 61: 1, 63: 2, 65: 3, 66: 2, 67: 3, 68: 1, 80: 1, 81: 2, 82: 3, 95: 2, 96: 2, 99: 3 };
+const RAIN_LEVEL = { 51: 1, 53: 1, 55: 1, 56: 2, 57: 2, 61: 1, 63: 2, 65: 3, 66: 2, 67: 3, 68: 1, 80: 1, 81: 2, 82: 3 };
+const THUNDER_RAIN_LEVEL = { 95: 2, 96: 2, 99: 3 };
+export const HOLD = { sustained: [14, 18], gust: [20, 25], cap: 35 };
 const FREEZING_CODES = [56, 57, 66, 67];
 const FOG_CODES = [45, 48];
 
@@ -28,8 +30,8 @@ const visibilityBySnowfall = curve([[0, 100], [0.5, 92], [1.5, 65], [3, 35], [5,
 const windByStrength = curve([[0, 100], [4, 98], [8, 86], [12, 60], [16, 30], [20, 10], [26, 0]]);
 const comfortByFeelsLike = curve([[-35, 0], [-25, 25], [-18, 58], [-10, 92], [-4, 100], [3, 100], [6, 85], [9, 60], [13, 30]]);
 const comfortBySnowfall = curve([[0, 1], [1, 0.92], [3, 0.78]]);
-const RAIN_COMFORT = [1, 0.55, 0.35, 0.2];
-const RAIN_VISIBILITY = [100, 85, 65, 40];
+const RAIN_COMFORT = [1, 0.4, 0.25, 0.15];
+const RAIN_VISIBILITY = [100, 65, 45, 30];
 
 export function normalizeHour(raw) {
   if (raw.t == null || raw.wind == null || raw.snow == null) return null;
@@ -42,14 +44,14 @@ export function normalizeHour(raw) {
     gust: raw.gust ?? raw.wind,
     vis: raw.vis ?? null,
     code,
-    rain: RAIN_LEVEL[code] ?? 0,
+    rain: RAIN_LEVEL[code] ?? (raw.snow <= 0.05 && raw.t > 0 ? THUNDER_RAIN_LEVEL[code] ?? 0 : 0),
     fog: FOG_CODES.includes(code),
     code68: code === 68,
     freezing: FREEZING_CODES.includes(code),
   };
 }
 
-export const surfaceScore = (s) => clamp(SURFACE_BASELINE + 22 * (1 - Math.exp(-s.fresh / 6)) - 38 * s.crust - 38 * s.wet);
+export const surfaceScore = (s) => clamp(SURFACE_BASELINE + 22 * (1 - Math.exp(-s.fresh / 6)) - 55 * s.crust - 60 * s.wet);
 
 export function visibilityScore(x) {
   const byDistance = x.vis == null ? 100 : visibilityByDistance(x.vis);
@@ -58,6 +60,9 @@ export function visibilityScore(x) {
 
 export const windStrength = (x) => Math.max(x.wind, 0.65 * x.gust);
 export const windScore = (x) => windByStrength(windStrength(x));
+
+const ramp = (v, [lo, hi]) => smoothstep(clamp((v - lo) / (hi - lo), 0, 1));
+export const holdRisk = (x) => Math.max(ramp(x.wind, HOLD.sustained), ramp(x.gust, HOLD.gust));
 
 export const comfortScore = (x) => clamp(comfortByFeelsLike(x.feels) * RAIN_COMFORT[x.rain] * comfortBySnowfall(x.snow));
 
@@ -123,9 +128,13 @@ export function precipCode(x) {
 
 export function scoreSite(x, state) {
   const components = { surface: surfaceScore(state), visibility: visibilityScore(x), wind: windScore(x), comfort: comfortScore(x) };
-  const score = COMPONENTS.reduce((sum, k) => sum + WEIGHTS[k] * components[k], 0);
+  const raw = COMPONENTS.reduce((sum, k) => sum + WEIGHTS[k] * components[k], 0);
+  const hold = holdRisk(x);
+  const holdLoss = hold * Math.max(0, raw - HOLD.cap);
   return {
-    score,
+    score: raw - holdLoss,
+    hold,
+    holdLoss,
     components,
     precip: { code: precipCode(x), params: [] },
     surface: { code: surfaceCode(state, x), params: [] },

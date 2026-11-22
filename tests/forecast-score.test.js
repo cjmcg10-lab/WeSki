@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { hourGrid, shape } from '../worker/weather.js';
 import { scoreForecast, roundHalfUp, SCORING_VERSION, ALL_CODES, WEIGHTS } from '../src/forecast/score/index.js';
 import { scoreDay, bestWindow, ASSUMED_HOURS } from '../src/forecast/score/day.js';
-import { initialSurface, stepSurface, surfaceScore, visibilityScore, windScore, comfortScore, normalizeHour } from '../src/forecast/score/components.js';
+import { factorCode } from '../src/forecast/score/explain.js';
+import { initialSurface, stepSurface, surfaceScore, visibilityScore, windScore, comfortScore, normalizeHour, holdRisk, scoreSite } from '../src/forecast/score/components.js';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/forecast/${name}.json`, import.meta.url), 'utf8'));
 const RESORT = { id: 'test', lat: 44.5, lon: -72.8, baseLat: 44.45, baseLon: -72.7, top: 1116, base: 399, tz: 'America/New_York' };
@@ -336,6 +337,8 @@ describe('scenario fixtures (derived from a real Stowe response)', () => {
 
   it('powder morning: the best day, fresh snow is the top factor, snowfall flagged early', () => {
     const d = run('scenario-powder-morning').days[0];
+    expect(d.score).toBeGreaterThanOrEqual(85);
+    expect(groomer.score).toBeGreaterThanOrEqual(85);
     expect(d.score).toBeGreaterThan(groomer.score + 4);
     expect(d.factors[0]).toMatchObject({ component: 'surface', code: 'F_FRESH_SNOW' });
     expect(d.explain.code).toBe('EX_FRESH_SNOW_FIRM_BASE');
@@ -346,8 +349,8 @@ describe('scenario fixtures (derived from a real Stowe response)', () => {
 
   it('rain day: low score, rain at the base, wet snow up high', () => {
     const d = run('scenario-rain-day').days[0];
-    expect(d.score).toBeLessThan(65);
-    expect(d.score).toBeLessThan(groomer.score - 20);
+    expect(d.score).toBeLessThan(50);
+    expect(d.score).toBeLessThan(groomer.score - 35);
     expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
     expect(d.hours[12].base.precip.code).toBe('precip.rain');
     expect(d.hours[12].base.surface.code).toBe('surf.wet_snow');
@@ -356,7 +359,10 @@ describe('scenario fixtures (derived from a real Stowe response)', () => {
 
   it('wind-hold afternoon: afternoon hours collapse, the strong-gust factor is named, window is in the morning', () => {
     const d = run('scenario-wind-hold-afternoon').days[0];
-    expect(d.hours[10].score).toBeGreaterThan(d.hours[14].score + 8);
+    expect(d.hours[10].score).toBeGreaterThan(d.hours[14].score + 30);
+    for (const h of [12, 13, 14, 15]) expect(d.hours[h].score).toBeLessThan(50);
+    expect(d.hours[14].hold).toBeGreaterThan(0.9);
+    expect(d.score).toBeLessThan(80);
     expect(d.hours[14].factor.code).toBe('F_STRONG_GUSTS');
     expect(d.hours[14].upper.score).toBeLessThan(d.hours[14].base.score);
     expect(d.explain.code).toBe('EX_SUMMIT_WIND');
@@ -373,7 +379,9 @@ describe('scenario fixtures (derived from a real Stowe response)', () => {
     expect(d.hours[14].base.surface.code).toMatch(/^surf\.(softening|wet_snow)$/);
     expect(d.hours[9].base.surface.code).toBe('surf.firm_groomed');
     expect(d.score).toBeGreaterThan(65);
-    expect(d.score).toBeLessThan(groomer.score + 1);
+    expect(d.score).toBeLessThan(groomer.score - 4);
+    expect(d.hours[9].score).toBeLessThan(groomer.hours[9].score - 3);
+    expect(d.hours[9].factor.code).toBe('F_ICY_REFROZEN');
   });
 
   it('a stale forecast lowers confidence and names its age', () => {
@@ -398,6 +406,8 @@ describe('output contract', () => {
     expect(out.version).toBe(SCORING_VERSION);
     expect(out.resortId).toBe('test');
     expect(out.hours).toEqual({ ...ASSUMED_HOURS, assumed: true });
+    expect(out.ageHours).toBeNull();
+    expect(scoreForecast(RESORT, fixture('scenario-powder-morning'), { ageHours: 3 }).ageHours).toBe(3);
     expect(Object.keys(d).sort()).toEqual(['confidence', 'date', 'daysAhead', 'explain', 'factors', 'flags', 'hours', 'mean', 'peakHour', 'score', 'skiHours', 'status', 'uncertainty', 'window', 'windowConfidence'].sort());
     expect(d.flags).toContain('snow_history_limited');
     expect(d.confidence.level).not.toBe('High');
@@ -434,5 +444,108 @@ describe('output contract', () => {
   it('documents every code it can emit', () => {
     const doc = readFileSync(new URL('../docs/FORECAST_SCORING.md', import.meta.url), 'utf8');
     for (const code of ALL_CODES) expect(doc, code).toContain('`' + code + '`');
+  });
+});
+
+describe('review fixes', () => {
+  const only = (weather, opts) => scoreForecast(RESORT, weather, opts).days[0];
+  const dateOnly = ['2026-01-10'];
+
+  it('thunder with snow is snow, not rain; warm thunder is rain', () => {
+    expect(normalizeHour({ t: -6, snow: 1, wind: 3, code: 95 }).rain).toBe(0);
+    expect(normalizeHour({ t: 5, snow: 0, wind: 3, code: 95 }).rain).toBe(2);
+    expect(normalizeHour({ t: -6, snow: 0, wind: 3, code: 95 }).rain).toBe(0);
+    const w = makeWeather(dateOnly, () => ({ t: -6, snow: 1, code: 95 }), () => ({ t: -5, snow: 1, code: 95 }));
+    const h = only(w).hours[12];
+    expect(h.upper.precip.code).toBe('precip.snow');
+    expect(h.upper.surface.code).not.toBe('surf.wet_snow');
+    expect(h.upper.detail.wet).toBe(0);
+  });
+
+  it('predicted wind hold: ramps in from 14/20 m/s, reaches full at 18/25, and caps the site toward Poor', () => {
+    const wind = (wnd, gust) => normalizeHour({ t: -4, snow: 0, wind: wnd, gust, vis: 16000, code: 0 });
+    expect(holdRisk(wind(13, 19))).toBe(0);
+    const mid = holdRisk(wind(16, 18));
+    expect(mid).toBeGreaterThan(0.3);
+    expect(mid).toBeLessThan(0.7);
+    expect(holdRisk(wind(18, 18))).toBe(1);
+    expect(holdRisk(wind(5, 25))).toBe(1);
+    const state = initialSurface(wind(3, 4));
+    const calmSite = scoreSite(wind(3, 4), state);
+    const held = scoreSite(wind(18, 26), state);
+    expect(calmSite.hold).toBe(0);
+    expect(held.score).toBeCloseTo(35, 9);
+    expect(scoreSite(wind(14.5, 16), state).score).toBeGreaterThan(held.score);
+  });
+
+  it('a summit gale all day cannot stay in the Good band at the summit, and a gale on both sites is Poor', () => {
+    const summitOnly = only(makeWeather(dateOnly, () => ({ wind: 30, gust: 40 })));
+    expect(summitOnly.hours[12].upper.score).toBeLessThan(40);
+    expect(summitOnly.score).toBeLessThan(65);
+    expect(summitOnly.explain.code).toBe('EX_SUMMIT_WIND');
+    const both = only(makeWeather(dateOnly, () => ({ wind: 30, gust: 40 }), () => ({ wind: 25, gust: 35 })));
+    expect(both.score).toBeLessThan(40);
+  });
+
+  it('steady rain on snow all day lands below 45', () => {
+    const d = only(makeWeather(dateOnly, () => ({ t: 3, feels: 1, code: 63 }), () => ({ t: 4, feels: 2, code: 63 })));
+    expect(d.score).toBeLessThan(45);
+    expect(d.explain.code).toBe('EX_RAIN_WHOLE_MOUNTAIN');
+  });
+
+  it('rain at the base with snow higher up says so', () => {
+    const d = only(makeWeather(dateOnly, () => ({ t: -1, snow: 0.5, code: 71 }), () => ({ t: 4, feels: 2, code: 63 })));
+    expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
+  });
+
+  it('warm days are not called comfortable and not called cold', () => {
+    expect(factorCode('comfort', -3, { rain: 0, snow: 0, feels: 8 })).toBe('F_TOO_WARM');
+    expect(factorCode('comfort', -3, { rain: 0, snow: 0, feels: -20 })).toBe('F_COLD');
+    expect(factorCode('comfort', -3, { rain: 0, snow: 0, feels: 0 })).toBe('F_COMFORTABLE');
+    expect(factorCode('comfort', -3, { rain: 1, snow: 0, feels: 8 })).toBe('F_RAIN');
+    const warm = only(makeWeather(dateOnly, () => ({ feels: 9 }), () => ({ feels: 9 })));
+    expect(warm.explain.code).toBe('EX_WARM_SOFT');
+    expect(warm.factors[0]).toMatchObject({ component: 'comfort', code: 'F_TOO_WARM' });
+    expect(warm.hours[12].factor.code).toBe('F_TOO_WARM');
+    const cold = only(makeWeather(dateOnly, () => ({ feels: -25 }), () => ({ feels: -25 })));
+    expect(cold.explain.code).toBe('EX_COLD');
+    expect(cold.factors[0].code).toBe('F_COLD');
+  });
+
+  it('mild haze is not low visibility; a real deficit is', () => {
+    const hazy = only(makeWeather(dateOnly, () => ({ vis: 4500 }), () => ({ vis: 4500 })));
+    expect(hazy.explain.code).toBe('EX_GROOMED_FIRM_FAST');
+    const murk = only(makeWeather(dateOnly, () => ({ vis: 1500 }), () => ({ vis: 1500 })));
+    expect(murk.explain.code).toBe('EX_LOW_VISIBILITY');
+  });
+
+  it('flat light and gusts in the afternoon only when the gusts are in the afternoon', () => {
+    const murky = { vis: 800 };
+    const pm = only(makeWeather(dateOnly, (h) => ({ ...murky, ...(h >= 12 ? { wind: 14, gust: 20 } : {}) }), (h) => murky));
+    expect(pm.explain.code).toBe('EX_FLAT_LIGHT_GUSTS_PM');
+    const am = only(makeWeather(dateOnly, (h) => ({ ...murky, ...(h < 12 ? { wind: 14, gust: 20 } : {}) }), (h) => murky));
+    expect(am.explain.code).toBe('EX_LOW_VISIBILITY');
+  });
+
+  it('names fog at the base with a neutral code and fog at the summit as summit fog', () => {
+    const baseFog = only(makeWeather(dateOnly, () => ({}), () => ({ vis: 200, code: 45 }))).hours[12];
+    expect(baseFog.factor.code).toBe('F_FOG');
+    const summitFog = only(makeWeather(dateOnly, () => ({ vis: 200, code: 45 }), () => ({}))).hours[12];
+    expect(summitFog.factor.code).toBe('F_SUMMIT_FOG');
+  });
+
+  it('a day whose ski hours fall after the series ends has too few hours, not no service', () => {
+    const d = only(makeWeather(dateOnly, () => ({}), () => ({}), (h) => h >= 9));
+    expect(d.insufficientReason).toEqual({ code: 'IR_TOO_FEW_HOURS', params: [0] });
+  });
+
+  it('handles a resort with no elevation (a map pin) without calling it a single estimate', () => {
+    const out = scoreForecast({ id: 'pin', lat: 44, lon: -72, tz: 'UTC' }, makeWeather(dateOnly));
+    expect(out.siteMode).toBe('both');
+  });
+
+  it('near-identical wind at both sites is not an identical-wind single estimate', () => {
+    const w = makeWeather(dateOnly, () => ({ wind: 6.01, gust: 9 }), () => ({ wind: 6, gust: 9 }));
+    expect(scoreForecast(RESORT, w).siteMode).toBe('both');
   });
 });

@@ -1,4 +1,4 @@
-# Forecast scoring engine (version 1.0.0)
+# Forecast scoring engine (version 1.1.0)
 
 Issue #2, part of #1. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
@@ -39,7 +39,8 @@ const out = scoreForecast(resort, weather, opts);
 
 ```
 {
-  version: '1.0.0',
+  version: '1.1.0',
+  ageHours,                   // echo of opts.ageHours, or null
   resortId,
   siteMode: 'both' | 'single',
   siteReason: null | 'summit_missing' | 'base_missing' | 'small_vertical' | 'identical_wind',
@@ -53,7 +54,7 @@ Day (one per local date in the weather):
 | Field | Meaning |
 | --- | --- |
 | `date` | Local `YYYY-MM-DD` |
-| `status` | `'ok'`, `'closed'` or `'insufficient'` |
+| `status` | `'ok'`, `'closed'` or `'insufficient'`. `ok` is the `scored` status in ux-prd section 8 (`range`, `trend`, `failed` and `ended` belong to later phases and to the app, not this engine) |
 | `score` | Unrounded 0 to 100, or `null` unless `ok` |
 | `mean` | Mean of the ski-hour scores, or `null` |
 | `window` | `{ start, end, mean }` best 3 consecutive ski hours (local hours, `end` exclusive), or `null` when there are none |
@@ -81,8 +82,9 @@ Hour:
 | `sites` | `'both'`, `'base'`, `'upper'` (only one site had data), `'single'` (one estimate), or `null` |
 | `base`, `upper` | A site, or `null` when that site was not used |
 | `factor` | `{ code, component, params, points }` the main factor of the hour |
+| `hold`, `holdLoss` | Largest predicted-hold risk (0 to 1) across the sites used, and the score points it removed (mean over sites) |
 
-Site: `{ score, components, precip: { code, params }, surface: { code, params }, detail }`. `detail` is the inputs and surface state the explanations were drawn from (`fresh`, `crust`, `wet`, `rain`, `snow`, `fog`, `vis`, `feels`, `wind`, `gust`, `t`). It is for debugging and tests, and screens should not show it.
+Site: `{ score, hold, holdLoss, components, precip: { code, params }, surface: { code, params }, detail }`. `detail` is the inputs and surface state the explanations were drawn from (`fresh`, `crust`, `wet`, `rain`, `snow`, `fog`, `vis`, `feels`, `wind`, `gust`, `t`, `site`). It is for debugging and tests, and screens should not show it.
 
 Values are never rounded in the output. Use `roundHalfUp(x)` for display only. Sorting, comparing and any Close call use the unrounded values.
 
@@ -92,7 +94,7 @@ Each is 0 to 100 at a site and hour. Curves go through the listed points and eas
 
 Hour score at a site = 0.45 surface + 0.25 visibility + 0.20 wind + 0.10 comfort.
 
-**Snow surface (45).** A state `{ fresh, crust, wet }` is carried forward hour by hour over the hours the weather contains (local midnight onward). Score = 78 + 22 × (1 − e^(−fresh/6)) − 38 × crust − 38 × wet, limited to 0 to 100. The 78 is a firm groomed surface, so a clear grippy groomer day scores well with no new snow.
+**Snow surface (45).** A state `{ fresh, crust, wet }` is carried forward hour by hour over the hours the weather contains (local midnight onward). Score = 78 + 22 × (1 − e^(−fresh/6)) − 55 × crust − 60 × wet, limited to 0 to 100. The 78 is a firm groomed surface, so a clear grippy groomer day scores well with no new snow.
 
 - Start: `fresh` 0, `crust` 0, `wet` 0.2 if the first hour is above 1 °C, else 0.
 - Snowfall at or below −0.5 °C adds its centimetres to `fresh`. Warmer snow adds half and wets the surface by 0.2. Snowfall buries crust (crust × max(0, 1 − snow/3)).
@@ -101,20 +103,24 @@ Hour score at a site = 0.45 surface + 0.25 visibility + 0.20 wind + 0.10 comfort
 - Below −1 °C: 30% of `wet` an hour refreezes into `crust` (rain, then refreeze).
 - Every hour: `crust` × 0.985, `fresh` × 0.97 in the day and × 0.995 at night (tracked out), × 0.98 more when wind is above 10 m/s.
 
+The wet and crust penalties are steep on purpose: steady moderate rain on snow lands below about 45 for the day, and a hard refreeze costs the surface up to 55 points. Thunder counts as rain only when it is above 0 °C with no snowfall; thundersnow is snow.
+
 Phase 4 adds the 48 to 72 hours before the forecast starts. Until then the history is limited, and every day carries the flag `snow_history_limited` and a confidence that is never High.
 
-**Visibility (25).** The lowest of: distance (100 m → 0, 500 → 25, 2,000 → 60, 6,000 → 90, 12,000 and more → 100); snowfall in cm an hour (0 → 100, 0.5 → 92, 1.5 → 65, 3 → 35, 5 → 10); rain intensity (none 100, light 85, moderate 65, heavy 40); fog weather code (20). A null visibility counts as 100 for the distance term only; the other terms still apply.
+**Visibility (25).** The lowest of: distance (100 m → 0, 500 → 25, 2,000 → 60, 6,000 → 90, 12,000 and more → 100); snowfall in cm an hour (0 → 100, 0.5 → 92, 1.5 → 65, 3 → 35, 5 → 10); rain intensity (none 100, light 65, moderate 45, heavy 30); fog weather code (20). A null visibility counts as 100 for the distance term only; the other terms still apply. **Limitation:** the weather shape has no cloud cover, so v1 cannot tell fog on the summit from harmless high cloud. Fog comes only from visibility and the fog weather codes.
 
 **Wind (20).** Strength = the larger of the wind speed and 0.65 × the gust, in m/s. Points: 0 → 100, 4 → 98, 8 → 86, 12 → 60, 16 → 30, 20 → 10, 26 and more → 0. This is a predicted wind effect. Confirmed lift holds are separate and are phase 10 (#10).
 
-**Comfort (10).** Feels-like temperature (−35 °C → 0, −25 → 25, −18 → 58, −10 → 92, −4 to +3 → 100, 6 → 85, 9 → 60, 13 → 30), multiplied by a rain factor (1, 0.55, 0.35, 0.2 for none, light, moderate, heavy) and a snowfall factor (0 cm → 1, 1 → 0.92, 3 → 0.78).
+**Predicted hold rule (v1, uncalibrated).** Wind strong enough to stop upper lifts must not leave the Good or Great bands. Per site and hour, risk = the larger of a smooth ramp on sustained wind from 14 m/s (0) to 18 m/s (1) and a smooth ramp on gusts from 20 m/s (0) to 25 m/s (1). The site score is then pulled toward a cap of 35 (the Poor band): `score − risk × max(0, score − 35)`. The component scores are not changed; `holdLoss` records the points removed, and the hour factor and day explanation count them as wind. This is only a prediction from the forecast. It does not say a lift is closed, and it is kept apart from the confirmed lift holds of #10. The values (14/18, 20/25, cap 35) were chosen without calibration and are to be tuned in phase 8. Because the hour is the mean of base and upper, a gale at the summit alone leaves the base side scoring normally, so such a day can still land in the Good band.
+
+**Comfort (10).** Feels-like temperature (−35 °C → 0, −25 → 25, −18 → 58, −10 → 92, −4 to +3 → 100, 6 → 85, 9 → 60, 13 → 30), multiplied by a rain factor (1, 0.4, 0.25, 0.15 for none, light, moderate, heavy) and a snowfall factor (0 cm → 1, 1 → 0.92, 3 → 0.78).
 
 ## Hour, base and summit
 
 - Hour score = the mean of the base and upper site scores when both are valid. Both parts are kept.
 - A site is valid for an hour when it has temperature, wind and snowfall. Gust falls back to wind and feels-like to temperature. An hour with no valid site has no score.
 - If only one site is valid for an hour, that site is used, `sites` is `'base'` or `'upper'`, and the day gets `partial_sites` and Low confidence.
-- If the source cannot tell base and summit apart, the engine gives one estimate from the base data, `siteMode` is `'single'`, the day gets `single_estimate`, and confidence is Low (`CR_ONE_ESTIMATE`). That happens when: the summit has no valid hour (`summit_missing`); the base has no valid hour, in which case the summit is the one estimate (`base_missing`); the resort's `top − base` is under 100 m (`small_vertical`); or wind and gusts are identical for every hour that both sites have, at least 6 of them (`identical_wind`). The engine never copies a value from one site to invent the other.
+- If the source cannot tell base and summit apart, the engine gives one estimate from the base data, `siteMode` is `'single'`, the day gets `single_estimate`, and confidence is Low (`CR_ONE_ESTIMATE`). That happens when: the summit has no valid hour (`summit_missing`); the base has no valid hour, in which case the summit is the one estimate (`base_missing`); the resort's `top − base` is under 100 m (`small_vertical`; when `top` or `base` is missing, as for a map pin, this rule is skipped and the two weather points are used as given); or wind and gusts are identical for every hour that both sites have, at least 6 of them (`identical_wind`). The engine never copies a value from one site to invent the other.
 
 ## Day
 
@@ -157,12 +163,14 @@ The engine returns `{ code, params }` and never a sentence. A parameter is a raw
 - `EX_SOFTENING_SUN` [hour softening starts]
 - `EX_THAW_REFREEZE`
 - `EX_FLAT_LIGHT_GUSTS_PM`
-- `EX_RAIN_AT_BASE`
+- `EX_RAIN_AT_BASE` (rain at the base while the upper site has snow and no rain)
 - `EX_SUMMIT_WIND`
 - `EX_COLD`
 - `EX_MIXED`
 - `EX_LOW_VISIBILITY` (new, needs ten translations in phase 2)
 - `EX_WARM_WET` (new, needs ten translations in phase 2)
+- `EX_WARM_SOFT` (new in 1.1: comfort driven by warmth)
+- `EX_RAIN_WHOLE_MOUNTAIN` (new in 1.1: rain at every site used, or the only site)
 
 `confReason` and `windowReason` and `insufficientReason`:
 
@@ -175,14 +183,16 @@ The engine returns `{ code, params }` and never a sentence. A parameter is a raw
 - `F_FRESH_SNOW`, `F_FIRM_SURFACE`, `F_ICY_REFROZEN`, `F_SOFT_SNOW`, `F_WET_SNOW`
 - `F_GOOD_VISIBILITY`, `F_FLAT_LIGHT`, `F_SUMMIT_FOG`, `F_HEAVY_SNOWFALL`
 - `F_STRONG_GUSTS`
-- `F_COLD`, `F_RAIN`, `F_COMFORTABLE`
+- `F_COLD` (feels like −10 °C or colder), `F_RAIN`, `F_TOO_WARM` (new in 1.1, feels like +3 °C or warmer), `F_COMFORTABLE`
+- `F_FOG` (new in 1.1: fog at the base; `F_SUMMIT_FOG` is used only for the upper site)
 
 Which factor is chosen: each component's weighted distance from its reference (surface 78, the others 100) is `points`. The hour takes the component with the largest absolute `points` across its sites; under 1 point it is `F_GOOD_VISIBILITY` (visibility 95 or better) or `F_FIRM_SURFACE`. The day takes up to 3 components whose mean moves the day by 1.5 points or more.
 
 `precip` (per site and hour; a whole label):
 
 - `precip.none`, `precip.light_snow` (up to 0.5 cm an hour), `precip.snow` (0.5 to 1.5), `precip.heavy_snow` (1.5 and more)
-- `precip.drizzle`, `precip.rain`, `precip.heavy_rain`, `precip.freezing_rain`, `precip.mixed` (sleet, or rain and snow together)
+- `precip.drizzle` and `precip.heavy_rain` are reserved: the server only sends weather codes 61, 63, 66, 68 and 95, so v1 never emits them (kept for sources that send drizzle or heavy-rain codes). Rain intensity 3 is likewise reserved.
+- `precip.rain`, `precip.freezing_rain`, `precip.mixed` (sleet, or rain and snow together)
 
 `surface` (per site and hour; a whole label; first match in this order):
 
@@ -195,6 +205,8 @@ Which factor is chosen: each component's weighted distance from its reference (s
 - `surf.firm_groomed` (otherwise)
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
+
+Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (later, phase 4, when history exists), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
 
 `outlook` codes (days 6 to 9) are not produced in phase 1.
 

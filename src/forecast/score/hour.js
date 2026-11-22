@@ -17,7 +17,7 @@ function rawAt(h, i) {
   return { t: h.temperature_2m?.[i], feels: h.apparent_temperature?.[i], snow: h.snowfall?.[i], wind: h.wind_speed_10m?.[i], gust: h.wind_gusts_10m?.[i], vis: h.visibility?.[i], code: h.weather_code?.[i] };
 }
 
-export function siteSeries(block) {
+export function siteSeries(block, site) {
   const h = block?.hourly;
   const bySlot = new Map();
   if (!h?.time) return bySlot;
@@ -27,7 +27,9 @@ export function siteSeries(block) {
     const x = normalizeHour(rawAt(h, i));
     if (!x) return;
     state = stepSurface(state ?? initialSurface(x), x, hourOf(time));
-    bySlot.set(keys[i], scoreSite(x, state));
+    const scored = scoreSite(x, state);
+    scored.detail.site = site;
+    bySlot.set(keys[i], scored);
   });
   return bySlot;
 }
@@ -48,7 +50,8 @@ export function chooseSites(resort, weather, upper, base) {
   if (!upper.size && !base.size) return { mode: 'both', reason: null };
   if (!upper.size) return { mode: 'single', use: 'base', reason: 'summit_missing' };
   if (!base.size) return { mode: 'single', use: 'upper', reason: 'base_missing' };
-  if (resort.top - resort.base < MIN_VERTICAL_M) return { mode: 'single', use: 'base', reason: 'small_vertical' };
+  const knownVertical = Number.isFinite(resort.top) && Number.isFinite(resort.base);
+  if (knownVertical && resort.top - resort.base < MIN_VERTICAL_M) return { mode: 'single', use: 'base', reason: 'small_vertical' };
   if (sameWind(weather.summit, weather.base)) return { mode: 'single', use: 'base', reason: 'identical_wind' };
   return { mode: 'both', reason: null };
 }
@@ -60,8 +63,8 @@ export function scoreHours(resort, weather) {
   if (!block?.hourly?.time) return { rows: [], sites: { mode: 'both', reason: null } };
   const times = block.hourly.time;
   const keys = occurrenceKeys(times);
-  const upper = siteSeries(weather.summit);
-  const base = siteSeries(weather.base);
+  const upper = siteSeries(weather.summit, 'upper');
+  const base = siteSeries(weather.base, 'base');
   const sites = chooseSites(resort, weather, upper, base);
   const rows = times.map((time, i) => {
     const key = keys[i];
@@ -72,11 +75,13 @@ export function scoreHours(resort, weather) {
       else b = null;
     }
     const used = [b, u].filter(Boolean);
-    const row = { time, date: time.slice(0, 10), hour: hourOf(time), score: null, components: null, sites: null, factor: null, base: b, upper: u };
+    const row = { time, date: time.slice(0, 10), hour: hourOf(time), score: null, components: null, sites: null, factor: null, hold: 0, holdLoss: 0, base: b, upper: u };
     if (!used.length) return row;
     row.score = mean(used.map((s) => s.score));
     row.components = Object.fromEntries(COMPONENTS.map((c) => [c, mean(used.map((s) => s.components[c]))]));
     row.sites = sites.mode === 'single' ? 'single' : used.length === 2 ? 'both' : b ? 'base' : 'upper';
+    row.hold = Math.max(...used.map((s) => s.hold));
+    row.holdLoss = mean(used.map((s) => s.holdLoss));
     row.factor = hourFactor(used);
     return row;
   });
