@@ -9,6 +9,7 @@ on:
       - 'ios-beta/**'
       - 'package*.json'
       - 'vite.config.js'
+      - 'tools/heights_pack.mjs'
       - '.github/workflows/ios-beta.yml'
   workflow_dispatch:
 permissions:
@@ -82,7 +83,6 @@ jobs:
           keypass=$(openssl rand -hex 32)
           printf '%s' "$CERT" | base64 -D > "$signing/input.p12"
           printf '%s' "$PROFILE" | base64 -D > "$signing/profile.mobileprovision"
-          printf '%s' "$API_KEY" | base64 -D > "$signing/AuthKey_$KEY_ID.p8"
           security cms -D -i "$signing/profile.mobileprovision" > "$signing/profile.plist"
           uuid=$(/usr/libexec/PlistBuddy -c 'Print UUID' "$signing/profile.plist")
           team=$(/usr/libexec/PlistBuddy -c 'Print TeamIdentifier:0' "$signing/profile.plist")
@@ -98,7 +98,8 @@ jobs:
           ssl="$(brew --prefix openssl@3)/bin/openssl"
           "$ssl" pkcs12 -legacy -in "$signing/input.p12" -passin env:CERT_PASSWORD -nodes -out "$signing/identity.pem"
           "$ssl" pkcs12 -export -legacy -in "$signing/identity.pem" -out "$signing/import.p12" -passout env:CERT_PASSWORD
-          security import "$signing/import.p12" -P "$CERT_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security -t cert -f pkcs12 -k "$keychain"
+          security import "$signing/import.p12" -P "$CERT_PASSWORD" -T /usr/bin/codesign -t cert -f pkcs12 -k "$keychain"
+          api_key_b64="$API_KEY"
           unset CERT CERT_PASSWORD PROFILE API_KEY
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$keypass" "$keychain" >/dev/null
           security list-keychains -d user -s "$keychain" "$HOME/Library/Keychains/login.keychain-db"
@@ -124,7 +125,9 @@ jobs:
           PY
           xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Release \
             -destination 'generic/platform=iOS' -archivePath "$RUNNER_TEMP/SkiWithMe.xcarchive" archive
+          printf '%s' "$api_key_b64" | base64 -D > "$signing/AuthKey_$KEY_ID.p8"
           xcodebuild -exportArchive -archivePath "$RUNNER_TEMP/SkiWithMe.xcarchive" \
             -exportOptionsPlist "$RUNNER_TEMP/export.plist" -exportPath "$RUNNER_TEMP/export" \
             -authenticationKeyPath "$signing/AuthKey_$KEY_ID.p8" -authenticationKeyID "$KEY_ID" \
             -authenticationKeyIssuerID "$ISSUER"
+          rm -f "$signing/AuthKey_$KEY_ID.p8"

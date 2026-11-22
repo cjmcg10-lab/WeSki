@@ -30,6 +30,7 @@ function mapResponse(bytes, json) {
   return new Response(bytes, {headers: {'content-type': json ? 'application/json' : 'application/octet-stream'}});
 }
 const requestTimeout = 10000;
+const revalidateTimeout = 2500;
 function requestBody(body) {
   if (!body) return undefined;
   try { return JSON.parse(body); } catch { return body; }
@@ -55,23 +56,31 @@ window.fetch = async function(input, options = {}) {
   const savedBytes = saved?.bytes ?? saved;
   const savedEtag = saved?.etag;
   const headers = savedEtag && options.cache !== 'reload' ? {'If-None-Match': savedEtag} : {};
+  const request = CapacitorHttp.get({url: server + url.pathname + url.search, headers, responseType: json ? 'json' : 'arraybuffer',
+    connectTimeout: requestTimeout, readTimeout: requestTimeout});
+  const keep = async result => {
+    const bytes = json ? new TextEncoder().encode(JSON.stringify(result.data)) :
+      Uint8Array.from(atob(result.data), c => c.charCodeAt(0));
+    await mapFile(url.pathname, {bytes, etag: etagOf(result.headers)});
+    return bytes;
+  };
   let result;
   try {
-    result = await CapacitorHttp.get({url: server + url.pathname + url.search, headers, responseType: json ? 'json' : 'arraybuffer',
-      connectTimeout: requestTimeout, readTimeout: requestTimeout});
+    result = savedBytes ? await Promise.race([request, new Promise(resolve => setTimeout(resolve, revalidateTimeout))]) : await request;
   } catch (error) {
     if (savedBytes) return mapResponse(savedBytes, json);
     throw error;
+  }
+  if (!result) {
+    request.then(late => late.status === 200 && keep(late)).catch(console.warn);
+    return mapResponse(savedBytes, json);
   }
   if (result.status === 304 && savedBytes) return mapResponse(savedBytes, json);
   if (result.status !== 200) {
     if (savedBytes && result.status >= 500) return mapResponse(savedBytes, json);
     return new Response(null,{status:result.status});
   }
-  const bytes = json ? new TextEncoder().encode(JSON.stringify(result.data)) :
-    Uint8Array.from(atob(result.data), c => c.charCodeAt(0));
-  await mapFile(url.pathname, {bytes, etag: etagOf(result.headers)});
-  return mapResponse(bytes, json);
+  return mapResponse(await keep(result), json);
 };
 
 export class PhoneLocator extends Locator {
