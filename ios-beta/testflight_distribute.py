@@ -1,5 +1,7 @@
+import http.client
 import json
 import os
+import ssl
 import sys
 import time
 import urllib.error
@@ -14,6 +16,9 @@ TOKEN_LIFETIME = 15 * 60
 POLL_SECONDS = 30
 POLL_LIMIT_SECONDS = 40 * 60
 WHATS_NEW_LIMIT = 4000
+# Dropped or broken connections: URLError, timeouts, ConnectionResetError and other socket errors are all OSError;
+# RemoteDisconnected and IncompleteRead are http.client.HTTPException.
+NETWORK_ERRORS = (OSError, http.client.HTTPException)
 
 
 class ApiError(Exception):
@@ -26,14 +31,15 @@ class ApiError(Exception):
 def is_transient(err):
     if isinstance(err, ApiError):
         return err.status == 429 or err.status >= 500
-    return isinstance(err, (urllib.error.URLError, TimeoutError))
-
-
-def error_text(err):
-    try:
-        return " ".join(f"{e.get('code', '')} {e.get('detail', '')}" for e in json.loads(err.body)["errors"])
-    except (ValueError, KeyError, TypeError, AttributeError):
-        return err.body
+    # HTTPError is an OSError too; Client.request turns it into ApiError, but judge it by its status if one gets here.
+    if isinstance(err, urllib.error.HTTPError):
+        return err.code == 429 or err.code >= 500
+    # A certificate that fails to verify will not fix itself: fail now rather than poll for 40 minutes.
+    if isinstance(err, ssl.SSLCertVerificationError) or isinstance(
+        getattr(err, "reason", None), ssl.SSLCertVerificationError
+    ):
+        return False
+    return isinstance(err, NETWORK_ERRORS)
 
 
 class Client:
@@ -96,22 +102,20 @@ def wait_for_build(client, app_id, build_number, sleep=time.sleep, clock=time.mo
                     "limit": 1,
                 },
             )["data"]
-        except (ApiError, urllib.error.URLError, TimeoutError) as err:
+        except (ApiError, *NETWORK_ERRORS) as err:
             if not is_transient(err):
                 raise
             print(f"Temporary problem asking App Store Connect ({err}); retrying")
-            builds = None
-        if builds is None:
-            pass
-        elif builds:
-            state = builds[0]["attributes"]["processingState"]
-            if state == "VALID":
-                return builds[0]
-            if state in ("INVALID", "FAILED"):
-                raise SystemExit(f"Build {build_number} processing ended as {state}")
-            print(f"Build {build_number} is {state}; waiting")
         else:
-            print(f"Build {build_number} not listed yet; waiting")
+            if builds:
+                state = builds[0]["attributes"]["processingState"]
+                if state == "VALID":
+                    return builds[0]
+                if state in ("INVALID", "FAILED"):
+                    raise SystemExit(f"Build {build_number} processing ended as {state}")
+                print(f"Build {build_number} is {state}; waiting")
+            else:
+                print(f"Build {build_number} not listed yet; waiting")
         if clock() >= deadline:
             raise SystemExit(f"Build {build_number} was not ready after {POLL_LIMIT_SECONDS // 60} minutes")
         sleep(POLL_SECONDS)
@@ -148,11 +152,35 @@ def add_to_group(client, group, build_id):
     except ApiError as err:
         if err.status != 409:
             raise
-        members = client.request("GET", f"/betaGroups/{group['id']}/builds", {"limit": 200})["data"]
-        if not any(m["id"] == build_id for m in members):
+        if not in_group(client, group["id"], build_id):
             raise
         return "was already in"
     return "added to"
+
+
+def in_group(client, group_id, build_id):
+    """Asks for this one build's groups, so a group with many builds is still checked correctly."""
+    try:
+        page = client.request("GET", f"/builds/{build_id}/relationships/betaGroups", {"limit": 200})
+        wanted = group_id
+    except ApiError as err:
+        # App Store Connect answers an operation a path does not offer with 403 (METHOD_FORBIDDEN), 404 or 405.
+        if err.status not in (403, 404, 405):
+            raise
+        # Fall back to the group's own build list, every page of it.
+        page = client.request("GET", f"/betaGroups/{group_id}/builds", {"limit": 200})
+        wanted = build_id
+    return any_page_has(client, page, wanted)
+
+
+def any_page_has(client, page, wanted_id):
+    while True:
+        if any(x["id"] == wanted_id for x in page.get("data") or []):
+            return True
+        next_url = (page.get("links") or {}).get("next")
+        if not next_url:
+            return False
+        page = client.request("GET", next_url)
 
 
 def set_whats_new(client, build_id, text):
@@ -192,10 +220,19 @@ def submit_for_review(client, build_id):
             },
         )
     except ApiError as err:
-        if err.status != 409 or "already" not in error_text(err).lower():
+        if err.status != 409 or not has_review_submission(client, build_id):
             raise
         return "was already submitted for beta review"
     return "submitted for beta review"
+
+
+def has_review_submission(client, build_id):
+    """True only when App Store Connect confirms this build already has a beta review submission."""
+    try:
+        found = client.request("GET", f"/builds/{build_id}/betaAppReviewSubmission").get("data")
+    except ApiError:
+        return False
+    return bool(found)
 
 
 def distribute(client, build_number, whats_new, wanted_groups, sleep=time.sleep, clock=time.monotonic):
@@ -228,7 +265,7 @@ def main():
     except ApiError as err:
         print(f"App Store Connect error: {err}", file=sys.stderr)
         return 1
-    except (urllib.error.URLError, TimeoutError) as err:
+    except NETWORK_ERRORS as err:
         print(f"Could not reach App Store Connect: {err}", file=sys.stderr)
         return 1
     return 0
