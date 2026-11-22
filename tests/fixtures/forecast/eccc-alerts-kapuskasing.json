@@ -1,0 +1,27 @@
+{
+ "_label": "Real api.weather.gc.ca weather-alerts items for bbox -82.40,49.40 (Kapuskasing, Ontario), recorded 2026-11-22T18:2xZ: a snowfall warning in force; text and geometry removed",
+ "features": [
+  {
+   "properties": {
+    "alert_code": "SFW",
+    "alert_type": "warning",
+    "alert_name_en": "snowfall warning",
+    "alert_name_fr": "avertissement de neige",
+    "alert_short_name_en": "Snowfall",
+    "alert_short_name_fr": "Neige",
+    "publication_datetime": "2026-11-22T16:14:43.072Z",
+    "expiration_datetime": "2026-11-23T08:14:43.072Z",
+    "validity_datetime": "2026-11-22T16:09:00.000Z",
+    "event_end_datetime": "2026-11-23T10:00:00.000Z",
+    "risk_colour_en": "yellow",
+    "risk_colour_fr": "jaune",
+    "feature_name_en": "Kapuskasing - Hearst - Smooth Rock Falls",
+    "feature_name_fr": "Kapuskasing - Hearst - Smooth Rock Falls",
+    "province": "ON",
+    "status_en": "continued",
+    "status_fr": "maintenu",
+    "feature_id": "fea1-1323"
+   }
+  }
+ ]
+}

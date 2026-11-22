@@ -391,4 +391,5 @@ export default {
   1213: 'Parere sulla giornata di sci',
   1214: 'Dopo una giornata di sci salvata puoi valutarla da 1 a 5 e indicare com’era. È facoltativo e viene chiesto una volta al giorno. Vengono inviati solo la montagna, la data, il voto e le etichette. Nessun nome, account, posizione od ora.',
   1215: 'Valuta {0} su 5',
+  1350: 'Allerta meteo: {0}.',
 };

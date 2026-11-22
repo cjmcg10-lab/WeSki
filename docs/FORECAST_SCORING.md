@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.4.0)
+# Forecast scoring engine (version 1.5.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -37,6 +37,7 @@ const out = scoreForecast(resort, weather, opts);
 | `grooming` | `[{ at: 'YYYY-MM-DDTHH:MM' }]` timestamped grooming reports in the forecast's local time. Each one is applied to the snow surface at its hour (see Snow surface). A report from the 24 hours before the first weather hour counts as that first hour; anything older is ignored |
 | `today` | `'YYYY-MM-DD'`, the local date that counts as day 0. Default: the first date in the weather |
 | `history` | `{ summit, base }`, each `{ hourly }` in the weather's shape (optionally with `observed: boolean[]`): the hours before the forecast starts, as `GET /api/history/<id>` returns them. The engine ignores any hour at or after the first forecast hour, uses the last 72 valid ones, and carries the snow surface through them before the first forecast hour. Without it the surface starts clean (limited history) |
+| `alerts` | `[{ event, level, from, to }]` weather alerts for the resort, `from` and `to` local `YYYY-MM-DDTHH:MM` (as `/api/weather` returns them in `alerts`). Each becomes a `NT_WEATHER_ALERT` note on every date from `from` to `to` inclusive. Never changes a score. Default: `weather.alerts`, else none |
 | `ageHours` | Age in hours of the weather model's issue (when the source last updated). A loose signal only: NWS grids go 6 to 12 h between updates. 18 h or more caps confidence at Medium and 30 h or more makes it Low (`CR_STALE`). Default: `weather.ageHours` |
 | `fetchAgeHours` | Hours since the caller fetched this forecast (the phone's saved copy getting old). 6 or more is Low (`CR_STALE`). Never mixed with `ageHours`. Default: null |
 | `stale` | `true` when the backup was served because no source answered. Default: `weather.stale`. Confidence is Low (`CR_STALE`) |
@@ -49,7 +50,7 @@ A caller that passes the `/api/weather` response as `weather` only needs to add 
 
 ```
 {
-  version: '1.4.0',
+  version: '1.5.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
@@ -82,7 +83,7 @@ Day (one per local date in the weather):
 | `closureSource` | The `{ code, params }` the caller passed, or `null`, present only when `closed` |
 | `flags` | Strings: `snow_history_limited` (when the history before the forecast covers under 48 valid hours), `stale_source`, `assumed_hours`, `single_estimate`, `partial_sites`, `window_under_3h`, `lift_hold_confirmed`, `grooming_reported` |
 | `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
-| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds] and `NT_OUT_OF_SEASON`. Always an array. Not part of `explain` and never changes `score` or `status` |
+| `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds], `NT_OUT_OF_SEASON` and `NT_WEATHER_ALERT` [event name], one note per distinct alert event on that date. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
 | `uncertainty` | Always `null` in version 1. It stays null until there are several forecasts or ensemble members to compare, so no Close call shows |
 
@@ -169,7 +170,7 @@ Rated separately for the day and for the timing of its best window. Every thresh
 | Under 24 history hours measured by a station, snowfall included (an hour whose station gave no precipitation total does not count) | Medium | `CR_NO_OBSERVATIONS` |
 | Otherwise (0 to 2 days ahead, 48 or more history hours, 24 or more of them measured with snowfall, a fine grid, a model height within 500 m of the resort) | High | `CR_HISTORY_COVERED` |
 
-High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached until phase 7 adds a second source. An unknown model height (MET Norway does not report one) never lowers the level by itself.
+High needs measured snowfall, not only forecast hours or a station's temperature and wind standing in for history, so outside the USA (no observation source) it is not reached; phase 7 found no free second source with measured snowfall. An unknown model height (MET Norway does not report one) never lowers the level by itself.
 
 Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, `WR_TOO_FAR_AHEAD`; `stale`, `fetchAgeHours` of 6 or more or `ageHours` of 30 or more → Low, `WR_STALE` `[hours]`; `ageHours` of 18 or more → Medium, `WR_STALE` `[hours]`; assumed hours → Medium, `WR_HOURS_ASSUMED`; otherwise High, `WR_STABLE`, when the day is High and it is today or tomorrow, else Medium, `WR_STABLE`.
 
@@ -249,22 +250,25 @@ Which factor is chosen: each component's weighted distance from its reference (s
 
 - `EX_LIFT_HOLD_CONFIRMED` [number of confirmed holds that date] (new, needs ten translations in phase 2)
 - `NT_OUT_OF_SEASON` (new, needs ten translations in phase 2)
+- `NT_WEATHER_ALERT` [event name, a string: the alert's own English name such as `Winter Storm Warning`] (new in 1.5.0, issue #8). A winter storm, snow, ice, wind chill, extreme cold, high wind or gale alert from the NWS, Environment Canada or MET Norway that covers the date. It is a fact shown beside the day, like a lift hold: it does not move the wind or any component, the score, the status or the confidence. English text `Weather alert: {0}.` is in `src/forecast/text.js` and `src/i18n/en.js` (id 1350) with the other nine languages; the alert name itself is the provider's and is not translated
 
 `closureSource`: supplied by the caller with the closure, passed through unchanged (for example `closed.ops_report` with the mountain name). The engine invents none, so none is listed.
 
 Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (not needed: missing history lowers confidence, it does not block a score), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
 
-`outlook` codes (days 6 to 9) are not produced in phase 1.
+`outlook` codes (days 6 to 9) are not produced: phase 7 (#8) found no ensemble source that works from a Worker at no cost.
 
 ## Not in version 1
 
-Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7 checked every free source and found none feasible; `docs/FORECAST_SOURCES.md` says what would be needed, and `range: { low, high }` is not part of the output until members exist), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
 `tests/forecast-score.test.js` with fixtures in `tests/fixtures/forecast/`. `real-stowe-2026-11-22.json` is a real `/api/weather` response (hourly blocks only). The five `scenario-*.json` files are derived from it by editing values; each says so in `_label`.
 
 `tests/forecast-history.test.js` covers the engine's history, confidence and detail levels (version 1.3.0); `tests/forecast-store.test.js` covers the server side (history store, observations, archive, stale fallback) with recorded NWS stations and observations (`nws-stations-stowe.json`, `nws-obs-kmvl.json`, real responses trimmed to the fields the app reads).
+
+`tests/weather-sources.test.js` covers the weather adapters, routing, alerts and the `NT_WEATHER_ALERT` notes on recorded responses (`nws-gridpoints-stowe.json`, `met-locationforecast-*.json`, `*-alerts-*.json`).
 
 `tests/forecast-status.test.js` covers the resort-status side with recorded feeds `status-mtnpowder-*.json` (trimmed real responses): the normaliser, an assumed window, a confirmed closure, a short operating day, a confirmed lift hold kept apart from wind, and out of season without a closure. See `docs/FORECAST_SOURCES.md` for where the status comes from.
 

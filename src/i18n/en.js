@@ -897,4 +897,5 @@ export default {
   1213: 'Ski-day feedback',
   1214: 'After a saved ski day you can rate it from 1 to 5 and tag what it was like. It is optional and asked once per day. Only the mountain, the date, your rating and tags are sent. No name, account, location or time of day.',
   1215: 'Rate {0} of 5',
+  1350: 'Weather alert: {0}.',
 };

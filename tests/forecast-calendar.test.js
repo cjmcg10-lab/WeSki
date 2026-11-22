@@ -420,6 +420,7 @@ describe('forecast text is translated', () => {
   it('translates the fallback text and the Tomorrow label', () => {
     expect(literals.has('No explanation is available for this day.')).toBe(true);
     expect(codeText(undefined)).toBe('No explanation is available for this day.');
+    expect(codeText({ code: 'NT_WEATHER_ALERT', params: [null] })).toBe('Weather alert: .');
     expect(known.has('Tomorrow')).toBe(true);
   });
 

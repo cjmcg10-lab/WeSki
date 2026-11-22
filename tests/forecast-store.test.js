@@ -387,7 +387,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
     const { env } = fakeEnv();
     const ctx = context();
     const observe = async () => ({ station: null, rows: [] });
-    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => result(NOW - 40 * 60e3), observe, now: NOW });
+    await weatherResponse(URL_STOWE('&id=stowe'), env, ctx, { forecastFn: async () => ({ ...result(NOW - 40 * 60e3), alerts: [{ event: 'Winter Storm Warning', level: 'warning', from: '2026-11-22T10:00', to: '2026-11-23T10:00', source: 'nws-alerts' }] }), observe, now: NOW });
     await Promise.all(ctx.pending);
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const later = NOW + 7 * HOUR;
@@ -400,6 +400,7 @@ describe('the weather endpoint with history and the stale fallback', () => {
     expect(res.headers.get('cache-control')).toBe('public, max-age=60');
     const served = await body(res);
     expect(served).toMatchObject({ stale: true, source: 'nws' });
+    expect(served.alerts).toEqual([]);
     expect(served.ageHours).toBeCloseTo(7.7, 1);
     const out = scoreForecast({ id: 'stowe', top: 1116, base: 399 }, served);
     expect(out.days[0].confidence).toEqual({ level: 'Low', reason: { code: 'CR_STALE', params: [8] } });
@@ -564,7 +565,7 @@ describe('hours a source did not cover are never recorded', () => {
   it('MET starting mid-day: the hours before its first entry are marked filled and skipped', async () => {
     const start = Date.UTC(2026, 10, 22, 12);
     const entry = (i) => ({ time: new Date(start + i * HOUR).toISOString(), data: { instant: { details: { air_temperature: -3, wind_speed: 2 } }, next_1_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 1 } }, next_6_hours: { summary: { symbol_code: 'snow' }, details: { precipitation_amount: 6 } } } });
-    answer({ 'api.met.no': { properties: { meta: { updated_at: new Date(NOW - HOUR).toISOString() }, timeseries: Array.from({ length: 170 }, (_, i) => entry(i)) } } });
+    answer({ metalerts: { features: [] }, 'api.met.no': { properties: { meta: { updated_at: new Date(NOW - HOUR).toISOString() }, timeseries: Array.from({ length: 170 }, (_, i) => entry(i)) } } });
     const oslo = new URL('https://x/api/weather?lat=61.2&lon=8.4&top=1500&base=300&tz=Europe/Oslo');
     const res = await forecast(oslo, NOW);
     vi.unstubAllGlobals();
@@ -581,6 +582,7 @@ describe('hours a source did not cover are never recorded', () => {
     const start = Date.UTC(2026, 10, 22, 10);
     const series = (v) => ({ values: [{ validTime: `${new Date(start).toISOString()}/PT14H`, value: v }] });
     answer({
+      'alerts/active': { features: [] },
       'api.weather.gov/points': { properties: { forecastGridData: 'https://api.weather.gov/gridpoints/BTV/1,1' } },
       'gridpoints/BTV': { properties: { updateTime: '2026-11-22T06:00:00+00:00', generatedAt: '2026-11-22T12:00:00+00:00', elevation: { value: 400 }, temperature: series(-4), windSpeed: series(10), snowfallAmount: series(14) } },
     });

@@ -57,6 +57,7 @@ export function scoreForecast(resort, weather, opts = {}) {
       daysAhead: daysBetween(today, date),
       season: opts.season,
       liftHolds: opts.liftHolds,
+      alerts: opts.alerts ?? weather?.alerts ?? [],
       groomed: rows.some((r) => r.date === date && groomedAt.has(r.time)),
       history,
       ...source,
