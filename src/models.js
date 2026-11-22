@@ -343,9 +343,15 @@ export function makeRing(color) {
 }
 
 /** Chairlift chair hanging from the cable at y=0, facing +Z. */
-export function chairGeometry(seats) {
+export function chairGeometry(seats, bubble = false) {
   const w = 0.55 * Math.max(2, seats || 2) + 0.2;
+  // a weather bubble: tinted cover over the seat, pulled down in front (open at the back)
+  const cover = bubble ? [
+    part(box(w + 0.15, 0.1, 1.1), 0xd9762b, 0, -2.05, 0.25),
+    part(box(w + 0.15, 1.05, 0.08), 0xd9762b, 0, -2.6, 0.82),
+  ] : [];
   return mergeGeometries([
+    ...cover,
     part(box(0.12, 2.6, 0.12), 0x3a3f4a, 0, -1.3, 0),
     part(box(w, 0.1, 0.12), 0x3a3f4a, 0, -2.6, 0),
     part(box(w, 0.14, 0.7), 0x25282f, 0, -3.4, 0.2),
@@ -445,13 +451,27 @@ export function makeFlag(color) {
  * Extruded building with a low hipped roof. ring: [[x,z],...] counter-clockwise seen from above
  * (in world X/Z), base: ground y, h: wall height. Appends to arrays for one merged mesh.
  */
-export function addBuilding(out, ring, base, h, wall, roof, flat = false) {
-  const n = ring.length;
+/**
+ * A building from its footprint. shape: 'flat', 'hipped' (slopes on every side) or 'gabled' (a ridge along the
+ * building's long side, triangular gable ends in the wall colour). `roof` is the roof's colour as seen (snow on it
+ * already mixed in by the caller).
+ */
+export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped') {
+  const n = ring.length, flat = shape === 'flat';
   let cx = 0, cz = 0;
   for (const [x, z] of ring) { cx += x; cz += z; }
   cx /= n; cz /= n;
   const top = base + h, peak = top + (flat ? 0.4 : Math.min(4.5, 1.5 + h * 0.22));
-  const inset = ring.map(([x, z]) => [cx + (x - cx) * 0.45, cz + (z - cz) * 0.45]);
+  let inset;
+  if (shape === 'gabled') {
+    // the ridge runs along the longest wall, through the middle; every corner rises to the point of the ridge level with it
+    let ax = 1, az = 0, best = -1;
+    for (let i = 0; i < n; i++) {
+      const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0);
+      if (L > best) { best = L; ax = (x1 - x0) / L; az = (z1 - z0) / L; }
+    }
+    inset = ring.map(([x, z]) => { const t = (x - cx) * ax + (z - cz) * az; return [cx + ax * t, cz + az * t]; });
+  } else inset = ring.map(([x, z]) => [cx + (x - cx) * 0.45, cz + (z - cz) * 0.45]);
   const push = (a, b, c, col) => {
     out.pos.push(...a, ...b, ...c);
     for (let i = 0; i < 3; i++) out.col.push(col.r, col.g, col.b);
@@ -462,10 +482,12 @@ export function addBuilding(out, ring, base, h, wall, roof, flat = false) {
     // wall quad (two winding orders are both emitted via DoubleSide material, so order is not critical)
     push([x0, base - 2, z0], [x1, base - 2, z1], [x1, top, z1], wall);
     push([x0, base - 2, z0], [x1, top, z1], [x0, top, z0], wall);
-    // roof slope
-    push([x0, top, z0], [x1, top, z1], [u1, peak, w1], roof);
-    push([x0, top, z0], [u1, peak, w1], [u0, peak, w0], roof);
+    // roof slope; on a gabled roof the end walls (both corners rise to one ridge point) are wall, not roof
+    const gableEnd = shape === 'gabled' && Math.hypot(u1 - u0, w1 - w0) < 0.05 * Math.hypot(x1 - x0, z1 - z0);
+    push([x0, top, z0], [x1, top, z1], [u1, peak, w1], gableEnd ? wall : roof);
+    if (!gableEnd) push([x0, top, z0], [u1, peak, w1], [u0, peak, w0], roof);
   }
+  if (shape === 'gabled') return;
   const tris = THREE.ShapeUtils.triangulateShape(inset.map(([x, z]) => new THREE.Vector2(x, z)), []);
   for (const [a, b, c] of tris) push([inset[a][0], peak, inset[a][1]], [inset[b][0], peak, inset[b][1]], [inset[c][0], peak, inset[c][1]], roof);
 }

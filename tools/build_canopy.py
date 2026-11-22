@@ -73,12 +73,12 @@ def build(rid):
         chm, tf = merge(srcs, bounds=bounds, nodata=0)
         for s in srcs:
             s.close()
-    chm = chm[0].astype(np.float32)
+    chm = np.nan_to_num(chm[0].astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)   # gaps between tiles: no trees
     res = tf.a
     tree = (chm > TREE_M).astype(np.float32)
     r = max(1, int(round(c / res / 2)))             # box of about one canopy cell
     n = box_sum(np.ones_like(tree), r)
-    cover = box_sum(tree, r) / n
+    cover = box_sum(tree, r) / np.maximum(n, 1)
     hsum = box_sum(chm * tree, r)
     tall = np.where(cover > 0, hsum / np.maximum(box_sum(tree, r), 1), 0)
     inv = ~tf

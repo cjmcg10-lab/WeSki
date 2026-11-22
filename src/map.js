@@ -647,7 +647,10 @@ vec3 groundColour() {
       const cum = [0];
       for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1]));
       const L = cum[cum.length - 1];
-      const path = { l, tram, pts, cum, L, r, loop: 2 * L + 2 * Math.PI * r, chairs: 0, first: 0, carrier: K.carrier, gondola: l.kind === 'gondola', carpet: low };
+      // chairs drawn with the lift's real seat count, and its weather bubble when it has one (tools/enrich_osm.py)
+      const seats = [1, 2, 3, 4, 6, 8].reduce((a, b) => (Math.abs(b - (l.seats || 4)) < Math.abs(a - (l.seats || 4)) ? b : a));
+      const carrier = K.carrier === 'chair' ? `chair${seats}${l.bubble ? 'b' : ''}` : K.carrier;
+      const path = { l, tram, pts, cum, L, r, loop: 2 * L + 2 * Math.PI * r, chairs: 0, first: 0, carrier, chair: K.carrier === 'chair', seats, bubble: !!l.bubble, gondola: l.kind === 'gondola', carpet: low };
       const line = (ring, close) => { for (let i = 0; i + 1 < ring.length + (close ? 1 : 0); i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); } };
       if (tram) {
         // Aerial tram: each cabin has its own pair of fixed cables, one on each side of the towers.
@@ -662,8 +665,15 @@ vec3 groundColour() {
           for (let k = 1; k < 10; k++) ring.push(this.loopPoint(path, 2 * L + Math.PI * r + (Math.PI * r * k) / 10).pos);
           line(ring, true);
         }
-        path.chairs = Math.min(90, Math.max(4, Math.floor(path.loop / (l.kind === 'chair' && l.name.includes('Express') ? 70 : K.gap))));
-        path.first = count[K.carrier]; count[K.carrier] += path.chairs;
+        // Spacing: from the lift's real capacity where OpenStreetMap has it (line speed x 3600 x seats / people an
+        // hour); otherwise detachable (express) chairs 70 m apart, the rest by type as before.
+        const lineSpeed = l.dur ? l.len / l.dur : 0, fast = l.detach || l.name.includes('Express') || lineSpeed > 3.5;
+        const spacing = l.cap && lineSpeed && (path.chair || path.gondola)
+          ? Math.min(150, Math.max(12, (lineSpeed * 3600 * (path.chair ? seats : l.seats || 8)) / l.cap))
+          : path.chair && fast ? 70 : K.gap;
+        path.fast = fast;
+        path.chairs = Math.min(90, Math.max(4, Math.floor(path.loop / spacing)));
+        path.first = count[carrier] || 0; count[carrier] = path.first + path.chairs;
       }
       path.mid = this.pathPoint(path, L / 2, 0).pos;
       // The single red line that stands for the lift: it follows the cables, midway between the
@@ -700,14 +710,15 @@ vec3 groundColour() {
     for (const g of stationGeos) this.scene.add(new THREE.Mesh(g, M.vcMat()));
     // one instanced mesh per kind of carrier, whatever the number of lifts
     this.carriers = {};
-    for (const [k, geo] of [['chair', M.chairGeometry(4)], ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) {
+    const chairKinds = [...new Set(this.liftPaths.filter((p) => p.chair).map((p) => p.carrier))];
+    for (const [k, geo] of [...chairKinds.map((k) => [k, M.chairGeometry(+k.slice(5, 6), k.endsWith('b'))]), ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) {
       const mesh = new THREE.InstancedMesh(geo, M.vcMat(), Math.max(1, count[k]));
       mesh.frustumCulled = false;
       mesh.visible = count[k] > 0;
       this.scene.add(mesh);
       this.carriers[k] = mesh;
     }
-    this.chairs = this.carriers.chair; this.cabins = this.carriers.cabin;
+    this.cabins = this.carriers.cabin;
     this.liftsMoved = false;
     // aerial trams (cable cars): two cabins each, every tram in the resort
     this.trams = this.liftPaths.filter((p) => p.tram).map((path) => ({ path, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] }));
@@ -848,12 +859,12 @@ vec3 groundColour() {
       if (!p.chairs) continue;
       if (!all && is3 && p.mid.distanceTo(cam) > QUALITY[this.q || 0].lifts + p.L / 2) continue;
       const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k];
-      const speed = (k === 'chair' && p.l.name.includes('Express') ? 5 : SPEED[k]) * 2; // real line speed x2 so the motion reads at map scale
+      const speed = (p.chair ? (p.fast ? 5 : 2.4) : SPEED[k]) * 2; // real line speed x2 so the motion reads at map scale
       const gap = p.loop / p.chairs;
       for (let i = 0; i < p.chairs; i++) {
         const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
         q.setFromAxisAngle(up, yaw);
-        mesh.setMatrixAt(p.first + i, m.compose(pos, q, k === 'chair' || k === 'cabin' ? big : one));
+        mesh.setMatrixAt(p.first + i, m.compose(pos, q, p.chair || k === 'cabin' ? big : one));
       }
       touched[k] = true;
     }
@@ -888,16 +899,28 @@ vec3 groundColour() {
     const out = { pos: [], col: [] };
     const walls = ['#c9b79c', '#b89f7f', '#d8cdb9', '#a98a69'].map((c) => new THREE.Color(c));
     const roofs = ['#4c5563', '#6b3b33', '#3f4a45'].map((c) => new THREE.Color(c));
+    const snow = new THREE.Color('#eef3f6');
     this.resort.buildings.forEach((b, bi) => {
       const ring = [];
-      let base = Infinity;
+      let base = Infinity, area = 0;
       for (let i = 0; i < b.pts.length; i += 2) {
         const p = this.world(b.pts[i], b.pts[i + 1], 0);
         ring.push([p.x, p.z]); base = Math.min(base, p.y);
       }
+      for (let i = 0; i < ring.length; i++) { const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % ring.length]; area += x0 * z1 - x1 * z0; }
+      area = Math.abs(area) / 2;
       // local y north -> world -z flips the winding; restore counter-clockwise for the roof triangulation
       ring.reverse();
-      M.addBuilding(out, ring, base, b.h, walls[bi % walls.length], roofs[bi % roofs.length], b.roof || b.h > 12);
+      // Roof: the shape OpenStreetMap records where it has one (tools/enrich_osm.py); otherwise a gabled roof on
+      // chalet-sized buildings and the old rule (flat when tall or tagged) on the rest. Pitched roofs carry snow.
+      const tag = b.roofShape || '';
+      const shape = tag === 'flat' ? 'flat' : /gabled|gambrel|saltbox|round|mansard/.test(tag) ? 'gabled'
+        : /hipped|pyramidal|dome|onion|cone/.test(tag) ? 'hipped' : tag ? 'gabled'
+        : (b.roof || b.h > 12) ? 'flat' : area < 900 ? 'gabled' : 'hipped';
+      const h = b.levels ? Math.max(b.h, b.levels * 3) : b.h;   // about 3 m a storey
+      const wall = b.wallCol ? new THREE.Color(b.wallCol) : walls[bi % walls.length];
+      const roof = (b.roofCol ? new THREE.Color(b.roofCol) : roofs[bi % roofs.length].clone()).lerp(snow, shape === 'flat' ? 0.35 : 0.7);
+      M.addBuilding(out, ring, base, h, wall, roof, shape);
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(out.pos, 3));
@@ -939,7 +962,7 @@ vec3 groundColour() {
     const q = this.pathPoint(path, path.L * Math.min(1, Math.max(0, lift.frac)), path.rail || kind === 'carpet' ? 0 : lift.down ? -path.r : path.r);
     // chair: seated in a chair; gondola / cable car: a cabin; train / funicular: a rail car;
     // T-bar, platter, rope tow: standing on the snow holding on; carpet: just standing
-    const ride = path.rail ? kind : kind === 'surface' ? 'tow-' + (path.l.style || 'tbar') : kind === 'carpet' ? '' : path.carrier === 'chair' ? 'chair' : 'cabin';
+    const ride = path.rail ? kind : kind === 'surface' ? 'tow-' + (path.l.style || 'tbar') : kind === 'carpet' ? '' : path.chair ? 'chair' : 'cabin';
     const ground = this.groundY(q.pos.x, q.pos.z);
     if (path.rail) q.pos.y = Math.max(q.pos.y, ground + 0.45) + 0.5;      // in a tunnel: shown on the surface above
     else if (low) q.pos.y = ground + 0.4;
