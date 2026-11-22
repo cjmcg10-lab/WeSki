@@ -591,6 +591,7 @@ export function onClick(b) {
   switch (d.act) {
     case 'fc-home': {
       const first = d.first;
+      fc.editRows = [];
       if (first) fc.flash = { id: first, isNew: true };
       fc.added = [];
       if (!first && host.sheet() === 'fctrip') focusSel('[data-act="fc-trip"]');

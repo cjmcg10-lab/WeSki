@@ -56,6 +56,12 @@ describe('summarising a mountain for a trip', () => {
     expect(s.weakest.date).toBe(DATES[0]);
   });
 
+  it('gives every scored day in the list its rounded number, which the trip cards print', () => {
+    const s = summarize(forecast([day(DATES[0], 60.4), closed(DATES[1])]), DATES.slice(0, 2));
+    expect(s.days[0]).toMatchObject({ kind: 'scored', shown: 60 });
+    expect(s.days[1].shown).toBeUndefined();
+  });
+
   it('leaves closed and missing days out of coverage and the average', () => {
     const s = summarize(forecast([day(DATES[0], 90), closed(DATES[1]), insufficient(DATES[2]), day(DATES[3], 70)]), DATES);
     expect(s).toMatchObject({ covered: 2, total: 4, closed: 1, average: 80, allClosed: false });

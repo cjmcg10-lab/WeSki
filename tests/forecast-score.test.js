@@ -498,6 +498,11 @@ describe('review fixes', () => {
     expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
   });
 
+  it('wet base under a cold dry summit is rain at the base, not rain across the whole mountain', () => {
+    const d = only(makeWeather(dateOnly, () => ({ t: -13, code: 3 }), () => ({ t: 1, snow: 0.1, code: 68 })));
+    expect(d.explain.code).toBe('EX_RAIN_AT_BASE');
+  });
+
   it('warm days are not called comfortable and not called cold', () => {
     expect(factorCode('comfort', -3, { rain: 0, snow: 0, feels: 8 })).toBe('F_TOO_WARM');
     expect(factorCode('comfort', -3, { rain: 0, snow: 0, feels: -20 })).toBe('F_COLD');
