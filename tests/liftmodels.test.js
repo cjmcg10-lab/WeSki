@@ -116,3 +116,60 @@ describe('buildings', () => {
     expect(M.windowGlow(26)).toBe(1);
   });
 });
+
+describe('riders in the lift\'s own carriers', () => {
+  const people = (n) => Array.from({ length: n }, (_, i) => ({ avatar: i % 2 ? 'girl-board' : 'boy-ski', color: ['#1e88e5', '#e53935', '#43a047', '#fb8c00', '#8e24aa', '#00acc1'][i % 6] }));
+  const colours = (g) => {
+    const set = new Set(), c = g.attributes.color;
+    for (let i = 0; i < c.count; i++) set.add(new THREE.Color(c.getX(i), c.getY(i), c.getZ(i)).getHexString());
+    return set;
+  };
+
+  it('a chair: the lift\'s own chair (seat count, bubble), one figure per rider, seat backs in their colours', () => {
+    const g = M.makeRide('chair', people(4), { seats: 6, bubble: true });
+    expect(g.userData.avs).toHaveLength(4);
+    const chair = g.children.find((m) => m.isMesh && m.geometry.userData.shared && m.geometry.attributes.color);
+    // the same geometry the map's near chairs use
+    expect(tris(chair.geometry)).toBe(tris(M.chairGeometry(6, true)));
+    expect(chair.position.y).toBeCloseTo(M.RIDE_FIT.chair.hang);
+    // riders sit side by side, in the middle seats, all on the seat (y = 0.07 - 0.79)
+    const xs = g.userData.avs.map((a) => a.position.x);
+    expect(Math.abs(xs[0] + xs[3])).toBeLessThan(1e-9);
+    for (let i = 1; i < 4; i++) expect(xs[i] - xs[i - 1]).toBeCloseTo(0.55);
+    // more people than seats: only the seats are filled
+    expect(M.makeRide('chair', people(6), { seats: 4 }).userData.avs).toHaveLength(4);
+  });
+
+  it('a shared gondola cabin: body panels in each rider\'s colour; alone, the body takes the rider\'s colour', () => {
+    const shared = colours(M.gondolaGeometry(['#1e88e5', '#e53935', '#43a047']));
+    for (const h of ['1e88e5', 'e53935', '43a047']) expect([...shared].some((c) => c === new THREE.Color('#' + h).getHexString())).toBe(true);
+    const alone = colours(M.gondolaGeometry('#e53935'));
+    expect(alone.has(new THREE.Color('#e53935').getHexString())).toBe(true);
+    expect(alone.has(new THREE.Color('#1e88e5').getHexString())).toBe(false);
+    const g = M.makeRide('cabin', people(6));
+    expect(g.userData.avs).toHaveLength(6);
+    // four on the back bench facing forward, two on the front bench facing them
+    expect(g.userData.avs.filter((a) => a.position.z < 0)).toHaveLength(4);
+    expect(g.userData.avs.filter((a) => a.position.z > 0 && Math.abs(a.rotation.y - Math.PI) < 1e-9)).toHaveLength(2);
+  });
+
+  it('trams, trains and surface lifts', () => {
+    expect(M.makeRide('tram', people(5)).userData.avs).toHaveLength(5);
+    expect(M.makeRide('funicular', people(3)).userData.avs).toHaveLength(3);
+    expect(M.makeRide('tow-tbar', people(2)).userData.avs).toHaveLength(2);
+    expect(M.makeRide('tow-platter', people(2)).userData.avs).toHaveLength(1);
+    // the old call form still works (one rider)
+    expect(M.makeRide('chair', 'boy-ski', '#1e88e5').userData.avs).toHaveLength(1);
+    // up close a rider's carrier is drawn at the size of the lift's own carriers
+    expect(M.rideFit('chair').s0).toBe(1.6);
+    expect(M.rideFit('tow-rope')).toBe(M.RIDE_FIT.tow);
+  });
+
+  it('disposing a rider\'s carrier never frees the shared chair shape', () => {
+    const a = M.makeRide('chair', people(2), { seats: 4 }), b = M.makeRide('chair', people(1), { seats: 4 });
+    const shape = a.children.find((m) => m.isMesh && m.geometry.userData.shared).geometry;
+    M.disposeModel(a);
+    expect(b.children.find((m) => m.isMesh && m.geometry.userData.shared).geometry).toBe(shape);
+    expect(shape.attributes.position.count).toBeGreaterThan(0);
+  });
+});

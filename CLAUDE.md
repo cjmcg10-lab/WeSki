@@ -101,7 +101,10 @@ blocks on any listed chair or gondola missing from the map. Palisades had lost i
 Silver Creek area before this. The search never crosses into a neighbour: it passes a lift outside the outline only
 when the lift is on the resort's list. `tools/whole_check.py <ids>` checks built maps without rebuilding (run on all
 50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). Lift lists were added to 35
-more official jsons on 2026-11-22 (#79); still without one: Zermatt, Pizol, Magic Mountain and the five big French resorts (#59).
+more official jsons on 2026-11-22 (#79) and to the last eight on 2026-11-23 (#59: Zermatt, Pizol, Magic Mountain, Les
+Contamines, La Plagne, Les Arcs, Tignes – Val d'Isère, Val Thorens), so every official json now has one. That check found
+Tignes – Val d'Isère's two underground funiculars (Funival, Perce-Neige) missing: OSM tags them `railway=funicular`,
+which the build only takes from the config's `extra_lifts` (as Zermatt's Sunnegga Express and Les Arcs' Express).
 See "Getting the whole resort" in `docs/ADDING_MOUNTAINS.md`.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
@@ -307,7 +310,11 @@ Start screen (owner's mock-up, 2026-11-17; title and pull-up changed 2026-11-23,
 "SkiWithMe" in Bowlby One (self-hosted in `public/fonts`, licence on the credits page; the owner chose it over Lilita One
 and Kanit) with the slogan in spaced capitals. The "Find your mountain" panel has three positions (full screen, normal,
 shrunk) dragged by its bar or tapped (`startState`, `dragStops` in `src/drag.js`); full screen hides the globe, title and
-backdrop and pauses the globe. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
+backdrop and pauses the globe. Tapping the search jumps the panel to full screen at once (no glide, so iOS measures the
+field at the top before scrolling for the keyboard), keeps the page unscrolled, and while the keyboard is up pins the panel
+to `visualViewport` (`fitStartToKeyboard`, `.kb`; #100). Picking a mountain downloads it during the globe's turn but builds
+its 3D map only once the globe arrives, Ski Here is tapped or 4 s pass (`holdMapBuild` in `src/main.js`; the build froze the
+turn). `tests/smoke/start.mjs` (part of `npm run smoke`) checks both with an imitated keyboard. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
 (`.start-sky` in `index.html`, drawn in front of the globe and kept while zoomed to a resort; it fades when the dive into
 the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
 Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted
@@ -619,4 +626,5 @@ phones.
    at 60 fps by default ("120 fps motion" in More). Awaiting their retest. The speed work of 2026-11-23 (#88, see
    `docs/PERFORMANCE_PLAN.md` "Built") cut the drawing per frame to a fifth to a third: simpler run lines, ground in
    chunks with distance detail and off-screen culling, lift detail by distance, softer picture while moving, fewer idle
-   redraws, ground set-up in a worker, "Smooth edges" switch. Not yet measured on a phone.
+   redraws, ground set-up in a worker, "Smooth edges" switch (on by default again since 2026-11-23, owner's request).
+   Not yet measured on a phone.

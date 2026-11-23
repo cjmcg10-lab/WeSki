@@ -2150,10 +2150,10 @@
   "top": 3454,
   "base": 1559,
   "trails": 182,
-  "lifts": 78,
+  "lifts": 80,
   "zones": true,
-  "bytes": 3157414,
-  "checked": true
+   "bytes": 3285418,
+   "checked": true
  },
  {
   "id": "vail",
