@@ -51,6 +51,32 @@ red gondolas, red and green tram cabins, orange bubbles, light walls.
    which nothing moved is not drawn at all (before, any view closer than 7.5 km was redrawn about 20
    times a second, whether or not a lift was in view).
 
+## Measured (2026-11-23, desktop Chromium with a software GPU, phone-sized window)
+
+Draw calls and triangles come from three.js's own counters (`renderer.info`) for one frame.
+
+| View | Draw calls before → after | Triangles before → after |
+| --- | --- | --- |
+| Jay Peak, opening view | 45 → 34 | 384,679 → 387,453 |
+| Jay Peak, at a chairlift station | 30 → 32 | 383,287 → 394,149 |
+| Vail, opening view | 74 → 37 | 1,561,555 → 1,573,650 |
+| Vail, at the Gondola One station | 33 → 36 | 1,556,191 → 1,577,718 |
+| Zermatt, opening view | 69 → 53 | 2,075,487 → 2,103,671 |
+| Zermatt, above the village | 48 → 52 | 2,075,963 → 2,107,359 |
+| Park City, opening view | 75 → 39 | 1,708,173 → 1,729,314 |
+| Park City, at a chairlift station | 35 → 38 | 1,704,089 → 1,737,906 |
+
+Close to lifts a frame costs 2 to 4 more draw calls (detailed chairs, cabins, bubbles) and 1 to 3 % more
+triangles; from further out it costs far fewer draw calls. Processor time to move every carrier once
+(`animateLifts`, average of 400 runs, same machine for both): Vail 0.55 → 0.17 ms next to a lift and
+0.41 → 0.16 ms at 2.5 km, Park City 0.23 → 0.05 and 0.35 → 0.09 ms, Zermatt 0.29 → 0.06 and 0.28 → 0.10 ms,
+even though detachable lifts now carry more chairs (Vail 2,142 → 2,802 carriers). Redraws a second while the
+map is left alone (drawing itself switched off so the slow software GPU does not limit the count): Vail at
+150 m 22 → 22, at 2.5 km 22.5 → 11.5, at 6 km 22.5 → 7.8; Jay Peak 21 → 20, 21 → 10.5, 21 → 8.8; the opening
+views (9 to 13 km out) 2 → 2. Whole-frame times on the software GPU were about the same before and after
+(for example Vail's opening view 4.4 s and 4.5 s a frame) and say nothing about a phone's GPU. Not measured
+on a real phone.
+
 ## Not done (weighed and left out)
 
 - Bubble opening and closing as the chair leaves the station (it switches at the bullwheel).
