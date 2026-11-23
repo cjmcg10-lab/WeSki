@@ -122,7 +122,11 @@ try {
   // More: offline card, download needs the pass, weather stays free
   await page.locator('[data-act="tab"][data-tab="more"]').click();
   await page.locator('#sheet [data-act="download"]').waitFor({ state: 'visible', timeout: 10000 });
-  await page.locator('#sheet [data-act="download"]').scrollIntoViewIfNeeded();
+  // More redraws once the phone reports its storage use, which can replace the button mid-scroll: try again then
+  for (let i = 0; ; i++) {
+    try { await page.locator('#sheet [data-act="download"]').scrollIntoViewIfNeeded({ timeout: 5000 }); break; }
+    catch (e) { if (i >= 4 || !/not attached/.test(String(e))) throw e; await page.waitForTimeout(300); }
+  }
   await shot('more-offline');
   await page.locator('#sheet [data-act="download"]').click();
   await expectUpsell('Download mountains for offline', 'more-offline-upsell');
