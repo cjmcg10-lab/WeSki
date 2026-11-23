@@ -11,5 +11,138 @@
   37.8756,
   -107.8044,
   37.948
- ]
+ ],
+ "links": [
+  [
+   "trail:Gold Hill 10",
+   "trail:Senior's",
+   "hike"
+  ],
+  [
+   "trail:Gold Hill 10",
+   "trail:Roy Boy",
+   "hike"
+  ],
+  [
+   "trail:Gold Hill 10",
+   "trail:Tram Shot",
+   "hike"
+  ],
+  [
+   "trail:Gold Hill 10",
+   "trail:Sunrise",
+   "hike"
+  ],
+  [
+   "trail:Confidence (bottom)",
+   "trail:Sandia"
+  ],
+  [
+   "trail:Crystal (bottom)",
+   "trail:Sandia"
+  ],
+  [
+   "trail:La Rosa (bottom)",
+   "trail:Sandia"
+  ],
+  [
+   "trail:Gold Hill 1 (bottom)",
+   "trail:Little Rose"
+  ],
+  [
+   "trail:Gold Hill 2 (bottom)",
+   "trail:Little Rose"
+  ],
+  [
+   "trail:The Fans (bottom)",
+   "trail:Little Rose"
+  ],
+  [
+   "trail:Genevieve (bottom)",
+   "trail:Crystal"
+  ],
+  [
+   "trail:Westlake (bottom)",
+   "trail:La Rosa"
+  ],
+  [
+   "trail:Dihedral Chute (bottom)",
+   "trail:Crystal"
+  ],
+  [
+   "trail:Pee-Wee's Big Adventure (bottom)",
+   "trail:Crystal"
+  ],
+  [
+   "trail:Mountain Quail (bottom)",
+   "trail:Crystal"
+  ],
+  [
+   "trail:Jello's Bowl (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Review (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Nice Chute (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Way Easy (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Palmyra Basin (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Capitol (bottom)",
+   "trail:Crystal"
+  ],
+  [
+   "trail:Sweet Martha (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Zipper Rock (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Snowslide Cabin (bottom)",
+   "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Gold Hill 6 (bottom)",
+   "trail:Gold Hill 2"
+  ]
+ ],
+ "links_notes": {
+  "trail:Gold Hill 10 -> trail:Senior's (hike)": "2026-11-23: Palmyra Peak hike-to run; no lift reaches its top. The terrain from the top of Gold Hill 10 climbs 54-111 m to it (the hike)",
+  "trail:Gold Hill 10 -> trail:Roy Boy (hike)": "2026-11-23: Palmyra Peak hike-to run; no lift reaches its top. The terrain from the top of Gold Hill 10 climbs 54-111 m to it (the hike)",
+  "trail:Gold Hill 10 -> trail:Tram Shot (hike)": "2026-11-23: Palmyra Peak hike-to run; no lift reaches its top. The terrain from the top of Gold Hill 10 climbs 54-111 m to it (the hike)",
+  "trail:Gold Hill 10 -> trail:Sunrise (hike)": "2026-11-23: Palmyra Peak hike-to run; no lift reaches its top. The terrain from the top of Gold Hill 10 climbs 54-111 m to it (the hike)",
+  "trail:Confidence (bottom) -> trail:Sandia": "2026-11-23: the run stops short; the terrain falls from its end to Sandia (96 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Crystal (bottom) -> trail:Sandia": "2026-11-23: the run stops short; the terrain falls from its end to Sandia (157 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:La Rosa (bottom) -> trail:Sandia": "2026-11-23: the run stops short; the terrain falls from its end to Sandia (247 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Gold Hill 1 (bottom) -> trail:Little Rose": "2026-11-23: the run stops short; the terrain falls from its end to Little Rose (214 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Gold Hill 2 (bottom) -> trail:Little Rose": "2026-11-23: the run stops short; the terrain falls from its end to Little Rose (152 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:The Fans (bottom) -> trail:Little Rose": "2026-11-23: the run stops short; the terrain falls from its end to Little Rose (203 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Genevieve (bottom) -> trail:Crystal": "2026-11-23: the run stops short; the terrain falls from its end to Crystal (113 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Westlake (bottom) -> trail:La Rosa": "2026-11-23: the run stops short; the terrain falls from its end to La Rosa (175 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Dihedral Chute (bottom) -> trail:Crystal": "2026-11-23: the run stops short; the terrain falls from its end to Crystal (584 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Pee-Wee's Big Adventure (bottom) -> trail:Crystal": "2026-11-23: the run stops short; the terrain falls from its end to Crystal (590 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Mountain Quail (bottom) -> trail:Crystal": "2026-11-23: the run stops short; the terrain falls from its end to Crystal (604 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Jello's Bowl (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (486 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Review (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (777 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Nice Chute (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (685 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Way Easy (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (652 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Palmyra Basin (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (283 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Capitol (bottom) -> trail:Crystal": "2026-11-23: the run stops short; the terrain falls from its end to Crystal (703 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Sweet Martha (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (533 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Zipper Rock (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (385 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Snowslide Cabin (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (512 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Gold Hill 6 (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (714 m, 0 m of climb) (tools/check_connections.py dead end)"
+ }
 }

@@ -21,6 +21,13 @@
   [
    "trail:Aggie's Alley",
    "trail:Westward Ho"
+  ],
+  [
+   "trail:The Back Door (bottom)",
+   "trail:Who Dunnit"
   ]
- ]
+ ],
+ "links_notes": {
+  "trail:The Back Door (bottom) -> trail:Who Dunnit": "2026-11-23: the run stops short; the terrain falls from its end to Who Dunnit (84 m, 0 m of climb) (tools/check_connections.py dead end)"
+ }
 }

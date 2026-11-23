@@ -36,7 +36,45 @@
    "Kensho SuperChair (top)",
    "trail:Breathless",
    "hike"
+  ],
+  [
+   "trail:Debbie's Alley (bottom)",
+   "trail:y chute"
+  ],
+  [
+   "trail:Boundary Chutes (bottom)",
+   "trail:y chute"
+  ],
+  [
+   "trail:Snow White (bottom)",
+   "trail:Quandary"
+  ],
+  [
+   "trail:Way Out (bottom)",
+   "trail:Quandary"
+  ],
+  [
+   "trail:Vertigo (bottom)",
+   "trail:y chute"
+  ],
+  [
+   "trail:Double Barrel (bottom)",
+   "trail:Quandary"
   ]
  ],
- "links_note": "Breathless is hike-to terrain above the Kensho SuperChair."
+ "links_note": "Breathless is hike-to terrain above the Kensho SuperChair.",
+ "way_names": {
+  "128932723": "Middle 4 O'Clock"
+ },
+ "way_names_notes": {
+  "128932723": "2026-11-23: OpenStreetMap renamed this way to plain \"4 O'Clock\"; the resort's list and our slow zone call it Middle 4 O'Clock"
+ },
+ "links_notes": {
+  "trail:Debbie's Alley (bottom) -> trail:y chute": "2026-11-23: the run stops short; the terrain falls from its end to y chute (70 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Boundary Chutes (bottom) -> trail:y chute": "2026-11-23: the run stops short; the terrain falls from its end to y chute (98 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Snow White (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (486 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Way Out (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (175 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Vertigo (bottom) -> trail:y chute": "2026-11-23: the run stops short; the terrain falls from its end to y chute (84 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Double Barrel (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (248 m, 0 m of climb) (tools/check_connections.py dead end)"
+ }
 }

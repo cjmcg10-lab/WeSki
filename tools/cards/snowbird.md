@@ -1,6 +1,6 @@
 # Snowbird (snowbird)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **250 runs (207 named, 115.0 km), 14 lifts. 3 things to look at.**
 
@@ -15,7 +15,7 @@ Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 1 run pieces hidden (not on the resort's list and not a link)  
   (no name) (1038897159, 143 m): OpenStreetMap: backcountry, no name (not a resort run)
 - info: audit: dead end: 2, flat black: 8, no rating: 8, run climbs: 3
-- info: change from the previous build: runs 242 -> 250, named 201 -> 207, km 110.4 -> 115.0
+- info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   173 on the list, 291 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 12 of 12 on the map

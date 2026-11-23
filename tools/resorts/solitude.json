@@ -22,5 +22,14 @@
   "Headwall Forrest": "Headwall Forest",
   "Postcard": "Post Card",
   "Wood Lawn": "Woodlawn"
+ },
+ "links": [
+  [
+   "trail:Honeycomb Chutes (bottom)",
+   "trail:Voltaire"
+  ]
+ ],
+ "links_notes": {
+  "trail:Honeycomb Chutes (bottom) -> trail:Voltaire": "2026-11-23: run stops short; terrain falls straight to Voltaire in Honeycomb Canyon (40-79 m, no climb)"
  }
 }

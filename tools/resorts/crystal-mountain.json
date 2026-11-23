@@ -34,6 +34,33 @@
    "Chair 6 (top)",
    "trail:Silver Basin",
    "hike"
+  ],
+  [
+   "trail:Greg's Gulch (bottom)",
+   "trail:Upper Arwine's"
+  ],
+  [
+   "trail:Memorial Forest (bottom)",
+   "trail:Upper Arwine's"
+  ],
+  [
+   "trail:Double Ought's Left (bottom)",
+   "trail:Downhill"
+  ],
+  [
+   "trail:Rabbit Ears (bottom)",
+   "trail:Downhill"
+  ],
+  [
+   "trail:Chairline Left (bottom)",
+   "trail:Double Ought's Right"
   ]
- ]
+ ],
+ "links_notes": {
+  "trail:Greg's Gulch (bottom) -> trail:Upper Arwine's": "2026-11-23: run stops short; terrain falls straight to Upper Arwine's (62 m, no climb)",
+  "trail:Memorial Forest (bottom) -> trail:Upper Arwine's": "2026-11-23: run stops short; terrain falls straight to Upper Arwine's (118 m)",
+  "trail:Double Ought's Left (bottom) -> trail:Downhill": "2026-11-23: run stops short; terrain falls straight to Downhill (127 m)",
+  "trail:Rabbit Ears (bottom) -> trail:Downhill": "2026-11-23: run stops short; terrain falls straight to Downhill (214 m)",
+  "trail:Chairline Left (bottom) -> trail:Double Ought's Right": "2026-11-23: run stops short; terrain falls straight to Double Ought's Right (231 m)"
+ }
 }

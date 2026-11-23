@@ -101,7 +101,39 @@
    "trail:Shadow Chute",
    "trail:Jelly Roll",
    "hike"
+  ],
+  [
+   "trail:Hole-In-The-Wall (bottom)",
+   "trail:Derailer"
+  ],
+  [
+   "trail:Awe Chute (bottom)",
+   "trail:Derailer"
+  ],
+  [
+   "trail:Key Hole (bottom)",
+   "trail:Runaway"
+  ],
+  [
+   "trail:Better Not (bottom)",
+   "trail:Derailer"
+  ],
+  [
+   "trail:Baldys Chute (bottom)",
+   "trail:Derailer"
+  ],
+  [
+   "trail:Jeffs Chute (bottom)",
+   "trail:Derailer"
   ]
  ],
- "links_note": "Jelly Roll is reached by hiking north along the Vasquez Cirque ridge."
+ "links_note": "Jelly Roll is reached by hiking north along the Vasquez Cirque ridge.",
+ "links_notes": {
+  "trail:Hole-In-The-Wall (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (143 m, no climb)",
+  "trail:Awe Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (124 m, no climb)",
+  "trail:Key Hole (bottom) -> trail:Runaway": "2026-11-23: chute ends in the cirque; terrain falls straight to Runaway (147 m, no climb)",
+  "trail:Better Not (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (153 m, no climb)",
+  "trail:Baldys Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (104 m, no climb)",
+  "trail:Jeffs Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (84 m, no climb)"
+ }
 }

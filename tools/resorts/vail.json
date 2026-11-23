@@ -24,7 +24,10 @@
   "Chopstix": "Gillett's Dream"
  },
  "way_names": {
-  "1564018110": "Lodgepole Gulch"
+  "1564018110": "Lodgepole Gulch",
+  "190613827": "Ledges - Upper",
+  "190613830": "Ledges - Lower",
+  "1561881391": "Silk Road"
  },
  "split_ways": {
   "191569240": [
@@ -52,5 +55,10 @@
    "len": 266,
    "why": "naip photo: drawn 19.6 m beside the cut run"
   }
+ },
+ "way_names_notes": {
+  "190613827": "2026-11-23: OpenStreetMap renamed this way; kept as 'Ledges - Upper', the name the resort's list matches",
+  "190613830": "2026-11-23: OpenStreetMap renamed this way; kept as 'Ledges - Lower', the name the resort's list matches",
+  "1561881391": "2026-11-23: OpenStreetMap renamed this way; kept as 'Silk Road', the name the resort's list matches"
  }
 }

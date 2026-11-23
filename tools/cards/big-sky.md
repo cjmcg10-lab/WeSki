@@ -1,6 +1,6 @@
 # Big Sky (big-sky)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **513 runs (324 named, 261.7 km), 40 lifts. 4 things to look at.**
 
@@ -13,12 +13,12 @@ Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
 - **LOOK**: 1 runs climb more than 12 m  
   Headwaters Hiking Area 20 m
 - info: 21 joins made automatically (look at the longest ones on the map)  
-  Upper A-Z Chutes top ski 257 m; Diamond Hitch top ski 139 m; Gambler top ski 47 m; Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Whitetail top ski 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top walk 73 m; Dodgeball top ski 86 m; Dodgeball bottom ski 56 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Papa Bear top ski 149 m; None bottom walk 176 m; None top walk 210 m; Three Forks ski 54 m; Rock Creek ski 78 m; Yellow Hammer ski 39 m; unnamed#403 ski 2 m; unnamed#415 ski 11 m
+  Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Upper A-Z Chutes top ski 257 m; Whitetail top ski 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top walk 73 m; Gambler top ski 47 m; Dodgeball top ski 86 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Diamond Hitch top ski 139 m; None bottom walk 176 m; Dodgeball bottom ski 56 m; None top walk 210 m; Papa Bear top ski 149 m; Three Forks ski 54 m; Rock Creek ski 78 m; Yellow Hammer ski 39 m; unnamed#461 ski 2 m; unnamed#481 ski 11 m
 - info: 2 run pieces hidden (not on the resort's list and not a link)  
   (no name) (1461961711, 489 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1462084327, 57 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 9 lifts flagged for review were already on the previous build (checked then)
 - info: audit: dead end: 2, flat black: 2, no rating: 2, run climbs: 1
-- info: change from the previous build: runs 507 -> 513, named 320 -> 324, km 255.0 -> 261.7
+- info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   284 on the list, 431 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 39 of 39 on the map

@@ -8,8 +8,9 @@ usage: python3 tools/pipeline.py <id> [<id> ...] [options]
   --terrain         download the terrain again (default for an existing resort: rebuild it from the built map)
   --checks-only     skip the build, only run the checks and write the score card
   --no-index        do not rebuild index.json and globe at the end
-  --r2              keep this resort's map files in Cloudflare R2 rather than git (tools/maps_r2.mjs push);
-                    a resort already listed in public/data/r2.json is downloaded first and uploaded again after
+  --r2              upload the built map to Cloudflare R2 (tools/maps_r2.mjs push): this puts it on the LIVE site.
+                    Without it nothing is uploaded, even for a resort already in R2 (it is only downloaded first
+                    if missing); for a preview use tools/preview/deploy.mjs instead
 
 Steps, in the order docs/MOUNTAIN_CHECKLIST.md asks for:
   1. OpenStreetMap extract for the config's osm_bbox (tools/dev/osmget.py)
@@ -272,7 +273,9 @@ def terrain(rid, cfg, bbox, out, opt, log):
         return "reused from the work folder"
     built = os.path.exists(f"{ROOT}/public/data/{rid}/resort.json")
     if built and not opt["terrain"]:
-        run([PY, "tools/dem_from_built.py", f"public/data/{rid}", out], log)
+        d = cfg.get("dem")
+        epsg = [str(d["epsg"])] if isinstance(d, dict) and d.get("epsg") else []  # else found from the grid
+        run([PY, "tools/dem_from_built.py", f"public/data/{rid}", out, *epsg], log)
         return "rebuilt from the existing map (no download)"
     b = pad(bbox, 1500)  # build_data adds its own margin around everything in the extract
     if is_usa(cfg) and not cfg.get("dem"):
@@ -482,7 +485,17 @@ def one(rid, opt):
 
     if not opt["checks_only"]:
         cfg_path = f"tools/resorts/{rid}.json"
-        logs["build_data"] = run([PY, "tools/build_data.py", cfg_path, osm, f"public/data/{rid}", dem], log)
+        try:
+            logs["build_data"] = run([PY, "tools/build_data.py", cfg_path, osm, f"public/data/{rid}", dem], log)
+        except StepFailed as e:
+            # the new OpenStreetMap data reaches past the built map (a run or lift added or extended), so the
+            # terrain rebuilt from the old map has holes: download the terrain for the new extent and try again
+            if "DEM has holes" not in str(e) or opt["terrain"] or tnote.startswith("reused"):
+                raise
+            notes.append("the map reaches past the old build: terrain downloaded again for the larger extent")
+            os.remove(dem)
+            tnote = terrain(rid, cfg, bbox, dem, {**opt, "terrain": True}, log)
+            logs["build_data"] = run([PY, "tools/build_data.py", cfg_path, osm, f"public/data/{rid}", dem], log)
         run([PY, "tools/build_extras.py", f"public/data/{rid}"], log)
         run([PY, "tools/build_zones.py", cfg_path, osm, f"public/data/{rid}"], log)
         logs["verify"] = run([PY, "tools/verify_exists.py", rid, osm, "--list"], log)
@@ -506,7 +519,8 @@ def one(rid, opt):
     except Exception:
         pass
     result = card(rid, cfg, logs, before, tnote, notes)
-    if (in_r2 or opt["r2"]) and not opt["checks_only"]:
+    # uploading to R2 puts the map on the LIVE site: only when asked for with --r2, never by default
+    if opt["r2"] and not opt["checks_only"]:
         run(["node", "tools/maps_r2.mjs", "push", rid], log)
     return result
 

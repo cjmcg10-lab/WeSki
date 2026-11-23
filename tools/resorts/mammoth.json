@@ -315,5 +315,104 @@
    "len": 274,
    "why": "naip photo: drawn 55.3 m beside the cut run"
   }
+ },
+ "links": [
+  [
+   "trail:Rooster Tail (bottom)",
+   "trail:Dry Creek"
+  ],
+  [
+   "trail:Climax (bottom)",
+   "trail:Upper Dry Creek"
+  ],
+  [
+   "trail:Wipeout Chutes (bottom)",
+   "trail:St. Anton"
+  ],
+  [
+   "trail:Wipeout Chutes (bottom)",
+   "trail:The Hump"
+  ],
+  [
+   "trail:Sign Line (bottom)",
+   "trail:Upper Dry Creek"
+  ],
+  [
+   "trail:Patrolmens (bottom)",
+   "trail:Knee Deep"
+  ],
+  [
+   "trail:Easy Over (bottom)",
+   "trail:Knee Deep"
+  ],
+  [
+   "trail:Lodgepole (bottom)",
+   "trail:Comin' Thru"
+  ],
+  [
+   "trail:Bristlecone (bottom)",
+   "trail:Comin' Thru"
+  ],
+  [
+   "trail:Spring Canyon (bottom)",
+   "trail:Ginger Bread"
+  ],
+  [
+   "trail:Round Robin (bottom)",
+   "trail:Ginger Bread"
+  ],
+  [
+   "trail:White Bark Bowl (bottom)",
+   "trail:Comin' Thru"
+  ],
+  [
+   "trail:Paranoid Flats (bottom)",
+   "trail:St. Anton"
+  ],
+  [
+   "trail:Paranoid Chutes (bottom)",
+   "trail:White Bark Bowl"
+  ],
+  [
+   "trail:Monument (bottom)",
+   "trail:The Hump"
+  ],
+  [
+   "trail:Paranoid Chutes (bottom)",
+   "trail:Philippes"
+  ],
+  [
+   "trail:Spring Canyon (bottom)",
+   "Canyon Express (base)"
+  ],
+  [
+   "trail:Round Robin (bottom)",
+   "Canyon Express (base)"
+  ],
+  [
+   "trail:Ginger Bread (bottom)",
+   "Canyon Express (base)"
+  ]
+ ],
+ "links_notes": {
+  "trail:Rooster Tail (bottom) -> trail:Dry Creek": "2026-11-23: the run stops short; the terrain falls from its end to Dry Creek (93 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Climax (bottom) -> trail:Upper Dry Creek": "2026-11-23: the run stops short; the terrain falls from its end to Upper Dry Creek (73 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Wipeout Chutes (bottom) -> trail:St. Anton": "2026-11-23: the run stops short; the terrain falls from its end to St. Anton (139 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Wipeout Chutes (bottom) -> trail:The Hump": "2026-11-23: the run stops short; the terrain falls from its end to The Hump (101 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Sign Line (bottom) -> trail:Upper Dry Creek": "2026-11-23: the run stops short; the terrain falls from its end to Upper Dry Creek (126 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Patrolmens (bottom) -> trail:Knee Deep": "2026-11-23: the run stops short; the terrain falls from its end to Knee Deep (146 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Easy Over (bottom) -> trail:Knee Deep": "2026-11-23: the run stops short; the terrain falls from its end to Knee Deep (140 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Lodgepole (bottom) -> trail:Comin' Thru": "2026-11-23: the run stops short; the terrain falls from its end to Comin' Thru (79 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Bristlecone (bottom) -> trail:Comin' Thru": "2026-11-23: the run stops short; the terrain falls from its end to Comin' Thru (59 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Spring Canyon (bottom) -> trail:Ginger Bread": "2026-11-23: the run stops short; the terrain falls from its end to Ginger Bread (96 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Round Robin (bottom) -> trail:Ginger Bread": "2026-11-23: the run stops short; the terrain falls from its end to Ginger Bread (98 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:White Bark Bowl (bottom) -> trail:Comin' Thru": "2026-11-23: the run stops short; the terrain falls from its end to Comin' Thru (181 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Paranoid Flats (bottom) -> trail:St. Anton": "2026-11-23: the run stops short; the terrain falls from its end to St. Anton (211 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Paranoid Chutes (bottom) -> trail:White Bark Bowl": "2026-11-23: the run stops short; the terrain falls from its end to White Bark Bowl (252 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Monument (bottom) -> trail:The Hump": "2026-11-23: the run stops short; the terrain falls from its end to The Hump (194 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Paranoid Chutes (bottom) -> trail:Philippes": "2026-11-23: the run stops short; the terrain falls from its end to Philippes (113 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Spring Canyon (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base",
+  "trail:Round Robin (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base",
+  "trail:Ginger Bread (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base"
  }
 }

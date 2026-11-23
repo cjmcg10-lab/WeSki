@@ -1,6 +1,6 @@
 # Pizol (pizol)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: swiss.
+Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
 
 **85 runs (39 named, 41.6 km), 14 lifts. 2 things to look at.**
 

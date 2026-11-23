@@ -41,5 +41,8 @@
    ],
    "rail": true
   }
- ]
+ ],
+ "dem": {
+  "source": "ign"
+ }
 }

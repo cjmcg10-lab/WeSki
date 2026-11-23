@@ -1,6 +1,6 @@
 # Val Thorens (val-thorens)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
 
 **247 runs (105 named, 155.6 km), 33 lifts. 3 things to look at.**
 
@@ -11,7 +11,7 @@ Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
 - **LOOK**: 2 runs climb more than 12 m  
   Caron-Lac du Lou 17 m; Plein Sud 15 m
 - info: 13 joins made automatically (look at the longest ones on the map)  
-  Caron-Lac du Lou bottom ski 64 m; None top ski 57 m; Bleuets top ski 52 m; Bleuets bottom ski 52 m; None bottom ski 56 m; Access UCPA top ski 54 m; None top ski 144 m; None bottom ski 49 m; None bottom ski 97 m; None top ski 56 m; Paturages bottom walk 211 m; Paturages top ski 92 m; Mont de la Chambre ski 15 m
+  Caron-Lac du Lou bottom ski 64 m; Access UCPA top ski 54 m; None bottom ski 97 m; Paturages bottom walk 211 m; Paturages top ski 92 m; Bleuets bottom ski 52 m; None bottom ski 56 m; None top ski 57 m; None top ski 144 m; None bottom ski 49 m; None top ski 56 m; Bleuets top ski 52 m; Mont de la Chambre ski 15 m
 - info: 5 run pieces hidden (not on the resort's list and not a link)  
   (no name) (142388485, 122 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (564223843, 82 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (564354799, 56 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1190167563, 46 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (108020383, 40 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 5 lifts flagged for review were already on the previous build (checked then)

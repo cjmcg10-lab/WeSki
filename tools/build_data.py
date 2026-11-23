@@ -608,8 +608,11 @@ def main():
                 if o is w:
                     continue
                 d = o["line"].distance(Point(pt))
-                if d < 0.5 or d > w["reach"]:
+                if d > w["reach"]:
                     continue
+                # an end lying on the other run (under 0.5 m) is cut into it too: such an end does not always
+                # count as a geometric crossing, and without the cut the two were left unjoined (Steamboat's
+                # Perry Park ended on Longhorn and was a dead end); the cut lands on the end's own node
                 oid = cut(o, pt)
                 if oid != nid:
                     links.append((oid, nid, "x", False) if end == 0 else (nid, oid, "x", False))
@@ -732,6 +735,35 @@ def main():
             top = wb["line"].coords[0][:2]
             start = cut(wa, top) if wa else A["n"]
             links.append((start, cut(wb, top), "w", True))
+            continue
+        if a_name.startswith("trail:") and a_name.endswith(" (bottom)"):
+            # a run whose bottom stops short of the run or lift base it flows into: from A's lowest end
+            # to the nearest point of B ("trail:B") or to a lift base; skied if B is not above it, else walked
+            an = a_name[6:-9]
+            low = lambda w: min(w["line"].coords[0][:2], w["line"].coords[-1][:2], key=lambda q: elev(*q))  # ways run either way
+            ca = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == an]
+            assert ca, f"links: no trail named {an!r}"
+            if b_name.startswith("trail:"):
+                cb = [w for w in gw if w["k"] == "p" and trails[w["ref"]]["name"] == b_name[6:]]
+                assert cb, f"links: no trail named {b_name[6:]!r}"
+                # every piece of A that ends near B, unless that end runs on into another piece of A
+                dist_b = lambda w: min(b["line"].distance(Point(low(w))) for b in cb)
+                near = [w for w in ca if dist_b(w) < 300
+                        and not any(o is not w and o["line"].distance(Point(low(w))) < 5 for o in ca)]
+                for wa in near or [min(ca, key=dist_b)]:
+                    end = low(wa)
+                    wb = min(cb, key=lambda b: b["line"].distance(Point(end)))
+                    na, nb = cut(wa, end), cut(wb, end)
+                    ski = elev(*G.pts[nb]) <= elev(*end) + 15
+                    links.append((na, nb, "x", False) if ski else (na, nb, "w", True))
+                continue
+            else:
+                B = ends[b_name]
+                wa = min(ca, key=lambda w: math.dist(low(w), (B["x"], B["y"])))
+                end = low(wa)
+                na, nb, q = cut(wa, end), B["n"], (B["x"], B["y"])
+            ski = elev(*q) <= elev(*end) + 15
+            links.append((na, nb, "x", False) if ski else (na, nb, "w", True))
             continue
         if a_name.startswith("trail:") and b_name.startswith("trail:"):
             # a run whose top stops short of the run it leaves from: ski from the nearest point of A onto B's top

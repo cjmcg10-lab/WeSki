@@ -169,6 +169,20 @@ Read the map's legend first (Telluride: two diamonds = expert only, EX = extreme
   gondola or base-to-base lift mapped one way (`two_way_lifts`), a lift top with no run down in OpenStreetMap
   (`links`: lift top to the nearest run below, `"hike"` if it climbs), a club or private lift (`isolated_lifts`
   with a note).
+- **Connections** (2026-11-23): `python3 tools/check_connections.py <ids>` (or `--all`, `--json out`, `--data dir` for
+  an older copy) reads the built graph the way directions do and lists: (a) runs whose top the main lift network
+  cannot reach, (b) dead ends (no way back to a lift), (c) loose run ends within 60 m of another run or lift station,
+  (d) loose bottoms more than 45 m past the last junction, (e) lift ends that join nothing, (f) lifts outside the
+  network. Lifts in `isolated_lifts` count as their own small network. Fix what the trail map or the terrain shows
+  with config `links`; a run that stops short of the run or lift base it flows into takes
+  `["trail:A (bottom)", "trail:B"]` or `["trail:A (bottom)", "<lift> (base)"]` (from A's lowest end; skied if not
+  uphill, walked otherwise). Runs that leave the map for a neighbour not on it (Alta and Snowbird into each other,
+  Solitude into Brighton) are real dead ends on our map: leave them and record them in
+  `tests/fixtures/connections-west.json`, which `tests/connections-west.test.js` holds the western, Alpine and Japanese
+  maps to.
+- `dem_from_built.py` finds the projection a map was built in from its grid (before 2026-11-23 it assumed NAD83 / UTM,
+  which broke every European and Japanese rebuild). When fresh OpenStreetMap data reaches past the old map, the
+  terrain made from the old map has holes: `pipeline.py` then downloads the terrain again for the larger extent.
 
 ### Measured on the 2026-11-21 batch (10 western and Snowshoe mountains)
 
@@ -216,7 +230,9 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
 - `node tools/maps_r2.mjs pull --all` **at the start of any session that builds or tests maps**: nothing outside the
   repository survives a session, so the folders are not on disk until pulled (about half a minute). `push <id...>`
   uploads (only files whose content changed), lists the id in r2.json and keeps the folder out of git;
-  `pipeline.py` does both for any mountain listed there, and `--r2` for a new one. `drop` deletes the local copies.
+  `pipeline.py` uploads only when given `--r2` (since 2026-11-23: before, it uploaded every mountain already listed
+  there after each build, which put unreviewed rebuilds on the live site). A push to R2 is a release: do it only after
+  review. For a preview use `tools/preview/deploy.mjs`. `drop` deletes the local copies.
 - Compact height grids (2026-11-22): `push` also uploads `terrain.z16` and `surround.z16`, made from the `.bin` files
   (`src/heights.js`: each height predicted from its neighbours, only the difference kept, gzipped; exact, 56% smaller,
   and Cloudflare never compressed the `.bin`). The app downloads the `.z16` and falls back to the `.bin` on old
