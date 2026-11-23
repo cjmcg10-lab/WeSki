@@ -75,6 +75,7 @@ const S = {
   simFree: prefs.get('simFree', false),
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
+  smooth: prefs.get('smoothEdges', null),   // antialiasing: null = automatic (off on screens sharper than 2.5x)
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
   group: null,              // {code, client, state, status}
@@ -95,6 +96,8 @@ function randomId() {
 
 // ---------- formatting
 const imp = () => S.units === 'imperial';
+/** Smooth edges (antialiasing) on the 3D map: the user's choice, or automatic. */
+const smoothEdges = () => S.smooth ?? SkiMap.defaultAntialias();
 const fmtSpeed = (ms) => (imp() ? ms * 2.23694 : ms * 3.6).toFixed(ms * 2.2 >= 99.5 ? 0 : 1);
 const speedUnit = () => (imp() ? 'mph' : 'km/h');
 const fmtDist = (m) => (imp() ? (m < 300 ? `${Math.round(m * 3.28084)} ft` : `${(m / 1609.34).toFixed(m < 16093 ? 1 : 0)} mi`) : m < 1000 ? `${Math.round(m)} m` : `${(m / 1000).toFixed(1)} km`);
@@ -175,6 +178,10 @@ function initMap(id) {
       fetchCanopy(`/data/${id}/canopy`),         // real tree cover; older maps have none and keep the old trees
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
+    const heights = new Uint16Array(buf);
+    // the ground's heavy set-up runs in a background worker, so the screen does not freeze while it is worked out
+    const prep = await SkiMap.prepare(resort, { h: heights });
+    if (mapId !== id) return;
     if (S.map) {                              // leaving the previous mountain
       S.loc?.setSim(false); S.loc?.stop();
       S.map.dispose();
@@ -182,14 +189,14 @@ function initMap(id) {
     }
     S.place = pl;
     S.resort = resort;
-    S.geo = new Geo(resort, new Uint16Array(buf));
+    S.geo = new Geo(resort, heights);
     S.router = null; S.graphLocked = false;
     S.graphP = loadGraph(id);
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
     S.hasCanopy = !!canopy;
-    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy);
+    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy, { prep, antialias: smoothEdges() });
     if (import.meta.env.DEV) window.__map = S.map;   // for local browser checks only
     S.map.maxFps = S.fps120 ? 120 : 60;
     if (q0) S.map.setQuality(q0);
@@ -2005,7 +2012,10 @@ function sheetAdvanced() {
       ${L('fps', 'A small readout on the map: frames per second while you move it, and the automatic quality step (Q0 best to Q3 lightest). The app lowers quality by itself when the phone can’t keep up. “Slowed by phone” means the phone is holding the app back (usually heat), which lower quality cannot fix.')}
       <div class="divide"></div>
       <div class="rowf"><div class="grow"><h4>120 fps motion</h4><div class="sub">Use up to 120 fps (if supported) for smoother motion.</div></div><label class="switch"><input type="checkbox" id="f-fps120" ${S.fps120 ? 'checked' : ''} /><i></i></label></div>
-      ${L('fps120', 'Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.')}</div>
+      ${L('fps120', 'Off: the map moves at up to 60 frames a second, which keeps the phone cooler and the battery going. On: up to 120 on screens that support it.')}
+      <div class="divide"></div>
+      <div class="rowf"><div class="grow"><h4>Smooth edges</h4><div class="sub">Softens jagged edges on the 3D map. Applies the next time you open a mountain.</div></div><label class="switch"><input type="checkbox" id="f-smooth" ${smoothEdges() ? 'checked' : ''} /><i></i></label></div>
+      ${L('smooth', 'Off by default on very sharp screens, where jagged edges are hard to see and smoothing them costs the most speed. Turn it off if the map feels slow; turn it on if edges look jagged.')}</div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Simulated location</h4>${S.testMode ? `<span class="pill sim" style="margin:2px 0 6px">${ICON.sim}Simulated location</span>` : ''}<div class="sub">${S.testMode ? 'Tap the map to place your simulated position.' : 'Try sharing and rerouting away from the mountain.'}</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div>
       ${L('sim', 'Tap the map, then “Put me here”. Sharing, directions and tracking then use that spot instead of GPS. Turn this off to go back to real GPS.')}
       <div class="divide"></div>
@@ -2316,6 +2326,7 @@ function onInput(e) {
   }
   else if (t.id === 'f-unofficial' && e.type === 'change') { S.unofficial = t.checked; prefs.set('unofficial', S.unofficial); if (S.nav) recalcNav(true); }
   else if (t.id === 'f-fps' && e.type === 'change') { S.showFps = t.checked; prefs.set('showFps', S.showFps); fpsReadout(); }
+  else if (t.id === 'f-smooth' && e.type === 'change') { S.smooth = t.checked; prefs.set('smoothEdges', S.smooth); toast('Applies the next time you open a mountain.'); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
   else if (t.id === 'f-simfree' && e.type === 'change') {
     S.simFree = t.checked; prefs.set('simFree', S.simFree); acct.setSimFree(S.simFree);

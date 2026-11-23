@@ -512,4 +512,8 @@ export default {
   1410: 'Nova versão pronta',
   1411: 'Recarregar',
   1430: 'Muito frio nos teleféricos: sensação térmica de {0} na hora de esqui mais fria.',
+  1452: "Bordas suaves",
+  1453: "Suaviza as bordas serrilhadas do mapa 3D. Aplica-se na próxima vez que abrir uma montanha.",
+  1454: "Desligado por padrão em ecrãs muito nítidos, onde as bordas serrilhadas mal se veem e suavizá-las custa mais velocidade. Desligue se o mapa estiver lento; ligue se as bordas parecerem serrilhadas.",
+  1455: "Aplica-se na próxima vez que abrir uma montanha.",
 };

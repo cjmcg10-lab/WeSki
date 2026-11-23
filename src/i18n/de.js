@@ -512,4 +512,8 @@ export default {
   1410: 'Neue Version bereit',
   1411: 'Neu laden',
   1430: 'Sehr kalt an den Liften: gefühlt {0} in der kältesten Skistunde.',
+  1452: "Glatte Kanten",
+  1453: "Glättet gezackte Kanten auf der 3D-Karte. Gilt ab dem nächsten Öffnen eines Berges.",
+  1454: "Auf sehr scharfen Bildschirmen standardmäßig aus, weil gezackte Kanten dort kaum zu sehen sind und das Glätten am meisten Tempo kostet. Schalte es aus, wenn die Karte langsam wirkt; schalte es ein, wenn Kanten gezackt aussehen.",
+  1455: "Gilt ab dem nächsten Öffnen eines Berges.",
 };

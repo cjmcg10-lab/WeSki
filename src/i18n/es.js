@@ -512,4 +512,8 @@ export default {
   1410: 'Nueva versión lista',
   1411: 'Recargar',
   1430: 'Mucho frío en los remontes: la sensación térmica llega a {0} en la hora de esquí más fría.',
+  1452: "Bordes suaves",
+  1453: "Suaviza los bordes dentados del mapa 3D. Se aplica la próxima vez que abras una montaña.",
+  1454: "Desactivado por defecto en pantallas muy nítidas, donde los bordes dentados apenas se ven y suavizarlos cuesta más velocidad. Desactívalo si el mapa va lento; actívalo si los bordes se ven dentados.",
+  1455: "Se aplica la próxima vez que abras una montaña.",
 };

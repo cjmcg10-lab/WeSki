@@ -512,4 +512,8 @@ export default {
   1410: 'Nuova versione pronta',
   1411: 'Ricarica',
   1430: 'Molto freddo sugli impianti: temperatura percepita di {0} nell’ora di sci più fredda.',
+  1452: "Bordi smussati",
+  1453: "Ammorbidisce i bordi seghettati della mappa 3D. Vale dalla prossima volta che apri una montagna.",
+  1454: "Disattivato di default sugli schermi molto nitidi, dove i bordi seghettati si vedono appena e smussarli costa più velocità. Disattivalo se la mappa è lenta; attivalo se i bordi sembrano seghettati.",
+  1455: "Vale dalla prossima volta che apri una montagna.",
 };
