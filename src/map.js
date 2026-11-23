@@ -10,7 +10,7 @@ import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeome
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { loopTimer, detachSegments, shuttle, swing, tramRide } from './liftmotion.js';
+import { loopTimer, detachSegments, shuttle, swing, tramRide, stationClashes } from './liftmotion.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
@@ -627,6 +627,18 @@ vec3 groundColour() {
       surface: { th: 4.5, endH: 4.5, r: 1, span: 60, clear: 3.6, sag: [0, 0], carrier: 'bar', gap: 30, red: 2 },
       carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 2.5, red: 2.5 },
     };
+    // A lift end on a mapped station building is drawn once: the terminal model, or the building when it is a big
+    // lodge the lift starts inside (stationClashes). buildBuildings leaves out the buildings listed here.
+    const endKeys = [], endPts = [];
+    for (const l of R.lifts) {
+      if (l.hide || l.kind === 'train' || l.kind === 'funicular' || l.kind === 'carpet' || l.pts.length < 4) continue;
+      const n = l.pts.length;
+      endKeys.push(`${l.id}:0`, `${l.id}:1`);
+      endPts.push([l.pts[0], l.pts[1]], [l.pts[n - 2], l.pts[n - 1]]);
+    }
+    const clash = stationClashes(R.buildings || [], endPts);
+    this.skipBuildings = clash.skipBuildings;
+    const skipEnd = new Set([...clash.skipEnds].map((i) => endKeys[i]));
     for (const l of R.lifts) {
       if (l.hide) continue;
       if (l.kind === 'train' || l.kind === 'funicular') { this.liftPaths.push(this.buildRail(l, rail)); continue; }
@@ -714,6 +726,7 @@ vec3 groundColour() {
       // terminals at both ends: the motor room at the bottom (at the top on a tram), the long housing of a
       // detachable lift where its carriers slow down
       if (l.kind !== 'carpet') for (const e of [0, n - 1]) {
+        if (skipEnd.has(`${l.id}:${e ? 1 : 0}`)) continue;
         const g = M.stationGeometry(tk, STATION_COLOR, K.endH + 1, r, { end: e ? 1 : 0, detach: !!path.timer, drive: tram ? !!e : !e });
         const base = this.world(xy[e][0], xy[e][1], 0);
         g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
@@ -1033,6 +1046,7 @@ vec3 groundColour() {
     const roofs = ['#4c5563', '#6b3b33', '#3f4a45'].map((c) => new THREE.Color(c));
     const snow = new THREE.Color('#eef3f6');
     this.resort.buildings.forEach((b, bi) => {
+      if (this.skipBuildings?.has(bi)) return;   // a lift's own terminal model stands here (buildLifts)
       const ring = [];
       let base = Infinity, area = 0;
       for (let i = 0; i < b.pts.length; i += 2) {
