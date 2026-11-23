@@ -1,24 +1,27 @@
 {
  "id": "brighton",
  "reachable": [
-  88,
-  90
+  87,
+  89
  ],
  "auto_joins": 1,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 2,
  "raised": 0,
- "official": null,
+ "official": [
+  79,
+  90,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
  },
- "notes": [
-  "resort feed mtnpowder 66 gave no trail list: KeyError: 'MountainAreas'"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 147,
- "rebuild_seconds": 26
+ "rebuild_seconds": 26,
+ "seconds": 26
 }

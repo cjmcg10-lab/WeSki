@@ -42,5 +42,22 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Foret des Cantons": "Forêt des Cantons",
+  "Hawksbury": "Hawkesbury",
+  "Max Perrot": "Max Parrot",
+  "Pittsburg": "Pittsburgh",
+  "Saint-Lambert": "St-Lambert",
+  "San Jose": "San José",
+  "Trois-Rivieres": "Trois-Rivières",
+  "Kewlona": "Kelowna",
+  "Lavel": "Laval",
+  "Pitt Prk": "P'tit Prk",
+  "Régina": "Regina",
+  "West Shefford": "Shefford",
+  "Sainte-Hyacinthe": "St-Hyacinthe",
+  "Saint-Tite": "St-Tite",
+  "St. Louis": "St-Louis"
  }
 }

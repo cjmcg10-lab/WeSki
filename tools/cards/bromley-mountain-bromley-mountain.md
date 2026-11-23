@@ -1,15 +1,21 @@
-# Bromley Mountain Ski Resort;Bromley Mountain (bromley-mountain-bromley-mountain)
+# Bromley Mountain (bromley-mountain-bromley-mountain)
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**76 runs (47 named, 23.7 km), 8 lifts. 2 things to look at.**
+**66 runs (47 named, 23.3 km), 8 lifts. 3 things to look at.**
 
-- **LOOK**: ratings NOT checked: not ready to go live  
-  make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)
+- **LOOK**: 1 runs on the resort's list are not on the map  
+  Finish Line (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - **LOOK**: 3 shown runs rated by guess  
   (no name)
-- info: audit: no rating: 20
-- info: same counts as the previous build
-- pass: reachable from the base: 76 of 76 run pieces
+- **LOOK**: change from the previous build: runs 76 -> 66, km 23.7 -> 23.3  
+  fewer lifts or named runs than before: compare before pushing
+- info: 4 run pieces hidden (not on the resort's list and not a link)  
+  (no name) (1096055265, 49 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1096724896, 24 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1096323880, 12 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1096724897, 10 m): unnamed piece, not on the resort's list, leads nowhere on it
+- info: audit: no rating: 14
+- pass: ratings checked against the resort's own list  
+  47 on the list, 70 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 9 of 9 on the map
+- pass: reachable from the base: 70 of 70 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m
