@@ -1124,6 +1124,8 @@ vec3 groundColour() {
     this.meObj.visible = false;
     this.scene.add(this.meObj);
     this.pinObj = M.makePin('#ff3b30'); this.pinObj.visible = false; this.scene.add(this.pinObj);
+    // the pin directions lead to, kept on the map after a new pin is dropped elsewhere
+    this.navPinObj = M.makePin('#ff3b30'); this.navPinObj.visible = false; this.scene.add(this.navPinObj);
     this.meetObj = M.makeFlag('#ff9f0a'); this.meetObj.visible = false; this.scene.add(this.meetObj);
     this.routeLine = null; this.trackLine = null;
     this.playObj = new THREE.Group(); this.playObj.visible = false; this.scene.add(this.playObj);
@@ -1315,7 +1317,14 @@ vec3 groundColour() {
     }
   }
 
-  setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
+  setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); this._navPinShown(); }
+  /** The pin the current directions lead to (null when not routing to a pin). Drawn only while it differs from the dropped pin. */
+  setNavPin(p) { this.overlayDirty = true; this.navPin = p ? { x: p.x, y: p.y } : null; if (p) this.navPinObj.position.copy(this.world(p.x, p.y, 0)); this._navPinShown(); }
+  _navPinShown() {
+    const n = this.navPin, p = this.pin;
+    this.navPinShown = !!n && !(p && p.x === n.x && p.y === n.y);
+    if (this.navPinObj) this.navPinObj.visible = this.navPinShown;
+  }
   setMeet(p) { this.overlayDirty = true; this.meet = p; this.meetObj.visible = !!p; if (p) this.meetObj.position.copy(this.world(p.x, p.y, 0)); }
 
   /** Draw directions. `walk` lists the stretches done on foot, drawn over the route in their own colour. */
@@ -1661,6 +1670,7 @@ vec3 groundColour() {
     if (this.me) { this.meObj.visible = is3; this.glide(this.meObj, dt); scaleFor(this.meObj, 0.02); }
     for (const f of this.friends.values()) { f.obj.visible = is3; this.glide(f.obj, dt); scaleFor(f.obj, 0.02); }
     if (this.pin) scaleFor(this.pinObj, 0.014, 22);
+    if (this.navPinShown) scaleFor(this.navPinObj, 0.014, 22);
     if (this.meet) scaleFor(this.meetObj, 0.016, 24);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
     // The label layer (lots of outlined text) is the most expensive 2D work, so it is only
@@ -1768,6 +1778,7 @@ vec3 groundColour() {
       this.hits.push({ x: p.x, y: p.y - (is3 ? 10 : 0), r: 28, ev });
     };
     if (this.pin) marker(this.pin, this.pinObj, '#d92d20', t('Pin'), { type: 'pin' });
+    if (this.navPinShown) marker(this.navPin, this.navPinObj, '#d92d20', t('Pin'), { type: 'navpin' });
     if (this.meet) marker(this.meet, this.meetObj, '#c96f00', this.meet.name || t('Meet here'), { type: 'meet' });
     if (this.play && !is3) {
       const p = this.project(this.playObj.position);

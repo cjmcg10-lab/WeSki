@@ -344,7 +344,7 @@ async function restoreAfterReload(back, acctReady) {
   const tg = back.nav;
   if (!tg || !['poi', 'pin', 'meet', 'friend'].includes(tg.type)) return;
   if (tg.type === 'poi' && !S.resort.pois[tg.id]) return;
-  if (tg.type === 'pin' && !S.pin) return;
+  if (tg.type === 'pin' && !S.pin && !Number.isFinite(tg.x)) return;
   if ((tg.type === 'meet' || tg.type === 'friend') && !S.group) return;
   await acctReady.catch(() => {});            // directions need to know about the pass
   if (!S.nav && S.place?.id === back.resort) startNav(tg);
@@ -1224,6 +1224,7 @@ const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill
 async function startNav(target) {
   if (!(await needRouter(target.type === 'meet' || target.type === 'friend' ? 'group' : undefined))) return;
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
+  S.map.setNavPin(target.type === 'pin' && Number.isFinite(target.x) ? target : null);
   guide.reset();
   ensureLocation(); wakeLock();
   closeSheet();
@@ -1235,6 +1236,7 @@ function endNav() {
   S.nav = null;
   speaker.stop(); releaseWake();
   S.map.setRoute(null);
+  S.map.setNavPin(null);
   S.loc.simPath = null;
   renderChrome();
 }
@@ -1242,7 +1244,11 @@ function endNav() {
 function navDest() {
   const t = S.nav.target;
   if (t.type === 'poi') { const p = S.resort.pois[t.id]; return { place: p.n >= 0 ? { node: p.n } : { x: p.x, y: p.y }, name: p.name, x: p.x, y: p.y }; }
-  if (t.type === 'pin') return S.pin ? { place: { x: S.pin.x, y: S.pin.y }, name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y } : null;
+  if (t.type === 'pin') {
+    // The pin the directions were started for: dropping a new pin does not move the route (Directions on it does).
+    const p = Number.isFinite(t.x) ? t : S.pin;
+    return p ? { place: { x: p.x, y: p.y }, name: p.name || 'Dropped pin', x: p.x, y: p.y } : null;
+  }
   if (t.type === 'meet') { const m = S.map.meet; return m ? { place: { x: m.x, y: m.y }, name: m.name || 'Meeting point', x: m.x, y: m.y } : null; }
   const f = friends().find((m) => m.id === t.id);
   if (!f) return { gone: true, name: t.name };
@@ -1368,6 +1374,10 @@ function onMapTap(ev) {
   if (S.player) return;
   if (ev.type === 'ground') { S.pin = { x: ev.x, y: ev.y }; S.map.setPin(S.pin); openSheet('place', { type: 'pin' }); }
   else if (ev.type === 'me') S.map.wave('me');                  // tap yourself: your rider waves
+  else if (ev.type === 'navpin') {                             // the pin the directions lead to: it becomes the dropped pin again
+    const tg = S.nav?.target; if (!tg || !Number.isFinite(tg.x)) return;
+    S.pin = { x: tg.x, y: tg.y, ...(tg.name && tg.name !== 'Dropped pin' ? { name: tg.name } : {}) }; S.map.setPin(S.pin); openSheet('place', { type: 'pin' });
+  }
   else {
     if (ev.type === 'friend') S.map.wave(ev.id);                // a friend's rider waves, and their card opens
     openSheet('place', ev);
@@ -2503,7 +2513,7 @@ async function onClick(e) {
     case 'close-group': if (confirm(t('Close the group for everyone? All shared locations are deleted and each person keeps their own runs.'))) leaveGroup(true); break;
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
-    case 'nav-pin': startNav({ type: 'pin', name: S.pin?.name || 'Dropped pin' }); break;
+    case 'nav-pin': if (S.pin) startNav({ type: 'pin', name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y }); break;
     case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus(), 60); } break;
     case 'search-go': $('#f-search')?.blur(); searchGo(d.k, d.v); break;
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
@@ -2520,7 +2530,10 @@ async function onClick(e) {
       break;
     }
     case 'clear-meet': S.group?.client.setMeet(null); S.map.setMeet(null); if (S.nav?.target.type === 'meet') endNav(); closeSheet(); break;
-    case 'remove-pin': S.pin = null; S.map.setPin(null); if (S.nav?.target.type === 'pin') endNav(); closeSheet(); break;
+    case 'remove-pin': {
+      const tg = S.nav?.target, routed = tg?.type === 'pin' && (!Number.isFinite(tg.x) || (tg.x === S.pin?.x && tg.y === S.pin?.y));
+      S.pin = null; S.map.setPin(null); if (routed) endNav(); closeSheet(); break;
+    }
     case 'sim-here': S.loc.simTeleport(S.pin.x, S.pin.y); S.pin = null; S.map.setPin(null); closeSheet(); toast('Test location set.'); break;
     case 'sim-go': if (S.nav?.route) { S.loc.simFollow(S.nav.route.pts, 9); toast('Simulating movement along the route…'); } break;
     case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); trackNotice(); break;
