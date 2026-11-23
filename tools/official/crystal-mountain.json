@@ -93,7 +93,11 @@
  "blue_black": [],
  "same_as": {
   "Lower Chappelle's": "Chappelle's",
-  "Upper Chappelle's": "Chappelle's"
+  "Upper Chappelle's": "Chappelle's",
+  "Powder Bowl": "Upper Field",
+  "Three Way Peak": "Three Way Exit Chute",
+  "Silver King": "SE Right",
+  "The Throne": "Narnia"
  },
  "lifts": [
   "Chair 6",
@@ -205,5 +209,13 @@
    "Silver King",
    "Three Way Peak"
   ]
+ },
+ "notes_trace": {
+  "Powder Bowl": "2026-11-23: the trail map labels the bowl north of the Chair 6 top 'Powder Bowl'; OpenStreetMap draws its lines as Upper Field, Divider Chute and Lower Field, so the central one (Upper Field, from the Chair 6 top) stands for it rather than a second line on top.",
+  "Three Way Peak": "2026-11-23: a Southback zone in the feed (Three Way Peak, gate E1 on the trail map); OpenStreetMap draws its lines as Three Way Exit Chute and Boxcar.",
+  "Silver King": "2026-11-23: a Southback zone in the feed (the faces off the Silver King summit); OpenStreetMap draws them as SE Right, Brain Damage and Hourglass (and Silver Basin, which the feed lists separately).",
+  "The Throne": "2026-11-23: the terrain off The Throne (gate E2 on the trail map); OpenStreetMap's only line there is Narnia, which starts 120 m from the summit.",
+  "Campbell Basin": "2026-11-23: traced (config extra_trails), approximate.",
+  "A-Basin": "2026-11-23: traced (config extra_trails), approximate."
  }
 }
