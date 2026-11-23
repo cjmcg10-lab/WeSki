@@ -77,7 +77,7 @@ const S = {
   simFree: prefs.get('simFree', false),
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
-  smooth: prefs.get('smoothEdges', null),   // antialiasing: null = automatic (off on screens sharper than 2.5x)
+  smooth: prefs.get('smoothEdges', null),   // antialiasing: null = the default (on)
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
   group: null,              // {code, client, state, status}
