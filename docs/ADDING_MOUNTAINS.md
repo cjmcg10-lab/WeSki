@@ -221,6 +221,14 @@ neighbouring runs, which need the terrain, are not counted.
   and the runs the resort lists that OpenStreetMap lacks (6 to 114 per mountain), which are left for a later
   tracing pass.
 
+## Emergency number (added 2026-11-23)
+
+Every built mountain needs an entry in `src/emergency.json` (the in-app SOS sheet); `tests/emergency.test.js` fails
+until it has one. Give its `country` (picks the general numbers: 911, 112, 140, 119 ...) and, only when the resort's
+own page, trail map or document publishes it, the ski patrol `phone` as printed, `tel` (E.164, `,214` for an
+extension), `label`, `source` URL and `checked` date. Never guess: with no reliable source, leave the phone out and the
+sheet shows only the general numbers. The file is bundled into the app, so it works offline and needs no R2 upload.
+
 ## The final check
 
 After a mountain goes live, the owner's own use and the in-app "Report a map mistake" button are the last
