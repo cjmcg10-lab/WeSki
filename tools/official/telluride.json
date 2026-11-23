@@ -141,5 +141,16 @@
   "G1 Free Gondola": "the free gondola: on the map as Gondola Line 1, Gondola Line 2 and Free Intercept Gondola",
   "G2 Free Gondola": "see G1",
   "G3 Free Gondola": "see G1"
- }
+ },
+ "same_as": {
+  "Gold Hill Chutes 6-10": "Gold Hill 6"
+ },
+ "confirm": {
+  "Gold Hill 6": "trail map: Gold Hill Chutes 6-10 (double black)",
+  "Gold Hill 7": "trail map: Gold Hill Chutes 6-10 (double black)",
+  "Gold Hill 8": "trail map: Gold Hill Chutes 6-10 (double black)",
+  "Gold Hill 9": "trail map: Gold Hill Chutes 6-10 (double black)",
+  "Gold Hill 10": "trail map: Gold Hill Chutes 6-10 (double black)"
+ },
+ "same_as_note": "Gold Hill Chutes 6-10 is one label on the trail map for the five chutes OpenStreetMap draws as Gold Hill 6 to Gold Hill 10 (listed under confirm, double black as the label)."
 }

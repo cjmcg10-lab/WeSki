@@ -1,0 +1,17 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "couloir de grande balme": "off-piste couloir drawn in OpenStreetMap, reached on foot; no lift-served way on the map (2026-11-23)",
+  "Couloir de petite balme": "off-piste couloir drawn in OpenStreetMap, reached on foot; no lift-served way on the map (2026-11-23)"
+ },
+ "dead_end": {
+  "Leisse": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "couloir de grande balme": "off-piste couloir drawn in OpenStreetMap, reached on foot; no lift-served way on the map (2026-11-23)",
+  "Couloir de petite balme": "off-piste couloir drawn in OpenStreetMap, reached on foot; no lift-served way on the map (2026-11-23)",
+  "Col Pers": "route over the Col des Pers into the Maurienne side, off the lifts (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

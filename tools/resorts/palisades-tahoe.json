@@ -64,7 +64,114 @@
   [
    "trail:Sun Bowl",
    "trail:SP Bowl"
+  ],
+  [
+   "trail:West Palisades (bottom)",
+   "trail:Tower 19"
+  ],
+  [
+   "trail:East Palisades (bottom)",
+   "trail:Howard's Hollow"
+  ],
+  [
+   "trail:Keyhole 1 (bottom)",
+   "trail:Howard's Hollow"
+  ],
+  [
+   "trail:Keyhole 2 (bottom)",
+   "trail:Howard's Hollow"
+  ],
+  [
+   "trail:Keyhole Open Slopes (bottom)",
+   "trail:Howard's Hollow"
+  ],
+  [
+   "trail:NC (bottom)",
+   "trail:Lower Saddle"
+  ],
+  [
+   "trail:Marenka (bottom)",
+   "trail:Lower Saddle"
+  ],
+  [
+   "trail:Ashcroft Gully (bottom)",
+   "trail:Robin Hood"
+  ],
+  [
+   "trail:Friar's Tuck (bottom)",
+   "trail:Robin Hood"
+  ],
+  [
+   "trail:Sherwood Face (bottom)",
+   "trail:Robin Hood"
+  ],
+  [
+   "trail:Lower 40 Face (bottom)",
+   "trail:Gentian Gully"
+  ],
+  [
+   "trail:South Face (bottom)",
+   "trail:Sherwood Face"
+  ],
+  [
+   "trail:West Gully (bottom)",
+   "trail:Sherwood Face"
+  ],
+  [
+   "trail:East Gully (bottom)",
+   "trail:Sherwood Face"
+  ],
+  [
+   "trail:Sun Bowl (bottom)",
+   "trail:West Gully"
+  ],
+  [
+   "trail:Big Bend Bowl (bottom)",
+   "trail:West Gully"
+  ],
+  [
+   "trail:Our Father (bottom)",
+   "trail:Counterweight Gully"
+  ],
+  [
+   "trail:High Yellow Gully (bottom)",
+   "trail:Deer Camp"
+  ],
+  [
+   "trail:High Yellow Face (bottom)",
+   "trail:Deer Camp"
+  ],
+  [
+   "trail:Treeline Cirque Left (bottom)",
+   "trail:Hidden Knolls"
+  ],
+  [
+   "trail:Treeline Cirque Right (bottom)",
+   "trail:Hidden Knolls"
   ]
  ],
- "links_note": "Alpine Meadows: Beaver Bowl, Estelle Bowl and Idiot's Delight are reached along the ridge from the Summit Six top; OpenStreetMap has no traverse, so they are joined as walks (approximate)."
+ "links_note": "Alpine Meadows: Beaver Bowl, Estelle Bowl and Idiot's Delight are reached along the ridge from the Summit Six top; OpenStreetMap has no traverse, so they are joined as walks (approximate).",
+ "links_notes": {
+  "trail:West Palisades (bottom) -> trail:Tower 19": "2026-11-23: the run stops short; the terrain falls from its end to Tower 19 (70 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:East Palisades (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (56 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Keyhole 1 (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (84 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Keyhole 2 (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (112 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Keyhole Open Slopes (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (110 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:NC (bottom) -> trail:Lower Saddle": "2026-11-23: the run stops short; the terrain falls from its end to Lower Saddle (107 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Marenka (bottom) -> trail:Lower Saddle": "2026-11-23: the run stops short; the terrain falls from its end to Lower Saddle (87 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Ashcroft Gully (bottom) -> trail:Robin Hood": "2026-11-23: the run stops short; the terrain falls from its end to Robin Hood (82 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Friar's Tuck (bottom) -> trail:Robin Hood": "2026-11-23: the run stops short; the terrain falls from its end to Robin Hood (119 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Sherwood Face (bottom) -> trail:Robin Hood": "2026-11-23: the run stops short; the terrain falls from its end to Robin Hood (143 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Lower 40 Face (bottom) -> trail:Gentian Gully": "2026-11-23: the run stops short; the terrain falls from its end to Gentian Gully (98 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:South Face (bottom) -> trail:Sherwood Face": "2026-11-23: the run stops short; the terrain falls from its end to Sherwood Face (395 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:West Gully (bottom) -> trail:Sherwood Face": "2026-11-23: the run stops short; the terrain falls from its end to Sherwood Face (321 m, 2 m of climb) (tools/check_connections.py dead end)",
+  "trail:East Gully (bottom) -> trail:Sherwood Face": "2026-11-23: the run stops short; the terrain falls from its end to Sherwood Face (247 m, 2 m of climb) (tools/check_connections.py dead end)",
+  "trail:Sun Bowl (bottom) -> trail:West Gully": "2026-11-23: bowl stops short; the terrain falls to West Gully (481 m, no climb)",
+  "trail:Big Bend Bowl (bottom) -> trail:West Gully": "2026-11-23: bowl stops short; the terrain falls to West Gully (562 m, 2 m of climb)",
+  "trail:Our Father (bottom) -> trail:Counterweight Gully": "2026-11-23: the run stops short; the terrain falls from its end to Counterweight Gully (107 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:High Yellow Gully (bottom) -> trail:Deer Camp": "2026-11-23: the run stops short; the terrain falls from its end to Deer Camp (163 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:High Yellow Face (bottom) -> trail:Deer Camp": "2026-11-23: the run stops short; the terrain falls from its end to Deer Camp (175 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Treeline Cirque Left (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (79 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Treeline Cirque Right (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (59 m, 0 m of climb) (tools/check_connections.py dead end)"
+ }
 }

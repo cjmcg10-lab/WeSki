@@ -26,5 +26,19 @@
   "Non-Descript": "Nondescript",
   "Persistence": "Persistance",
   "Trillby": "Trilby"
+ },
+ "links": [
+  [
+   "trail:Tycoon (bottom)",
+   "trail:Sultan Connection"
+  ],
+  [
+   "trail:Black Forest (bottom)",
+   "trail:Edgar's Alley"
+  ]
+ ],
+ "links_notes": {
+  "trail:Tycoon (bottom) -> trail:Sultan Connection": "2026-11-23: the run stops short; the terrain falls from its end to Sultan Connection (14 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Black Forest (bottom) -> trail:Edgar's Alley": "2026-11-23: the run stops short; the terrain falls from its end to Edgar's Alley (54 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

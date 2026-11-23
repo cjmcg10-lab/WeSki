@@ -1,6 +1,6 @@
 # Snowshoe (snowshoe)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **63 runs (61 named, 30.6 km), 13 lifts. 2 things to look at.**
 

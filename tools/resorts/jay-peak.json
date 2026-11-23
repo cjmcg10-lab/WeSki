@@ -76,5 +76,11 @@
   ],
   "rename": {
     "Purgutory": "Purgatory"
-  }
+  },
+  "links": [
+    [
+      "trail:Full Moon (bottom)",
+      "trail:Interstate"
+    ]
+  ]
 }

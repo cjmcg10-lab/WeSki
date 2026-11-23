@@ -15,12 +15,260 @@
  "rename": {
   "Almony Chutes": "Alimony Chutes",
   "Luckey Boy": "Lucky Boy",
-  "Niagra": "Niagara"
+  "Niagra": "Niagara",
+  "West 2nd South Long": "W. 2nd Long",
+  "West 2nd Short": "W. 2nd Short",
+  "West 2nd South On-Ramp": "2nd S. On-Ramp",
+  "Phone 3 Road": "Chip's Run/Phone 3 Road",
+  "Get Serious Chute #1": "Get Serious Chutes",
+  "Get Serious Chute #2": "Get Serious Chutes",
+  "Get Serious Chute #3": "Get Serious Chutes"
  },
  "links": [
   [
    "trail:Aggie's Alley",
    "trail:Westward Ho"
+  ],
+  [
+   "trail:The Back Door (bottom)",
+   "trail:Who Dunnit"
+  ],
+  [
+   "trail:Blackjack Traverse (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:Ballroom (bottom)",
+   "trail:Main Street"
+  ],
+  [
+   "trail:Harold's (bottom)",
+   "trail:Main Street"
+  ],
+  [
+   "trail:Tombstone (bottom)",
+   "trail:Main Street"
+  ],
+  [
+   "trail:Keyhole Chute (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:Gun Towers (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:Who Dunnit (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:The Back Door (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:Phone 3 Shot (bottom)",
+   "trail:Chip's Run/Phone 3 Road"
+  ],
+  [
+   "trail:High Baldy Traverse",
+   "trail:Baldy Chutes",
+   "hike"
+  ],
+  [
+   "trail:High Baldy Traverse",
+   "trail:Mount Baldy",
+   "hike"
+  ],
+  [
+   "trail:High Baldy Traverse",
+   "trail:Main Chute",
+   "hike"
+  ],
+  [
+   "trail:High Baldy Traverse",
+   "trail:Little Chute",
+   "hike"
+  ],
+  [
+   "trail:High Baldy Traverse",
+   "trail:Livin' the Dream",
+   "hike"
   ]
- ]
+ ],
+ "links_notes": {
+  "trail:The Back Door (bottom) -> trail:Who Dunnit": "2026-11-23: the run stops short; the terrain falls from its end to Who Dunnit (84 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Blackjack Traverse (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (278 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Ballroom (bottom) -> trail:Main Street": "2026-11-23: the run stops short; the terrain falls from its end to Main Street (14 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Harold's (bottom) -> trail:Main Street": "2026-11-23: the run stops short; the terrain falls from its end to Main Street (14 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Tombstone (bottom) -> trail:Main Street": "2026-11-23: the run stops short; the terrain falls from its end to Main Street (14 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Keyhole Chute (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (194 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Gun Towers (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (232 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Who Dunnit (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (147 m, 1 m of climb) (tools/check_connections.py dead end)",
+  "trail:The Back Door (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (73 m, 2 m of climb) (tools/check_connections.py dead end)",
+  "trail:Phone 3 Shot (bottom) -> trail:Phone 3 Road": "2026-11-23: the run stops short; the terrain falls from its end to Phone 3 Road (73 m, 1 m of climb) (tools/check_connections.py dead end)",
+  "trail:High Baldy Traverse -> trail:Baldy Chutes (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 23-48 m from the High Baldy Traverse to its top (the hike)",
+  "trail:High Baldy Traverse -> trail:Mount Baldy (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 23-48 m from the High Baldy Traverse to its top (the hike)",
+  "trail:High Baldy Traverse -> trail:Main Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 23-48 m from the High Baldy Traverse to its top (the hike)",
+  "trail:High Baldy Traverse -> trail:Little Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 23-48 m from the High Baldy Traverse to its top (the hike)",
+  "trail:High Baldy Traverse -> trail:Livin' the Dream (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 23-48 m from the High Baldy Traverse to its top (the hike)"
+ },
+ "way_names": {
+  "1336352540": "Mozzarella Bowl"
+ },
+ "extra_trails": [
+  {
+   "name": "Road to Provo",
+   "pts": [
+    [-111.64611, 40.55896],
+    [-111.64611, 40.55878],
+    [-111.64613, 40.5586],
+    [-111.6462, 40.55843],
+    [-111.6463, 40.55826],
+    [-111.64641, 40.5581],
+    [-111.64652, 40.55794],
+    [-111.64663, 40.55779],
+    [-111.64673, 40.55762],
+    [-111.64684, 40.55746],
+    [-111.64694, 40.5573],
+    [-111.64705, 40.55714],
+    [-111.64716, 40.55698],
+    [-111.64727, 40.55682],
+    [-111.64738, 40.55666],
+    [-111.64749, 40.5565],
+    [-111.64759, 40.55634],
+    [-111.64769, 40.55618],
+    [-111.64781, 40.55602],
+    [-111.64794, 40.55587],
+    [-111.6481, 40.55574],
+    [-111.64827, 40.55561],
+    [-111.64843, 40.55548],
+    [-111.6486, 40.55535],
+    [-111.64876, 40.55522],
+    [-111.64893, 40.5551],
+    [-111.6491, 40.55497],
+    [-111.64929, 40.55486],
+    [-111.64948, 40.55476],
+    [-111.64967, 40.55465],
+    [-111.64984, 40.55453],
+    [-111.65003, 40.55442],
+    [-111.65024, 40.55435],
+    [-111.65048, 40.55436],
+    [-111.65071, 40.55438],
+    [-111.65091, 40.55438]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): ridge traverse from the top of Little Cloud past the tops of Old Ladies and Shireen to the tops of Mark Malu Fork and Knucklehead Traverse; drawn through those mapped run tops (each within about 20 m), so the line follows the ridge. Good (about 30 m)",
+   "fitted": "terrain: never climbs, moved 8 m on average"
+  },
+  {
+   "name": "Old Same Place",
+   "pts": [
+    [-111.6538, 40.5761],
+    [-111.6545, 40.57624],
+    [-111.65506, 40.57646],
+    [-111.65545, 40.57678],
+    [-111.65561, 40.57721],
+    [-111.65587, 40.57759],
+    [-111.65605, 40.57801],
+    [-111.65685, 40.57928]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): between Route 4 Gully and Lower Mach Schnell down to Bass Highway; placed from 8 control points (median leave-one-out error 116 m), upper part moved onto the open strip in the 1 m canopy height map (Meta/WRI; tree cover 4% against 32%). Lower end approximate"
+  },
+  {
+   "name": "Old Hollywood",
+   "pts": [
+    [-111.65856, 40.57554],
+    [-111.65914, 40.57596],
+    [-111.65981, 40.57632],
+    [-111.66006, 40.57695],
+    [-111.66061, 40.57741],
+    [-111.66106, 40.57793],
+    [-111.66152, 40.57844],
+    [-111.66229, 40.57877],
+    [-111.66357, 40.57891]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): from Wilbere Ridge down beside Harper's Ferry toward Creek Road; placed from 8 control points (median error 116 m), then moved onto the open strip in the 1 m canopy height map (Meta/WRI) not taken by another run: tree cover 3% (35% before), moved 27 m on average"
+  },
+  {
+   "name": "Creek Road",
+   "pts": [
+    [-111.65723, 40.5802],
+    [-111.65746, 40.58023],
+    [-111.6577, 40.58024],
+    [-111.65793, 40.58022],
+    [-111.65815, 40.58015],
+    [-111.65836, 40.58007],
+    [-111.65857, 40.57999],
+    [-111.65879, 40.57993],
+    [-111.65903, 40.5799],
+    [-111.65926, 40.57986],
+    [-111.65949, 40.57983],
+    [-111.65972, 40.57987],
+    [-111.65994, 40.57992],
+    [-111.66017, 40.57998],
+    [-111.6604, 40.58],
+    [-111.66064, 40.58],
+    [-111.66087, 40.58],
+    [-111.66111, 40.57997],
+    [-111.66134, 40.57992],
+    [-111.66156, 40.57988],
+    [-111.66179, 40.57983],
+    [-111.66203, 40.57981],
+    [-111.66226, 40.57981],
+    [-111.6625, 40.57978],
+    [-111.66273, 40.57974],
+    [-111.66296, 40.57972],
+    [-111.66319, 40.57968],
+    [-111.66341, 40.57961],
+    [-111.66363, 40.57954],
+    [-111.66385, 40.57947],
+    [-111.66407, 40.57942],
+    [-111.66429, 40.57935],
+    [-111.6645, 40.57927],
+    [-111.66472, 40.5792],
+    [-111.66493, 40.57912],
+    [-111.66515, 40.57905],
+    [-111.66536, 40.57897],
+    [-111.66557, 40.57889],
+    [-111.66578, 40.5788],
+    [-111.66599, 40.57872],
+    [-111.6662, 40.57864],
+    [-111.66641, 40.57856],
+    [-111.66663, 40.57849],
+    [-111.66684, 40.57841],
+    [-111.6669, 40.57839]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): green road along the foot of the slopes from the Tram base toward the Wilbere and Gadzoom bases; placed from 8 control points (median error 116 m), then moved onto the open strip in the canopy height map (Meta/WRI): tree cover 0% (37% before), moved 23 m on average",
+   "fitted": "terrain: never climbs, moved 3 m on average"
+  },
+  {
+   "name": "Chickadee Chutes",
+   "pts": [
+    [-111.65597, 40.58387],
+    [-111.65619, 40.58359],
+    [-111.65641, 40.58331],
+    [-111.65666, 40.58301],
+    [-111.65691, 40.58271]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): short green trail beside the Chickadee lift by the Snowbird Center; placed from 8 control points (median error 116 m); open ground in the canopy map along it. Approximate (about 50 m)"
+  },
+  {
+   "name": "Gad Gully",
+   "pts": [
+    [-111.6638, 40.56833],
+    [-111.66411, 40.56881],
+    [-111.66431, 40.56932],
+    [-111.66428, 40.56984],
+    [-111.66433, 40.57035],
+    [-111.66444, 40.57067]
+   ],
+   "why": "Snowbird 2026-27 trail map (skimap.org 45644): short gully on the east side of the Gad 2 lift's lower part ending at its base, above Carbonate; drawn from the bottom of Gadzooks to the Gad 2 base and kept on open ground in the canopy height map (moved 7 m). Approximate (about 60 m)"
+  }
+ ],
+ "split_ways": {
+  "557341960": [
+   [-111.66953, 40.56533],
+   "High Saddle",
+   "Thunder Bowl"
+  ]
+ }
 }

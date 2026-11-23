@@ -1,0 +1,17 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Three Way Exit Chute": "unofficial line (shown only when asked for) (2026-11-23)",
+  "pickhandle ridge": "unofficial line outside the resort's list (shown only when asked for) (2026-11-23)"
+ },
+ "dead_end": {
+  "pickhandle ridge": "unofficial line outside the resort's list (shown only when asked for) (2026-11-23)",
+  "Lower Employee Housing": "ends at the employee housing and car park, not at a lift (2026-11-23)",
+  "Lower Spook (To H Lot)": "ends at H Lot (car park), not at a lift (2026-11-23)",
+  "Lower North": "ends low in the valley below Northway (1.2 km, 250 m below the lift): an out-of-area route (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

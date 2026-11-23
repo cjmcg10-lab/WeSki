@@ -1,0 +1,19 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Revolution": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Midnight Ride": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Patriot": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Liberty Trees": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Liberty": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Two If By Sea": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Indy Face": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "Independence Bowl": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)",
+  "The Windows": "Independence Bowl and the Outback bowls: the run-out to a lift is missing (the terrain from their ends climbs 80-120 m to the nearest run); not joined without evidence (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

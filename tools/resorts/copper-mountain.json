@@ -35,6 +35,38 @@
    "Celebrity Ridge (top)",
    "trail:Schaefer's",
    "hike"
+  ],
+  [
+   "trail:Calendar Chute (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:Cornice Chute (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:Marvin Gardens (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:Park Place (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:Patrol Chute (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:Atlantic Cornice (bottom)",
+   "trail:Triple Zero"
+  ],
+  [
+   "trail:Pacific Cornice (bottom)",
+   "trail:Spaulding Glades"
+  ],
+  [
+   "trail:So Fine (bottom)",
+   "trail:Spaulding Glades"
   ]
  ],
  "links_note": "Tucker Mountain is hike-to (or snowcat) terrain beyond Copper Bowl; directions show the approach as a walk.",
@@ -165,5 +197,15 @@
    "len": 691,
    "why": "naip photo: drawn 76.4 m beside the cut run"
   }
+ },
+ "links_notes": {
+  "trail:Calendar Chute (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (198 m, no climb)",
+  "trail:Cornice Chute (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (198 m)",
+  "trail:Marvin Gardens (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (161 m)",
+  "trail:Park Place (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (shares Marvin Gardens' end)",
+  "trail:Patrol Chute (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (198 m)",
+  "trail:Atlantic Cornice (bottom) -> trail:Triple Zero": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Triple Zero (227 m)",
+  "trail:Pacific Cornice (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (234 m)",
+  "trail:So Fine (bottom) -> trail:Spaulding Glades": "2026-11-23: cornice chute ends at the top of the bowl; terrain falls straight to Spaulding Glades (220 m)"
  }
 }

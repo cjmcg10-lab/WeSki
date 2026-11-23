@@ -26,5 +26,24 @@
  "two_way_lifts": [
   "Télécabine d'Orelle"
  ],
- "two_way_lifts_note": "Télécabine d'Orelle: gondola from Orelle in the valley; no run goes down to Orelle, so skiers ride it down."
+ "two_way_lifts_note": "Télécabine d'Orelle: gondola from Orelle in the valley; no run goes down to Orelle, so skiers ride it down.",
+ "links": [
+  [
+   "trail:Boulevard Cumin (bottom)",
+   "trail:Tétras"
+  ],
+  [
+   "trail:Boulevard de la Lance (bottom)",
+   "trail:Mont de la Chambre"
+  ],
+  [
+   "trail:Boulevard de la Lance (bottom)",
+   "trail:4 Vents"
+  ]
+ ],
+ "links_notes": {
+  "trail:Boulevard Cumin (bottom) -> trail:Tétras": "2026-11-23: the run stops short; the terrain falls from its end to Tétras (23 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Boulevard de la Lance (bottom) -> trail:Mont de la Chambre": "2026-11-23: the run stops short; the terrain falls from its end to Mont de la Chambre (23 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Boulevard de la Lance (bottom) -> trail:4 Vents": "2026-11-23: the run stops short; the terrain falls from its end to 4 Vents (33 m, 1 m of climb) (tools/check_connections.py dead end)"
+ }
 }
