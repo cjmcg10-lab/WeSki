@@ -214,6 +214,13 @@ def main():
         if str(wid) in cfg.get("as_runs", []):
             t["piste:type"] = "downhill"
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
+    # "drop_ways" {way id: reason}: OpenStreetMap pieces checked by hand and left out (a stray stub running off into
+    # nowhere, a crossing drawn as an X with loose ends). Each is printed with its reason.
+    if cfg.get("drop_ways"):
+        dw = {str(k): v for k, v in cfg["drop_ways"].items()}
+        print("left out by the config (drop_ways):", "; ".join(f"{w[2].get('name') or 'way ' + str(w[0])}: {dw[str(w[0])]}"
+                                                              for w in pistes if str(w[0]) in dw))
+        pistes = [w for w in pistes if str(w[0]) not in dw]
     # trains and funiculars only come from the resort config (extra_lifts), which gives them their track
     lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS and (w[2]["aerialway"] not in ("train", "funicular") or str(w[0]).startswith("x"))]
     # Leave out what is not there to ski or ride this winter: abandoned, removed or unbuilt lifts and
@@ -1128,6 +1135,13 @@ def drop_duplicates(trails, ways, elev, on_list=lambda n: None, separate=(), sha
                                                                   and on_list(t["name"]) is not None)))
                     and k["_line"].distance(a) < tol]
             if near and key is None and holds_others(i, nd, near, tol):
+                near = []
+            # a short piece whose two ends are both shared with other runs is the link between them, not a copy:
+            # it lies within `tol` of its neighbours only because it touches them (Tremblant's 10-25 m joins
+            # between two pieces of Chalumeau, Nansen Bas and Panache were left out, so the run stopped short)
+            if (near and nd and len(nd) >= 2 and a.length < 2 * tol + 10
+                    and all(users[n_] - {i} for n_ in (nd[0], nd[-1]))
+                    and not any(k["_line"].distance(a.interpolate(0.5, normalized=True)) < 3 for k in near)):
                 near = []
             if near:
                 cov = cover(a, near, tol)
