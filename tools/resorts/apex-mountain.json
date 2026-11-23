@@ -43,5 +43,22 @@
   "Dude ney Trail": "Dude'ney Trail",
   "Grommit": "Gromit",
   "Pea Shooter": "Peashooter"
+ },
+ "links": [
+  [
+   "trail:Grandfather's Trail",
+   "trail:Twenty Two"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Gunbarrel"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Peashooter"
+  ]
+ ],
+ "links_notes": {
+  "Twenty Two, Gunbarrel, Peashooter": "the trail map draws these three leaving Grandfather's Trail along the ridge; OpenStreetMap starts them just below it"
  }
 }

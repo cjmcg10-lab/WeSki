@@ -100,5 +100,8 @@
   "Northern Spirit Express #1",
   "Silver Lode #4",
   "Sunrise Quad #5"
- ]
+ ],
+ "lifts_explained": {
+  "Dreamer #3": "the trail map names chair #3 Dreamer; OpenStreetMap names the same chair (#3, beside Grubstake #2) Payday #3"
+ }
 }

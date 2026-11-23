@@ -18,12 +18,10 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Five Trees"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 107,
  "rebuild_seconds": 46,
- "seconds": 61
+ "seconds": 35
 }

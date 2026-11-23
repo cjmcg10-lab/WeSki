@@ -14,7 +14,7 @@
   "Bingo Glades": 3,
   "Blazing Star": 2,
   "Blondie's": 2,
-  "Bonnie Bell": 2,
+  "Bonnie Bell": 3,
   "Buckhorn": 1,
   "Buckhorn Cutoff": 1,
   "Buddy System": 1,
@@ -67,7 +67,7 @@
   "Loushin's": 3,
   "Lower Corkscrew": 1,
   "Lower Kristi": 3,
-  "Lower Roch Run": 1,
+  "Lower Roch Run": 2,
   "Lower Walsh's": 3,
   "Lud's Lane": 2,
   "Magnifico": 1,
@@ -80,9 +80,9 @@
   "Normandy": 1,
   "North American": 1,
   "North Star": 2,
-  "Nose of Bell": 2,
+  "Nose of Bell": 3,
   "Ollie's Yot": 3,
-  "Pancake House Glade": 2,
+  "Pancake House Glade": 3,
   "Papa Bear": 3,
   "Percy": 2,
   "Perry's Prowl": 3,
@@ -146,5 +146,11 @@
  ],
  "hide": {
   "America's Downhill": "a race-course name in OpenStreetMap drawn along Ruthie's Run; the 2026-27 trail map shows only Ruthie's Run there"
+ },
+ "kept_harder": {
+  "Pancake House Glade": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Nose of Bell": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Lower Roch Run": "the trail map read blue on one look and OpenStreetMap says black; not confirmed on a close look, so the harder rating is kept",
+  "Bonnie Bell": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept"
  }
 }

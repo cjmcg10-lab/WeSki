@@ -1,24 +1,27 @@
 {
  "id": "bogus-basin-mountain-recreation",
  "reachable": [
-  156,
-  156
+  152,
+  152
  ],
  "auto_joins": 7,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 0,
  "raised": 0,
- "official": null,
+ "official": [
+  90,
+  133,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Tubing Hill"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 76,
- "rebuild_seconds": 23
+ "rebuild_seconds": 23,
+ "seconds": 27
 }

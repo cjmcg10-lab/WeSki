@@ -9,7 +9,7 @@
   "Big T Glade": 2,
   "Cathedral Brook": 2,
   "Cayuga": 1,
-  "Chinook": 0,
+  "Chinook": 1,
   "Chippewa Glades": 3,
   "Dakota": 0,
   "Deer Run": 1,
@@ -55,7 +55,8 @@
  },
  "blue_black": [],
  "not_runs": {
-  "Area 15": "terrain park"
+  "Area 15": "terrain park",
+  "Thunderhawk Learning Area": "beginner learning area at the summit served by a surface lift, not a run line"
  },
  "lifts": [
   "Belleayre Express",
@@ -78,6 +79,10 @@
   "Rip Van Winkle": "mapped in OpenStreetMap on the former Highmount ski area beside Belleayre; not on the 2024-26 trail map",
   "Spring Glen": "mapped in OpenStreetMap on the former Highmount ski area beside Belleayre; not on the 2024-26 trail map",
   "Down Under": "mapped in OpenStreetMap on the former Highmount ski area beside Belleayre; not on the 2024-26 trail map",
-  "Glide": "mapped in OpenStreetMap on the former Highmount ski area beside Belleayre; not on the 2024-26 trail map"
+  "Glide": "mapped in OpenStreetMap on the former Highmount ski area beside Belleayre; not on the 2024-26 trail map",
+  "way 1362769395": "a second piece named Esopus in OpenStreetMap on the former Highmount slope, apart from the ski area; the trail map's Esopus is the run beside Big T Glade"
+ },
+ "kept_harder": {
+  "Chinook": "the trail map read green on one look and OpenStreetMap says blue; not confirmed on a close look, so the harder rating is kept"
  }
 }

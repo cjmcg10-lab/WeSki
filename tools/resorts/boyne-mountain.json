@@ -38,5 +38,15 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Boyne Land": "Boyneland",
+  "Crazy Moustache": "Crazy Mustache",
+  "Griece's Way": "Grice's Way",
+  "In the Woods": "In To The Woods",
+  "Short Cut": "Shortcut",
+  "Super Bowl": "Superbowl",
+  "Top Notch": "Topnotch",
+  "Zippee's": "Zippie's"
  }
 }

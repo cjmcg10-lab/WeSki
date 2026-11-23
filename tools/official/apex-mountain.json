@@ -2,7 +2,7 @@
  "source": "Apex Mountain trail map (skimap.org/skimaps/view/27990), read by hand at 500 dpi",
  "fetched": "2026-11-23",
  "runs": {
-  "97": 1,
+  "97": 2,
   "97c": 1,
   "Adrian's Alley": 1,
   "Any Which Way Glades": 2,
@@ -85,5 +85,8 @@
   "Quickdraw",
   "Stock's Chair",
   "T-bar"
- ]
+ ],
+ "kept_harder": {
+  "97": "the trail map read blue on one look and OpenStreetMap says black; not confirmed on a close look, so the harder rating is kept"
+ }
 }

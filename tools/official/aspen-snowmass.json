@@ -26,7 +26,7 @@
   "Cirque Headwall": 3,
   "Coffee Pot": 1,
   "Coney Glade": 1,
-  "Cookies": 2,
+  "Cookies": 3,
   "Coyote Hollow": 1,
   "Creekside": 1,
   "Dallas Freeway": 1,
@@ -39,7 +39,7 @@
   "Fast Draw": 2,
   "Free Fall": 2,
   "Free Fall Glades": 2,
-  "Frog Pond Glades": 2,
+  "Frog Pond Glades": 3,
   "Funnel": 1,
   "Funnel Bypass": 0,
   "Galavant": 1,
@@ -49,11 +49,11 @@
   "Granite": 1,
   "Green Cabin": 1,
   "Grey Wolf": 1,
-  "Grinder": 2,
+  "Grinder": 3,
   "Gunner's View": 1,
   "Hal's Hollow": 1,
   "Hang On Halvin's": 3,
-  "Hanging Valley Glades": 2,
+  "Hanging Valley Glades": 3,
   "Headwall": 3,
   "High Pass": 2,
   "Howler": 2,
@@ -140,5 +140,11 @@
   "Sky Cab",
   "Two Creeks",
   "Village Express"
- ]
+ ],
+ "kept_harder": {
+  "Hanging Valley Glades": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Grinder": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Frog Pond Glades": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Cookies": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept"
+ }
 }

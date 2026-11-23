@@ -10,7 +10,7 @@
   "B-Fore": 3,
   "Ballroom": 3,
   "Be One": 3,
-  "Bear Hollow Road": 2,
+  "Bear Hollow Road": 3,
   "Bob's Glade": 3,
   "Boomerang": 3,
   "Boomerang Woods": 3,
@@ -35,8 +35,8 @@
   "Golden Horn Woods": 3,
   "Grahamster's": 3,
   "Grand Prix": 1,
-  "Grand Reverse": 2,
-  "Grand Traverse": 2,
+  "Grand Reverse": 3,
+  "Grand Traverse": 3,
   "Gunbarrel": 1,
   "Hayden": 1,
   "Heather-Bedlam": 1,
@@ -90,7 +90,7 @@
   "Steep 'N Deep": 3,
   "Suzi Q.": 2,
   "T-Lazy-7 Catwalk": 1,
-  "The Wall": 2,
+  "The Wall": 3,
   "Thunderbowl": 1,
   "Troyer's Trail": 1,
   "Upper Jerome": 1,
@@ -119,5 +119,11 @@
  ],
  "hide": {
   "Five Trees": "a chairlift in OpenStreetMap down in the valley east of the Highlands Village, not joined to the ski area and not on the resort trail map (2026-27, skimap.org 49175)"
+ },
+ "kept_harder": {
+  "The Wall": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Grand Traverse": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Grand Reverse": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept",
+  "Bear Hollow Road": "the trail map read black on one look and OpenStreetMap says double; not confirmed on a close look, so the harder rating is kept"
  }
 }
