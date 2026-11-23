@@ -1018,4 +1018,8 @@ export default {
   1410: 'New version ready',
   1411: 'Reload',
   1430: 'Very cold on the lifts: it feels like {0} in the coldest ski hour.',
+  1452: "Smooth edges",
+  1453: "Softens jagged edges on the 3D map. Applies the next time you open a mountain.",
+  1454: "Off by default on very sharp screens, where jagged edges are hard to see and smoothing them costs the most speed. Turn it off if the map feels slow; turn it on if edges look jagged.",
+  1455: "Applies the next time you open a mountain.",
 };
