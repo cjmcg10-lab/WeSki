@@ -69,6 +69,21 @@ try {
   await page.locator('#map canvas').first().waitFor({ state: 'visible', timeout: 60000 });
   await page.waitForTimeout(3000);
 
+  // Emergency: the red SOS button opens the numbers sheet: Jay Peak's patrol line and 911, both as tel: links
+  await page.locator('#sos-btn').click();
+  await page.locator('#sheet', { hasText: 'Ski patrol at this mountain' }).waitFor({ state: 'visible', timeout: 15000 });
+  for (const href of ['tel:+18023272187', 'tel:911']) {
+    if (!(await page.locator(`#sheet a[href="${href}"]`).count())) throw new Error(`emergency sheet has no ${href} link`);
+  }
+  await page.locator('#sheet [data-act="sos-locate"]').waitFor({ state: 'visible', timeout: 5000 });
+  mkdirSync(SHOT_DIR, { recursive: true });
+  await page.screenshot({ path: `${SHOT_DIR}/emergency.png` });
+  await page.locator('#sheet [data-act="close-sheet"]').click();
+  // and from More
+  await page.locator('[data-act="tab"][data-tab="more"]').click();
+  await page.locator('#sheet [data-act="sos"]').click();
+  await page.locator('#sheet', { hasText: 'General emergency number' }).waitFor({ state: 'visible', timeout: 15000 });
+
   await page.locator('[data-act="tab"][data-tab="forecast"]').click();
   // opened inside Jay Peak: its forecast comes first ("You're here") and mountains can still be added
   await page.locator('.fc-rowhead', { hasText: 'Jay Peak' }).locator('.fc-here').waitFor({ state: 'visible', timeout: 30000 });

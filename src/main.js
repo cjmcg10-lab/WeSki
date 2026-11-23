@@ -24,6 +24,7 @@ import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
 import * as acct from './account.js';
 import * as fcUi from './forecast/ui.js';
+import { emergencyFor, mainNumber, telHref, fmtCoords, nearestLift, nearestRun, sourceHost } from './emergency.js';
 import { FEEDBACK_TAGS, FEEDBACK_LABELS, FEEDBACK_MAX_AGE_DAYS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
 
 const $ = (s) => document.querySelector(s);
@@ -943,6 +944,7 @@ function onFix(fix) {
   if (S.nav) recalcNav();
   renderChrome();
   if (S.tab === 'track' && S.sheet === 'track') renderTrackLive();
+  if (S.sheet === 'sos') renderSheet();
 }
 
 /** Optional frames-per-second readout (More > Show frame rate). */
@@ -1524,7 +1526,7 @@ function renderAcctChip() {
 function renderSheet() {
   renderAcctChip();
   if (!S.sheet) return;
-  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety, ...fcUi.sheets }[S.sheet];
+  const fn = { group: sheetGroup, track: sheetTrack, history: sheetHistory, session: sheetSession, more: sheetMore, legend: sheetLegend, place: sheetPlace, steps: sheetSteps, closures: sheetClosures, weather: sheetWeather, routeprefs: sheetRoutePrefs, advanced: sheetAdvanced, search: sheetSearch, customize: sheetCustomize, pass: sheetPass, privacy: sheetPrivacy, report: sheetReport, safety: sheetSafety, sos: sheetSos, ...fcUi.sheets }[S.sheet];
   const [title, html, small] = fn(S.sheetArg);
   const body = $('#sheet-body'), keep = body.scrollTop, same = S.sheetTitle === title && S.sheetLang === getLang();
   S.sheetTitle = title; S.sheetLang = getLang();
@@ -1562,6 +1564,7 @@ const ICON = {
   phone: '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.800" style="flex:none"><rect x="7" y="2.500" width="10" height="19" rx="2.500"/><path d="M11 18.500h2"/></svg>',
   info: '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.800" style="flex:none"><circle cx="12" cy="12" r="9.500"/><path d="M12 11v6M12 7.500v.01" stroke-linecap="round" stroke-width="2.200"/></svg>',
   refresh: '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.600" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px"><path d="M20 11a8 8 0 0 0-14.500-4.500L4 8M4 4v4h4M4 13a8 8 0 0 0 14.500 4.500L20 16M20 20v-4h-4"/></svg>',
+  sos: '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.500 1.500a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2"/></svg>',
   sim: '<svg viewBox="0 0 24 24"><path d="M3 11 21 3l-8 18-2-8z" fill="none" stroke="currentColor" stroke-width="2.200" stroke-linejoin="round"/></svg>',
 };
 const FIRST_DAY = `<svg viewBox="0 0 210 120" aria-hidden="true"><path d="M18 108 70 58 92 74 122 30 150 62 168 50 196 108z" fill="#8fb0cc"/><path d="M122 30 150 62 140 108H96z" fill="#5f84a8"/><path d="M70 58 92 74 80 108H18z" fill="#6f93b5"/><path d="M122 30 131 41 123 39 117 45 112 41z" fill="#f4f8fb"/><path d="M70 58 77 65 70 64 65 67z" fill="#eaf1f7"/><path d="M168 50 175 58 168 57 163 60z" fill="#eaf1f7"/><path d="M122 31V12" stroke="#d9e4ee" stroke-width="2"/><path d="M123 12h16l-4 5 4 5h-16z" fill="#3ee6c4"/><path d="M121 46c-14 8 10 16-4 26s-28 10-12 26" stroke="#fff" stroke-width="4.500" fill="none" stroke-linecap="round"/><path d="M30 108l6-16 6 16zM168 108l6-18 6 18zM186 108l5-13 5 13z" fill="#1f8a6a"/><path d="M8 108h194" stroke="#9fb7cc" stroke-width="2"/></svg>`;
@@ -1796,6 +1799,7 @@ function sheetMore() {
   const src = S.resort.sources;
   const me = acct.account();
   return ['More', `
+    <div class="card sos-row"><button class="row-link" data-act="sos">${ICON.sos}<div class="grow">Emergency<small>Ski patrol and emergency numbers, your position</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="pass">${ICON.ticket}<div class="grow">SkiWithMe Pass<small>${acct.config().paywall ? (me?.signedIn ? passStatus(me) : 'Sign in, plans and prices') : 'Free during the preview · plans and prices'}</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="routeprefs">${ICON.route}<div class="grow">Route preferences<small>Hardest trail: ${esc(levelName(S.resort, S.maxDiff))} · Uphill: ${esc(TOLERANCE[S.uphill].label)}</small></div><span class="chev">›</span></button></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Spoken directions</h4><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div>
@@ -1933,6 +1937,46 @@ function sheetSafety() {
     <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
     <p class="sub"><a href="/legal/terms" target="_blank">By continuing you agree to the Terms of Use.</a></p>
     <button class="btn" data-act="safety-ok">I understand</button></div>`];
+}
+
+// ---------- emergency (free for everyone, works offline: the numbers are bundled into the app)
+const callBtn = (n, cls = '') => `<a class="btn sos-call ${cls}" href="${telHref(n.tel)}"><span>${t('Call')}</span> <b translate="no">${esc(n.phone)}</b></a>`;
+function sheetSos() {
+  const E = emergencyFor(S.place?.id), main = mainNumber(E.general), P = E.patrol;
+  const general = E.general.filter((g) => !P || g.tel !== P.tel);
+  const patrol = P ? `<div class="card sos-card"><h4>Ski patrol at this mountain</h4>
+      <p class="sos-label" translate="no">${esc(P.label)}</p>${callBtn(P, 'red')}
+      ${P.hours ? `<p class="sub">${t('Hours: {0}', esc(P.hours))}. ${t('Outside them, call {0}.', esc(main.phone))}</p>` : ''}
+      ${(P.more || []).map((m) => `<p class="sos-label" translate="no">${esc(m.label)}</p>${callBtn(m, 'alt')}`).join('')}
+      ${E.note ? `<p class="sub" translate="no">${esc(E.note)}</p>` : ''}
+      <p class="note">${t('Source: {0}, checked {1}.', `<a href="${esc(P.source)}" target="_blank" rel="noopener" translate="no">${esc(sourceHost(P.source))}</a>`, esc(fmtDay(P.checked + 'T12:00:00')))} ${t('Numbers can change: check the trail map or signs at the resort.')}</p></div>`
+    : `<div class="card sos-card"><h4>Ski patrol at this mountain</h4><p class="sub">No ski patrol number found for this mountain. Use the general emergency number, or tell any lift attendant or resort staff member.</p>${E.note ? `<p class="sub" translate="no">${esc(E.note)}</p>` : ''}</div>`;
+  const gen = `<div class="card sos-card"><h4>General emergency number</h4>${general.map((g) => `<p class="sos-label">${esc(g.label)}</p>${callBtn(g, g === main ? 'red' : 'alt')}`).join('')}</div>`;
+  let pos;
+  if (S.me) {
+    const c = fmtCoords(S.me.lat, S.me.lon), bits = [];
+    const on = S.me.inBounds && trailAt(S.resort, S.me.x, S.me.y, { acc: S.me.acc });
+    const run = on ? null : S.me.inBounds && nearestRun(S.resort, S.me.x, S.me.y);
+    const lift = S.me.inBounds && nearestLift(S.resort, S.me.x, S.me.y);
+    if (on) bits.push(t('On {0}', `<b translate="no">${esc(on.t.name || t('a connecting run'))}</b>`));
+    else if (run) bits.push(t('Near {0}', `<b translate="no">${esc(run.name)}</b>`));
+    if (lift) bits.push(t('Near lift {0}', `<b translate="no">${esc(lift.name)}</b>`));
+    const elev = S.me.inBounds ? S.geo.elev(S.me.x, S.me.y) : S.me.alt;
+    if (elev != null && Number.isFinite(elev)) bits.push(t('Elevation {0}', fmtVert(elev)));
+    if (S.me.acc) bits.push(t('Accuracy about {0}', fmtDist(S.me.acc)));
+    const old = Date.now() - S.me.t > 120000;
+    pos = `<p class="sos-coords" translate="no">${c.human}</p><p class="sub">${bits.join(' · ')}</p>
+      ${old ? `<p class="sub">${t('Last GPS fix at {0}', fmtClock(S.me.t))}</p>` : ''}
+      <p class="sub">Read this out to the dispatcher.</p>
+      <button class="btn alt sm" data-act="sos-copy">Copy position</button>`;
+  } else {
+    pos = `<p class="sub">Location not known yet. Turn on GPS, or describe the run, lift or sign nearest to you.</p><button class="btn alt sm" data-act="sos-locate">Find my position</button>`;
+  }
+  return ['Emergency', `<div class="card sos-intro"><p><b>${t('If someone is hurt, call for help. If you are unsure who to call, call {0}.', `<span translate="no">${esc(main.phone)}</span>`)}</b></p>
+      <p class="sub">SkiWithMe does not contact anyone for you. Pressing Call opens your phone’s dialler. Stay with the injured person if it is safe, and mark the spot above them with crossed skis.</p></div>
+    ${patrol}${gen}
+    <div class="card sos-card"><h4>Your position</h4>${pos}</div>
+    <p class="note">You can also tell any lift attendant or resort staff member: they can reach ski patrol by radio.</p>`];
 }
 
 /** One summary per ski day, sent the day after, only for days skied after switching map help on. */
@@ -2374,6 +2418,16 @@ async function onClick(e) {
     case 'close-sheet': closeSheet(); break;
     case 'mode': S.map.setMode(S.map.mode === '3d' ? '2d' : '3d'); renderChrome(); break;
     case 'legend': openSheet('legend'); break;
+    case 'sos': openSheet('sos'); break;
+    case 'sos-locate':      // straight to GPS: no map-help question in an emergency (it is asked another time)
+      if (S.testMode) { toast('Test mode: tap the map, then “Put me here”.'); break; }
+      S.loc.start(); toast('Finding your location…'); renderChrome();
+      break;
+    case 'sos-copy': {
+      const c = S.me && fmtCoords(S.me.lat, S.me.lon);
+      if (c) { try { await navigator.clipboard.writeText(c.plain); toast('Position copied'); } catch { toast(c.plain, 8000); } }
+      break;
+    }
     case 'weather': if (S.sheet === 'weather') closeSheet(); else { openSheet('weather'); refreshWeather(false); } break;
     case 'wx-site': S.wxSite = d.v; renderSheet(); break;
     case 'wx-view': S.wxView = d.v; $('#sheet-body').scrollTop = 0; renderSheet(); break;
