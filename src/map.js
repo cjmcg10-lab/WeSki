@@ -12,6 +12,8 @@ import * as M from './models.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loopTimer, detachSegments, shuttle, swing, tramRide } from './liftmotion.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
+import { prepInput, prepTerrain, prepBuffers, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel } from './terrainprep.js';
+import { simplifyRun, simplifyPath3 } from './simplify.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
 
@@ -42,22 +44,52 @@ const POI_STYLE = {
   service: ['#59636e', '•', 4], parking: ['#3b6ea8', 'P', 4], shelter: ['#59636e', '•', 4], lifttop: ['#e03131', '', 9],
 };
 
-// Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the
-// camera lifts are still animated, and within what distance chairs and cabins are drawn in full detail (metres).
+// Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the camera lifts are
+// animated and their chairs and cabins drawn at all, within what distance those are drawn in full detail (metres),
+// and how many screen pixels of height error the far ground may have (coarser pieces far away). Detail goes first,
+// sharpness last: a step down lowers the far detail before it softens the picture.
 const QUALITY = [
-  { pr: 2, trees: 1, lifts: 4500, near: 480 },
-  { pr: 1.5, trees: 0.75, lifts: 3500, near: 420 },
-  { pr: 1.25, trees: 0.5, lifts: 2500, near: 340 },
-  { pr: 1, trees: 0.3, lifts: 1600, near: 260 },
+  { pr: 2, trees: 1, lifts: 4500, near: 480, lod: 2 },
+  { pr: 2, trees: 0.75, lifts: 3500, near: 420, lod: 3 },
+  { pr: 1.5, trees: 0.5, lifts: 2500, near: 340, lod: 4 },
+  { pr: 1, trees: 0.3, lifts: 1600, near: 260, lod: 6 },
 ];
+// While the map moves, it is drawn at this share of its sharpness (never below 1x) and drawn sharp again once it
+// stops; only on screens drawn sharper than 1.2x, where it saves the most and shows the least.
+const MOVING_PR = 0.65, SHARP_AFTER_MS = 250;
+// Trees further than this are thinned out with distance (to a share of FAR_TREES), and so are the land's far pieces.
+const TREES_FULL_M = 2500, FAR_TREES = 0.35;
 const STATION_COLOR = 0x8b2f2f;
 const UP = new THREE.Vector3(0, 1, 0);
 // real line speeds of the carriers other than chairs (m/s)
 const CARRIER_SPEED = { cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
 
 export class SkiMap {
-  constructor(container, resort, geo, surroundH = null, canopy = null) {
+  /**
+   * The ground's heavy set-up (snow mask, colour fields, the ground cut into pieces), worked out in a background
+   * worker so the screen does not freeze while it runs; resolves to what the constructor takes as `opts.prep`.
+   * Falls back to the main thread where workers are not available.
+   */
+  static prepare(resort, geo) {
+    const input = prepInput(resort, geo.h);
+    if (typeof Worker === 'undefined') return Promise.resolve(prepTerrain(input));
+    return new Promise((resolve) => {
+      let w;
+      const local = () => { w?.terminate(); resolve(prepTerrain(input)); };
+      try { w = new Worker(new URL('./terrain.worker.js', import.meta.url), { type: 'module' }); } catch { local(); return; }
+      w.onmessage = (e) => { w.terminate(); if (e.data?.mask) resolve(e.data); else local(); };
+      w.onerror = (e) => { e.preventDefault?.(); local(); };
+      w.postMessage(input);
+    });
+  }
+
+  /**
+   * opts.prep: the result of SkiMap.prepare (worked out here when missing); opts.antialias: smooth edges (default:
+   * on, except on screens sharper than 2.5x, where jagged edges are hard to see and smoothing costs the most).
+   */
+  constructor(container, resort, geo, surroundH = null, canopy = null, opts = {}) {
     this.surroundH = surroundH;
+    this.prep = opts.prep || prepTerrain(prepInput(resort, geo.h));
     // real tree cover (tools/build_canopy.py), or null for maps without one; a file made for another build of the
     // map (a different grid) is ignored, and the old trees are drawn instead
     const g0 = resort.grid;
@@ -77,7 +109,8 @@ export class SkiMap {
     this.clock = new THREE.Clock();
     this.t = 0;
 
-    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: true }));
+    this.antialias = opts.antialias ?? SkiMap.defaultAntialias();
+    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: this.antialias, powerPreference: 'high-performance', stencil: true }));
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(r.domElement);
     this.overlay = document.createElement('canvas');
@@ -118,7 +151,7 @@ export class SkiMap {
     this.buildLifts();
     this.buildBuildings();
     this.buildMarkers();
-    this.scene.traverse((o) => { if (o.isMesh && o !== this.trees) clearsTreeMark(o.material); });
+    this.prep = null;      // its arrays now live in the scene's buffers and textures
 
     const c = (this.controls = new MapControls(this.cam3, r.domElement));
     c.enableDamping = true;
@@ -152,13 +185,21 @@ export class SkiMap {
     this.loop();
   }
 
+  /** Antialiasing unless the screen is sharper than 2.5x (where it is hardly visible and costs the most). */
+  static defaultAntialias() {
+    return (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1) < 2.5;
+  }
+
   /** Tear the map down (when switching to another resort) and give its graphics memory back. */
   dispose() {
     this.dead = true; this.running = false;
     this.ro.disconnect();
     document.removeEventListener('visibilitychange', this.onVis);
     this.controls.dispose();
-    this.scene.traverse((o) => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose()); });
+    this.scene.traverse((o) => {
+      o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose());
+      for (const g of o.userData?.geos || []) g?.dispose();      // coarser ground pieces not drawn right now
+    });
     this.groundTex?.dispose(); this.zoneTex?.dispose(); this.canopyTex?.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss?.();
@@ -186,80 +227,81 @@ export class SkiMap {
   }
 
   // ---------- scene building
-  /**
-   * Half the width of a run's snow. Measured on aerial photos where we have it (`w`, tools/align_trails.py
-   * --widths: typically 20 m wide, most 12-48 m); otherwise a typical cut run (26 m, greens a little wider).
-   * Runs were all drawn 50-60 m wide before, which is wider than 94% of the measured ones.
-   * Glades keep a wider band: they are runs through the trees, not cut strips.
-   */
-  runRadius(t) {
-    if (t.glade) return 16;
-    if (t.w) return Math.min(45, Math.max(6, t.w / 2));
-    return t.d === 0 ? 15 : 13;
-  }
+  /** Half the width of a run's snow (src/terrainprep.js). */
+  runRadius(t) { return runRadius(t); }
 
   /** Slope outlines (OpenStreetMap piste areas) shown on the map: those whose run is not hidden. */
-  shownAreas() {
-    const hidden = new Set(this.resort.trails.filter((t) => t.hide && t.name).map((t) => t.name));
-    const shown = new Set(this.resort.trails.filter((t) => !t.hide && t.name).map((t) => t.name));
-    return (this.resort.areas || []).filter((a) => !a.name || shown.has(a.name) || !hidden.has(a.name));
+  shownAreas() { return shownAreas(this.resort); }
+
+  /**
+   * The ground: the LiDAR grid as one smoothly shaded surface, cut into square pieces (src/terrainprep.js) so the
+   * pieces off screen are skipped, and each piece drawn with fewer heights the further away it is (pickLods), as long
+   * as the shape changes by less than a pixel or two there. Short skirts under every piece's edge hide the gaps
+   * where two neighbours are drawn with different detail. The light and shade use the full-detail normals, so the
+   * slopes keep their look; the colours come from groundMaterial().
+   */
+  buildTerrain() {
+    const { zmin } = this.resort.grid, S = this.prep.surface;
+    this.snowMask = this.prep.mask;
+    const posA = new THREE.BufferAttribute(S.pos, 3), nrmA = new THREE.BufferAttribute(S.nrm, 3), idxA = new THREE.BufferAttribute(S.index, 1);
+    const gm = this.groundMaterial(zmin);
+    // the whole ground as one mesh, not drawn (the pieces are): for tools that read the full surface
+    const full = new THREE.BufferGeometry();
+    full.setAttribute('position', posA); full.setAttribute('normal', nrmA); full.setIndex(idxA);
+    this.terrain = new THREE.Mesh(full, gm);
+    this.terrainGroup = this.piecesOf(S, { position: posA, normal: nrmA }, idxA, gm);
+    this.terrainPieces = this.terrainGroup.children;
+    this.scene.add(this.terrainGroup);
+    this.buildSurround();
   }
 
-  buildTerrain() {
-    const { nx, ny, cell, zmin } = this.resort.grid, h = this.geo.h, geo = this.geo;
-    // Snow mask: groomed trails, lift lines and base areas are open snow, the rest is forest.
-    const mask = new Float32Array(nx * ny);
-    const stamp = (x, y, rad, v) => {
-      const r = Math.ceil(rad / cell), ci = Math.round(x / cell), cj = Math.round(y / cell);
-      for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
-        for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++) {
-          if (Math.hypot(i * cell - x, j * cell - y) <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v);
-        }
-    };
-    for (const t of this.resort.trails) if (!t.hide) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], this.runRadius(t), t.glade ? 0.4 : 1);
-    // a slope's real outline is open snow too
-    for (const a of this.shownAreas()) {
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (let k = 0; k < a.pts.length; k += 2) { x0 = Math.min(x0, a.pts[k]); x1 = Math.max(x1, a.pts[k]); y0 = Math.min(y0, a.pts[k + 1]); y1 = Math.max(y1, a.pts[k + 1]); }
-      for (let j = Math.max(0, Math.floor(y0 / cell)); j <= Math.min(ny - 1, Math.ceil(y1 / cell)); j++)
-        for (let i = Math.max(0, Math.floor(x0 / cell)); i <= Math.min(nx - 1, Math.ceil(x1 / cell)); i++)
-          if (inPoly(a.pts, i * cell, j * cell)) mask[j * nx + i] = 1;
+  /** One mesh per piece of a chunked surface (chunkSurface), all sharing its vertex buffers and index buffer. */
+  piecesOf(S, attrs, idxA, mat) {
+    const P = S.pos, nx = S.nx, group = new THREE.Group(), sk = skirtLayout(S.nx, S.ny, S.C);
+    group.renderOrder = GROUND_ORDER;
+    for (const ch of S.chunks) {
+      const g = new THREE.BufferGeometry();
+      for (const [k, a] of Object.entries(attrs)) g.setAttribute(k, a);
+      g.setIndex(idxA); g.setDrawRange(ch.start, ch.count);
+      // the piece's own bounds (computeBoundingSphere would measure the whole shared buffer), skirts included
+      const c0 = (ch.j0 * nx + ch.i0) * 3, c1 = (ch.j1 * nx + ch.i1) * 3;
+      g.boundingBox = new THREE.Box3(new THREE.Vector3(P[c0], ch.y0, P[c1 + 2]), new THREE.Vector3(P[c1], ch.y1, P[c0 + 2]));
+      g.boundingSphere = g.boundingBox.getBoundingSphere(new THREE.Sphere());
+      const m = new THREE.Mesh(g, mat);
+      m.renderOrder = GROUND_ORDER;      // before the runs (see buildTrails)
+      m.userData = { ch, geos: [g], L: 0, sk, nx, attrs };
+      group.add(m);
     }
-    for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 30, 1);
-    for (const l of this.resort.lifts) {
-      if (l.hide) continue;
-      const n = Math.ceil(l.len / 12);
-      for (let k = 0; k <= n; k++) {
-        const f = k / n, x = l.pts[0] + (l.pts[l.pts.length - 2] - l.pts[0]) * f, y = l.pts[1] + (l.pts[l.pts.length - 1] - l.pts[1]) * f;
-        stamp(x, y, 9, 0.5);     // lift lines are cut through the trees (0.5: no trees; glades are 0.4)
+    return group;
+  }
+
+  /**
+   * Per piece, the coarsest version whose height error stays under the quality step's pixel limit (QUALITY lod) at
+   * its distance from the camera; coarser index lists are made the first time a piece needs one. In 2D, where a
+   * height error only shifts the shading a little, three times the limit is allowed. Also sets the ground's depth
+   * bias (groundMaterial) so a run line never dips into a coarser far piece.
+   */
+  pickLods() {
+    const is3 = this.mode === '3d', Q = QUALITY[this.q || 0], cam = this.camera.position;
+    // metres a screen pixel covers (per metre of distance, in 3D)
+    const mpp = is3 ? (2 * Math.tan(THREE.MathUtils.degToRad(this.cam3.fov / 2))) / (this.h || 1) : 1 / this.zoom2;
+    const px = is3 ? Q.lod : Q.lod * 3;
+    if (this.groundBias) this.groundBias.value.set(is3 ? px * mpp * 1.3 : 0, is3 ? 0 : px * mpp * 1.3 + 2);
+    for (const group of [this.terrainGroup, this.surroundGroup]) if (group) for (const m of group.children) {
+      const u = m.userData, errs = u.ch.errs;
+      if (errs.length < 2) continue;
+      const bs = u.geos[0].boundingSphere, d = is3 ? Math.max(1, cam.distanceTo(bs.center) - bs.radius) : 1;
+      const L = pickLevel(errs, mpp * d, px);
+      if (L === u.L) continue;
+      if (!u.geos[L]) {
+        const g = new THREE.BufferGeometry();
+        for (const [k, a] of Object.entries(u.attrs)) g.setAttribute(k, a);
+        g.setIndex(new THREE.BufferAttribute(pieceIndex(u.ch, u.ch.steps[L], u.nx, u.sk), 1));
+        g.boundingBox = u.geos[0].boundingBox; g.boundingSphere = bs;
+        u.geos[L] = g;
       }
+      m.geometry = u.geos[L]; u.L = L;
     }
-    this.snowMask = mask;
-    // Smoothly shaded mesh whose corners are shared (indexed): far less memory than one separate
-    // triangle per face. Its colours come from groundMaterial().
-    const n = nx * ny;
-    const pos = new Float32Array(n * 3);
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-      const o = j * nx + i;
-      pos[o * 3] = i * cell - geo.W / 2; pos[o * 3 + 1] = h[o] / 10; pos[o * 3 + 2] = -(j * cell - geo.H / 2);
-    }
-    const idx = new Uint32Array((nx - 1) * (ny - 1) * 6);
-    let k = 0;
-    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
-      idx[k++] = a; idx[k++] = b; idx[k++] = e; idx[k++] = a; idx[k++] = e; idx[k++] = d;
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setIndex(new THREE.BufferAttribute(idx, 1));
-    g.computeVertexNormals();
-    const gm = this.groundMaterial(zmin);
-    // stencil: where the ground is the nearest thing it clears the "tree here" mark (see buildTrails)
-    Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilWriteMask: TREE_BIT, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
-    this.terrain = new THREE.Mesh(g, gm);
-    this.terrain.renderOrder = GROUND_ORDER;   // before the runs' "seen" pass and the trees (see buildTrails)
-    this.scene.add(this.terrain);
-    this.buildSurround();
   }
 
   /**
