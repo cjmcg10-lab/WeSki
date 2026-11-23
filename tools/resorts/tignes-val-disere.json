@@ -9,6 +9,30 @@
  "isolated_lifts": [
   "Snowtubing"
  ],
+ "extra_lifts": [
+  {
+   "name": "Funival",
+   "kind": "funicular",
+   "both": true,
+   "minutes": 6,
+   "pts": [
+    [6.9642481, 45.4591423],
+    [6.950132, 45.4431998]
+   ],
+   "rail": true
+  },
+  {
+   "name": "Funiculaire Perce-Neige",
+   "kind": "funicular",
+   "both": true,
+   "pts": [
+    [6.8988963, 45.4519623],
+    [6.8918523, 45.4239024]
+   ],
+   "rail": true
+  }
+ ],
+ "extra_lifts_note": "The two underground funiculars are tagged railway=funicular in OpenStreetMap, which the build only takes when listed here: Funival, La Daille to Bellevarde (ways 23139362 and 30721497; 6 minutes from their aerialway:duration, 4.8 + 1) and Perce-Neige, Val Claret to the Grande Motte glacier (way 30721456 and its passing loop). Both are on the resort's 2026-27 piste map and lift list; they were found missing by tools/whole_check.py (issue #59, 2026-11-23).",
  "way_pts": {
   "23139905": {
    "pts": [
