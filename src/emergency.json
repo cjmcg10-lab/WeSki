@@ -425,6 +425,10 @@
   },
   "mad-river-glen": {
    "country": "US",
+   "phone": "802-989-0012",
+   "tel": "+18029890012",
+   "label": "Mad River Glen Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/35347",
    "checked": "2026-11-23"
   },
   "magic-mountain": {
