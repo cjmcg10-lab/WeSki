@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**43 runs (42 named, 20.5 km), 6 lifts. Ready.**
+**43 runs (41 named, 20.4 km), 6 lifts. Ready.**
 
 - info: 1 joins made automatically (look at the longest ones on the map)  
   Gronk Glades top ski 57 m

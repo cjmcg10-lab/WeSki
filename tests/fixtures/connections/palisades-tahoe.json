@@ -14,5 +14,6 @@
  "uphill": {
   "Sun Bowl -> Big Bend Bowl": "automatic join between two bowl outlines that climbs a little; left for a look (2026-11-23)",
   "Sun Bowl -> SP Bowl": "automatic join between two bowl outlines that climbs a little; left for a look (2026-11-23)"
- }
+ },
+ "doubled": {}
 }

@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**190 runs (141 named, 115.7 km), 19 lifts. 2 things to look at.**
+**186 runs (139 named, 115.4 km), 19 lifts. 2 things to look at.**
 
 - **LOOK**: 3 runs on the resort's list are not on the map  
   Grouse Glade, Heritage Trail, Nastar (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
@@ -13,11 +13,11 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 3 run pieces hidden (not on the resort's list and not a link)  
   (no name) (1137400863, 1206 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (775384455, 531 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (1137400864, 228 m): OpenStreetMap: backcountry, no name (not a resort run)
 - info: 3 lifts flagged for review were already on the previous build (checked then)
-- info: audit: dead end: 2, flat black: 1, no rating: 1, run climbs: 4, stub: 1
-- info: same counts as the previous build
+- info: audit: dead end: 2, flat black: 1, no rating: 1, run climbs: 4, run missing: 4
+- info: change from the previous build: runs 181 -> 186, named 131 -> 139, km 113.2 -> 115.4
 - pass: ratings checked against the resort's own list  
   107 on the list, 165 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 15 of 15 on the map
 - pass: 0 shown runs rated by guess
-- pass: reachable from the base: 193 of 193 run pieces
+- pass: reachable from the base: 189 of 189 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)

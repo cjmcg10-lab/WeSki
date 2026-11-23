@@ -99,6 +99,19 @@
    "Green Valley (top)",
    "trail:Northway",
    "hike"
+  ],
+  [
+   "trail:Campbell Basin (bottom)",
+   "trail:Queens"
+  ],
+  [
+   "trail:A-Basin (bottom)",
+   "trail:Brain Damage"
+  ],
+  [
+   "trail:Narnia",
+   "trail:Hamburger",
+   "hike"
   ]
  ],
  "links_notes": {
@@ -117,6 +130,43 @@
   "trail:SE Right (bottom) -> trail:Queens": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1030 m along the ground to Queens with no climb. Check on the trail map.",
   "trail:Boxcar (bottom) -> trail:Queens": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1354 m along the ground to Queens with no climb. Check on the trail map.",
   "trail:Silver Basin (bottom) -> trail:Easy Street": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1195 m along the ground to Easy Street with no climb. Check on the trail map.",
-  "Green Valley (top) -> trail:Northway (hike)": "2026-11-23: way into the Northway (North Country) area along the ridge: OpenStreetMap only joined it by ski joins that climbed 42-94 m, which the build now drops. Drawn as a walk (782 m, nearly level) from the nearest lift top; check on the trail map which traverse the resort uses"
- }
+  "Green Valley (top) -> trail:Northway (hike)": "2026-11-23: way into the Northway (North Country) area along the ridge: OpenStreetMap only joined it by ski joins that climbed 42-94 m, which the build now drops. Drawn as a walk (782 m, nearly level) from the nearest lift top; check on the trail map which traverse the resort uses",
+  "trail:Campbell Basin (bottom) -> trail:Queens": "2026-11-23: Campbell Basin ends beside the bottom of Hamburger; skiers go on to Queens there, the way Hamburger itself leaves (build join of 72 m before Campbell Basin was drawn)",
+  "trail:A-Basin (bottom) -> trail:Brain Damage": "2026-11-23: A-Basin ends beside the bottom of Narnia; from there the way out is across to Brain Damage, as Narnia had before A-Basin was drawn (a walk of about 225 m)",
+  "trail:Narnia -> trail:Hamburger (hike)": "2026-11-23: keeps the walk from the top of Narnia back to Hamburger that the build used to make by itself (219 m), the only way out of the Silver King bowls on our map; A-Basin is now nearer, so the automatic join stopped choosing it. Approximate, as before"
+ },
+ "extra_trails": [
+  {
+   "name": "Campbell Basin",
+   "pts": [
+    [-121.508065, 46.923578],
+    [-121.507613, 46.923405],
+    [-121.507101, 46.923323],
+    [-121.506589, 46.923244],
+    [-121.506093, 46.923127],
+    [-121.505596, 46.923008],
+    [-121.5051, 46.922891],
+    [-121.504615, 46.922752],
+    [-121.504366, 46.922696]
+   ],
+   "why": "2026-11-23, approximate (open bowl, no cut strip): the 2025 trail map (skimap.org 37135) labels Campbell Basin (double diamond) in the open bowl between Hamburger and Double Ought's Right, below the ridge from The Throne to Chair 6. Trail map tied to the ground with 11 control points (thin-plate fit, leave-one-out error 80-230 m, about 160 m here); line from the ridge down the terrain fall line through the middle of that bowl (NAIP photo: open meadow) to Hamburger near the Chair 6 base. Corridor of about 150 m."
+  },
+  {
+   "name": "A-Basin",
+   "pts": [
+    [-121.507307, 46.917764],
+    [-121.506784, 46.917792],
+    [-121.506266, 46.917851],
+    [-121.505767, 46.917965],
+    [-121.505331, 46.918161],
+    [-121.504921, 46.918385],
+    [-121.504454, 46.918549],
+    [-121.503959, 46.918668],
+    [-121.503882, 46.918971],
+    [-121.503625, 46.919222],
+    [-121.503781, 46.919204]
+   ],
+   "why": "2026-11-23, approximate (above the trees, open cirque): the 2025 trail map (skimap.org 37135) labels A-Basin (double diamond) below the ridge between Silver King and The Throne. Trail map tied to the ground with 11 control points (thin-plate fit, about 190 m here); line from that ridge down the terrain fall line through the open cirque (NAIP photo: bare talus and snow) to the bottom of Narnia. Corridor of about 200 m."
+  }
+ ]
 }

@@ -26,5 +26,27 @@
   "Cubb Run",
   "Magic carpet"
  ],
- "isolated_lifts_note": "Silver Creek, Snowshoe's separate area about 2 km north of the village, reached by the resort shuttle: no run joins it to the main mountain."
+ "isolated_lifts_note": "Silver Creek, Snowshoe's separate area about 2 km north of the village, reached by the resort shuttle: no run joins it to the main mountain.",
+ "extra_trails": [
+  {
+   "name": "Shamrock",
+   "pts": [
+    [-79.995627, 38.419197],
+    [-79.995407, 38.419348],
+    [-79.995106, 38.419589],
+    [-79.994874, 38.419794],
+    [-79.994657, 38.41972]
+   ],
+   "why": "2026-11-23: village ski-in/ski-out connector from the Shamrock condominiums (OpenStreetMap landuse 'Shamrock') to the top of Powderidge and Gangway, as the trail map draws it (green, from the village to the Powderidge start). Placed on the cleared strip the NAIP aerial photo shows between the condos and Powderidge; descends 1436 to 1417 m on the terrain. Confidence: good for the route, within about 20 m."
+  },
+  {
+   "name": "Black Bear",
+   "pts": [
+    [-79.995179, 38.420067],
+    [-79.994998, 38.419903],
+    [-79.99484, 38.419785]
+   ],
+   "why": "2026-11-23: short village connector from the Black Bear Crossing condominiums (OpenStreetMap landuse) to the Shamrock strip at the top of Powderidge, as on the trail map (green dot beside the Powderidge start). Approximate (about 40 m): the photo shows forest with a gap here."
+  }
+ ]
 }

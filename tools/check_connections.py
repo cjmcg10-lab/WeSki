@@ -16,6 +16,10 @@ Reads public/data/<id>/resort.json (its routing graph) and lists, per resort:
                   build_data's automatic joins or by config links; a wrong one sends directions through the woods
   h. uphill join  one-way ski joins whose far end is higher (more than 3 m, or 5% of the join): directions take a
                   ski join as free, so it would send a skier uphill (build_data turns these into walks since 2026-11)
+  i. doubled      two shown runs drawn on the same ground: a run of 120 m or more with over 70% of its points within
+                  18 m of one other shown run (one run drawn twice, or a hand-drawn run OpenStreetMap now maps too).
+                  Listed as "A ~ B" (names sorted). Two runs that really are separate but close (side-by-side
+                  chutes, a race course beside a run) are allow-listed with the reason
 
 How it moves, as src/routing.js does (normal tolerance), with no terrain loaded:
   - runs and links are skied downhill (graph edge a -> b); lifts go up; walking paths go both ways;
@@ -28,7 +32,7 @@ How it moves, as src/routing.js does (normal tolerance), with no terrain loaded:
 Lifts listed in the map's "isolated" (a stand-alone village tow) are not counted under e and f.
 
 --json OUT writes {id: {"unreachable": [...], "dead_end": [...], "near": [...], "overshoot": [...],
-"lift_end": [...], "outside_core": [...]}}: the test tests/connections.test.js compares it with the allow-list in
+"lift_end": [...], "outside_core": [...], "long_join": [...], "uphill": [...], "doubled": [...]}}: the test tests/connections.test.js compares it with the allow-list in
 tests/fixtures/connections/<id>.json, so a rebuild cannot quietly add new problems.
 Pure Python (no numpy), so it runs anywhere the tests run.
 """
@@ -48,6 +52,9 @@ OVER = 45.0         # a loose run end this far past its last join is an overshoo
 LINK_REACH = 400.0
 LONG_SKI = 150.0    # a made-up ski join longer than this is listed (g) for a look
 LONG_WALK = 300.0   # ...and a made-up walk longer than this  # how far along links and walking paths a lift end may be from a run
+DBL_LEN = 120.0     # a run this long or longer...
+DBL_NEAR = 18.0     # ...with points this close to one other shown run...
+DBL_SHARE = 0.70    # ...for more than this share of its points is drawn twice (i)
 
 
 def climb_back(e, nodes):
@@ -170,7 +177,8 @@ def check(rid, data):
         inc[e["b"]].append(i)
 
     poi_n = {p["n"] for p in R.get("pois", []) if p["kind"] not in ("lift", "lifttop") and p.get("n", -1) >= 0}
-    out = {k: [] for k in ("unreachable", "dead_end", "near", "overshoot", "lift_end", "outside_core", "long_join", "uphill")}
+    out = {k: [] for k in ("unreachable", "dead_end", "near", "overshoot", "lift_end", "outside_core", "long_join",
+                           "uphill", "doubled")}
     detail = {k: [] for k in out}
 
     def note(kind, key, text):
@@ -318,10 +326,58 @@ def check(rid, data):
         L = max(e.get("len", 0), 1.0)
         if rise > max(3.0, 0.05 * L) + 2:   # 2 m of slack: node heights are rounded and joins can be re-cut
             note("uphill", f"{at(e['a'])} -> {at(e['b'])}", f"climbs {rise:.0f} m in {L:.0f} m: {at(e['a'])} -> {at(e['b'])}")
+    # i: runs drawn twice
+    for a, b, share, L in doubled(trails):
+        na, nb = sorted((tname(a), tname(b)))
+        note("doubled", f"{na} ~ {nb}", f"{na} ~ {nb}: " + (f"{share * 100:.0f}% of {L:.0f} m on the same ground" if share
+                                                           else "a hand-drawn copy of the OpenStreetMap run of that name"))
     shown = {r for r in by_run}
     stats = {"runs": len(shown), "lifts": len({e["r"] for e in lift_e}),
              "pieces": sum(len(v) for v in by_run.values())}
     return out, detail, stats
+
+
+def doubled(trails, min_len=DBL_LEN, near=DBL_NEAR, share=DBL_SHARE):
+    """Pairs of shown runs drawn on the same ground: (shorter id, longer id, share of the shorter's points within
+    `near` metres of the longer, the shorter's length). Uses each run's drawn points (about every 10 m)."""
+    shown = [t for t in trails if not t.get("hide") and len(t.get("pts", [])) >= 4]
+    idx = SegIndex(cell=40.0)
+    for t in shown:
+        idx.add(t["pts"], t["id"])
+    by_id = {t["id"]: t for t in shown}
+    seen, res = set(), []
+    for t in shown:
+        L = t.get("len") or 0
+        if L < min_len:
+            continue
+        p = t["pts"]
+        pts = [(p[i], p[i + 1]) for i in range(0, len(p), 2)]
+        hits = {}
+        for x, y in pts:
+            for o in idx.near(x, y, near):
+                if o != t["id"]:
+                    hits[o] = hits.get(o, 0) + 1
+        for o, k in hits.items():
+            f = k / len(pts)
+            if f <= share:
+                continue
+            key = frozenset((t["id"], o))
+            if key not in seen:
+                seen.add(key)
+                res.append((t["id"], o, f, L))
+    # a hand-drawn run (extra_trails) under the name of an OpenStreetMap run on the same map is the same run drawn
+    # twice wherever the hand-drawn copy sits (Keystone's copies were 20-350 m off OpenStreetMap's lines)
+    norm = lambda n: "".join(ch for ch in (n or "").lower() if ch.isalnum())
+    osm = {}
+    for t in shown:
+        if not t.get("traced") and t.get("name"):
+            osm.setdefault(norm(t["name"]), t["id"])
+    for t in shown:
+        o = osm.get(norm(t.get("name"))) if t.get("traced") else None
+        if o is not None and frozenset((t["id"], o)) not in seen:
+            seen.add(frozenset((t["id"], o)))
+            res.append((t["id"], o, 0.0, t.get("len") or 0))
+    return res
 
 
 def all_ids(data):
@@ -332,7 +388,8 @@ TITLES = {"unreachable": "a. runs no lift reaches", "dead_end": "b. runs that le
           "near": "c. loose run ends close to something (missing join?)", "overshoot": "d. run ends past their last join",
           "lift_end": "e. lift ends with no run", "outside_core": "f. lift ends outside the connected network",
           "long_join": "g. long joins made by the build or the config (check them on the map)",
-          "uphill": "h. one-way ski joins that climb (directions would ski uphill)"}
+          "uphill": "h. one-way ski joins that climb (directions would ski uphill)",
+          "doubled": "i. runs drawn twice on the same ground"}
 
 
 def main():
@@ -370,10 +427,11 @@ def main():
                 print(f"   {t} ({len(detail[k])}):")
                 for d in detail[k]:
                     print(f"      {d}")
-    print("\nresort                  runs lifts  unreach deadend   near  over liftend core longjoin uphill")
+    print("\nresort                  runs lifts  unreach deadend   near  over liftend core longjoin uphill doubled")
     for rid, s, c in rows:
         print(f"{rid:22s} {s['runs']:5d} {s['lifts']:5d}  {c['unreachable']:7d} {c['dead_end']:7d} {c['near']:6d}"
-              f" {c['overshoot']:5d} {c['lift_end']:7d} {c['outside_core']:4d} {c['long_join']:8d} {c['uphill']:6d}")
+              f" {c['overshoot']:5d} {c['lift_end']:7d} {c['outside_core']:4d} {c['long_join']:8d} {c['uphill']:6d}"
+              f" {c['doubled']:7d}")
     if js:
         json.dump(res, open(js, "w"), indent=1, ensure_ascii=False)
 

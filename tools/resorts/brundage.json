@@ -69,5 +69,12 @@
    "len": 300,
    "why": "naip photo: drawn 40.8 m beside the cut run"
   }
- }
+ },
+ "shared_runs": [
+  [
+   "Easy Street",
+   "Centennial Lane"
+  ]
+ ],
+ "shared_runs_note": "Centennial Lane's top was drawn along Easy Street beside the beginner chair (two lines 10 m apart on one cut): Easy Street keeps that stretch and Centennial Lane starts where it leaves it (2026-11-23)."
 }
