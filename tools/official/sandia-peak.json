@@ -1,0 +1,61 @@
+{
+ "source": "Sandia Peak Ski Area trail map (skimap.org map 44071, 2026), read by hand from enlarged crops; line colour",
+ "fetched": "2026-11-23",
+ "runs": {
+  "Aspen": 1,
+  "Aspen Bowl": 1,
+  "Aspen Narrows": 1,
+  "Burn": 2,
+  "Cibola": 0,
+  "Cibola Cut Off": 1,
+  "Cibola Lower": 0,
+  "Cibola Middle": 0,
+  "Cibola Ridge": 0,
+  "Cibola Upper": 0,
+  "Cy's O.S.": 2,
+  "Diablo": 2,
+  "Dipsey": 2,
+  "Do Drop In": 2,
+  "Double Eagle": 1,
+  "Double Eagle II": 0,
+  "Exhibition": 1,
+  "Foster Murphy": 1,
+  "Foster Murphy Lower": 1,
+  "Foster Murphy Upper": 1,
+  "Fred's Run": 0,
+  "Fred's Run Lower": 0,
+  "Fred's Run Upper": 0,
+  "Greg's": 2,
+  "Hups": 0,
+  "Hups Lower": 0,
+  "Hups Upper": 0,
+  "Inhibition": 1,
+  "La Madera": 1,
+  "Little Suicide": 2,
+  "Lower Slalom": 1,
+  "Over-Easy": 0,
+  "Prohibition": 1,
+  "Race Arena": 2,
+  "Rob's Run": 2,
+  "Sandia": 1,
+  "Short Swing": 1,
+  "Silver Arrow": 1,
+  "Slalom": 2,
+  "Suicide": 2,
+  "To Chair 2": 0,
+  "Upper Diablo": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Service Road": "service road along the summit ridge, not a ski run"
+ },
+ "lifts": [
+  "Beginner Chairlift #4",
+  "Chairlift #2",
+  "Chairlift #3",
+  "Magic Carpet"
+ ],
+ "lifts_explained": {
+  "Sandia Peak Aerial Tramway": "the public aerial tramway from Albuquerque to the summit, run by the same company; it is not on the ski trail map and its top station is not joined to the runs on our map (kept as a separate lift)"
+ }
+}

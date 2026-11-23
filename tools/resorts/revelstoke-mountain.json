@@ -42,5 +42,8 @@
  "terrain_shares": {
   "1m": 96.7,
   "30m": 3.3
+ },
+ "rename": {
+  "Blowdown": "Blow Down"
  }
 }

@@ -43,5 +43,12 @@
   "1m": 40.4,
   "30m": 59.6
  },
- "hold": "11 runs no lift reaches"
+ "hold": "11 runs no lift reaches",
+ "rename": {
+  "Cambell's Canyon": "Campbell's Canyon",
+  "Champagne Surf": "Champagne",
+  "Gunbarrel": "Gun Barrel",
+  "Zone 4": "Zone 2",
+  "Evasion": "Evasion Traverse"
+ }
 }

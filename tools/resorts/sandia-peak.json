@@ -40,5 +40,10 @@
  "isolated_notes": {
   "Sandia Peak Aerial Tramway": "rule: not joined to the rest of the lifts on the map"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway"
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway",
+ "rename": {
+  "Cibola Cutoff": "Cibola Cut Off",
+  "Upper Salom": "Slalom",
+  "South Upper Slalom": "Slalom"
+ }
 }

@@ -53,5 +53,13 @@
   "Graduate Lift #7": "rule: not joined to the rest of the lifts on the map",
   "Ski School Magic Carpet #10": "rule: not joined to the rest of the lifts on the map"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7"
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7",
+ "rename": {
+  "Cathedral Treeway": "Cathedral Tree Way",
+  "Dead Spike": "Deadspike",
+  "McCormarck's Maze": "McCormack's Maze",
+  "Monkey Gulley": "Monkey Gully",
+  "Angel's Road": "Angels Tread",
+  "Gelande Dead End": "Gelande"
+ }
 }

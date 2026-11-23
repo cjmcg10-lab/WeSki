@@ -43,5 +43,19 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "12 runs no lift reaches; 17 dead-end runs; 10 runs climb more than 12 m"
+ "hold": "12 runs no lift reaches; 17 dead-end runs; 10 runs climb more than 12 m",
+ "rename": {
+  "Breakaway": "Break Away",
+  "Candy L:and": "Candy Land",
+  "Catcher's Road": "Catcher Road",
+  "Dillay Dally Alley": "Dilly Dally Alley",
+  "Face Shot": "Faceshot",
+  "Lave View 1": "Lake View 1",
+  "Short Shot": "Short Snort",
+  "South Face": "Southface",
+  "Sunslope": "Sun Slope",
+  "3 Mile": "Amy's 3 Mile",
+  "Left is Right": "Lefty's Right",
+  "Powder Chamber": "Powder Chamber 1"
+ }
 }

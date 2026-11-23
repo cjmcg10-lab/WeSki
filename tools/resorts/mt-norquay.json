@@ -48,5 +48,12 @@
  ],
  "isolated_notes": {
   "Tubing Carpet": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "40 Mile Gully": "40 Mile Gulley",
+  "Bruno's Gully": "Bruno's Gulley",
+  "Norquay Gully": "Norquay Gulley",
+  "Sheep Chutes": "Sheep Chute",
+  "Sun Chutes": "Sun Chute"
  }
 }

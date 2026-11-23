@@ -37,5 +37,12 @@
  "terrain_res": 10,
  "terrain_shares": {
   "10m": 100.0
+ },
+ "rename": {
+  "Round House": "Roundhouse",
+  "Stump Garden": "Stumpgarden",
+  "The Chutes (1)": "The Chutes",
+  "Tom Dick Bowl (1)": "Tom Dick Bowl",
+  "Pizazz": "Pizzaz"
  }
 }

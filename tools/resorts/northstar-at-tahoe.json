@@ -48,5 +48,9 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Ax Handle": "Axe Handle",
+  "Timberline": "Timber Line"
  }
 }

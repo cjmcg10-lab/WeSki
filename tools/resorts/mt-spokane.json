@@ -36,5 +36,14 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Alison's Way": "Allison's Way",
+  "Big 200": "Big200",
+  "Rockslide": "Rock Slide",
+  "Skid Road": "Skid Row",
+  "Swede's Folley": "Swede's Folly",
+  "Yellow Brick Road": "Yellowbrick Road",
+  "B-29": "B29"
  }
 }

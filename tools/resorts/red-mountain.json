@@ -40,5 +40,9 @@
  "terrain_shares": {
   "1m": 0.0,
   "30m": 100.0
+ },
+ "rename": {
+  "High Spirit": "High Spirits",
+  "Mad House": "Madhouse"
  }
 }

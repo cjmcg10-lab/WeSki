@@ -32,5 +32,15 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Copper Toll Rd.": "Copper Toll Road",
+  "Down Town": "Downtown",
+  "Goldrush": "Gold Rush",
+  "Purkapile": "Purkapiles",
+  "Sluice Box Glade": "Sluice Box Glades",
+  "Tony's Twist": "Toni's Twist",
+  "Whoop Dee Do Haven": "Whoopdedoo Haven",
+  "Gulch": "Cowboys Gulch"
  }
 }

@@ -32,5 +32,9 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Bruce's Blvd": "Bruce's Blvd East",
+  "Headache": "Hedache"
  }
 }
