@@ -94,25 +94,25 @@ Measured:
 | Holiday Valley (`holiday-valley`) | New York, USA | 160 | 13 / 13 | 69 / 69 (79) | 69 / 69 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
 | Homewood (`homewood`) | California, USA | 49 | 7 / 7 | 97 / 65 (70) | 98 / 98 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
 | Kimberley Alpine (`kimberley-alpine`) | British Columbia, Canada | 81 | 5 / 5 | 72 / 62 (70) | 72 / 72 | OpenStreetMap, not checked | 30 m | publish | isolated by rule: Owl T-Bar; ratings not checked against the resort; 30 m terrain |
-| Kirkwood Mountain (`kirkwood-mountain`) | California, USA | 60 | 13 / 13 | 74 / 74 (58) | 71 / 74 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
+| Kirkwood Mountain (`kirkwood-mountain`) | California, USA | 60 | 13 / 13 | 74 / 74 (58) | 74 / 74 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
 | Lake Louise (`lake-louise`) | Alberta, Canada | 61 | 13 / 13 | 178 / 161 (120) | 178 / 178 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
-| Le Massif (`le-massif`) | Quebec, Canada | 144 | 9 / 9 | 94 / 66 (84) | 85 / 94 | OpenStreetMap, not checked | 1 m | hold | 7 runs no lift reaches; 19% of the run length has no rating in OpenStreetMap; ratings not checked against the resort |
+| Le Massif (`le-massif`) | Quebec, Canada | 144 | 9 / 9 | 85 / 59 (84) | 85 / 85 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
 | Lost Trail (`lost-trail`) | Idaho, USA | 78 | 8 / 8 | 80 / 69 (56) | 80 / 80 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Loveland Basin (`loveland-basin`) | Colorado, USA | 64 | 7 / 7 | 118 / 86 (97) | 106 / 118 | OpenStreetMap, not checked | 1 m | hold | only 106 of 118 run pieces reachable from a lift; 8 runs no lift reaches; ratings not checked against the resort |
-| Lutsen Mountains (`lutsen-mountains`) | Minnesota, USA | 67 | 7 / 8 | 110 / 90 (76) | 110 / 110 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Mad River Glen (`mad-river-glen`) | Vermont, USA | 107 | 5 / 5 | 85 / 60 (77) | 85 / 85 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Marmot Basin (`marmot-basin`) | Alberta, Canada | 75 | 6 / 6 | 136 / 91 (76) | 134 / 136 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
-| Monarch Mountain (`monarch-mountain`) | Colorado, USA | 52 | 9 / 9 | 86 / 77 (78) | 79 / 86 | OpenStreetMap, not checked | 1 m | hold | 7 runs no lift reaches; ratings not checked against the resort |
+| Loveland Basin (`loveland-basin`) | Colorado, USA | 64 | 7 / 7 | 118 / 86 (97) | 118 / 118 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
+| Lutsen Mountains (`lutsen-mountains`) | Minnesota, USA | 67 | 7 / 8 | 116 / 90 (76) | 116 / 116 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
+| Mad River Glen (`mad-river-glen`) | Vermont, USA | 107 | 5 / 5 | 81 / 60 (77) | 84 / 84 | resort feed (Mad River Glen trail map by James Niehue) | 1 m | publish |  |
+| Marmot Basin (`marmot-basin`) | Alberta, Canada | 75 | 6 / 6 | 140 / 91 (76) | 140 / 140 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
+| Monarch Mountain (`monarch-mountain`) | Colorado, USA | 52 | 9 / 9 | 86 / 77 (78) | 86 / 86 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
 | Mont-Sainte-Anne (`mont-sainte-anne`) | Quebec, Canada | 73 | 9 / 9 | 80 / 70 (67) | 80 / 80 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Mont Sutton (`mont-sutton`) | Quebec, Canada | 62 | 9 / 9 | 89 / 60 (87) | 89 / 89 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Mont Tremblant Resort, Station Mont Tremblant (`mont-tremblant-mont-tremblant`) | Quebec, Canada | 125 | 16 / 12 | 146 / 114 (152) | 152 / 152 | resort feed (Tremblant trail report (resort feed, mtn) | 1 m | publish | 1 lift ends joined by rule |
-| Montana Snowbowl (`montana-snowbowl`) | Montana, USA | 64 | 6 / 6 | 67 / 60 (64) | 67 / 67 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Mount Ashland (`mount-ashland`) | Oregon, USA | 43 | 6 / 6 | 55 / 52 (64) | 55 / 55 | OpenStreetMap, not checked | 10 m | hold | 24% of the run length has no rating in OpenStreetMap; ratings not checked against the resort |
+| Mont Sutton (`mont-sutton`) | Quebec, Canada | 62 | 7 / 9 | 84 / 60 (87) | 88 / 88 | resort feed (Mont Sutton 2026-27 trail map (skimap.or) | 1 m | publish |  |
+| Tremblant (`mont-tremblant-mont-tremblant`) | Quebec, Canada | 125 | 14 / 12 | 145 / 114 (152) | 154 / 154 | resort feed (Tremblant trail report (resort feed, mtn) | 1 m | publish | 1 lift ends joined by rule |
+| Montana Snowbowl (`montana-snowbowl`) | Montana, USA | 64 | 6 / 6 | 68 / 60 (64) | 68 / 68 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
+| Mount Ashland (`mount-ashland`) | Oregon, USA | 43 | 6 / 6 | 55 / 52 (64) | 55 / 55 | resort feed (Mt. Ashland 2025-26 trail map by James N) | 10 m | publish |  |
 | Mount Rose Ski Tahoe (`mount-rose-tahoe`) | Nevada, USA | 56 | 8 / 8 | 75 / 69 (60) | 78 / 78 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
-| Mount Sunapee (`mount-sunapee`) | New Hampshire, USA | 66 | 10 / 10 | 92 / 75 (77) | 93 / 93 | OpenStreetMap, not checked | 1 m | publish | ratings not checked against the resort |
+| Mount Sunapee (`mount-sunapee`) | New Hampshire, USA | 66 | 10 / 10 | 87 / 74 (77) | 90 / 90 | resort feed (Mount Sunapee 2025-26 trail map by James) | 1 m | publish |  |
 | Mount Washington Alpine (`mount-washington-alpine`) | British Columbia, Canada | 22 | 10 / 10 | 199 / 100 (196) | 217 / 217 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
-| Mt. Bachelor (`mt-bachelor`) | Oregon, USA | 77 | 15 / 15 | 135 / 106 (128) | 128 / 135 | OpenStreetMap, not checked | 10 m | publish | ratings not checked against the resort |
-| Mt. Hood Meadows (`mt-hood-meadows`) | Oregon, USA | 62 | 11 / 11 | 138 / 126 (94) | 138 / 140 | OpenStreetMap, not checked | 10 m | publish | ratings not checked against the resort |
+| Mt. Bachelor (`mt-bachelor`) | Oregon, USA | 77 | 15 / 15 | 135 / 106 (128) | 133 / 135 | OpenStreetMap, not checked | 10 m | publish | ratings not checked against the resort |
+| Mt. Hood Meadows (`mt-hood-meadows`) | Oregon, USA | 62 | 11 / 11 | 138 / 126 (94) | 140 / 140 | OpenStreetMap, not checked | 10 m | publish | ratings not checked against the resort |
 | Mt. Hood Skibowl (`mt-hood-skibowl`) | Oregon, USA | 46 | 9 / 9 | 73 / 70 (62) | 73 / 73 | OpenStreetMap, not checked | 10 m | publish | ratings not checked against the resort; 2 lift ends joined by rule |
 | Mt Norquay (`mt-norquay`) | Alberta, Canada | 59 | 7 / 7 | 88 / 74 (68) | 88 / 88 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
 | Mt Seymour (`mt-seymour`) | British Columbia, Canada | 66 | 5 / 5 | 66 / 44 (71) | 66 / 66 | OpenStreetMap, not checked | 30 m | publish | ratings not checked against the resort; 30 m terrain |
