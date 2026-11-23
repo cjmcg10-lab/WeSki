@@ -78,5 +78,36 @@
   "Voie de la Boucle": 1,
   "Éterlou": 1
  },
- "blue_black": []
+ "blue_black": [],
+ "lifts": [
+  "3 Vallées",
+  "Boismint",
+  "Bouchet",
+  "Cairn",
+  "Campagnols",
+  "Caron",
+  "Cascades",
+  "Castor Pollux",
+  "Cime Caron",
+  "Deux Lacs",
+  "Face Nord",
+  "Grand Fond",
+  "Lac Blanc",
+  "Moraine",
+  "Moutière",
+  "Musaraigne",
+  "Orelle Caron",
+  "Peyron",
+  "Pionniers",
+  "Plan de l'Eau",
+  "Plateau",
+  "Plein Sud",
+  "Portette",
+  "Péclet",
+  "Rosaël",
+  "Tapis des Marmottons",
+  "Thorens",
+  "Télécabine d'Orelle"
+ ],
+ "lifts_source": "Les 3 Vallées live lift status (www.les3vallees.com/en/live/lifts-and-trails-opening), section 'Val Thorens - Orelle', the 29 lifts as printed (the page lists '3 Vallées' twice, a funitel and a chair), fetched 2026-11-23"
 }

@@ -59,5 +59,18 @@
   "Trick",
   "Upper Wizard"
  ],
- "note": "Trick and Upper Wizard carry a black diamond on a blue sign and are stored as blue-black. Abracadabra and Rabbit Run are in the learning area at the base."
+ "note": "Trick and Upper Wizard carry a black diamond on a blue sign and are stored as blue-black. Abracadabra and Rabbit Run are in the learning area at the base.",
+ "lifts": [
+  "Abracadabra Area Tow",
+  "Black Summit Quad",
+  "Green Mid-Mtn Chair",
+  "Learn-to-Ski Lift",
+  "Red Summit Chair"
+ ],
+ "lifts_source": "Magic Mountain snow report (www.magicmtn.com/snow-report), the 'Lifts' table: five lifts, names as printed without the elevation or length after each, fetched 2026-11-23; the tubing park tow is not on it",
+ "lifts_explained": {
+  "Black Summit Quad": "the map's Black Line Quad (fixed-grip quad, base to summit; it replaced the old Black Chair)",
+  "Abracadabra Area Tow": "the map's Terrain Park Tow (handle tow in the Abracadabra area, where the snow report puts the terrain park; 600 ft on the report, 183 m on our map)",
+  "Learn-to-Ski Lift": "the map's Learning Center conveyor (100 ft on the report)"
+ }
 }
