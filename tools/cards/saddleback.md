@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**78 runs (66 named, 38.5 km), 5 lifts. 1 things to look at.**
+**78 runs (66 named, 38.4 km), 5 lifts. 1 things to look at.**
 
 - **LOOK**: 1 runs climb more than 12 m  
   NW Pass 14 m

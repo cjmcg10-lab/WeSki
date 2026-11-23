@@ -2,10 +2,10 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**97 runs (79 named, 51.3 km), 6 lifts. 2 things to look at.**
+**100 runs (79 named, 51.2 km), 6 lifts. 2 things to look at.**
 
-- **LOOK**: reachable from the base: 99 of 103 run pieces  
-  not reachable: ['unnamed#100', 'unnamed#101', 'unnamed#102', 'unnamed#20']
+- **LOOK**: reachable from the base: 102 of 106 run pieces  
+  not reachable: ['unnamed#103', 'unnamed#104', 'unnamed#105', 'unnamed#21']
 - **LOOK**: 1 runs climb more than 12 m  
   Lakeview Lift-Served Backcountry 21 m
 - info: 7 joins made automatically (look at the longest ones on the map)  

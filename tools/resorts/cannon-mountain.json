@@ -32,17 +32,9 @@
     [-71.69829, 44.17622],
     [-71.69834, 44.17662]
    ]
-  },
-  {
-   "name": "Middle Hardscrabble Cut-Thru",
-   "pts": [
-    [-71.70166, 44.16771],
-    [-71.70195, 44.16859],
-    [-71.70225, 44.16946]
-   ]
   }
  ],
- "extra_note": "Lil' Bertha (between Time Zone and Snowmakers' Glade) and the Middle Hardscrabble cut-through (from Middle Hardscrabble to the top of Red Ball, marked MH Cut Thru on the map) are drawn from the trail map between their neighbours.",
+ "extra_note": "Lil' Bertha (between Time Zone and Snowmakers' Glade) is drawn from the trail map between its neighbours. The Middle Hardscrabble cut-through (marked MH Cut Thru on the map) was drawn by hand too until OpenStreetMap mapped it as MH Cut Thru; the hand-drawn copy was removed on 2026-11-23 (it drew the run twice).",
  "way_pts": {
   "463133959": {
    "pts": [

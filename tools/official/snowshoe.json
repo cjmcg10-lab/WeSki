@@ -73,7 +73,8 @@
   "Upper Cupp Run": "Cupp Run",
   "Mid Whistlepunk": "Whistlepunk",
   "Upper Whistlepunk": "Whistlepunk",
-  "Upper Shay's Revenge": "Shay's Revenge"
+  "Upper Shay's Revenge": "Shay's Revenge",
+  "Cubb Run Ext.": "Cubb Run"
  },
  "lifts": [
   "Ballhooter",
@@ -164,5 +165,10 @@
  },
  "lifts_explained": {
   "Wonder Carpet": "beginner carpet; not in OpenStreetMap"
+ },
+ "notes_trace": {
+  "Cubb Run Ext.": "2026-11-23: the 2026 trail map (skimap.org 45725) draws Cubb Run as one line from the top of Silver Creek round to the Black Run base and labels it twice; the feed's 'Ext.' is the lower part past the Cubb Run chair, which OpenStreetMap maps as part of Cubb Run.",
+  "Shamrock": "2026-11-23: traced (config extra_trails): condo ski-in/ski-out connector.",
+  "Black Bear": "2026-11-23: traced (config extra_trails): condo connector, approximate."
  }
 }

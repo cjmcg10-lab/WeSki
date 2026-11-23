@@ -110,7 +110,8 @@
  },
  "note": "Baron's Run is black on its upper part and blue below; the map draws it as one run, so the whole run is rated black here (the safe side).",
  "same_as": {
-  "Tossup Park": "Toss-Up Freestyle Terrain"
+  "Tossup Park": "Toss-Up Freestyle Terrain",
+  "Middle Hardscrabble Cut-Thru": "MH Cut Thru"
  },
  "lifts": [
   "Brookside Triple Chairlift",
@@ -123,5 +124,6 @@
   "Valar T-bar",
   "Zoomer Triple Chairlift"
  ],
- "lifts_source": "Cannon Mountain 2025-26 trail map, 'no tram this season' (skimap.org map 36374): the printed Lifts table A to T (9 lifts); the Aerial Tramway is closed this season and not on the list"
+ "lifts_source": "Cannon Mountain 2025-26 trail map, 'no tram this season' (skimap.org map 36374): the printed Lifts table A to T (9 lifts); the Aerial Tramway is closed this season and not on the list",
+ "same_as_note": "Middle Hardscrabble Cut-Thru is the resort's full name for the cut-through its map marks MH Cut Thru; OpenStreetMap maps it as MH Cut Thru since 2026, so the hand-drawn copy was removed (2026-11-23)."
 }

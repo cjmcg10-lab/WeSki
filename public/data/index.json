@@ -13,7 +13,7 @@
   "trails": 143,
   "lifts": 11,
   "zones": false,
-  "bytes": 1120003
+  "bytes": 1121286
  },
  {
   "id": "berkshire-east",
@@ -26,10 +26,10 @@
   "baseLon": -72.87849,
   "top": 468,
   "base": 184,
-  "trails": 42,
+  "trails": 41,
   "lifts": 6,
   "zones": false,
-  "bytes": 252696
+  "bytes": 361942
  },
  {
   "id": "big-sky",
@@ -45,7 +45,7 @@
   "trails": 340,
   "lifts": 43,
   "zones": false,
-  "bytes": 3524618
+  "bytes": 3539846
  },
  {
   "id": "bolton-valley",
@@ -61,7 +61,7 @@
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 348874
+  "bytes": 548568
  },
  {
   "id": "breckenridge",
@@ -77,7 +77,7 @@
   "trails": 213,
   "lifts": 35,
   "zones": true,
-  "bytes": 2225134
+  "bytes": 2222798
  },
  {
   "id": "bretton-woods",
@@ -93,7 +93,7 @@
   "trails": 105,
   "lifts": 9,
   "zones": false,
-  "bytes": 434148
+  "bytes": 615136
  },
  {
   "id": "brundage",
@@ -109,7 +109,7 @@
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 826296
+  "bytes": 830451
  },
  {
   "id": "burke",
@@ -125,7 +125,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": true,
-  "bytes": 376082
+  "bytes": 557512
  },
  {
   "id": "cannon-mountain",
@@ -138,10 +138,10 @@
   "baseLon": -71.711,
   "top": 1230,
   "base": 574,
-  "trails": 102,
+  "trails": 101,
   "lifts": 9,
   "zones": false,
-  "bytes": 447483
+  "bytes": 599507
  },
  {
   "id": "catamount",
@@ -157,7 +157,7 @@
   "trails": 46,
   "lifts": 7,
   "zones": false,
-  "bytes": 230277
+  "bytes": 331267
  },
  {
   "id": "copper-mountain",
@@ -173,7 +173,7 @@
   "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 1485285
+  "bytes": 1479355
  },
  {
   "id": "crystal-mountain",
@@ -186,10 +186,10 @@
   "baseLon": -121.4749,
   "top": 2125,
   "base": 1337,
-  "trails": 137,
+  "trails": 139,
   "lifts": 11,
   "zones": false,
-  "bytes": 1251158
+  "bytes": 1266138
  },
  {
   "id": "deer-valley",
@@ -202,10 +202,10 @@
   "baseLon": -111.44075,
   "top": 2954,
   "base": 1964,
-  "trails": 232,
+  "trails": 236,
   "lifts": 34,
   "zones": false,
-  "bytes": 2811928
+  "bytes": 2860456
  },
  {
   "id": "geto-kogen",
@@ -221,7 +221,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 310695
+  "bytes": 310906
  },
  {
   "id": "heavenly",
@@ -237,7 +237,7 @@
   "trails": 132,
   "lifts": 24,
   "zones": true,
-  "bytes": 1944312
+  "bytes": 1949521
  },
  {
   "id": "hunter-mountain",
@@ -250,10 +250,10 @@
   "baseLon": -74.20628,
   "top": 969,
   "base": 501,
-  "trails": 68,
+  "trails": 65,
   "lifts": 11,
   "zones": true,
-  "bytes": 469132
+  "bytes": 655712
  },
  {
   "id": "jackson-hole",
@@ -269,7 +269,7 @@
   "trails": 143,
   "lifts": 17,
   "zones": false,
-  "bytes": 1954617
+  "bytes": 1953805
  },
  {
   "id": "jay-peak",
@@ -285,7 +285,7 @@
   "trails": 91,
   "lifts": 9,
   "zones": true,
-  "bytes": 560094
+  "bytes": 560638
  },
  {
   "id": "keystone",
@@ -298,10 +298,10 @@
   "baseLon": -105.95653,
   "top": 3803,
   "base": 2829,
-  "trails": 156,
-  "lifts": 21,
+  "trails": 154,
+  "lifts": 20,
   "zones": true,
-  "bytes": 2143285
+  "bytes": 2073370
  },
  {
   "id": "killington",
@@ -317,7 +317,7 @@
   "trails": 161,
   "lifts": 22,
   "zones": false,
-  "bytes": 1086561
+  "bytes": 1772409
  },
  {
   "id": "la-plagne",
@@ -330,10 +330,10 @@
   "baseLon": 6.73759,
   "top": 3056,
   "base": 1210,
-  "trails": 162,
+  "trails": 158,
   "lifts": 87,
   "zones": true,
-  "bytes": 3831259
+  "bytes": 3835887
  },
  {
   "id": "les-arcs",
@@ -349,7 +349,7 @@
   "trails": 128,
   "lifts": 78,
   "zones": true,
-  "bytes": 3724000
+  "bytes": 3740844
  },
  {
   "id": "les-contamines",
@@ -365,7 +365,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1776742
+  "bytes": 1773354
  },
  {
   "id": "loon",
@@ -381,7 +381,7 @@
   "trails": 76,
   "lifts": 12,
   "zones": false,
-  "bytes": 537783
+  "bytes": 787821
  },
  {
   "id": "magic-mountain",
@@ -397,7 +397,7 @@
   "trails": 52,
   "lifts": 6,
   "zones": true,
-  "bytes": 273980
+  "bytes": 382870
  },
  {
   "id": "mammoth",
@@ -413,7 +413,7 @@
   "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1636787
+  "bytes": 1639625
  },
  {
   "id": "mohawk-mountain",
@@ -426,10 +426,10 @@
   "baseLon": -73.31563,
   "top": 456,
   "base": 279,
-  "trails": 28,
+  "trails": 27,
   "lifts": 7,
   "zones": false,
-  "bytes": 150470
+  "bytes": 225992
  },
  {
   "id": "mount-snow",
@@ -442,10 +442,10 @@
   "baseLon": -72.89218,
   "top": 1093,
   "base": 590,
-  "trails": 90,
+  "trails": 89,
   "lifts": 19,
   "zones": false,
-  "bytes": 552067
+  "bytes": 769678
  },
  {
   "id": "mount-southington",
@@ -461,7 +461,7 @@
   "trails": 14,
   "lifts": 7,
   "zones": true,
-  "bytes": 144117
+  "bytes": 199484
  },
  {
   "id": "okemo",
@@ -477,7 +477,7 @@
   "trails": 125,
   "lifts": 21,
   "zones": true,
-  "bytes": 811749
+  "bytes": 1162275
  },
  {
   "id": "palisades-tahoe",
@@ -490,10 +490,10 @@
   "baseLon": -120.22914,
   "top": 2741,
   "base": 1889,
-  "trails": 264,
+  "trails": 296,
   "lifts": 44,
   "zones": true,
-  "bytes": 2605019
+  "bytes": 2664147
  },
  {
   "id": "park-city",
@@ -509,7 +509,7 @@
   "trails": 358,
   "lifts": 41,
   "zones": true,
-  "bytes": 3446661
+  "bytes": 3457640
  },
  {
   "id": "pats-peak",
@@ -525,7 +525,7 @@
   "trails": 36,
   "lifts": 11,
   "zones": false,
-  "bytes": 249707
+  "bytes": 334745
  },
  {
   "id": "pizol",
@@ -541,7 +541,7 @@
   "trails": 39,
   "lifts": 14,
   "zones": true,
-  "bytes": 1459991
+  "bytes": 1466034
  },
  {
   "id": "powder-ridge",
@@ -557,7 +557,7 @@
   "trails": 12,
   "lifts": 8,
   "zones": true,
-  "bytes": 121934
+  "bytes": 180107
  },
  {
   "id": "ragged",
@@ -573,7 +573,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": false,
-  "bytes": 304856
+  "bytes": 391201
  },
  {
   "id": "saalbach",
@@ -589,7 +589,7 @@
   "trails": 100,
   "lifts": 82,
   "zones": true,
-  "bytes": 3879823
+  "bytes": 3912766
  },
  {
   "id": "saddleback",
@@ -605,7 +605,7 @@
   "trails": 66,
   "lifts": 5,
   "zones": false,
-  "bytes": 396707
+  "bytes": 612291
  },
  {
   "id": "ski-sundown",
@@ -621,7 +621,7 @@
   "trails": 17,
   "lifts": 5,
   "zones": false,
-  "bytes": 131377
+  "bytes": 194457
  },
  {
   "id": "skiwelt",
@@ -634,10 +634,10 @@
   "baseLon": 12.16252,
   "top": 1866,
   "base": 626,
-  "trails": 174,
+  "trails": 169,
   "lifts": 80,
   "zones": true,
-  "bytes": 4383099
+  "bytes": 4401196
  },
  {
   "id": "smugglers-notch",
@@ -650,10 +650,10 @@
   "baseLon": -72.78575,
   "top": 1112,
   "base": 339,
-  "trails": 84,
+  "trails": 83,
   "lifts": 9,
   "zones": false,
-  "bytes": 499642
+  "bytes": 747606
  },
  {
   "id": "snowbird",
@@ -666,10 +666,10 @@
   "baseLon": -111.67394,
   "top": 3463,
   "base": 2365,
-  "trails": 213,
+  "trails": 211,
   "lifts": 14,
   "zones": false,
-  "bytes": 1357524
+  "bytes": 1350416
  },
  {
   "id": "snowshoe",
@@ -682,10 +682,10 @@
   "baseLon": -80.01598,
   "top": 1468,
   "base": 994,
-  "trails": 61,
+  "trails": 63,
   "lifts": 13,
   "zones": true,
-  "bytes": 980399
+  "bytes": 982811
  },
  {
   "id": "solitude",
@@ -698,10 +698,10 @@
   "baseLon": -111.60207,
   "top": 3185,
   "base": 2438,
-  "trails": 84,
+  "trails": 87,
   "lifts": 9,
   "zones": true,
-  "bytes": 875063
+  "bytes": 893776
  },
  {
   "id": "steamboat",
@@ -730,10 +730,10 @@
   "baseLon": -72.76738,
   "top": 1116,
   "base": 399,
-  "trails": 130,
+  "trails": 129,
   "lifts": 12,
   "zones": false,
-  "bytes": 773581
+  "bytes": 1234786
  },
  {
   "id": "stratton",
@@ -749,7 +749,7 @@
   "trails": 117,
   "lifts": 17,
   "zones": false,
-  "bytes": 809110
+  "bytes": 1028173
  },
  {
   "id": "sugarbush",
@@ -765,7 +765,7 @@
   "trails": 132,
   "lifts": 18,
   "zones": false,
-  "bytes": 748536
+  "bytes": 1152708
  },
  {
   "id": "sugarloaf",
@@ -778,10 +778,10 @@
   "baseLon": -70.31252,
   "top": 1286,
   "base": 425,
-  "trails": 155,
+  "trails": 154,
   "lifts": 15,
   "zones": false,
-  "bytes": 973461
+  "bytes": 1428517
  },
  {
   "id": "sunday-river",
@@ -797,7 +797,7 @@
   "trails": 137,
   "lifts": 20,
   "zones": false,
-  "bytes": 893551
+  "bytes": 1433210
  },
  {
   "id": "telluride",
@@ -810,10 +810,10 @@
   "baseLon": -107.82076,
   "top": 4033,
   "base": 2662,
-  "trails": 141,
+  "trails": 139,
   "lifts": 19,
   "zones": false,
-  "bytes": 2114429
+  "bytes": 2106626
  },
  {
   "id": "tignes-val-disere",
@@ -826,10 +826,10 @@
   "baseLon": 6.92114,
   "top": 3454,
   "base": 1559,
-  "trails": 181,
+  "trails": 182,
   "lifts": 78,
   "zones": true,
-  "bytes": 3252219
+  "bytes": 3274125
  },
  {
   "id": "vail",
@@ -842,10 +842,10 @@
   "baseLon": -106.40166,
   "top": 3526,
   "base": 2454,
-  "trails": 213,
+  "trails": 212,
   "lifts": 32,
   "zones": false,
-  "bytes": 3018650
+  "bytes": 3027771
  },
  {
   "id": "val-thorens",
@@ -858,10 +858,10 @@
   "baseLon": 6.54615,
   "top": 3219,
   "base": 884,
-  "trails": 105,
+  "trails": 103,
   "lifts": 34,
   "zones": true,
-  "bytes": 2389429
+  "bytes": 2410111
  },
  {
   "id": "wachusett",
@@ -877,7 +877,7 @@
   "trails": 27,
   "lifts": 8,
   "zones": false,
-  "bytes": 216355
+  "bytes": 313792
  },
  {
   "id": "waterville-valley",
@@ -890,10 +890,10 @@
   "baseLon": -71.52594,
   "top": 1160,
   "base": 556,
-  "trails": 68,
+  "trails": 67,
   "lifts": 10,
   "zones": false,
-  "bytes": 329733
+  "bytes": 462337
  },
  {
   "id": "whiteface",
@@ -909,7 +909,7 @@
   "trails": 100,
   "lifts": 11,
   "zones": false,
-  "bytes": 506116
+  "bytes": 787144
  },
  {
   "id": "windham-mountain",
@@ -925,7 +925,7 @@
   "trails": 56,
   "lifts": 10,
   "zones": true,
-  "bytes": 358145
+  "bytes": 537331
  },
  {
   "id": "winter-park",
@@ -938,10 +938,10 @@
   "baseLon": -105.76308,
   "top": 3658,
   "base": 2771,
-  "trails": 187,
+  "trails": 185,
   "lifts": 25,
   "zones": true,
-  "bytes": 1757892
+  "bytes": 1756893
  },
  {
   "id": "zermatt",
@@ -957,6 +957,6 @@
   "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 3513150
+  "bytes": 3521154
  }
 ]
