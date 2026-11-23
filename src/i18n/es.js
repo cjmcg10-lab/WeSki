@@ -547,4 +547,9 @@ export default {
   1487: "Rescate aéreo Rega",
   1488: "Emergencia alpina (rescate de montaña)",
   1489: "Bomberos y ambulancia",
+  1490: "Muy reñido",
+  1491: "{0}, {1}: puntuación de esquí {2}, {3}. Rango probable de {4} a {5}. Confianza {6}.",
+  1492: "Rango probable: {0}–{1}",
+  1493: "El rango muestra cuánto cambia la puntuación si la temperatura, la nieve o el viento quedan en el extremo bajo o alto del pronóstico por conjuntos de MeteoSwiss.",
+  1494: "Rangos para los días 6 a 8. Fuente: MeteoSwiss",
 };

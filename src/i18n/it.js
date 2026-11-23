@@ -547,4 +547,9 @@ export default {
   1487: "Soccorso aereo Rega",
   1488: "Emergenza alpina (soccorso alpino)",
   1489: "Vigili del fuoco e ambulanza",
+  1490: "Testa a testa",
+  1491: "{0}, {1}: punteggio sci {2}, {3}. Intervallo probabile da {4} a {5}. Affidabilità {6}.",
+  1492: "Intervallo probabile: {0}–{1}",
+  1493: "L’intervallo mostra come cambia il punteggio se temperatura, neve o vento finiscono all’estremo basso o alto della previsione d’insieme di MeteoSvizzera.",
+  1494: "Intervalli per i giorni da 6 a 8. Fonte: MeteoSvizzera",
 };

@@ -82,3 +82,18 @@ export function topPickId(rows, date) {
   const day = first?.forecast?.scored?.days.find((d) => d.date === date);
   return day?.status === 'ok' ? first.resort.id : null;
 }
+
+/**
+ * "Close call" (issue #57, docs/FORECAST_SCORING.md "Ranges"): the ids of the first two mountains for the date when both
+ * are scored, at least one has an uncertainty from the ensemble range, and they are no further apart than the larger
+ * uncertainty. Otherwise null, so no Close call shows without an uncertainty.
+ */
+export function closeCallIds(rows, date) {
+  const [a, b] = sortRows(rows, date);
+  const day = (row) => row?.forecast?.scored?.days.find((d) => d.date === date);
+  const da = day(a), db = day(b);
+  if (da?.status !== 'ok' || db?.status !== 'ok') return null;
+  const u = Math.max(da.uncertainty ?? -1, db.uncertainty ?? -1);
+  if (u < 0 || Math.abs(da.score - db.score) > u) return null;
+  return [a.resort.id, b.resort.id];
+}

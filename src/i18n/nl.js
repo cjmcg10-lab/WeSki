@@ -547,4 +547,9 @@ export default {
   1487: "Rega luchtredding",
   1488: "Alpiene noodoproep (bergredding)",
   1489: "Brandweer en ambulance",
+  1490: "Nek-aan-nek",
+  1491: "{0}, {1}: skiscore {2}, {3}. Waarschijnlijk bereik {4} tot {5}. Betrouwbaarheid {6}.",
+  1492: "Waarschijnlijk bereik: {0}–{1}",
+  1493: "Het bereik laat zien hoe de score verandert als temperatuur, sneeuw of wind aan de lage of hoge kant van de ensembleverwachting van MeteoSwiss uitvalt.",
+  1494: "Bereiken voor dag 6 tot 8. Bron: MeteoSwiss",
 };

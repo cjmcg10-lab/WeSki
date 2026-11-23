@@ -43,5 +43,8 @@
     "PADDLE_CLIENT_TOKEN": "test_03c17e15405c60d04760a656641",
     "PADDLE_PRICES": "{\"pri_01m7xyhm3habdpnghh36ah1etv\":\"day\",\"pri_01m7xyk6z28t41kfe9d1n0qmqt\":\"week\",\"pri_01m7xyme122wvrre3pq6b8nawf\":\"season\",\"pri_01m7xyn989mnvsga49aqcd5729\":\"crew\"}"
   },
+  // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
+  // worker/meteoswiss.js). Most steps find nothing to do; a new run takes about 13 steps every 6 hours.
+  "triggers": { "crons": ["*/5 * * * *"] },
   "observability": { "enabled": true }
 }

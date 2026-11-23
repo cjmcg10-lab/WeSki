@@ -5,6 +5,7 @@ import {
 } from './accounts.js';
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
 import { HistoryStore } from './history.js';
+import { ensembleStep, ensembleRecord } from './meteoswiss.js';
 import { addFeedbackCounts, FEEDBACK_PER_NETWORK_PER_DAY } from './calibration.js';
 
 /** One per watched resort: 72 hours of weather history, the last good forecast and the forecast archive (see docs/FORECAST_HISTORY.md). */
@@ -19,6 +20,10 @@ export class ForecastHistory extends DurableObject {
   history(now) { return this.store.history(now); }
   lastGood(now) { return this.store.lastGood(now); }
   archive(sinceMs, limit) { return this.store.archive(sinceMs, limit); }
+  // MeteoSwiss ensemble ranges (issue #57) live in one extra instance of this class, named '_meteoswiss' (no resort id
+  // can start with an underscore). The scheduled job runs its steps here, so the file reading is done by the object.
+  ensembleStep(now) { return ensembleStep(this.ctx.storage, (url, init) => fetch(url, init), now); }
+  ensembleFor(id, now) { return ensembleRecord(this.ctx.storage, id, now); }
 }
 
 export class Accounts extends DurableObject {

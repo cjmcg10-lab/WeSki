@@ -547,4 +547,9 @@ export default {
   1487: "Sauvetage aérien Rega",
   1488: "Urgence alpine (secours en montagne)",
   1489: "Pompiers et ambulance",
+  1490: "Au coude-à-coude",
+  1491: "{0}, {1} : score de ski {2}, {3}. Fourchette probable de {4} à {5}. Confiance {6}.",
+  1492: "Fourchette probable : {0}–{1}",
+  1493: "La fourchette montre comment le score change si la température, la neige ou le vent se situent au bas ou au haut de la prévision d’ensemble de MétéoSuisse.",
+  1494: "Fourchettes pour les jours 6 à 8. Source : MétéoSuisse",
 };
