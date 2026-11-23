@@ -881,3 +881,18 @@ textarea.field { resize: vertical; font: inherit; }
 .sos-coords { margin: 4px 0; font: 700 19px/1.3 ui-monospace, Menlo, monospace; letter-spacing: .2px; }
 .sos-intro p { margin: 4px 0; }
 .sos-row .ico { color: #ff6b6e; }
+
+/* Paid tier v2 (2026-11-23): locked saved days, the Forecast's free taste, offline downloads */
+.day-card.locked { opacity: .78; }
+.day-card .lock-ico .ico, .mrow.locked i .ico { width: 18px; height: 18px; color: var(--muted); }
+.mrow.locked .locked-note { color: var(--muted); font-style: italic; }
+.lock-head { border-color: var(--teal, #16a3a3); }
+.fc-taste { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 10px 0; }
+.fc-taste .fc-cell { width: 100%; min-height: 104px; gap: 4px; }
+.fc-taste-head b { font-size: 17px; }
+.fc-lock h3 { margin-top: 0; }
+.dl-row { padding: 8px 0; border-top: 1px solid var(--edge2); gap: 10px; }
+.dl-row:first-of-type { border-top: 0; }
+#resort-card .card-offline { margin: 10px 0 4px; }
+#resort-card .card-offline .sub { margin: 4px 0; font-size: 13px; }
+#resort-card .card-offline .btn { margin-top: 6px; }

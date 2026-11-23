@@ -39,7 +39,7 @@ try {
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   await context.addInitScript(() => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-21', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
     // A stand-in for window.visualViewport whose size the test can change, to imitate the on-screen keyboard.
     const real = window.visualViewport;
     const fake = new EventTarget();
