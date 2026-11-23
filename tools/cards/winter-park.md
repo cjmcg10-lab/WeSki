@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**201 runs (187 named, 128.9 km), 25 lifts. 2 things to look at.**
+**203 runs (185 named, 128.6 km), 25 lifts. 2 things to look at.**
 
 - **LOOK**: lifts on the resort's list: 25 of 26 on the map  
   MISSING: Cirque Sled. A missing chair or gondola usually means a missing area: find it before going live (not in OpenStreetMap: extra_lifts; removed by the resort: explain it in the official json under lifts_explained)
@@ -13,12 +13,12 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 1 run pieces hidden (not on the resort's list and not a link)  
   (no name) (878422903, 189 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 1 lifts flagged for review were already on the previous build (checked then)
-- info: audit: flat black: 2, no rating: 2, run climbs: 1
+- info: audit: flat black: 2, no rating: 2, run climbs: 1, run missing: 1
 - info: same counts as the previous build
 - info: config has no osm_bbox: used the built map's extent (add osm_bbox to the config)
 - pass: ratings checked against the resort's own list  
   164 on the list, 270 matched, 0 corrected from OpenStreetMap
 - pass: resort areas mostly missing from the map: 0
-- pass: reachable from the base: 202 of 202 run pieces
+- pass: reachable from the base: 204 of 204 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m

@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**78 runs (68 named, 33.8 km), 11 lifts. 1 things to look at.**
+**78 runs (65 named, 33.1 km), 11 lifts. 1 things to look at.**
 
 - **LOOK**: 1 shown runs rated by guess  
   (no name)
@@ -10,7 +10,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   KMC Drive top ski 97 m
 - info: 1 run pieces hidden (not on the resort's list and not a link)  
   (no name) (48386091, 41 m): unnamed piece, not on the resort's list, leads nowhere on it
-- info: audit: no rating: 4
+- info: audit: no rating: 4, stub: 1
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   70 on the list, 119 matched, 0 corrected from OpenStreetMap

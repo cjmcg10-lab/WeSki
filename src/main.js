@@ -9,7 +9,7 @@ import { Guide, Speaker } from './voice.js';
 import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
 import { SkiMap, COLORS, ZONES, fmtAge } from './map.js';
 import { Locator } from './location.js';
-import { scheme, cls, runColor, runSym, runCss, levelName, classesUsed } from './rating.js';
+import { scheme, cls, runColor, runSym, runCss, runName, levelName, classesUsed } from './rating.js';
 import { GroupClient, createGroup } from './group.js';
 import { sessions, kv, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
@@ -1474,7 +1474,7 @@ function describeSpot(x, y, acc) {
   const best = trailAt(S.resort, x, y, { acc });
   const bits = [`Elevation ${fmtVert(S.geo.elev(x, y))}`];
   if (best) {
-    bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(best.t.name || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
+    bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(runName(best.t) || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
     if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
     if (best.t.unl) bits.push('Connecting piece: not named on the resort’s trail list');
     if (best.t.unof) bits.push('Not on the resort’s trail map: rating unconfirmed, may be ungroomed or unpatrolled');
@@ -2143,7 +2143,8 @@ function searchIndex() {
   const items = [];
   for (const p of S.resort.pois) if (p.name) items.push({ k: 'poi', v: p.id, name: p.name, sub: POI_KIND[p.kind] || 'Place', badge: '<span class="sbadge poi">⌂</span>' });
   const runs = new Map();
-  for (const t of S.resort.trails) if (t.name && !t.hide) { const e = runs.get(t.name) || { ids: [], d: t.d, c: t.c, u: t.u, bb: t.bb }; e.ids.push(t.id); runs.set(t.name, e); }
+  // a stretch two runs share is found under both names
+  for (const t of S.resort.trails) if (t.name && !t.hide) for (const n of [t.name, ...(t.also || [])]) { const e = runs.get(n) || { ids: [], d: t.d, c: t.c, u: t.u, bb: t.bb }; e.ids.push(t.id); runs.set(n, e); }
   for (const [name, e] of runs) items.push({ k: 'trail', v: e.ids.join(','), name, sub: 'Run · ' + levelName(S.resort, e.d), badge: `<span class="sbadge ${runCss(S.resort, e)}">${runSym(S.resort, e)}</span>` });
   for (const l of S.resort.lifts) if (l.name && !l.hide) items.push({ k: 'lift', v: l.id, name: l.name, sub: 'Lift', badge: `<span class="sbadge" style="color:${COLORS.lift}">↑</span>` });
   items.sort((a, b) => a.name.localeCompare(b.name));

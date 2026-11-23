@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**57 runs (56 named, 30.5 km), 10 lifts. Ready.**
+**57 runs (56 named, 30.1 km), 10 lifts. Ready.**
 
 - info: 3 joins made automatically (look at the longest ones on the map)  
   Wosie's Way bottom ski 55 m; Whataride Glades top ski 50 m; Whataride Glades bottom ski 45 m

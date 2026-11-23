@@ -80,60 +80,6 @@
    ]
   },
   {
-   "name": "Boulderado",
-   "pts": [
-    [-106.1655, 39.4566],
-    [-106.16532, 39.45671],
-    [-106.16513, 39.45682],
-    [-106.16495, 39.45693],
-    [-106.16477, 39.45704],
-    [-106.16459, 39.45716],
-    [-106.1644, 39.45727],
-    [-106.16422, 39.45738],
-    [-106.16405, 39.4575],
-    [-106.16389, 39.45763],
-    [-106.16376, 39.45778],
-    [-106.16363, 39.45793],
-    [-106.16351, 39.45808],
-    [-106.16339, 39.45824],
-    [-106.16327, 39.45839],
-    [-106.16315, 39.45854],
-    [-106.16304, 39.4587],
-    [-106.16294, 39.45887],
-    [-106.16285, 39.45903],
-    [-106.16277, 39.4592],
-    [-106.1627, 39.45937],
-    [-106.16261, 39.45954],
-    [-106.16254, 39.45971],
-    [-106.16247, 39.45988],
-    [-106.16242, 39.46005]
-   ],
-   "fitted": "terrain: never climbs, moved 1 m on average"
-  },
-  {
-   "name": "Western Slope",
-   "pts": [
-    [-106.17266, 39.45661],
-    [-106.1722, 39.45758],
-    [-106.17228, 39.45859],
-    [-106.17213, 39.45963],
-    [-106.17154, 39.46057],
-    [-106.17102, 39.46155]
-   ]
-  },
-  {
-   "name": "Summit Stash",
-   "pts": [
-    [-106.1757, 39.4571],
-    [-106.17592, 39.45784],
-    [-106.17578, 39.45845],
-    [-106.17601, 39.45906],
-    [-106.17589, 39.45976],
-    [-106.17547, 39.46049],
-    [-106.17508, 39.46123]
-   ]
-  },
-  {
    "name": "Spillway",
    "pts": [
     [-106.17057, 39.47368],
@@ -161,7 +107,7 @@
    ]
   }
  ],
- "extra_note": "Kokomo Glade, Boulderado, Western Slope, Summit Stash, Spillway and Guthrie's Chute are missing from OpenStreetMap and were drawn from the 2026-27 trail map and its Tucker / Copper Bowl inset, placed between their neighbouring runs on aerial photos: approximate.",
+ "extra_note": "Kokomo Glade, Spillway and Guthrie's Chute are missing from OpenStreetMap and were drawn from the 2026-27 trail map and its Tucker / Copper Bowl inset, placed between their neighbouring runs on aerial photos: approximate. Boulderado, Western Slope and Summit Stash were drawn the same way until OpenStreetMap mapped them; the hand-drawn copies were removed on 2026-11-23 (they drew each run twice).",
  "way_pts": {
   "464848346": {
    "pts": [

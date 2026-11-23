@@ -62,16 +62,17 @@
   {
    "name": "Mom Said No",
    "pts": [
-    [-71.47053, 44.24594],
-    [-71.47033, 44.24617],
-    [-71.47011, 44.24639],
-    [-71.46988, 44.24659],
-    [-71.46961, 44.24688],
-    [-71.46947, 44.2471],
-    [-71.46934, 44.24734],
-    [-71.46927, 44.24759]
+    [-71.470358, 44.245277],
+    [-71.470162, 44.245444],
+    [-71.469972, 44.245621],
+    [-71.469784, 44.2458],
+    [-71.469603, 44.245987],
+    [-71.469421, 44.246172],
+    [-71.469239, 44.246358],
+    [-71.469052, 44.246537]
    ],
-   "aligned": "naip photo, moved 45.6 m on average"
+   "placed": "2026-11-23: redrawn as the trail map shows it (glade RT, new): from Rosebrook Lodge down between the Skyway Gondola and Upper Swoop; it had been drawn on top of Upper Express, on the other side of the gondola. Approximate",
+   "glade": true
   },
   {
    "name": "Peppersass",

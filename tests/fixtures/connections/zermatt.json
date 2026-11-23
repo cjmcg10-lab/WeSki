@@ -2,9 +2,9 @@
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
  "unreachable": {
-  "(unnamed run 52)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
-  "(unnamed run 104)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
-  "(unnamed run 130)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
+  "(unnamed run 110)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look (run renumbered by the 2026-11-23 rebuild)",
+  "(unnamed run 136)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look (run renumbered by the 2026-11-23 rebuild)",
+  "(unnamed run 53)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look (run renumbered by the 2026-11-23 rebuild)"
  },
  "dead_end": {
   "Zen Steckenstrasse": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
@@ -14,5 +14,6 @@
   "Gornergrat Bahn: Zermatt – Findelbach (top)": "the Gornergrat railway's Findelbach stop: a station on the line, not a ski lift end (2026-11-23)",
   "Gornergrat Bahn: Zermatt – Findelbach (base)": "the Gornergrat railway's Zermatt station: a station on the line, not a ski lift end (2026-11-23)"
  },
- "uphill": {}
+ "uphill": {},
+ "doubled": {}
 }
