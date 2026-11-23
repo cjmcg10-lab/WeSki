@@ -98,10 +98,13 @@ And one independent check, which catches what geometry cannot (an area reached o
 
    Older mountains (issue #59, 2026-11-22): 35 of the 43 that had no list now carry one, read from the resort's
    trail map on skimap.org (the file comes from `files.skimap.org`, now on the network allowlist), with the map
-   and how it was read in `lifts_source`. Still without a list: Zermatt (its map numbers the lifts without
-   names), Pizol (lifts lettered A to L only), Magic Mountain (lifts drawn but not named), Tignes – Val d'Isère,
-   Val Thorens, La Plagne, Les Arcs and Les Contamines (big Alpine maps with small labels; skimap.org's newest
-   Tignes file is the bike map). A listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12")
+   and how it was read in `lifts_source`. The last eight followed on 2026-11-23 from the resorts' own sources:
+   status pages (Pizol on infosnow.ch, Val Thorens on les3vallees.com, Magic Mountain's snow report), printed
+   timetables (Zermatt Bergbahnen's winter timetable, Les Contamines' piste map), and the 2026 piste maps of La
+   Plagne, Paradiski (Les Arcs) and Tignes – Val d'Isère (labels from the PDF text where it has any, otherwise read
+   by hand from 400 dpi tiles). Lifts on a resort's list that are drawn as railways in OpenStreetMap
+   (`railway=funicular`: Tignes' Funival and Perce-Neige, Zermatt's Leisee-Shuttle) are only built when the
+   config lists them under `extra_lifts` with `"rail": true`. A listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12")
    cannot be matched by name, so the whole-resort search ignores it (it once matched every lift around Park City).
 
 A separate area reached by shuttle (Snowshoe's Silver Creek) goes in `isolated_lifts` with a note.
