@@ -62,7 +62,9 @@ for T in R["trails"]:
         T["name"] = cfg["rename"][T["name"]]
     if str(T.get("osm")) in cfg.get("way_names", {}):
         T["name"] = cfg["way_names"][str(T["osm"])]
-known = {T["name"] for T in R["trails"]}
+    if T.get("also"):
+        T["also"] = [cfg.get("rename", {}).get(n, n) for n in T["also"]]
+known ={T["name"] for T in R["trails"]}
 for k, names in named.items():
     assert not names - known, f"zones.{k}: no run named {sorted(names - known)}"
 
@@ -183,6 +185,23 @@ if official:
             if hit[1]:
                 T["bb"] = True                      # blue-black: harder than a blue, not a black
             official_n += 1
+    # A stretch two runs share is drawn once and carries both names ("also", build_data.drop_duplicates): it takes
+    # the harder of the two official ratings, so directions never send someone down it below its real level.
+    for T in R["trails"]:
+        for n in T.get("also") or []:
+            hit = find(n)
+            if not hit:
+                continue
+            if official.get("scheme") == "colour":
+                d = official_ratings.COLOUR_LEVEL[hit[0]]
+                if not T.get("ok") or d > T["d"] or (d == T["d"] and hit[0] > T.get("c", -1)):
+                    T["c"], T["d"] = hit[0], d
+            elif not T.get("ok") or hit[0] > T["d"] or (hit[0] == T["d"] and hit[1] and not T.get("bb")):
+                T["d"] = hit[0]
+                T.pop("bb", None)
+                if hit[1]:
+                    T["bb"] = True
+            T["ok"] = True
 
 count = {}
 for T in R["trails"]:

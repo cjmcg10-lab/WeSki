@@ -22,6 +22,8 @@ export const cls = (R, t) => { const s = scheme(R); return s === EU ? (t.c ?? s.
 export const runColor = (R, t) => scheme(R).colors[cls(R, t)];
 export const runSym = (R, t) => scheme(R).syms[cls(R, t)];
 export const runCss = (R, t) => scheme(R).css[cls(R, t)];
+/** A run's name as shown: a stretch two runs share is drawn once and carries both names ("A / B", `also`). */
+export const runName = (t) => (t.name && t.also?.length ? [t.name, ...t.also].join(' / ') : t.name);
 /** Name of level `d` as the "my hardest trail" limit: Green/Blue/Black/Double black, or Blue/Red/Black/Freeride. */
 export const levelName = (R, d) => { const s = scheme(R); return s.names[s.limit[d]]; };
 /** The colour classes this resort actually uses, for its legend. */

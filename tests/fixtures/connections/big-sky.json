@@ -14,5 +14,8 @@
  },
  "outside_core": {},
  "lift_end": {},
- "uphill": {}
+ "uphill": {},
+ "doubled": {
+  "Lenin ~ Lenin": "PENDING (Big Sky is being traced on another branch): a second entrance to Lenin that starts 23 m away and joins the main line at a narrow angle over about 100 m (OpenStreetMap ways 1463230589 and 593488067). Proposed: leave it, or way_names/drop the second entrance if the trail map shows one entrance (2026-11-23)"
+ }
 }

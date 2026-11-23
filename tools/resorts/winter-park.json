@@ -140,5 +140,12 @@
   "trail:Baldys Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (104 m, no climb)",
   "trail:Jeffs Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (84 m, no climb)",
   "trail:G-Face (bottom) -> trail:Eldorado": "2026-11-23: the run stops short; the terrain falls from its end to Eldorado (107 m, 1 m of climb) (tools/check_connections.py dead end)"
- }
+ },
+ "shared_runs": [
+  [
+   "Lonesome Whistle Lower",
+   "Dilly Dally Alley"
+  ]
+ ],
+ "shared_runs_note": "Dilly Dally Alley was drawn 10 m beside Lonesome Whistle Lower on the same cut for its whole length: the stretch is drawn once and carries both names (2026-11-23)."
 }

@@ -24,5 +24,12 @@
    "trail:Terry's Trail",
    "trail:Old Tecumseh"
   ]
- ]
+ ],
+ "shared_runs": [
+  [
+   "Periphery",
+   "Preston's Path"
+  ]
+ ],
+ "shared_runs_note": "Preston's Path was drawn 0-8 m beside Periphery for its whole length (one cut): the stretch is drawn once, carries both names and takes the harder rating (2026-11-23)."
 }

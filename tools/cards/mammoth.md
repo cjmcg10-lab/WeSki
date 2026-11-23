@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**206 runs (170 named, 108.8 km), 28 lifts. 2 things to look at.**
+**209 runs (170 named, 108.9 km), 28 lifts. 2 things to look at.**
 
 - **LOOK**: 13 shown runs rated by guess  
   (no name)
@@ -13,11 +13,11 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 2 run pieces hidden (not on the resort's list and not a link)  
   (no name) (799071156, 89 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (769175917, 46 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 7 lifts flagged for review were already on the previous build (checked then)
-- info: audit: no rating: 18, run climbs: 1, run missing: 1
+- info: audit: no rating: 20, run climbs: 1, run missing: 1
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   172 on the list, 254 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 25 of 25 on the map
 - pass: resort areas mostly missing from the map: 0
-- pass: reachable from the base: 208 of 208 run pieces
+- pass: reachable from the base: 211 of 211 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)

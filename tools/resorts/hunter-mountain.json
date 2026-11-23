@@ -80,10 +80,14 @@
   {
    "name": "Park Avenue West",
    "pts": [
-    [-74.2138, 42.2017],
-    [-74.2128, 42.2027],
-    [-74.2119, 42.2037]
-   ]
+    [-74.213628, 42.201478],
+    [-74.213178, 42.201821],
+    [-74.212765, 42.202188],
+    [-74.212396, 42.20258],
+    [-74.212063, 42.20299],
+    [-74.21165, 42.203356]
+   ],
+   "placed": "2026-11-23: moved 35 m off Park Avenue toward Madison Avenue, where the trail map draws it (on the Madison side of the park slope's lower half); it had been drawn on top of Park Avenue. Approximate"
   },
   {
    "name": "Bucky's Run",
