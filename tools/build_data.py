@@ -336,6 +336,8 @@ def main():
         raise SystemExit(f"DEM has holes inside the resort bounds: {len(jj)} cells ({len(jj) / h.size * 100:.2f}%), "
                          f"E {x0 + ii.min() * CELL:.0f}..{x0 + ii.max() * CELL:.0f}, N {y0 + jj.min() * CELL:.0f}..{y0 + jj.max() * CELL:.0f} "
                          f"(needed E {b[0]:.0f}..{b[2]:.0f}, N {b[1]:.0f}..{b[3]:.0f})")
+    for side, lines in repair_edges(h).items():
+        print(f"edge of the terrain grid mended ({side} side, {lines} line{'s' if lines > 1 else ''}): it jumped far more than the lines inside it")
     zmin = math.floor(h.min())
     q = np.round((h - zmin) * 10).astype("<u2")
     os.makedirs(out_dir, exist_ok=True)
@@ -1257,6 +1259,28 @@ class GraphBuilder:
         self.pts.append((float(p[0]), float(p[1])))
         self.grid.setdefault(key, []).append(len(self.pts) - 1)
         return len(self.pts) - 1
+
+
+def repair_edges(h, depth=3):
+    """Mend a broken outermost row or column of the height grid (metres, row 0 = south), in place. The edge line can
+    come out averaged partly over empty ground beyond the elevation model, hundreds of metres too low all along one
+    side (Vail, Keystone, Loon, Okemo, Sugarloaf, Mammoth and Tignes were built so). Same rule as the app's
+    repairEdges (src/seam.js): of the outer `depth` lines, the deepest whose median jump to the next line in is more
+    than three times the next jump plus 2 m, and every line outside it, take the slope of the two good lines inside
+    them carried outward."""
+    fixed = {}
+    ny, nx = h.shape
+    if nx < depth + 3 or ny < depth + 3:
+        return fixed
+    views = {"S": h, "N": h[::-1, :], "W": h.T, "E": h.T[::-1, :]}   # each with the side's outer line as row 0
+    for name, v in views.items():
+        jump = lambda d: float(np.median(np.abs(v[d] - v[d + 1])))
+        bad = max([d + 1 for d in range(depth) if jump(d) > 3 * jump(d + 1) + 2], default=0)
+        for d in range(bad - 1, -1, -1):
+            v[d] = 2 * v[d + 1] - v[d + 2]
+        if bad:
+            fixed[name] = bad
+    return fixed
 
 
 def coarse_elev(xs, ys, crs, Z=12):
