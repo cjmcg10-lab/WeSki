@@ -1,6 +1,6 @@
 # Jay Peak (jay-peak)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
 
 **105 runs (91 named, 49.6 km), 9 lifts. Ready.**
 
