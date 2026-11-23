@@ -190,6 +190,7 @@ function initMap(id) {
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
     S.hasCanopy = !!canopy;
     S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy);
+    if (import.meta.env.DEV) window.__map = S.map;   // for local browser checks only
     S.map.maxFps = S.fps120 ? 120 : 60;
     if (q0) S.map.setQuality(q0);
     fpsReadout();

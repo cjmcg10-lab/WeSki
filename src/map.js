@@ -249,8 +249,9 @@ export class SkiMap {
     g.computeVertexNormals();
     const gm = this.groundMaterial(zmin);
     // stencil: where the ground is the nearest thing it clears the "tree here" mark (see buildTrails)
-    Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilWriteMask: TREE_BIT, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
     this.terrain = new THREE.Mesh(g, gm);
+    this.terrain.renderOrder = GROUND_ORDER;   // before the runs' "seen" pass and the trees (see buildTrails)
     this.scene.add(this.terrain);
     this.buildSurround();
   }
@@ -443,7 +444,9 @@ vec3 groundColour() {
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setIndex(idx);
     g.computeVertexNormals();     // smooth shading, like the detailed map (it used to be faceted)
-    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true })));
+    const far = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true }));
+    far.renderOrder = GROUND_ORDER;
+    this.scene.add(far);
     // short skirt under the edge of the detailed map hides any sliver between the two meshes
     const { nx: fx, ny: fy, cell: fc } = this.resort.grid, sk = [];
     const edge = (x1, y1, x2, y2) => {
@@ -497,7 +500,7 @@ vec3 groundColour() {
     }
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
     // stencil: trees mark the pixels they cover, so runs can be drawn through them (see buildTrails)
-    const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilRef: TREE_BIT, stencilWriteMask: TREE_BIT, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), treeMat, spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
@@ -576,13 +579,24 @@ vec3 groundColour() {
       runs.push(this.fatLine(pos, scheme(R).colors[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
     }
     runs.push(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
-    // Runs through the woods: drawn a second time only where a tree is in front of them (the trees mark their
-    // pixels, the ground clears the mark where it is nearer), so a glade or a run hidden by the canopy still shows,
-    // in its true place, while a run behind a ridge stays hidden.
+    // Runs through the woods: drawn a second time only where a tree is in front of them, so a glade or a run hidden
+    // by the canopy still shows in its true place. Two stencil marks decide it:
+    //  - SEEN_BIT: an invisible pass of the runs, drawn after the ground and before the trees, depth-tested against
+    //    the ground only: set where the run is really in view (not behind a ridge or the far side of the mountain);
+    //  - TREE_BIT: set by the trees where a tree is the nearest thing (the ground and solid things clear it).
+    // The see-through copy draws only where both are set: through trees, never through the ground or through
+    // trees standing in front of a ridge with the run behind it (owner's report, 2026-11-23).
     for (const l of runs) {
       G.add(l);
+      const seen = new LineSegments2(l.geometry, l.material.clone());
+      Object.assign(seen.material, { transparent: false, colorWrite: false, depthWrite: false, depthTest: true, stencilWrite: true,
+        stencilRef: SEEN_BIT, stencilWriteMask: SEEN_BIT, stencilFunc: THREE.AlwaysStencilFunc,
+        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.ReplaceStencilOp });
+      seen.renderOrder = SEEN_ORDER; seen.frustumCulled = false;
+      G.add(seen);
       const x = new LineSegments2(l.geometry, l.material.clone());
-      Object.assign(x.material, { depthTest: false, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc,
+      Object.assign(x.material, { depthTest: false, stencilWrite: true, stencilRef: TREE_BIT | SEEN_BIT, stencilFuncMask: TREE_BIT | SEEN_BIT,
+        stencilFunc: THREE.EqualStencilFunc,
         stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp, stencilWriteMask: 0 });
       x.material.opacity = l.material.opacity * 0.9;
       x.renderOrder = l.renderOrder + 2; x.frustumCulled = false;
@@ -1649,6 +1663,11 @@ function edgeDist(P, x, y) {
 function clearsTreeMark(mat) {
   for (const m of Array.isArray(mat) ? mat : [mat]) {
     if (!m || m.stencilWrite || m.isLineMaterial || m.transparent) continue;
-    Object.assign(m, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    Object.assign(m, { stencilWrite: true, stencilRef: 0, stencilWriteMask: TREE_BIT, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
   }
 }
+
+// Stencil marks and draw order for runs seen through trees (buildTrails): the ground first, then the runs' invisible
+// "seen" pass, then everything else (trees, lifts, buildings) at the default order 0.
+const TREE_BIT = 1, SEEN_BIT = 2;
+const GROUND_ORDER = -2, SEEN_ORDER = -1;
