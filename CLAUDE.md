@@ -17,7 +17,11 @@ session needs that the README does not: the rules, the state of the work, and wh
 - Do not fake a browser User-Agent to get past a site that refuses automated clients. Use another source.
 - The owner is not a programmer. Report in plain language: what changed, what was checked, what was not.
 - Nothing has been tested on a real phone yet. Do not claim real-device behaviour.
-- Run `npm test` before every push (134 tests; the resort tests load every built map).
+- Run `npm test` before every push (about 640 tests; the resort and connection tests load every built map, so pull
+  them first). If agent worktrees exist under `.claude/worktrees/`, add `--exclude '**/.claude/**'` or vitest runs their tests too.
+- **Never upload maps to live R2 without the owner's approval.** `tools/pipeline.py` uploads only with `--r2` (since
+  2026-11-23; before, it uploaded every R2 resort it rebuilt, which once put five unreviewed maps live). Show rebuilt
+  maps on the preview (`tools/preview/deploy.mjs`, R2 `preview/data/<id>/`) and push them with `tools/maps_r2.mjs push` once approved.
 
 ## Starting a new session (read this first)
 
@@ -96,8 +100,8 @@ OSM outline, and every official json carries the resort's `"lifts"` (feed, or re
 blocks on any listed chair or gondola missing from the map. Palisades had lost its Sherwood bowl and Snowshoe its
 Silver Creek area before this. The search never crosses into a neighbour: it passes a lift outside the outline only
 when the lift is on the resort's list. `tools/whole_check.py <ids>` checks built maps without rebuilding (run on all
-50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). The 40 older mountains
-with no `"lifts"` in their official json should get one (feed or map reading) so the check covers them fully.
+50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). Lift lists were added to 35
+more official jsons on 2026-11-22 (#79); still without one: Zermatt, Pizol, Magic Mountain and the five big French resorts (#59).
 See "Getting the whole resort" in `docs/ADDING_MOUNTAINS.md`.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
@@ -284,7 +288,11 @@ advanced (the test mode is now "Simulated location" there, with an orange Simula
 Mountain weather (Summit/Base and Today/7 days switches, "More conditions" folds). Not yet confirmed with the owner:
 which Group mock-up they prefer, and putting test mode under Appearance & advanced rather than at the top of More.
 
-Start screen (owner's mock-up, 2026-11-17): logo and "Your mountain. Your crew." over a low-poly mountain backdrop
+Start screen (owner's mock-up, 2026-11-17; title and pull-up changed 2026-11-23, #83): no logo picture any more;
+"SkiWithMe" in Bowlby One (self-hosted in `public/fonts`, licence on the credits page; the owner chose it over Lilita One
+and Kanit) with the slogan in spaced capitals. The "Find your mountain" panel has three positions (full screen, normal,
+shrunk) dragged by its bar or tapped (`startState`, `dragStops` in `src/drag.js`); full screen hides the globe, title and
+backdrop and pauses the globe. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
 (`.start-sky` in `index.html`, drawn in front of the globe and kept while zoomed to a resort; it fades when the dive into
 the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
 Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted
@@ -361,6 +369,24 @@ Full pass at all 50 (2026-11-20, second half):
   and Fantasy Ridge (the photo shows them on their strips; ridge runs), Pine Cone Ridge (hike), Heavenly Sky Chute (no
   safe fit), Zermatt's small rises, SkiWelt 87a (its fit is the Almbahn line).
 - `tools/dev/fmt_config.py` rewrites configs with each [lon, lat] on one line; run it after any tool writes a config.
+
+## Rebuild of all 60 maps and joins (2026-11-23)
+
+All 60 maps were rebuilt with the full method (#82 northeast, #86 west/Alps/Japan, merged via #87) and pushed live after
+the owner approved the preview. `tools/check_connections.py <ids|--all>` moves the way `src/routing.js` does and lists
+runs no lift reaches, dead ends, loose ends, overshoots, lift ends with no run, lifts outside the network, long made-up
+joins and uphill "ski" joins; `tests/connections.test.js` fails on anything new beyond each resort's allow-list in
+`tests/fixtures/connections/<id>.json`. `build_data.py` now turns automatic ski joins that climb into short walks (≤20 m)
+or drops them (1,868 + 726 such joins had let directions ski uphill), joins outline glades only to the nearest run they
+can be skied from or onto, joins run ends lying on another run, and takes `["trail:A (bottom)", "trail:B" | "<lift> (base)"]`
+links. `dem_from_built.py` detects the map's projection (European and Japanese rebuilds used to fail). Missing runs were
+traced at Big Sky, Snowbird, Telluride and Alta (#87) from the trail map tied to the ground, the canopy map and terrain.
+Doubled runs (hand-drawn `extra_trails` that OSM later mapped itself, e.g. 17 at Keystone's Outback, and OSM drawing a
+run twice) are being removed in a follow-up branch, with an automatic rule and a "doubled" check.
+
+Rendering rules learned the same day: runs show through trees but never through the ground (stencil: ground first,
+runs once marking SEEN, trees skip SEEN pixels; #84, #88). A lift end on a mapped station building is drawn once
+(`stationClashes` in `src/liftmotion.js`: small building left out, big lodge kept and the terminal model left out).
 
 ## Existence check (2026-11-20)
 
@@ -552,5 +578,7 @@ phones.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.
 7. Open questions from the owner's phone: frame rate dropped from 120 to 30 fps at times; motion is now capped
-   at 60 fps by default ("120 fps motion" in More). Awaiting their retest. "Terrain detail by distance" is
-   unbuilt and only worth doing if the retest still shows drops.
+   at 60 fps by default ("120 fps motion" in More). Awaiting their retest. The speed work of 2026-11-23 (#88, see
+   `docs/PERFORMANCE_PLAN.md` "Built") cut the drawing per frame to a fifth to a third: simpler run lines, ground in
+   chunks with distance detail and off-screen culling, lift detail by distance, softer picture while moving, fewer idle
+   redraws, ground set-up in a worker, "Smooth edges" switch. Not yet measured on a phone.
