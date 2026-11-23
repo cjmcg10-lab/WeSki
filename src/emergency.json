@@ -1,0 +1,558 @@
+{
+ "_about": "Emergency numbers shown in the app (the SOS sheet). Each resort number comes from the resort's own published page, trail map or document (source), checked on the date given; a resort with no reliable source has no phone and the app shows only the general numbers. Never guess a number.",
+ "general": {
+  "US": [
+   {
+    "phone": "911",
+    "label": "Emergency services (police, fire, ambulance)",
+    "tel": "911"
+   }
+  ],
+  "FR": [
+   {
+    "phone": "112",
+    "label": "European emergency number",
+    "tel": "112"
+   }
+  ],
+  "CH": [
+   {
+    "phone": "144",
+    "label": "Ambulance and rescue",
+    "source": "https://www.zermatt.swiss/en/info/emergency-numbers",
+    "tel": "144"
+   },
+   {
+    "phone": "1414",
+    "label": "Rega air rescue",
+    "source": "https://www.rega.ch/en/emergency-number-1414",
+    "tel": "1414"
+   },
+   {
+    "phone": "112",
+    "label": "European emergency number",
+    "tel": "112"
+   }
+  ],
+  "AT": [
+   {
+    "phone": "140",
+    "label": "Alpine emergency (mountain rescue)",
+    "source": "https://bergrettung.at/tipps/notruf-absetzen/",
+    "tel": "140"
+   },
+   {
+    "phone": "144",
+    "label": "Ambulance and rescue",
+    "source": "https://www.saalbach.com/en/service/info/emergency-numbers",
+    "tel": "144"
+   },
+   {
+    "phone": "112",
+    "label": "European emergency number",
+    "tel": "112"
+   }
+  ],
+  "JP": [
+   {
+    "phone": "119",
+    "label": "Fire and ambulance",
+    "tel": "119"
+   }
+  ]
+ },
+ "resorts": {
+  "alta": {
+   "country": "US",
+   "phone": "385-449-8633",
+   "tel": "+13854498633",
+   "label": "Alta Ski Patrol",
+   "hours": "Winter only, 8 am to 4:30 pm",
+   "source": "https://www.alta.com/contact",
+   "checked": "2026-11-23"
+  },
+  "berkshire-east": {
+   "country": "US",
+   "phone": "413-214-7167",
+   "tel": "+14132147167",
+   "label": "Berkshire East Ski Patrol",
+   "hours": "During operating hours",
+   "source": "https://berkshireeast.com/the-resort/policies",
+   "checked": "2026-11-23"
+  },
+  "big-sky": {
+   "country": "US",
+   "phone": "406-995-5880",
+   "tel": "+14069955880",
+   "label": "Big Sky Ski Patrol",
+   "source": "https://www.bigskyresort.com/policies/safety",
+   "checked": "2026-11-23"
+  },
+  "bolton-valley": {
+   "country": "US",
+   "phone": "802-434-6823",
+   "tel": "+18024346823",
+   "label": "Bolton Valley Ski Patrol",
+   "hours": "Only while the lifts are running",
+   "source": "https://www.boltonvalley.com/the-resort/contact-us/",
+   "checked": "2026-11-23"
+  },
+  "breckenridge": {
+   "country": "US",
+   "phone": "970-496-7911",
+   "tel": "+19704967911",
+   "label": "Breckenridge Ski Patrol",
+   "source": "https://www.breckenridge.com/the-mountain/about-the-mountain/safety/safety-on-the-mountain.aspx",
+   "checked": "2026-11-23"
+  },
+  "bretton-woods": {
+   "country": "US",
+   "phone": "603-278-8876",
+   "tel": "+16032788876",
+   "label": "Bretton Woods Ski Patrol / First Aid",
+   "source": "https://www.brettonwoods.com/alpine-map-signage/",
+   "checked": "2026-11-23"
+  },
+  "brundage": {
+   "country": "US",
+   "phone": "208-849-1350",
+   "tel": "+12088491350",
+   "label": "Brundage Ski Patrol",
+   "hours": "During operating hours",
+   "source": "https://brundage.com/slope-safety/",
+   "checked": "2026-11-23"
+  },
+  "burke": {
+   "country": "US",
+   "phone": "802-626-7377",
+   "tel": "+18026267377",
+   "label": "Burke Ski Patrol",
+   "hours": "9 am to 4 pm",
+   "source": "https://skiburke.com/plan-your-trip/contact-us",
+   "checked": "2026-11-23"
+  },
+  "cannon-mountain": {
+   "country": "US",
+   "phone": "603-823-9811",
+   "tel": "+16038239811",
+   "label": "Cannon Ski Patrol",
+   "source": "https://www.cannonmt.com/policies",
+   "checked": "2026-11-23"
+  },
+  "catamount": {
+   "country": "US",
+   "phone": "413-232-9405",
+   "tel": "+14132329405",
+   "label": "Catamount Ski Patrol",
+   "hours": "During lift operations",
+   "source": "https://catamountski.com/winter/the-mountain/uphill",
+   "checked": "2026-11-23"
+  },
+  "copper-mountain": {
+   "country": "US",
+   "phone": "970-968-3311",
+   "tel": "+19709683311",
+   "label": "Copper Ski Patrol",
+   "source": "https://www.coppercolorado.com/the-mountain/mountain-safety-stats/general-safety-information/",
+   "checked": "2026-11-23"
+  },
+  "crystal-mountain": {
+   "country": "US",
+   "phone": "360-663-3064",
+   "tel": "+13606633064",
+   "label": "Crystal Mountain Ski Patrol",
+   "source": "https://www.crystalmountainresort.com/about/contact-us-and-faqs",
+   "checked": "2026-11-23"
+  },
+  "deer-valley": {
+   "country": "US",
+   "phone": "435-645-6804",
+   "tel": "+14356456804",
+   "label": "Deer Valley Ski Patrol",
+   "source": "https://www.deervalley.com/explore-the-mountain/safety-and-conduct",
+   "checked": "2026-11-23"
+  },
+  "geto-kogen": {
+   "country": "JP",
+   "checked": "2026-11-23"
+  },
+  "heavenly": {
+   "country": "US",
+   "phone": "530-542-6944",
+   "tel": "+15305426944",
+   "label": "Heavenly Ski Patrol (emergency)",
+   "source": "https://skiheavenly.com/explore-the-resort/about-the-resort/guest-services",
+   "checked": "2026-11-23"
+  },
+  "hunter-mountain": {
+   "country": "US",
+   "phone": "518-263-3800",
+   "tel": "+15182633800",
+   "label": "Hunter Ski Patrol",
+   "source": "https://www.huntermtn.com/mountain-info/use-and-safety-policies",
+   "checked": "2026-11-23"
+  },
+  "jackson-hole": {
+   "country": "US",
+   "phone": "307-739-2650",
+   "tel": "+13077392650",
+   "label": "Jackson Hole Ski Patrol (winter, emergencies only)",
+   "source": "https://www.jacksonhole.com/contact",
+   "checked": "2026-11-23"
+  },
+  "jay-peak": {
+   "country": "US",
+   "phone": "802-327-2187",
+   "tel": "+18023272187",
+   "label": "Jay Peak Ski Patrol",
+   "source": "https://jaypeakresort.com/resort/contact",
+   "checked": "2026-11-23"
+  },
+  "keystone": {
+   "country": "US",
+   "phone": "970-496-6911",
+   "tel": "+19704966911",
+   "label": "Keystone Ski Patrol",
+   "source": "https://www.keystoneresort.com/footer/contactus.aspx",
+   "checked": "2026-11-23"
+  },
+  "killington": {
+   "country": "US",
+   "phone": "802-422-1243",
+   "tel": "+18024221243",
+   "label": "Killington Ski Patrol / First Aid (emergency only)",
+   "source": "https://killington.com/contact-us",
+   "checked": "2026-11-23"
+  },
+  "la-plagne": {
+   "country": "FR",
+   "phone": "+33 4 79 09 67 60",
+   "tel": "+33479096760",
+   "label": "La Plagne slope rescue",
+   "source": "https://www.skipass-laplagne.com/en/good-practice",
+   "checked": "2026-11-23"
+  },
+  "les-arcs": {
+   "country": "FR",
+   "phone": "+33 4 79 07 85 66",
+   "tel": "+33479078566",
+   "label": "Les Arcs slope rescue",
+   "source": "https://www.lesarcs-peiseyvallandry.com/en/slope-safety",
+   "checked": "2026-11-23"
+  },
+  "les-contamines": {
+   "country": "FR",
+   "phone": "+33 4 50 47 02 05",
+   "tel": "+33450470205",
+   "label": "Les Contamines ski patrol",
+   "source": "https://www.lescontamines.net/contact.html",
+   "checked": "2026-11-23"
+  },
+  "loon": {
+   "country": "US",
+   "phone": "603-745-6359",
+   "tel": "+16037456359",
+   "label": "Loon Ski Patrol (winter)",
+   "source": "https://help.loonmtn.com/s/article/How-to-contact-First-Aid",
+   "checked": "2026-11-23"
+  },
+  "magic-mountain": {
+   "country": "US",
+   "phone": "802-428-3301",
+   "tel": "+18024283301",
+   "label": "Magic Mountain Ski Patrol",
+   "source": "https://magicmtn.com/?p=204",
+   "checked": "2026-11-23"
+  },
+  "mammoth": {
+   "country": "US",
+   "phone": "760-934-0611",
+   "tel": "+17609340611",
+   "label": "Mammoth on-hill emergency line",
+   "source": "https://www.mammothmountain.com/on-the-mountain/safety",
+   "checked": "2026-11-23"
+  },
+  "mohawk-mountain": {
+   "country": "US",
+   "phone": "860-672-6100 ext. 134",
+   "tel": "+18606726100,134",
+   "label": "Mohawk Mountain Ski Patrol",
+   "source": "https://www.mohawkmtn.com/mountain-services/ski-patrol/",
+   "checked": "2026-11-23"
+  },
+  "mount-snow": {
+   "country": "US",
+   "phone": "802-464-4005",
+   "tel": "+18024644005",
+   "label": "Mount Snow Ski Patrol",
+   "hours": "Weekends 7:30 am to 4 pm, weekdays 8 am to 4 pm",
+   "source": "https://mountsnow.zendesk.com/hc/en-us/articles/21709856749723-How-can-I-contact-safety-ski-patrol",
+   "checked": "2026-11-23"
+  },
+  "mount-southington": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "okemo": {
+   "country": "US",
+   "phone": "802-228-1498",
+   "tel": "+18022281498",
+   "label": "Okemo Ski Patrol",
+   "hours": "8 am to 4 pm",
+   "source": "https://www.okemo.com/the-mountain/about-the-mountain/mountain-safety.aspx",
+   "checked": "2026-11-23"
+  },
+  "palisades-tahoe": {
+   "country": "US",
+   "phone": "530-452-7145",
+   "tel": "+15304527145",
+   "label": "Palisades Dispatch (ski patrol)",
+   "more": [
+    {
+     "phone": "530-581-8222",
+     "tel": "+15305818222",
+     "label": "Alpine Dispatch (Alpine side)"
+    }
+   ],
+   "source": "https://www.palisadestahoe.com/footer/safety",
+   "checked": "2026-11-23"
+  },
+  "park-city": {
+   "country": "US",
+   "phone": "435-615-1911",
+   "tel": "+14356151911",
+   "label": "Park City Mountain Patrol",
+   "source": "https://www.parkcitymountain.com/Footer/ContactUs",
+   "checked": "2026-11-23"
+  },
+  "pats-peak": {
+   "country": "US",
+   "phone": "603-428-7911",
+   "tel": "+16034287911",
+   "label": "Pats Peak Ski Patrol",
+   "source": "https://patspeak.com/?p=3375",
+   "checked": "2026-11-23"
+  },
+  "pizol": {
+   "country": "CH",
+   "note": "The resort asks guests to alert its slope rescue through the free EchoSOS app.",
+   "checked": "2026-11-23"
+  },
+  "powder-ridge": {
+   "country": "US",
+   "phone": "860-876-9063",
+   "tel": "+18608769063",
+   "label": "Powder Ridge Ski Patrol",
+   "source": "https://powderridgepark.com/hours-directions/",
+   "checked": "2026-11-23"
+  },
+  "ragged": {
+   "country": "US",
+   "phone": "603-856-5117",
+   "tel": "+16038565117",
+   "label": "Ragged Mountain on-site incident line",
+   "source": "https://www.raggedmountainresort.com/winter-sports-safety-act/",
+   "checked": "2026-11-23"
+  },
+  "saalbach": {
+   "country": "AT",
+   "note": "The resort says to report accidents at the nearest lift station; its lift companies’ numbers are printed on the piste map.",
+   "checked": "2026-11-23"
+  },
+  "saddleback": {
+   "country": "US",
+   "phone": "207-864-5671 ext. 214",
+   "tel": "+12078645671,214",
+   "label": "Saddleback Ski Patrol",
+   "source": "https://www.saddlebackmaine.com/about-us/ski-patrol/",
+   "checked": "2026-11-23"
+  },
+  "ski-sundown": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "skiwelt": {
+   "country": "AT",
+   "checked": "2026-11-23"
+  },
+  "smugglers-notch": {
+   "country": "US",
+   "phone": "802-644-1182",
+   "tel": "+18026441182",
+   "label": "Smugglers’ Notch Ski Patrol",
+   "hours": "8 am to 4:30 pm",
+   "source": "https://smuggs.com/wp-content/uploads/2024/11/trailmap_2425.pdf",
+   "checked": "2026-11-23"
+  },
+  "snowbird": {
+   "country": "US",
+   "phone": "801-933-2137",
+   "tel": "+18019332137",
+   "label": "Snowbird on-mountain emergencies",
+   "source": "https://www.snowbird.com/contact/",
+   "checked": "2026-11-23"
+  },
+  "snowshoe": {
+   "country": "US",
+   "phone": "304-572-5695",
+   "tel": "+13045725695",
+   "label": "Snowshoe Ski Patrol",
+   "more": [
+    {
+     "phone": "304-572-6949",
+     "tel": "+13045726949",
+     "label": "Silver Creek Ski Patrol"
+    }
+   ],
+   "source": "https://www.snowshoemtn.com/mountain-info/safety-and-conduct",
+   "checked": "2026-11-23"
+  },
+  "solitude": {
+   "country": "US",
+   "phone": "801-536-5753",
+   "tel": "+18015365753",
+   "label": "Solitude Ski Patrol (emergency only)",
+   "source": "https://www.solitudemountain.com/mountain-and-village/mountain-information/mountain-safety",
+   "checked": "2026-11-23"
+  },
+  "steamboat": {
+   "country": "US",
+   "phone": "970-871-5911",
+   "tel": "+19708715911",
+   "label": "Steamboat Ski Patrol",
+   "source": "https://www.steamboat.com/the-mountain/safety-and-responsibility",
+   "checked": "2026-11-23"
+  },
+  "stowe": {
+   "country": "US",
+   "phone": "802-253-3620",
+   "tel": "+18022533620",
+   "label": "Stowe Ski Patrol",
+   "source": "https://stowe.zendesk.com/hc/en-us/articles/21862819088539-How-can-I-contact-safety-ski-patrol",
+   "checked": "2026-11-23"
+  },
+  "stratton": {
+   "country": "US",
+   "phone": "802-297-4911",
+   "tel": "+18022974911",
+   "label": "Stratton Ski Patrol",
+   "source": "https://www.stratton.com/the-mountain/safety-and-responsibility/ski-patrol",
+   "checked": "2026-11-23"
+  },
+  "sugarbush": {
+   "country": "US",
+   "phone": "802-583-6567",
+   "tel": "+18025836567",
+   "label": "Sugarbush Ski Patrol dispatch",
+   "source": "https://www.sugarbush.com/about-us/safety-and-conduct",
+   "checked": "2026-11-23"
+  },
+  "sugarloaf": {
+   "country": "US",
+   "phone": "207-237-6994",
+   "tel": "+12072376994",
+   "label": "Sugarloaf Ski Patrol dispatch",
+   "source": "https://www.sugarloaf.com/ski-patrol",
+   "checked": "2026-11-23"
+  },
+  "sunday-river": {
+   "country": "US",
+   "phone": "207-824-5350",
+   "tel": "+12078245350",
+   "label": "Sunday River Ski Patrol",
+   "source": "https://www.sundayriver.com/contact",
+   "checked": "2026-11-23"
+  },
+  "telluride": {
+   "country": "US",
+   "phone": "970-728-7585",
+   "tel": "+19707287585",
+   "label": "Telluride Ski Patrol",
+   "source": "https://tellurideskiresort.com/safety/",
+   "checked": "2026-11-23"
+  },
+  "tignes-val-disere": {
+   "country": "FR",
+   "phone": "+33 4 79 06 02 10",
+   "tel": "+33479060210",
+   "label": "Val d’Isère ski patrol",
+   "hours": "8 am to 6 pm",
+   "more": [
+    {
+     "phone": "+33 4 79 06 32 00",
+     "tel": "+33479063200",
+     "label": "Tignes ski patrol"
+    }
+   ],
+   "source": "https://www.valdisere.ski/en/ski-safely",
+   "checked": "2026-11-23"
+  },
+  "vail": {
+   "country": "US",
+   "phone": "970-754-1911",
+   "tel": "+19707541911",
+   "label": "Vail Ski Patrol (emergency)",
+   "source": "https://www.vail.com/the-mountain/about-the-mountain/safety/safety-on-the-mountain.aspx",
+   "checked": "2026-11-23"
+  },
+  "val-thorens": {
+   "country": "FR",
+   "phone": "+33 4 79 00 01 80",
+   "tel": "+33479000180",
+   "label": "Val Thorens piste service",
+   "source": "https://www.valthorens.com/en/ski/securite-secours/",
+   "checked": "2026-11-23"
+  },
+  "wachusett": {
+   "country": "US",
+   "phone": "978-464-3111",
+   "tel": "+19784643111",
+   "label": "Wachusett Ski Patrol",
+   "source": "https://www.wachusett.com/wp-content/uploads/2025/09/Coordinator-Manual.pdf",
+   "checked": "2026-11-23"
+  },
+  "waterville-valley": {
+   "country": "US",
+   "phone": "603-254-3396",
+   "tel": "+16032543396",
+   "label": "Waterville Valley Ski Patrol",
+   "source": "https://www.waterville.com/contact-ski-patrol",
+   "checked": "2026-11-23"
+  },
+  "whiteface": {
+   "country": "US",
+   "phone": "518-946-8111",
+   "tel": "+15189468111",
+   "label": "Whiteface accident line (ski patrol)",
+   "hours": "8:30 am to 4 pm",
+   "source": "https://whiteface.com/?p=226",
+   "note": "From a mountain phone, dial 811.",
+   "checked": "2026-11-23"
+  },
+  "windham-mountain": {
+   "country": "US",
+   "phone": "518-310-2724",
+   "tel": "+15183102724",
+   "label": "Windham Ski Patrol first aid room (emergencies)",
+   "source": "https://www.windhammountainclub.com/contact-us/",
+   "checked": "2026-11-23"
+  },
+  "winter-park": {
+   "country": "US",
+   "phone": "970-726-1480",
+   "tel": "+19707261480",
+   "label": "Winter Park Ski Patrol",
+   "source": "https://www.winterparkresort.com/the-mountain/safety-and-conduct",
+   "checked": "2026-11-23"
+  },
+  "zermatt": {
+   "country": "CH",
+   "phone": "144",
+   "tel": "144",
+   "label": "Valais emergency call centre (rescue, Air Zermatt)",
+   "source": "https://www.zermatt.swiss/en/info/emergency-numbers",
+   "note": "On the Italian side (Cervinia), 112 works too.",
+   "checked": "2026-11-23"
+  }
+ }
+}
