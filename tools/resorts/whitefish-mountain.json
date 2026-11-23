@@ -45,5 +45,11 @@
  "terrain_shares": {
   "1m": 100.0,
   "10m": 0.0
+ },
+ "isolated_lifts": [
+  "Elk Highlands Chair (Private Homeowner Lift)"
+ ],
+ "isolated_notes": {
+  "Elk Highlands Chair (Private Homeowner Lift)": "2026-11-23: a private homeowners lift (its OpenStreetMap name says so); no public run comes down to its base"
  }
 }

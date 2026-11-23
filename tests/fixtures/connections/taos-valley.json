@@ -1,0 +1,12 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {},
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Blitz ~ West Blitz Trees": "2026-11-23 AI pass: two separate runs on the 2026 trail map (Blitz black, West Blitz Trees double), side by side from the Lift 2 top; they share their first 120 m"
+ }
+}

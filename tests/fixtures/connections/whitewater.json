@@ -2,7 +2,7 @@
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
  "unreachable": {
-  "Trash Chutes": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "False Signal": "2026-11-23 AI pass: experts-only run on the 2026-27 trail list; OpenStreetMap reaches it only through an unnamed piece that the resort does not name (hidden by the existence check); the bootpack drawn on the trail map is not traced yet"
  },
  "dead_end": {},
  "outside_core": {},

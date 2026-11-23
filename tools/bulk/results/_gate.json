@@ -2989,22 +2989,20 @@
   "region": "California, USA",
   "seconds": 64,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 13,
   "osk_runs": 42,
   "lifts": 13,
-  "runs": 41,
+  "runs": 37,
   "named": 28,
-  "km": 12.4,
+  "km": 12.2,
   "osk_lift_ids_on_map": [
    13,
    13
   ],
   "reachable": [
-   41,
-   41
+   38,
+   38
   ],
   "conn": {
    "unreachable": 0,
@@ -3015,7 +3013,7 @@
    "doubled": 0
   },
   "guess_pct": 2,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Snow Valley 2026 trail map (skimap.org m)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -3136,35 +3134,33 @@
   "seconds": 115,
   "hold": [],
   "soft": [
-   "lift ends: 0 outside the network, 1 with no run",
    "isolated by rule: Magic carpet",
-   "ratings not checked against the resort",
    "1 lift ends joined by rule"
   ],
   "osk_lifts": 13,
   "osk_runs": 94,
   "lifts": 13,
-  "runs": 123,
-  "named": 114,
-  "km": 50.9,
+  "runs": 119,
+  "named": 111,
+  "km": 48.4,
   "osk_lift_ids_on_map": [
    13,
    13
   ],
   "reachable": [
-   117,
+   120,
    123
   ],
   "conn": {
-   "unreachable": 6,
-   "dead_end": 3,
+   "unreachable": 0,
+   "dead_end": 0,
    "outside_core": 0,
-   "lift_end": 1,
+   "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
-  "guess_pct": 1,
-  "ratings": "OpenStreetMap, not checked",
+  "guess_pct": 0,
+  "ratings": "resort feed (Sugar Bowl trail map (skimap.org map 493)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -3247,22 +3243,20 @@
   "region": "Utah, USA",
   "seconds": 49,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 10,
   "osk_runs": 80,
   "lifts": 10,
-  "runs": 94,
+  "runs": 93,
   "named": 71,
-  "km": 34.7,
+  "km": 34.6,
   "osk_lift_ids_on_map": [
    10,
    10
   ],
   "reachable": [
-   95,
-   95
+   94,
+   94
   ],
   "conn": {
    "unreachable": 0,
@@ -3273,7 +3267,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Sundance 2025 trail map (skimap.org map )",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -3318,25 +3312,21 @@
   "name": "Taos Ski Valley",
   "region": "New Mexico, USA",
   "seconds": 59,
-  "hold": [
-   "lifts not joined to the rest of the map (isolated by rule): Lift 2, Lift 7A, Lift 7, Lift 8, Lift 4, Kachina Peak Lift"
-  ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "hold": [],
+  "soft": [],
   "osk_lifts": 14,
   "osk_runs": 105,
   "lifts": 14,
-  "runs": 176,
+  "runs": 170,
   "named": 111,
-  "km": 60.4,
+  "km": 59.9,
   "osk_lift_ids_on_map": [
    14,
    14
   ],
   "reachable": [
-   176,
-   176
+   173,
+   173
   ],
   "conn": {
    "unreachable": 0,
@@ -3347,9 +3337,9 @@
    "doubled": 1
   },
   "guess_pct": 3,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Taos Ski Valley 2026 winter trail map (s)",
   "terrain_res": 1,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "the-hermitage-club-at-haystack-mountain",
@@ -3432,18 +3422,14 @@
   "name": "Timberline Lodge",
   "region": "Oregon, USA",
   "seconds": 111,
-  "hold": [
-   "4 runs no lift reaches"
-  ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "hold": [],
+  "soft": [],
   "osk_lifts": 12,
   "osk_runs": 62,
   "lifts": 12,
-  "runs": 72,
-  "named": 56,
-  "km": 63.4,
+  "runs": 67,
+  "named": 51,
+  "km": 57.1,
   "osk_lift_ids_on_map": [
    12,
    12
@@ -3453,7 +3439,7 @@
    72
   ],
   "conn": {
-   "unreachable": 4,
+   "unreachable": 0,
    "dead_end": 0,
    "outside_core": 0,
    "lift_end": 0,
@@ -3461,9 +3447,9 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Timberline 2025 trail map (skimap.org ma)",
   "terrain_res": 10,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "welch-village",
@@ -3471,22 +3457,20 @@
   "region": "Minnesota, USA",
   "seconds": 40,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 10,
   "osk_runs": 54,
   "lifts": 10,
-  "runs": 57,
+  "runs": 54,
   "named": 48,
-  "km": 14.8,
+  "km": 14.6,
   "osk_lift_ids_on_map": [
    10,
    10
   ],
   "reachable": [
-   57,
-   57
+   55,
+   55
   ],
   "conn": {
    "unreachable": 0,
@@ -3497,7 +3481,7 @@
    "doubled": 1
   },
   "guess_pct": 2,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Welch Village 2025-27 trail map and Back)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -3546,7 +3530,6 @@
   "seconds": 93,
   "hold": [],
   "soft": [
-   "lift ends: 0 outside the network, 1 with no run",
    "ratings not checked against the resort"
   ],
   "osk_lifts": 16,
@@ -3567,7 +3550,7 @@
    "unreachable": 1,
    "dead_end": 0,
    "outside_core": 0,
-   "lift_end": 1,
+   "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
@@ -3583,16 +3566,14 @@
   "seconds": 80,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
-   "30 m terrain",
-   "1 runs raised by the steepness check"
+   "30 m terrain"
   ],
   "osk_lifts": 5,
   "osk_runs": 88,
   "lifts": 5,
-  "runs": 106,
-  "named": 96,
-  "km": 62.8,
+  "runs": 104,
+  "named": 95,
+  "km": 60.5,
   "osk_lift_ids_on_map": [
    5,
    5
@@ -3609,8 +3590,8 @@
    "uphill": 0,
    "doubled": 0
   },
-  "guess_pct": 1,
-  "ratings": "OpenStreetMap, not checked",
+  "guess_pct": 0,
+  "ratings": "resort feed (Whitewater 2026-27 trail map (skimap.org)",
   "terrain_res": 30,
   "gate": "publish"
  },
