@@ -1,8 +1,7 @@
 # Making big maps faster: study and plan (2026-11-23)
 
 A study of why the biggest mountains (Zermatt, SkiWelt, Park City, Tignes, Vail) feel slower than small ones such as
-Jay Peak, with a costed list of ways to speed them up while keeping the detail. Nothing in the app on `main` was changed.
-Three of the options were tried as switchable prototypes on the branch `claude/perf-study` and measured.
+Jay Peak, with a costed list of ways to speed them up while keeping the detail. Three of the options were tried as switchable prototypes on the branch `claude/perf-study` and measured.
 
 **Read this first: what these numbers are, and what they are not.** All measurements were made in a desktop Chromium
 with a software graphics driver (SwiftShader) on a shared, busy 4-core build machine. That driver draws on the main
@@ -10,6 +9,78 @@ processor, so it is much slower than any phone, and it is slowed most by the *nu
 pieces every 3D shape is made of). Its milliseconds are only good for comparing one option against another on the same
 machine; they say nothing about how fast a phone is. The triangle and draw counts are exact and the same on every
 device. Nothing here has been tried on a real phone.
+
+## Built (2026-11-23, branch `claude/map-speed`)
+
+The owner approved all ten options; all ten are built, on top of the "runs through trees, not through the ground"
+change (#84) and the new lifts and buildings (#85). Nothing has been tried on a real phone. The numbers below are from
+the same SwiftShader setup as the study (device pixel ratio 1, 390 x 844), so the milliseconds are only good for
+comparing before with after; triangles and draw calls are exact.
+
+| Resort, view | Triangles before | after | change | Draw calls before / after | Frame (ms) before | after |
+| --- | --- | --- | --- | --- | --- | --- |
+| Jay Peak, overview | 447,639 | 87,979 | -80% | 41 / 72 | 1,162 | 194 |
+| Jay Peak, mid | 446,655 | 145,795 | -67% | 39 / 57 | 991 | 245 |
+| Jay Peak, close | 447,147 | 120,887 | -73% | 40 / 46 | 459 | 176 |
+| Vail, overview | 1,856,892 | 296,144 | -84% | 45 / 108 | 3,864 | 622 |
+| Vail, mid | 1,850,292 | 365,556 | -80% | 43 / 58 | 3,052 | 545 |
+| Vail, close | 1,856,892 | 407,764 | -78% | 45 / 74 | 2,261 | 415 |
+| Zermatt, overview | 2,418,089 | 704,177 | -71% | 77 / 121 | 3,972 | 755 |
+| Zermatt, mid | 2,409,497 | 517,591 | -79% | 57 / 68 | 3,019 | 498 |
+| Zermatt, close | 2,416,597 | 517,763 | -79% | 57 / 68 | 2,694 | 627 |
+| Park City, overview | 2,083,296 | 314,195 | -85% | 47 / 100 | 4,381 | 601 |
+| Park City, mid | 2,083,248 | 379,357 | -82% | 45 / 61 | 2,479 | 575 |
+| Park City, close | 2,083,248 | 418,481 | -80% | 45 / 71 | 2,819 | 381 |
+| SkiWelt, overview | 2,307,432 | 545,043 | -76% | 56 / 88 | 4,181 | 734 |
+| SkiWelt, mid | 2,307,432 | 531,957 | -77% | 56 / 63 | 3,491 | 561 |
+| SkiWelt, close | 2,317,944 | 475,605 | -79% | 57 / 54 | 2,811 | 705 |
+
+"Before" is `main` with #84 and #85 (more triangles than the study's baseline: #84's invisible "seen" pass and #85's
+detailed lifts). Opening a map: the part that freezes the screen (building the scene) went from 287-892 ms to
+253-596 ms (the ground's set-up, 75-336 ms here, now runs in a background worker), and the first picture from
+1.2-5.0 s to 0.5-1.4 s. Memory for the map's data is unchanged (25-115 MB, within 2 MB of before). While nobody
+touches the map, the label layer is redrawn 0.4 times a second instead of 3.6, and the zoomed-out picture 0.4 times
+instead of 2. Measured with `tools/dev/perf_bench.mjs` (`FAST=1`); before: the build of `c836f96` (main + #84 + #85).
+
+What each option became:
+
+1. **Run lines** (`src/simplify.js` `simplifyRun`, at load, kept per run): within 2 m of the mapped line in plan and
+   1.5 m of the snow. Lift cables and the red lift lines keep the points needed to stay within 25 cm (`simplifyPath3`).
+   Routing and "which run am I on" still use every point.
+2. **Runs through trees in one pass** (`buildTrails`, `buildTrees`): the ground is drawn first, then each run once,
+   tested against the ground only, leaving a stencil mark where it is seen; trees are not drawn on that mark. So a
+   run shows through trees but never through the ground, and trees in front of a ridge that hides a run are drawn as
+   usual (the #84 rule). The coloured lines write depth, so a building, lift or person in front of a run still covers
+   it. Checked with screenshots from the same cameras (Jay Peak from behind the summit ridge, a glade with three
+   friends standing in it, the base area): the same picture before and after.
+3. **Ground in pieces** (`src/terrainprep.js`): 64-cell pieces; those off screen are skipped; each piece is drawn with
+   every 1st, 2nd, 4th or 8th height, the coarsest whose height error stays under 2 pixels at its distance. Skirts
+   under every edge hide gaps between pieces. The ground's colouring is unchanged; a depth bias in its vertex shader
+   (it pushes the ground back by more than the allowed error, never moving it on screen) keeps run lines from dipping
+   into a coarser far piece. One shared vertex and index buffer for all pieces, coarser index lists made only when a
+   piece first needs one, all typed arrays: no extra memory, and the error sums cost 75-336 ms in the worker.
+4. **Lift detail by distance**: chairs, cabins and T-bars are drawn only for lifts in view and within the quality
+   step's lift range (4.5 km to 1.6 km), packed to the front of their mesh so the rest cost nothing; none when zoomed
+   right out. Red lift lines, cables, towers and stations stay. #85's near/far chair models and station rules are kept.
+5. **Softer while moving**: on screens drawn sharper than 1.2x, the 3D picture is drawn at 65% sharpness (2x becomes
+   1.25x) while the camera moves and sharp again 250 ms after it stops, redrawn in the same frame (no blank frame).
+   The label layer stays sharp. Could not be measured here (the test runs at 1x).
+6. **Automatic quality**: the four quality steps now set the far ground's pixel limit (2, 3, 4, 6 px) and the lift
+   range, and lower the sharpness only from the third step on (detail first, sharpness last). Still stepped down only
+   when frames are slow.
+7. **Fewer redraws when still**: a still picture is refreshed every 3 s instead of every 0.5 s; the label layer only
+   when something changed, or every second while friends are shown. Anything changed from outside (route, closures,
+   people, mode) asks for a redraw at once.
+8. **Land around and trees by distance**: the land around the resort is in 32-cell pieces with coarser far versions
+   (pieces under the detailed map keep full detail); trees are in 25 blocks (off-screen blocks skipped), and beyond
+   2.5 km a block draws a thinner share of its trees (down to 35%).
+9. **Background set-up**: the snow mask, the ground's colour fields and the ground pieces are worked out in a worker
+   (`src/terrain.worker.js`) while the map files are read; falls back to the main thread where there is no worker.
+10. **Smooth edges**: antialiasing is off by default on screens sharper than 2.5x, with a switch "Smooth edges" in
+    More, Appearance & advanced (applies the next time a mountain opens).
+
+Not done or not measurable here: frame rate and heat on a real phone; the cost of antialiasing and of the softer
+picture while moving (both need a phone); the railway tracks at Zermatt are not simplified.
 
 ## In short
 
