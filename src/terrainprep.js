@@ -321,6 +321,11 @@ export function pickLevel(errs, mpp, px) {
   return k;
 }
 
+/** Sharpness while the map moves: 65% of the full sharpness in steps of a quarter, never below 1x. */
+export function movingPr(full) {
+  return Math.max(1, Math.round(full * 0.65 * 4) / 4);
+}
+
 /** Everything the map's ground needs, from the parts of the resort prepInput keeps. */
 export function prepTerrain(R) {
   const { nx, ny, cell } = R.grid, h = R.h, W = (nx - 1) * cell, H = (ny - 1) * cell;

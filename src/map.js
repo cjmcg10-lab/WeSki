@@ -12,7 +12,7 @@ import * as M from './models.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loopTimer, detachSegments, shuttle, swing, tramRide, stationClashes } from './liftmotion.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
-import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel } from './terrainprep.js';
+import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel, movingPr } from './terrainprep.js';
 import { simplifyRun, simplifyPath3 } from './simplify.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
@@ -56,7 +56,8 @@ const QUALITY = [
 ];
 // While the map moves, it is drawn at this share of its sharpness (never below 1x) and drawn sharp again once it
 // stops; only on screens drawn sharper than 1.2x, where it saves the most and shows the least.
-const MOVING_PR = 0.65, SHARP_AFTER_MS = 250;
+// (movingPr in src/terrainprep.js)
+const SHARP_AFTER_MS = 250;
 // Trees further than this are thinned out with distance (to a share of FAR_TREES), and so are the land's far pieces.
 const TREES_FULL_M = 2500, FAR_TREES = 0.35;
 const STATION_COLOR = 0x8b2f2f;
@@ -1827,11 +1828,6 @@ export function fmtAge(s) {
   if (s < 90) return t('{0}s ago', Math.round(s / 10) * 10);
   if (s < 5400) return t('{0}m ago', Math.round(s / 60));
   return t('{0}h ago', Math.round(s / 3600));
-}
-
-/** Sharpness while the map moves: MOVING_PR of the full sharpness in steps of a quarter, never below 1x. */
-export function movingPr(full) {
-  return Math.max(1, Math.round(full * MOVING_PR * 4) / 4);
 }
 
 function densify(pts, step) {
