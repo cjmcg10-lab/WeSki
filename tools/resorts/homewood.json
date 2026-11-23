@@ -35,5 +35,9 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Gilbert's Gluch": "Gilbert's Gulch",
+  "Shortcut": "Short Cut"
  }
 }
