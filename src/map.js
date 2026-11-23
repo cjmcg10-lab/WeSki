@@ -15,6 +15,7 @@ import { RideGroups, liftCapacity } from './liftgroups.js';
 import { scheme, cls, runColor, runSym, runName } from './rating.js';
 import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel, movingPr } from './terrainprep.js';
 import { simplifyRun, simplifyPath3 } from './simplify.js';
+import { borderLoop, borderOffsets, borderPlace, coarseAt, holeBox, surroundZ, seamStrip, smoothstep, FEATHER } from './seam.js';
 import { clearance, nextSeen, fade, stale, HIDE_DEPTH } from './sightline.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
@@ -442,51 +443,69 @@ vec3 groundColour() {
   /**
    * The land around the resort: a coarse 140 m mesh reaching ~10 km out, so the mountain
    * sits in its real landscape instead of on a blank slab. ~50k triangles, no textures.
+   * Where it meets the detailed ground (src/seam.js): the coarse land is lifted or lowered to the detailed ground's
+   * edge height, the correction fading out over a kilometre so further out it keeps its own shape, and a strip of
+   * triangles joins the detailed ground's own edge points to it. The two share their edge: no step, gap or overlap.
    */
   buildSurround() {
     const sr = this.resort.surround, sh = this.surroundH, geo = this.geo;
     if (!sr || !sh) return;
-    const { nx, ny, cell, x0, y0 } = sr, zmin = this.resort.grid.zmin;
-    const pos = new Float32Array(nx * ny * 3), col = new Float32Array(nx * ny * 3), inside = new Uint8Array(nx * ny);
+    const { nx, ny, cell, x0, y0 } = sr, G = this.resort.grid, zmin = G.zmin;
+    const D = this.prep.surface;                     // the detailed ground's points, as drawn
+    const loop = borderLoop(G.nx, G.ny, G.cell);
+    const { d } = borderOffsets(loop, (p) => D.pos[(p.j * G.nx + p.i) * 3 + 1] + zmin, (x, y) => coarseAt(sr, sh, x, y));
+    const box = holeBox(sr, geo.W, geo.H);
+    const inside = (x, y) => this.surfaceZ(x, y);
+    const pos = new Float32Array(nx * ny * 3), col = new Float32Array(nx * ny * 3);
     const low = new THREE.Color('#6a9a68'), band = new THREE.Color('rgb(52,122,78)'), mid = new THREE.Color('rgb(44,104,80)'), high = new THREE.Color('rgb(150,182,176)'), c = new THREE.Color();
+    const tl = this.resort.treeline || 1300;
+    const rock = new THREE.Color().setRGB(124 / 255, 132 / 255, 141 / 255, THREE.SRGBColorSpace);
+    // same forest bands as the detailed map so the border between the two doesn't show, and near the border rock on
+    // steep ground as the detailed map has it (groundMaterial), fading out with the height correction (further out
+    // the coarse mesh is too coarse for it: grey blotches). up: the up part of the point's normal; near: 1 at the
+    // border, 0 from FEATHER metres out.
+    const colour = (z, up, near, out, o) => {
+      if (z > tl + 60) c.setRGB(0.76, 0.81, 0.85); else if (z > tl - 260) c.copy(high); else if (z > tl - 440) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (tl - 820 - z) / 250)));
+      const relief = (1.2 * Math.sqrt(Math.max(0, 1 - up * up))) / Math.max(up, 0.05);
+      if (near > 0) c.lerp(rock, near * smoothstep(-0.15, 0.15, relief - (z > tl + 60 ? 0.7 : 0.95)));
+      out[o * 3] = c.r; out[o * 3 + 1] = c.g; out[o * 3 + 2] = c.b;
+    };
     for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
       const o = j * nx + i, x = x0 + i * cell, y = y0 + j * cell;
-      const inn = x > 20 && y > 20 && x < geo.W - 20 && y < geo.H - 20;
-      inside[o] = inn ? 1 : 0;
-      // inside the detailed map the coarse mesh follows the LiDAR surface, so the two meet cleanly at the border
-      // Outside, ease from the LiDAR edge height into the coarse data over ~400 m so there is no step at the border.
-      const dx = Math.max(0, -x, x - geo.W), dy = Math.max(0, -y, y - geo.H), out = Math.hypot(dx, dy);
-      const edgeZ = this.surfaceZ(Math.min(geo.W, Math.max(0, x)), Math.min(geo.H, Math.max(0, y)));
-      const w = Math.min(1, out / 420), coarse = sh[o] + sr.zmin;
-      const z = inn ? edgeZ - 2.5 : out === 0 ? edgeZ - 1 : edgeZ * (1 - w) + coarse * w;
+      const z = surroundZ(loop, d, x, y, sh[o] + sr.zmin, inside);
       pos[o * 3] = x - geo.W / 2; pos[o * 3 + 1] = z - zmin; pos[o * 3 + 2] = -(y - geo.H / 2);
-      // same forest bands as the detailed map so the border between the two doesn't show
-      const tl = this.resort.treeline || 1300;
-      if (z > tl + 60) c.setRGB(0.76, 0.81, 0.85); else if (z > tl - 260) c.copy(high); else if (z > tl - 440) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (tl - 820 - z) / 250)));
-      col[o * 3] = c.r; col[o * 3 + 1] = c.g; col[o * 3 + 2] = c.b;
     }
     // in pieces like the detailed ground (buildTerrain): those off screen are skipped and the far ones drawn coarser;
-    // cells hidden under the detailed map are left out (smooth shading, like the detailed map)
-    const hidden = (i, j) => { const a = j * nx + i; return inside[a] && inside[a + 1] && inside[a + nx] && inside[a + nx + 1]; };
+    // the cells round and under the detailed map are left out (the strip below fills the space to its edge)
+    const hidden = (i, j) => i >= box.i0 && i < box.i1 && j >= box.j0 && j < box.j1;
     const S = chunkSurface(pos, nx, ny, { C: 32, steps: [1, 2, 4], skip: hidden });
+    for (let o = 0; o < nx * ny; o++) {
+      const { out } = borderPlace(geo.W, geo.H, x0 + (o % nx) * cell, y0 + Math.floor(o / nx) * cell);
+      colour(pos[o * 3 + 1] + zmin, S.nrm[o * 3 + 1], 1 - smoothstep(0, FEATHER, out), col, o);
+    }
     const C = new Float32Array(S.pos.length);
     C.set(col);
     for (let k = 0; k < S.skirtSrc.length; k++) { const v = nx * ny + k, o = S.skirtSrc[k]; C[v * 3] = col[o * 3]; C[v * 3 + 1] = col[o * 3 + 1]; C[v * 3 + 2] = col[o * 3 + 2]; }
     const attrs = { position: new THREE.BufferAttribute(S.pos, 3), normal: new THREE.BufferAttribute(S.nrm, 3), color: new THREE.BufferAttribute(C, 3) };
-    this.surroundGroup = this.piecesOf(S, attrs, new THREE.BufferAttribute(S.index, 1), new THREE.MeshLambertMaterial({ vertexColors: true }));
+    const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
+    this.surroundGroup = this.piecesOf(S, attrs, new THREE.BufferAttribute(S.index, 1), mat);
     this.scene.add(this.surroundGroup);
-    // short skirt under the edge of the detailed map hides any sliver between the two meshes
-    const { nx: fx, ny: fy, cell: fc } = this.resort.grid, sk = [];
-    const edge = (x1, y1, x2, y2) => {
-      const a = this.world(x1, y1, 0), b = this.world(x2, y2, 0);
-      sk.push(a.x, a.y, a.z, b.x, b.y, b.z, b.x, b.y - 40, b.z, a.x, a.y, a.z, b.x, b.y - 40, b.z, a.x, a.y - 40, a.z);
-    };
-    for (let i = 0; i < fx - 1; i++) { edge(i * fc, 0, (i + 1) * fc, 0); edge(i * fc, geo.H, (i + 1) * fc, geo.H); }
-    for (let j = 0; j < fy - 1; j++) { edge(0, j * fc, 0, (j + 1) * fc); edge(geo.W, j * fc, geo.W, (j + 1) * fc); }
+    // the strip from the coarse mesh's hole to the detailed ground's edge: its inner points are the detailed ground's
+    // own edge points (same place, height and shading), its outer points the coarse mesh's
+    const st = seamStrip(sr, box, G.nx, G.ny, G.cell), n = st.verts.length;
+    const P = new Float32Array(n * 3), N = new Float32Array(n * 3), K = new Float32Array(n * 3);
+    st.verts.forEach((v, k) => {
+      const src = v.kind === 0 ? S : D;
+      for (let a = 0; a < 3; a++) { P[k * 3 + a] = src.pos[v.o * 3 + a]; N[k * 3 + a] = src.nrm[v.o * 3 + a]; }
+      if (v.kind === 0) for (let a = 0; a < 3; a++) K[k * 3 + a] = col[v.o * 3 + a]; else colour(P[k * 3 + 1] + zmin, N[k * 3 + 1], 1, K, k);
+    });
     const sg = new THREE.BufferGeometry();
-    sg.setAttribute('position', new THREE.Float32BufferAttribute(sk, 3));
-    sg.computeVertexNormals(); // without normals the skirt shades as garbage and shows through the haze
-    this.scene.add(new THREE.Mesh(sg, new THREE.MeshLambertMaterial({ color: 'rgb(52,122,78)', side: THREE.DoubleSide })));
+    sg.setAttribute('position', new THREE.BufferAttribute(P, 3)); sg.setAttribute('normal', new THREE.BufferAttribute(N, 3)); sg.setAttribute('color', new THREE.BufferAttribute(K, 3));
+    sg.setIndex(st.tris);
+    sg.computeBoundingSphere();
+    this.seam = new THREE.Mesh(sg, mat);
+    this.seam.renderOrder = GROUND_ORDER;
+    this.scene.add(this.seam);
   }
 
   buildTrees() {
@@ -1162,6 +1181,8 @@ vec3 groundColour() {
     this.meObj.visible = false;
     this.scene.add(this.meObj);
     this.pinObj = M.makePin('#ff3b30'); this.pinObj.visible = false; this.scene.add(this.pinObj);
+    // the pin directions lead to, kept on the map after a new pin is dropped elsewhere
+    this.navPinObj = M.makePin('#ff3b30'); this.navPinObj.visible = false; this.scene.add(this.navPinObj);
     this.meetObj = M.makeFlag('#ff9f0a'); this.meetObj.visible = false; this.scene.add(this.meetObj);
     this.routeLine = null; this.trackLine = null;
     this.playObj = new THREE.Group(); this.playObj.visible = false; this.scene.add(this.playObj);
@@ -1426,7 +1447,14 @@ vec3 groundColour() {
     this.needsRender = true;
   }
 
-  setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
+  setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); this._navPinShown(); }
+  /** The pin the current directions lead to (null when not routing to a pin). Drawn only while it differs from the dropped pin. */
+  setNavPin(p) { this.overlayDirty = true; this.navPin = p ? { x: p.x, y: p.y } : null; if (p) this.navPinObj.position.copy(this.world(p.x, p.y, 0)); this._navPinShown(); }
+  _navPinShown() {
+    const n = this.navPin, p = this.pin;
+    this.navPinShown = !!n && !(p && p.x === n.x && p.y === n.y);
+    if (this.navPinObj) this.navPinObj.visible = this.navPinShown;
+  }
   setMeet(p) { this.overlayDirty = true; this.meet = p; this.meetObj.visible = !!p; if (p) this.meetObj.position.copy(this.world(p.x, p.y, 0)); }
 
   /** Draw directions. `walk` lists the stretches done on foot, drawn over the route in their own colour. */
@@ -1786,6 +1814,7 @@ vec3 groundColour() {
     if (this.me) person(this.meObj);
     for (const f of this.friends.values()) person(f.obj);
     if (this.pin) scaleFor(this.pinObj, 0.014, 22);
+    if (this.navPinShown) scaleFor(this.navPinObj, 0.014, 22);
     if (this.meet) scaleFor(this.meetObj, 0.016, 24);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
     // The label layer (lots of outlined text) is the most expensive 2D work, so it is only
@@ -1917,6 +1946,7 @@ vec3 groundColour() {
       this.hits.push({ x: p.x, y: p.y - (is3 ? 10 : 0), r: 28, ev });
     };
     if (this.pin) marker(this.pin, this.pinObj, '#d92d20', t('Pin'), { type: 'pin' });
+    if (this.navPinShown) marker(this.navPin, this.navPinObj, '#d92d20', t('Pin'), { type: 'navpin' });
     if (this.meet) marker(this.meet, this.meetObj, '#c96f00', this.meet.name || t('Meet here'), { type: 'meet' });
     if (this.play && !is3) {
       const p = this.project(this.playObj.position);
