@@ -8,9 +8,10 @@ usage: python3 tools/pipeline.py <id> [<id> ...] [options]
   --terrain         download the terrain again (default for an existing resort: rebuild it from the built map)
   --checks-only     skip the build, only run the checks and write the score card
   --no-index        do not rebuild index.json and globe at the end
-  --r2              upload the built map to Cloudflare R2 (tools/maps_r2.mjs push): this puts it on the LIVE site.
-                    Without it nothing is uploaded, even for a resort already in R2 (it is only downloaded first
-                    if missing); for a preview use tools/preview/deploy.mjs instead
+  --r2              upload the rebuilt map to Cloudflare R2 (tools/maps_r2.mjs push), which the LIVE app reads,
+                    and keep its files there rather than in git. Without it nothing is uploaded, not even for a
+                    resort already listed in public/data/r2.json (such a resort is downloaded first if it is not on
+                    disk); show a rebuild on the preview with tools/preview/deploy.mjs, push it once approved
 
 Steps, in the order docs/MOUNTAIN_CHECKLIST.md asks for:
   1. OpenStreetMap extract for the config's osm_bbox (tools/dev/osmget.py)
@@ -519,8 +520,7 @@ def one(rid, opt):
     except Exception:
         pass
     result = card(rid, cfg, logs, before, tnote, notes)
-    # uploading to R2 puts the map on the LIVE site: only when asked for with --r2, never by default
-    if opt["r2"] and not opt["checks_only"]:
+    if opt["r2"] and not opt["checks_only"]:  # never without --r2: R2 is what the live app serves
         run(["node", "tools/maps_r2.mjs", "push", rid], log)
     return result
 

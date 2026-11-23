@@ -604,15 +604,34 @@ def main():
         c = list(w["line"].coords)
         for end, pt in ((0, c[0]), (1, c[-1])):
             nid = G.node(pt)
-            for o in ps:
-                if o is w:
-                    continue
-                d = o["line"].distance(Point(pt))
-                if d > w["reach"]:
-                    continue
-                # an end lying on the other run (under 0.5 m) is cut into it too: such an end does not always
-                # count as a geometric crossing, and without the cut the two were left unjoined (Steamboat's
-                # Perry Park ended on Longhorn and was a dead end); the cut lands on the end's own node
+            cand = [(o["line"].distance(Point(pt)), i, o) for i, o in enumerate(ps) if o is not w]
+            cand = [(d, i, o) for d, i, o in cand if d <= w["reach"]]
+            if w["reach"] > 38 and cand:
+                # a glade or bowl drawn down the middle of its outline: its ends reach further (220 m), but only
+                # to the nearest run it can be skied from (top) or skied out onto (bottom), plus anything within
+                # 38 m. Joining every run within 220 m made joins straight through the woods (Ragged, 2026-11).
+                if any(d < 0.5 for d, _, _ in cand):
+                    cand = [c for c in cand if c[0] <= 38]
+                else:
+                    zp = elev(*pt)
+
+                    def fits(o):
+                        # skied onto without climbing, and (at the bottom) onto a run that goes on from there,
+                        # not the last few metres of a run that itself ends beside the glade
+                        s = o["line"].project(Point(pt))
+                        q = o["line"].interpolate(s)
+                        if end == 0:
+                            return elev(q.x, q.y) >= zp - 3
+                        return elev(q.x, q.y) <= zp + 3 and s < o["line"].length - 25
+                    close = [c for c in cand if c[0] <= 38]
+                    ok = [c for c in cand if fits(c[2])]
+                    if ok and not any(fits(c[2]) for c in close):
+                        cand = close + [min(ok, key=lambda c: c[0])]
+                    else:
+                        cand = close
+            for d, _, o in cand:
+                # an end lying on another run without sharing an OpenStreetMap node is cut into it here (it used
+                # to be skipped as if already joined: Sugarbush's F.I.S. and Lower Exterminator led nowhere)
                 oid = cut(o, pt)
                 if oid != nid:
                     links.append((oid, nid, "x", False) if end == 0 else (nid, oid, "x", False))
@@ -717,6 +736,28 @@ def main():
         links.append((pn, cut(w, pt), "w", True))
     # Hand-made joins the map lacks: a walk through a summit tunnel between two stations, or a
     # short traverse from a lift top to a trail. Each is [lift end, lift end | "trail:Name"].
+    # Automatic one-way ski joins must not climb: directions treat a ski join as free whatever its height, so a
+    # join from a run up to a lift base 30 m above it, or from a lift top up to a run starting 60 m higher, let
+    # routes "ski" uphill (476 such joins at the northeast mountains in 2026-11). A join that climbs a little
+    # becomes a short walk (both ways); one that climbs more is left out (the cut-off pass below, a config link
+    # or a "hike" link handles what really is reached on foot). Config links further down are kept as written.
+    kept, walked, dropped = [], 0, 0
+    for a, b_, k, bi in links:
+        if k == "x" and not bi:
+            pa, pb = G.pts[a], G.pts[b_]
+            d = max(math.dist(pa, pb), 1.0)
+            rise = elev(*pb) - elev(*pa)
+            if rise > max(3.0, 0.05 * d):
+                if rise <= 20 and rise / d <= 0.35:
+                    kept.append((a, b_, "w", True))
+                    walked += 1
+                else:
+                    dropped += 1
+                continue
+        kept.append((a, b_, k, bi))
+    links = kept
+    if walked or dropped:
+        print(f"uphill ski joins: {walked} made walks, {dropped} left out (they climbed)")
     ends = {P["name"]: P for P in pois if P["kind"] in ("lift", "lifttop")}
     for a_name, b_name, *how in cfg.get("links", []):
         if how == ["hike"]:
@@ -1080,7 +1121,7 @@ def report(G, edges, trails, lifts, pois):
 
 def join_cut_off(G, edges, trails, elev):
     """Runs no lift reaches (a top that stops short of the ridge or lift it is entered from): join the highest
-    such run's top to the nearest point the lifts do reach, skied across from above (up to 400 m) or walked
+    such run's top to the nearest point the lifts do reach, skied across from no lower than 3 m below (up to 400 m) or walked
     (up to 250 m), and repeat. Every join is printed for review; ends further away are left for the config."""
     def pairs(e):
         return [(e["pts"][i], e["pts"][i + 1]) for i in range(0, len(e["pts"]), 2)]
@@ -1136,14 +1177,14 @@ def join_cut_off(G, edges, trails, elev):
                     d = math.dist(q, pt)
                     if d < best["walk"][0]:
                         best["walk"] = (d, (i, k))
-                    if d < best["ski"][0] and elev(*q) >= zt - 10:
+                    if d < best["ski"][0] and elev(*q) >= zt - 3:
                         best["ski"] = (d, (i, k))
             elif e["k"] == "l" and e["b"] in r:
                 q = G.pts[e["b"]]
                 d = math.dist(q, pt)
                 if d < best["walk"][0]:
                     best["walk"] = (d, ("n", e["b"]))
-                if d < best["ski"][0] and elev(*q) >= zt - 10:
+                if d < best["ski"][0] and elev(*q) >= zt - 3:
                     best["ski"] = (d, ("n", e["b"]))
         (ds, s), (dw, w) = best["ski"], best["walk"]
         how, d, at = ("ski", ds, s) if s and (not w or ds <= dw + 250) else ("walk", dw, w) if w else (None, 0, None)

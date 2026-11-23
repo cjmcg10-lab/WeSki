@@ -146,6 +146,30 @@ figure. Pick the latest **winter trail map** (`skimap.py maps` shows captions). 
 only (Jackson Hole): a black label means black or harder, so keep OpenStreetMap's double where it says double.
 Read the map's legend first (Telluride: two diamonds = expert only, EX = extreme).
 
+## Connections: are the runs and lifts joined the way directions use them? (2026-11-23)
+
+`python3 tools/check_connections.py <ids> | --all` reads each built map's routing graph and lists, per mountain:
+runs no lift reaches, runs whose bottom cannot get to a lift (dead ends), loose run ends within 60 m of another run
+or lift station (a missing join), run ends that run on more than 45 m past their last join, lift ends with no run,
+lift ends directions cannot get to or back from, long made-up joins (over 150 m skied, 300 m walked) and one-way ski
+joins that climb. It moves as `src/routing.js` does (downhill on runs, up on lifts, a short gentle climb back allowed,
+25 m of own-power climbing per route, hidden runs and lifts left out); only the phone's cut-across moves between
+neighbouring runs, which need the terrain, are not counted.
+
+- `tests/connections.test.js` runs it on every mountain that has `tests/fixtures/connections/<id>.json` and fails on
+  any problem in the guarded kinds (unreachable, dead end, outside the network, lift end with no run, uphill join)
+  that the file does not list with a reason. A run that really ends at a road or among homes (Stowe's Home Run) is
+  written there with why; anything else is fixed. Give every mountain a file when it is next rebuilt.
+- Fix with the config: `links` (lift end to run, run to run top, `"hike"`, and since 2026-11-23
+  `["trail:A (bottom)", "trail:B"]` for a run whose bottom stops short of the run it runs out onto), `way_pts`,
+  `split_ways` or `extra_trails` only with evidence; an old or lost trail OpenStreetMap still lists goes under `hide`
+  in the official json. Never join what the resort does not join.
+- `build_data.py` changes from the same pass: a made-up one-way ski join that climbs becomes a short walk (up to
+  20 m of climb) or is left out (directions took every ski join as free, so 476 of them at the northeast mountains
+  let routes ski uphill, up to 106 m); a glade or bowl drawn down its outline joins only the nearest run it can be
+  skied from or onto (plus anything within 38 m) instead of every run within 220 m; a run end lying on another run
+  without a shared OpenStreetMap node is now cut into it (Sugarbush's F.I.S. and Lower Exterminator led nowhere).
+
 ## What is only done when the card asks for it
 
 - **Aerial photo check** (`align_trails.py`): only for runs drawn by hand (`extra_trails`) and runs the card
@@ -230,9 +254,9 @@ stays in git because the unit tests load it. 49 mountains used 46 MB (the free a
 - `node tools/maps_r2.mjs pull --all` **at the start of any session that builds or tests maps**: nothing outside the
   repository survives a session, so the folders are not on disk until pulled (about half a minute). `push <id...>`
   uploads (only files whose content changed), lists the id in r2.json and keeps the folder out of git;
-  `pipeline.py` uploads only when given `--r2` (since 2026-11-23: before, it uploaded every mountain already listed
-  there after each build, which put unreviewed rebuilds on the live site). A push to R2 is a release: do it only after
-  review. For a preview use `tools/preview/deploy.mjs`. `drop` deletes the local copies.
+  `pipeline.py --r2` does both (and nothing goes to R2 without `--r2`, not even for a mountain already listed: R2 is
+  what the live app reads, so a trial rebuild is shown on the preview with `tools/preview/deploy.mjs` and pushed once
+  approved; changed 2026-11-23 after a rebuild went live by accident). `drop` deletes the local copies.
 - Compact height grids (2026-11-22): `push` also uploads `terrain.z16` and `surround.z16`, made from the `.bin` files
   (`src/heights.js`: each height predicted from its neighbours, only the difference kept, gzipped; exact, 56% smaller,
   and Cloudflare never compressed the `.bin`). The app downloads the `.z16` and falls back to the `.bin` on old

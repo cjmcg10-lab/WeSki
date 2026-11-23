@@ -1,3 +1,4 @@
+* { scrollbar-width: none; } *::-webkit-scrollbar { display: none; width: 0; height: 0; }
 :root { --bg: #f7fafc; --ink: #10202f; --muted: #4f6273; --line: #d8e2ea; --accent: #0e8f76; }
 @media (prefers-color-scheme: dark) { :root { --bg: #071523; --ink: #e8f1fa; --muted: #a6b8c8; --line: #1d3550; --accent: #3ee6c4; } }
 * { box-sizing: border-box; }
