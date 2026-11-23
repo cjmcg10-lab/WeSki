@@ -95,3 +95,53 @@ export function swing(t, phase, acc = 0, amp = 0.025) {
 export function tramRide(len, dur) {
   return Math.max(30, Math.min(150, (dur || len / 10) / 2));
 }
+
+/**
+ * Lift ends that land on a mapped building would otherwise be drawn twice: the lift's own terminal model plus the
+ * OpenStreetMap building of the real station. Decide which one to keep for each end:
+ *  - a station-sized building (under `bigArea` m²) in or within `near` metres of the end is left out: the terminal
+ *    model shows it (with its bullwheel and housing);
+ *  - a big building (a base lodge or hall the lift starts inside) is kept and that end's terminal model is left out.
+ * `buildings`: [{ pts: [x, y, ...] }] in local metres; `ends`: [[x, y], ...] in the same metres.
+ * Returns { skipBuildings: Set of building indexes, skipEnds: Set of end indexes }.
+ */
+export function stationClashes(buildings, ends, { near = 6, bigArea = 2500 } = {}) {
+  const skipBuildings = new Set(), skipEnds = new Set();
+  const info = buildings.map((b) => {
+    const P = b.pts;
+    let area = 0, x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
+      area += P[j] * P[i + 1] - P[i] * P[j + 1];
+      x0 = Math.min(x0, P[i]); y0 = Math.min(y0, P[i + 1]); x1 = Math.max(x1, P[i]); y1 = Math.max(y1, P[i + 1]);
+    }
+    return { area: Math.abs(area) / 2, box: [x0 - near, y0 - near, x1 + near, y1 + near] };
+  });
+  ends.forEach(([x, y], e) => {
+    buildings.forEach((b, i) => {
+      const { box, area } = info[i];
+      if (x < box[0] || x > box[2] || y < box[1] || y > box[3]) return;
+      if (!(polyHas(b.pts, x, y) || polyEdge(b.pts, x, y) <= near)) return;
+      if (area < bigArea) skipBuildings.add(i); else skipEnds.add(e);
+    });
+  });
+  return { skipBuildings, skipEnds };
+}
+
+function polyHas(P, x, y) {
+  let c = false;
+  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
+    const xi = P[i], yi = P[i + 1], xj = P[j], yj = P[j + 1];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+}
+
+function polyEdge(P, x, y) {
+  let best = Infinity;
+  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
+    const ax = P[j], ay = P[j + 1], dx = P[i] - ax, dy = P[i + 1] - ay, L2 = dx * dx + dy * dy;
+    const t = L2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)) : 0;
+    best = Math.min(best, Math.hypot(x - ax - t * dx, y - ay - t * dy));
+  }
+  return best;
+}

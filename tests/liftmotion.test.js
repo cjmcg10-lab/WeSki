@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { loopTimer, detachSegments, shuttle, swing, tramRide } from '../src/liftmotion.js';
+import { loopTimer, detachSegments, shuttle, swing, tramRide , stationClashes } from '../src/liftmotion.js';
 
 describe('detachable lift: slows down in the stations', () => {
   const L = 1500, r = 2.4, V = 10, v = 1;
@@ -114,5 +114,23 @@ describe('carrier swing', () => {
     for (let t = 0; t < 30; t += 0.3) expect(Math.abs(swing(t, 1.3))).toBeLessThan(0.04);
     expect(swing(0, 0, -3)).toBeLessThan(swing(0, 0, 0));
     expect(Math.abs(swing(0, 0, -100))).toBeLessThan(0.2);
+  });
+});
+
+describe('stationClashes: a lift end on a building is drawn once', () => {
+  const square = (x, y, s) => ({ pts: [x, y, x + s, y, x + s, y + s, x, y + s] });
+  it('leaves out a station-sized building at a lift end (the terminal model shows it)', () => {
+    const r = stationClashes([square(0, 0, 20), square(500, 500, 20)], [[10, 10], [300, 300]]);
+    expect([...r.skipBuildings]).toEqual([0]);
+    expect([...r.skipEnds]).toEqual([]);
+  });
+  it('counts a building just beside the end, but not one further away', () => {
+    expect([...stationClashes([square(0, 0, 20)], [[24, 10]]).skipBuildings]).toEqual([0]);
+    expect([...stationClashes([square(0, 0, 20)], [[40, 10]]).skipBuildings]).toEqual([]);
+  });
+  it('keeps a big lodge the lift starts inside and leaves out that end’s terminal instead', () => {
+    const r = stationClashes([square(0, 0, 80)], [[40, 40], [900, 900]]);
+    expect([...r.skipBuildings]).toEqual([]);
+    expect([...r.skipEnds]).toEqual([0]);
   });
 });
