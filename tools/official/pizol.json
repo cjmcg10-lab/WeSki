@@ -85,5 +85,25 @@
  },
  "not_runs": {
   "Obersäss": "On the piste report as 8b, but not drawn on the resort's own map, so it cannot be placed. Check again when the resort's map shows it."
+ },
+ "lifts": [
+  "4er - Sessel Furt - Gaffia",
+  "4er - Sessel Gaffia - Pizolhütte",
+  "6er - Sessel Schwamm",
+  "Bad Ragaz - Pardiel",
+  "Förderbänder Pardiel",
+  "Gondelbahn Wangs - Maienberg - Furt",
+  "Pardiel - Laufböden",
+  "Riderlift Riderpark",
+  "SAC - Lift",
+  "Verbindungslift Pizolhütte - Laufböden",
+  "Übungslift Furt",
+  "Übungslift Prodboden"
+ ],
+ "lifts_source": "Pizol piste report (www.infosnow.ch/~apgmontagne/?lang=de&id=47&tab=web-wi, the resort's status page): the 12 lifts under 'Anlagen', names as printed, fetched 2026-11-23",
+ "lifts_explained": {
+  "6er - Sessel Schwamm": "the map's Schwammbahn (six-seat chair, OpenStreetMap way 555311975)",
+  "Gondelbahn Wangs - Maienberg - Furt": "the map's Wangs-Maienberg-Furt gondola",
+  "Riderlift Riderpark": "the map's Riderslift (rope tow at the Riderpark, Pardiel)"
  }
 }

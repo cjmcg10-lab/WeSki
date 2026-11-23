@@ -52,5 +52,37 @@
  "blue_black": [],
  "not_runs": {
   "Écureuils": "A children's play area (OpenStreetMap: 'Les Écureuils', piste type playground), not a run between lifts."
+ },
+ "lifts": [
+  "Aiguille",
+  "Bûche Croisée",
+  "Choton",
+  "Col du Joly",
+  "Feux",
+  "Foyeres",
+  "Gorge",
+  "Grevettaz",
+  "Jonction",
+  "le Plan",
+  "Loyers",
+  "Montjoie (TC)",
+  "Montjoie (TSD)",
+  "Monument",
+  "Nant-Rouge",
+  "Nivorin",
+  "Olympique",
+  "Pierre Blanches",
+  "Roselette",
+  "Ruelle (TC)",
+  "Ruelle (TK)",
+  "Signal (TC)",
+  "Signal (TK)",
+  "Tierces",
+  "Veleray"
+ ],
+ "lifts_source": "Les Contamines-Montjoie piste map 2025-26 (skipass.lescontamines.net, 'Plan piste pdf_compressed.pdf'): the printed lift timetable ('Horaires des remontées mécaniques'), 25 lifts by sector; a type in brackets where two lifts share a name (TC gondola, TSD/TS chair, TK drag lift), fetched 2026-11-23",
+ "lifts_explained": {
+  "le Plan": "the map's Plans drag lift on the Hauteluce side (top 2000 m on our map, 2003 m in the resort's timetable)",
+  "Nivorin": "small village drag lift (Secteur Village, top 1224 m) near the Nivorin bus stop. Not in OpenStreetMap; opens no terrain of its own"
  }
 }
