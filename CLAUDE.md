@@ -554,6 +554,17 @@ and terrain sources; a weather source licensed for commercial use; a "report a m
 add-to-home-screen guide for iPhone. Accounts and payments need the owner to create the outside accounts themselves;
 keys go in through the credential form, never chat.
 
+## Emergency button (2026-11-23, issue #92)
+
+A red SOS button at the top of the map's right-hand column (and "Emergency" at the top of More) opens a sheet with the
+mountain's ski patrol number (tel: link), the country's general numbers (US 911; France 112; Switzerland 144, Rega 1414,
+112; Austria 140, 144, 112; Japan 119), the rule "if unsure, call the general number", the skier's coordinates, the run
+and lift they are on or near, and the source and check date. Free, never behind the paywall, bundled into the app
+(`src/emergency.json`, `src/emergency.js`), so it works offline. Numbers came from the resorts' own pages found by web
+search (the pages themselves could not be opened from the container); 54 of 60 have one. No number for Geto Kogen,
+Mount Southington, Ski Sundown, Pizol (resort uses the EchoSOS app), Saalbach and SkiWelt (report at lift stations).
+Calling has not been tried on a real phone or in the TestFlight app.
+
 ## Forecast (built 2026-11-22)
 
 A free Forecast tab (also a button on the start screen): a watchlist of any of 4,792 catalog resorts or map pins, a
