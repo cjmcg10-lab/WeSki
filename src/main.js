@@ -2,6 +2,7 @@ import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
 import { fetchHeights, fetchCanopy } from './heights.js';
+import { repairEdges } from './seam.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
@@ -179,6 +180,7 @@ function initMap(id) {
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     const heights = new Uint16Array(buf);
+    repairEdges(heights, resort.grid.nx, resort.grid.ny);   // a few maps have a broken outermost row (src/seam.js)
     // the ground's heavy set-up runs in a background worker, so the screen does not freeze while it is worked out
     const prep = await SkiMap.prepare(resort, { h: heights });
     if (mapId !== id) return;
