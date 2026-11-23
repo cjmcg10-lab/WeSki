@@ -2,8 +2,8 @@
 // tested on their own. Display only: worked out on each phone from the positions the group already shares.
 //
 // - Riders on the same lift, going the same way, close together along the line share a carrier, up to the lift's
-//   capacity (seats per chair, people per cabin). More people than seats: the carrier in front is filled and the rest
-//   ride together in the next one behind.
+//   capacity (seats per chair, people per cabin). Each carrier is filled before the next one gets anyone: 6 on a
+//   4-seat chair ride 4 + 2, 9 ride 4 + 4 + 1, and two half-full chairs close together become one full one.
 // - "Close together" is three quarters of the spacing between two carriers on the map, at least 15 m and at most
 //   60 m. A tram or a train has one cabin or car each way, so everyone on it going the same way shares it.
 // - Once together, people stay together until they are more than twice that apart (GPS wanders by a few metres from
@@ -97,6 +97,32 @@ export class RideGroups {
         placed.add(m.id);
       }
       out.set(b, cars);
+    }
+    // 2b. fill each carrier before the next one gets anyone (owner, 2026-11-23): where two carriers of the same group are
+    // close together and the front one has room, the people at the front of the one behind move up into it, so two
+    // half-full chairs become one full chair and the rest. Carriers are taken in their order along the line from last
+    // time (new ones by where they are), and people already riding never move into a carrier that has just appeared,
+    // so GPS wander still reshuffles nobody.
+    for (const [b, cars] of out) {
+      const B = buckets.get(b), sort = ahead(B), avg = (c) => c.members.reduce((k, m) => k + m.s, 0) / c.members.length;
+      for (const c of cars) c.members.sort(sort);
+      const order = cars.filter((c) => c.rank != null).sort((x, y) => x.rank - y.rank);
+      for (const c of cars.filter((k) => k.rank == null).sort((x, y) => (B.down ? avg(x) - avg(y) : avg(y) - avg(x)))) {
+        const i = order.findIndex((k) => (B.down ? avg(k) > avg(c) : avg(k) < avg(c)));
+        order.splice(i < 0 ? order.length : i, 0, c);
+      }
+      for (let i = 0; i < order.length; i++) {
+        const front = order[i];
+        for (let j = i + 1; j < order.length && front.members.length < B.I.cap; j++) {
+          const rear = order[j];
+          if (front.rank == null && rear.rank != null) continue;
+          while (rear.members.length && front.members.length < B.I.cap
+            && Math.max(...front.members.map((o) => Math.abs(o.s - rear.members[0].s))) <= B.gap) {
+            front.members.push(rear.members.shift());
+          }
+        }
+      }
+      out.set(b, order.filter((c) => c.members.length));
     }
     // 3. where to draw each carrier: at its riders' average place, and never on top of the carrier in front, so the
     // second carrier of an over-full group rides one carrier behind the first

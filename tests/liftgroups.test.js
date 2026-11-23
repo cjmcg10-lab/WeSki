@@ -29,6 +29,25 @@ describe('riding together', () => {
     expect((cars[0].frac - cars[1].frac) * 1000).toBeGreaterThanOrEqual(48 - 1e-9);
   });
 
+  it('nine on a four-seat chair ride 4 + 4 + 1; ten in an eight-person gondola ride 8 + 2', () => {
+    const nine = Array.from({ length: 9 }, (_, i) => at('p' + i, 500 + i * 3));
+    expect(sizes(new RideGroups().update(nine, lift(4)))).toEqual([4, 4, 1]);
+    const ten = Array.from({ length: 10 }, (_, i) => at('q' + i, 500 + i * 2));
+    expect(sizes(new RideGroups().update(ten, lift(8, { spacing: 80 })))).toEqual([8, 2]);
+  });
+
+  it('two half-full chairs close together become one full chair before a second one is used', () => {
+    const g = new RideGroups();
+    // two pairs that started out far apart, each in its own chair
+    expect(sizes(g.update([at('a', 600), at('b', 602), at('c', 400), at('d', 402)], lift(4)))).toEqual([2, 2]);
+    // the pairs close up (e.g. the front pair waited at a station): all four now share one chair
+    expect(sizes(g.update([at('a', 520), at('b', 522), at('c', 512), at('d', 514)], lift(4)))).toEqual([4]);
+    // three and three on a four-seat chair, close together: 4 + 2
+    const h = new RideGroups();
+    h.update([at('a', 900), at('b', 902), at('c', 904), at('d', 100), at('e', 102), at('f', 104)], lift(4));
+    expect(sizes(h.update([at('a', 520), at('b', 522), at('c', 524), at('d', 510), at('e', 512), at('f', 514)], lift(4)))).toEqual([4, 2]);
+  });
+
   it('people far apart, on different lifts or going different ways ride separately', () => {
     const g = new RideGroups();
     expect(sizes(g.update([at('a', 100), at('b', 400)], lift(4)))).toEqual([1, 1]);
