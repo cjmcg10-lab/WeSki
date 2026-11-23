@@ -11,6 +11,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loopTimer, detachSegments, shuttle, swing, tramRide, stationClashes } from './liftmotion.js';
+import { RideGroups, liftCapacity } from './liftgroups.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
 import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel, movingPr } from './terrainprep.js';
 import { simplifyRun, simplifyPath3 } from './simplify.js';
@@ -103,6 +104,8 @@ export class SkiMap {
     this.geo = geo;
     this.mode = '3d';
     this.friends = new Map();   // id -> {data, obj}
+    this.cars = new Map();      // carriers people ride a lift in (seatRiders): key -> Group
+    this.rideGroups = new RideGroups();
     this.closed = new Set();
     this.hits = [];
     this.tapHandlers = [];
@@ -737,6 +740,8 @@ vec3 groundColour() {
           path.dt = path.timer.T / path.chairs;
         } else path.chairs = Math.min(l.kind === 'carpet' ? 240 : 90, Math.max(4, Math.floor(path.loop / spacing)));
         path.gap = path.loop / path.chairs;
+        // spacing of the carriers out on the line (detachable ones bunch up in the stations and spread out on the line)
+        path.lineGap = path.timer ? path.speed * path.dt : path.gap;
         path.first = count[carrier] || 0; count[carrier] = path.first + path.chairs;
       }
       path.mid = this.pathPoint(path, L / 2, 0).pos;
@@ -1000,10 +1005,11 @@ vec3 groundColour() {
       if ((is3 && p.mid.distanceTo(cam) > Q.lifts + p.L / 2) || !inView(p.mid, p.L / 2 + 40)) continue;
       const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k], N = this.carriersNear[k];
       const hang = p.chair || k === 'cabin', tow = k === 'bar' || k === 'platter', pad = k === 'pad';
-      const tt = running ? t : 0, ph0 = p.l.id * 2.3;
+      const tt = running ? t : 0, ph0 = p.l.id * 2.3, ru = p.riderU, half = (p.lineGap || p.gap) * 0.5;
       for (let i = 0; i < p.chairs; i++) {
         let u, acc = 0;
         if (p.timer) { u = p.timer.at(i * p.dt + tt); acc = p.timer.acc; } else u = (i * p.gap + tt * p.speed) % p.loop;
+        if (ru && ru.some((r) => { const d = Math.abs(u - r) % p.loop; return Math.min(d, p.loop - d) < half; })) continue;   // a rider's own carrier is here
         const yaw = this.loopPointInto(p, u, A.pos);
         const near = !!N && A.pos.distanceToSquared(cam) < nearR2;
         let pitch = 0, scale = hang ? A.big : A.one;
@@ -1046,7 +1052,7 @@ vec3 groundColour() {
       const a = this.pathPoint(p, Math.max(0, d - 6), 0).pos, b = this.pathPoint(p, Math.min(p.L, d + 6), 0).pos;
       car.mesh.position.copy(a).lerp(b, 0.5);
       car.mesh.lookAt(b);
-      car.mesh.visible = !p.tunnels.some(([u, v]) => d > u + 8 && d < v - 8);
+      car.mesh.visible = !p.riderSide && !p.tunnels.some(([u, v]) => d > u + 8 && d < v - 8);
       if (running) moved++;
     }
     for (const tram of this.trams) {
@@ -1057,6 +1063,7 @@ vec3 groundColour() {
       if (!all && !inView(p.mid, p.L / 2 + 60)) continue;
       const s = shuttle(running ? t + p.l.id * 11 : 0, p.ride, 14, 0.18, A.sh);
       tram.cabins.forEach((c, i) => {
+        c.visible = !p.riderSide?.has(i);     // the cabin a rider is in is drawn as theirs
         const f = i ? 1 - s.f : s.f, d = p.L * f, dir = i ? -1 : 1;
         c.rotation.y = this.pathPointInto(p, d, i ? -p.r : p.r, c.position);
         // the last tower passed, in the direction of travel
@@ -1130,11 +1137,12 @@ vec3 groundColour() {
   }
 
   /** (Re)build a person marker when the avatar or colour changes; returns true if rebuilt. */
-  dress(obj, avatar, color, ring, ride = '') {
-    const key = avatar + color + ring + ride;
+  dress(obj, avatar, color, ring, spot = null) {
+    const ride = spot?.ride || '';
+    const key = avatar + color + ring + ride + (spot ? `${spot.seats}${spot.bubble ? 'b' : ''}${spot.down ? 'd' : ''}` : '');
     if (obj.userData.key === key) return false;
-    obj.clear();
-    const av = ride ? M.makeRide(ride, avatar, color) : M.makeAvatar(avatar, color);
+    M.disposeModel(obj); obj.clear();
+    const av = ride ? M.makeRide(ride, [{ avatar, color }], spot) : M.makeAvatar(avatar, color);
     obj.add(av);
     if (ring) obj.add(M.makeRing(ring));
     obj.userData.key = key; obj.userData.avatar = av;
@@ -1143,34 +1151,47 @@ vec3 groundColour() {
 
   /**
    * Where someone riding a lift is drawn. lift: {id, frac (0 bottom .. 1 top), down}.
-   * Returns {ride: 'chair' | 'cabin' | '' (standing: surface lift or carpet), pos, yaw}.
+   * Returns {ride, seats, bubble, down, pos, yaw}: ride is the carrier, the same as the lift's own: 'chair', 'cabin'
+   * (gondola), 'tram', 'train', 'funicular', 'tow-tbar' | 'tow-platter' | 'tow-rope', or '' (a magic carpet: just
+   * standing). pos is where the carrier's origin goes (M.makeRide): its seat hangs where the lift's own chairs and
+   * cabins hang at that point.
    */
   liftSpot(lift) {
     const path = this.liftPaths.find((p) => p.l.id === lift.id);
     if (!path) return null;
     const kind = path.l.kind, low = kind === 'surface' || kind === 'carpet';
-    const q = this.pathPoint(path, path.L * Math.min(1, Math.max(0, lift.frac)), path.rail || kind === 'carpet' ? 0 : lift.down ? -path.r : path.r);
-    // chair: seated in a chair; gondola / cable car: a cabin; train / funicular: a rail car;
-    // T-bar, platter, rope tow: standing on the snow holding on; carpet: just standing
-    const ride = path.rail ? kind : kind === 'surface' ? 'tow-' + (path.l.style || 'tbar') : kind === 'carpet' ? '' : path.chair ? 'chair' : 'cabin';
-    const ground = this.groundY(q.pos.x, q.pos.z);
-    if (path.rail) q.pos.y = Math.max(q.pos.y, ground + 0.45) + 0.5;      // in a tunnel: shown on the surface above
-    else if (low) q.pos.y = ground + 0.4;
-    else q.pos.y = Math.max(ground + 1.2, q.pos.y - (ride === 'chair' ? 5.4 : 6));   // where the chair or cabin hangs
+    const ride = path.rail ? kind : kind === 'surface' ? 'tow-' + (path.l.style || 'tbar') : kind === 'carpet' ? '' : path.chair ? 'chair' : path.tram ? 'tram' : 'cabin';
+    const side = path.rail || kind === 'carpet' ? 0 : lift.down ? -path.r : path.r;
+    const q = this.pathPoint(path, path.L * Math.min(1, Math.max(0, lift.frac)), side);
+    const ground = this.groundY(q.pos.x, q.pos.z), fit = M.rideFit(ride);
+    if (path.rail) q.pos.y = Math.max(q.pos.y, ground + 0.45);          // in a tunnel: shown on the surface above
+    else if (low) q.pos.y = ground + 0.05;
+    else q.pos.y = Math.max(ground + 1.2, q.pos.y - fit.hang * fit.s0);  // the seat (or floor) under the cable
     if (lift.down) q.yaw += Math.PI;
-    return { ride, pos: q.pos, yaw: q.yaw };
+    return { ride, seats: path.seats, bubble: path.bubble, down: !!lift.down, pos: q.pos, yaw: q.yaw, path };
+  }
+
+  /** For grouping riders (RideGroups): the lift's length, people per carrier, and the spacing of its carriers. */
+  rideInfo(id) {
+    const path = this.liftPaths.find((p) => p.l.id === id);
+    if (!path || path.l.kind === 'carpet') return null;
+    return { len: path.L, cap: liftCapacity(path.l, path.chair ? path.seats : 0), spacing: path.lineGap || 0, one: !!(path.tram || path.rail) };
   }
 
   /** Dress and aim a person, on the snow or (with d.lift) seated on a lift. */
   place(obj, d, color, ring, snap) {
     const spot = d.lift ? this.liftSpot(d.lift) : null;
-    const fresh = this.dress(obj, d.avatar, color, ring, spot ? spot.ride : '');
+    const fresh = this.dress(obj, d.avatar, color, ring, spot);
     if (fresh) this.overlayDirty = true;          // someone new, or a new look or colour: draw it now
     if (!spot) { this.aim(obj, d.x, d.y, d.heading, d.moving, fresh || snap); return; }
+    this.aimRide(obj, spot, fresh || snap);
+  }
+
+  aimRide(obj, spot, snap) {
     const u = obj.userData;
-    if (fresh || snap || !u.target || u.target.distanceTo(spot.pos) > 400) obj.position.copy(spot.pos);
+    if (snap || !u.target || u.target.distanceTo(spot.pos) > 400) obj.position.copy(spot.pos);
     u.target = spot.pos; u.yaw = spot.yaw; u.moving = false;
-    if (fresh || snap || u.yawNow == null) { u.yawNow = u.yaw; obj.rotation.y = u.yaw; }
+    if (snap || u.yawNow == null) { u.yawNow = u.yaw; obj.rotation.y = u.yaw; }
   }
 
   /** Aim a person at a new position/heading; frame() glides them there. */
@@ -1208,7 +1229,8 @@ vec3 groundColour() {
 
   /** Make a person wave at the viewer (tapping them); tapping again starts the wave over. */
   wave(id) {
-    const obj = id === 'me' ? this.meObj : this.friends.get(id)?.obj;
+    let obj = id === 'me' ? this.meObj : this.friends.get(id)?.obj;
+    obj = obj?.userData.car || obj;          // in a shared chair or cabin: everyone in it waves
     if (!obj?.visible) return;
     if (obj.userData.wave) this.waveStep(obj, true);
     obj.userData.wave = { t0: this.t };
@@ -1218,11 +1240,11 @@ vec3 groundColour() {
     const u = obj.userData, w = u.wave, outer = u.avatar;
     if (!outer) { u.wave = null; return; }
     const ride = outer.userData.ride;
-    const av = ride ? outer.userData.av : outer;   // the rider in the chair, cabin or on the tow
-    if (!av) { u.wave = null; return; }
+    const avs = ride ? outer.userData.avs || [outer.userData.av] : [outer];   // the riders in the chair, cabin or on the tow
+    if (!avs[0]) { u.wave = null; return; }
     const k = (this.t - w.t0) / 2.8;
     if (stop || k >= 1) {
-      M.endWave(av);
+      for (const av of avs) M.endWave(av);
       u.wave = null;
       return;
     }
@@ -1231,7 +1253,7 @@ vec3 groundColour() {
     const world = Math.atan2(cp.x - op.x, cp.z - op.z);
     const face = world - obj.rotation.y - (ride ? outer.rotation.y : 0);
     const lean = outer.userData.seated ? 0.15 : 0;     // on a chair: a little lean out to the side
-    M.waveAvatar(av, k, face, lean);
+    for (const av of avs) M.waveAvatar(av, k, face, lean);
   }
 
   // ---------- public state setters
@@ -1297,8 +1319,8 @@ vec3 groundColour() {
     this.needsRender = true;
     // me: {x, y, heading, avatar, color, moving, lift: {id, frac, down} | null} | null
     this.me = me;
-    if (!me) { this.meObj.visible = false; return; }
-    this.place(this.meObj, me, me.color, COLORS.me, false);
+    if (!me) this.meObj.visible = false;
+    this.seatRiders();
   }
 
   /** friends: [{id, name, avatar, color, x, y, heading, moving, age (s), stale, paused, online}] */
@@ -1309,10 +1331,68 @@ vec3 groundColour() {
     for (const d of list) {
       let f = this.friends.get(d.id);
       if (!f) { f = { obj: new THREE.Group() }; this.scene.add(f.obj); this.friends.set(d.id, f); }
-      const col = d.stale ? '#8d949e' : d.color;
       f.data = d;
-      this.place(f.obj, d, col, col, false);
     }
+    this.seatRiders();
+  }
+
+  /**
+   * Place everyone: people on the snow as figures; people riding a lift in carriers, the same chair, cabin or T-bar
+   * the lift itself has, with group members close together on the same lift sharing one, up to its capacity
+   * (RideGroups, src/liftgroups.js). A rider's own figure is then hidden and follows their carrier (for the name tag
+   * and taps). Friends whose position is stale ride on their own, in grey.
+   */
+  seatRiders() {
+    const people = [];
+    if (this.me) people.push({ id: 'me', d: this.me, obj: this.meObj, color: this.me.color, ring: COLORS.me });
+    for (const [id, f] of this.friends) { const col = f.data.stale ? '#8d949e' : f.data.color; people.push({ id, d: f.data, obj: f.obj, color: col, ring: col }); }
+    const riding = people.filter((p) => p.d.lift && !p.d.stale && this.rideInfo(p.d.lift.id));
+    const cars = this.rideGroups.update(riding.map((p) => ({ id: p.id, lift: p.d.lift })), (id) => this.rideInfo(id));
+    const byId = new Map(people.map((p) => [p.id, p])), used = new Set();
+    for (const c of cars) {
+      const who = c.ids.map((id) => byId.get(id)).sort((a, b) => (b.id === 'me') - (a.id === 'me'));   // you first: your seat and name tag
+      const spot = this.liftSpot({ id: c.lift, frac: c.frac, down: c.down });
+      if (!spot?.ride) continue;
+      let obj = this.cars.get(c.key);
+      if (!obj) { obj = new THREE.Group(); this.scene.add(obj); this.cars.set(c.key, obj); }
+      const key = `${spot.ride}|${spot.seats}|${spot.bubble}|${spot.down}|` + who.map((p) => p.d.avatar + p.color).join('|');
+      const fresh = obj.userData.key !== key;
+      if (fresh) {
+        const wave = obj.userData.wave;
+        M.disposeModel(obj); obj.clear();
+        const av = M.makeRide(spot.ride, who.map((p) => ({ avatar: p.d.avatar, color: p.color })), spot);
+        obj.add(av);
+        obj.userData.key = key; obj.userData.avatar = av;
+        if (wave) obj.userData.wave = null;
+        this.overlayDirty = true;
+      }
+      obj.userData.ids = c.ids; obj.userData.spot = spot;
+      this.aimRide(obj, spot, fresh && !obj.userData.target);
+      who.forEach((p, i) => { p.obj.userData.car = obj; p.obj.userData.seatIx = i; p.obj.visible = false; used.add(p.id); });
+    }
+    for (const [key, obj] of this.cars) if (!cars.some((c) => c.key === key)) { this.scene.remove(obj); M.disposeModel(obj); this.cars.delete(key); }
+    for (const p of people) {
+      if (used.has(p.id)) continue;
+      p.obj.userData.car = null;
+      this.place(p.obj, p.d, p.color, p.ring, false);
+    }
+    this.markRiderCarriers();
+  }
+
+  /** The map's own chair, cabin, tram or train nearest each rider's carrier is left out, so it is not drawn twice. */
+  markRiderCarriers() {
+    for (const p of this.liftPaths) { p.riderU = null; p.riderSide = null; }
+    const spots = [...this.cars.values()].map((o) => o.userData.spot);
+    if (this.play?.lift && this.playObj.visible) { const sp = this.liftSpot(this.play.lift); if (sp?.ride) spots.push(sp); }
+    for (const sp of spots) {
+      const p = sp?.path;
+      if (!p) continue;
+      if (p.tram || p.rail) { (p.riderSide ||= new Set()).add(sp.down ? 1 : 0); continue; }
+      const d = this.alongAt(p, sp.pos);
+      (p.riderU ||= []).push(sp.down ? 2 * p.L + Math.PI * p.r - d : d);
+    }
+    this.liftsMoved = false;      // move (and hide) the carriers at the next frame
+    this.needsRender = true;
   }
 
   setPin(p) { this.overlayDirty = true; this.pin = p; this.pinObj.visible = !!p; if (p) this.pinObj.position.copy(this.world(p.x, p.y, 0)); }
@@ -1356,8 +1436,11 @@ vec3 groundColour() {
     this.needsRender = true;
     this.playObj.visible = !!p;
     this.play = p;
-    if (!p) { this.playObj.userData.target = null; return; }
+    if (!p) { this.playObj.userData.target = null; if (this.playLift) { this.playLift = ''; this.markRiderCarriers(); } return; }
+    const was = this.playLift;
     this.place(this.playObj, { ...p, avatar: p.avatar || 'boy-ski' }, p.color || COLORS.track, '', p.snap);
+    this.playLift = p.lift ? `${p.lift.id}:${Math.round(p.lift.frac * 50)}` : '';
+    if (this.playLift !== was) this.markRiderCarriers();
   }
 
   /** Smoothly centre the map on a local point. */
@@ -1653,13 +1736,24 @@ vec3 groundColour() {
     // Avatars and markers are scaled with distance so they stay readable at mountain scale.
     // They grow as you zoom out so they stay findable, up to a cap (about 45 m tall for a
     // person) so that from far away they no longer swamp the map.
+    // Someone riding a lift starts from the size the lift's own carriers are drawn at (so up close their chair or cabin
+    // matches the others) and grows from there like everyone else.
     const scaleFor = (obj, k, max = 25) => {
-      const s = is3 ? Math.min(max, Math.max(2.2, this.cam3.position.distanceTo(obj.position) * k)) : 14 / this.zoom2 / 3;
+      const R = obj.userData.avatar?.userData;
+      const lo = R?.s0 ?? 2.2, hi = R?.smax ?? max;
+      const s = is3 ? Math.min(hi, Math.max(lo, this.cam3.position.distanceTo(obj.position) * k)) : 14 / this.zoom2 / 3;
       obj.scale.setScalar(s);
     };
     const dt = this.dt || 0.016;
-    if (this.me) { this.meObj.visible = is3; this.glide(this.meObj, dt); scaleFor(this.meObj, 0.02); }
-    for (const f of this.friends.values()) { f.obj.visible = is3; this.glide(f.obj, dt); scaleFor(f.obj, 0.02); }
+    for (const car of this.cars.values()) { car.visible = is3; this.glide(car, dt); scaleFor(car, 0.02); }
+    // a rider's own figure is hidden and stays with their carrier (name tag, taps)
+    const person = (obj) => {
+      const car = obj.userData.car;
+      if (car) { obj.visible = false; obj.position.copy(car.position); obj.scale.copy(car.scale); return; }
+      obj.visible = is3; this.glide(obj, dt); scaleFor(obj, 0.02);
+    };
+    if (this.me) person(this.meObj);
+    for (const f of this.friends.values()) person(f.obj);
     if (this.pin) scaleFor(this.pinObj, 0.014, 22);
     if (this.meet) scaleFor(this.meetObj, 0.016, 24);
     if (this.play) { this.playObj.visible = is3; this.glide(this.playObj, dt); scaleFor(this.playObj, 0.02); }
@@ -1671,8 +1765,9 @@ vec3 groundColour() {
     // or waving. Standing still (the usual case for your own dot and a group's friends) they look
     // the same frame after frame, so they no longer keep the whole map redrawing.
     let people = !!this.play;
-    if (!people && this.me) people = this.settling(this.meObj);
-    if (!people) for (const f of this.friends.values()) if (this.settling(f.obj)) { people = true; break; }
+    if (!people && this.me && !this.meObj.userData.car) people = this.settling(this.meObj);
+    if (!people) for (const f of this.friends.values()) if (!f.obj.userData.car && this.settling(f.obj)) { people = true; break; }
+    if (!people) for (const car of this.cars.values()) if (this.settling(car)) { people = true; break; }
     const justSettled = this.peopleMoving && !people;
     this.peopleMoving = people;
     if (justSettled) this.overlayDirty = true;
@@ -1743,22 +1838,34 @@ vec3 groundColour() {
       const p = this.project(d.obj.position);
       if (!p) continue;
       const col = d.stale ? COLORS.closed : d.color;
-      let ly;
-      if (is3) { const top = this.project(d.obj.position.clone().add(new THREE.Vector3(0, 2.4 * d.obj.scale.y, 0))); ly = (top ? top.y : p.y) - 9; }
+      // People sharing a chair or cabin: their name tags stacked above it (3D) or under their dots, which sit side by
+      // side (2D). A full gondola shows three names and a "+5" tag for the rest; each tag opens that person.
+      const car = d.obj.userData.car, ix = car ? d.obj.userData.seatIx || 0 : 0, nIn = car ? car.userData.ids.length : 1;
+      if (nIn > 4 && ix > 3) continue;
+      const more = nIn > 4 && ix === 3 ? nIn - 3 : 0, cx = p.x;
+      let ly, hx = p.x, hy;
+      if (is3) { const top = this.project(d.obj.position.clone().add(new THREE.Vector3(0, 2.4 * d.obj.scale.y, 0))); ly = (top ? top.y : p.y) - 9 - ix * 20; hy = ix ? ly : (p.y + ly) / 2; }
       else {
-        ctx.beginPath(); ctx.arc(p.x, p.y, 13, 0, 7); ctx.fillStyle = col; ctx.fill();
+        const dx = p.x + (ix - (Math.min(nIn, 4) - 1) / 2) * 24;
+        ctx.beginPath(); ctx.arc(dx, p.y, 13, 0, 7); ctx.fillStyle = col; ctx.fill();
         ctx.lineWidth = 3; ctx.strokeStyle = d.me ? COLORS.me : '#fff'; if (d.stale) ctx.setLineDash([4, 3]); ctx.stroke(); ctx.setLineDash([]);
         ctx.font = '700 12px "Nunito Sans Variable", -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff';
-        ctx.fillText((d.name || '?').slice(0, 1).toUpperCase(), p.x, p.y + 0.5);
-        ly = p.y + 24;
+        ctx.fillText(more ? '+' : (d.name || '?').slice(0, 1).toUpperCase(), dx, p.y + 0.5);
+        ly = p.y + 24 + ix * 20; hx = dx; hy = p.y;
       }
-      const tag = d.me ? t('You') : d.name + (d.paused ? ' · ' + t('paused') : d.stale ? ` · ${fmtAge(d.age)}` : '');
+      const tag = more ? `+${more}` : d.me ? t('You') : d.name + (d.paused ? ' · ' + t('paused') : d.stale ? ` · ${fmtAge(d.age)}` : '');
       ctx.font = '700 12px "Nunito Sans Variable", -apple-system, system-ui, sans-serif';
       const tw = ctx.measureText(tag).width + 14;
-      ctx.fillStyle = col; roundRect(ctx, p.x - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tag, p.x, ly + 0.5);
-      boxes.push([p.x - tw / 2, ly - 9, tw, 18]);
-      this.hits.push({ x: p.x, y: is3 ? (p.y + ly) / 2 : p.y, r: 30, ev: d.me ? { type: 'me' } : { type: 'friend', id: d.id } });
+      ctx.fillStyle = more ? '#3d4b5a' : col; roundRect(ctx, cx - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tag, cx, ly + 0.5);
+      boxes.push([cx - tw / 2, ly - 9, tw, 18]);
+      const ev = d.me ? { type: 'me' } : { type: 'friend', id: d.id };
+      if (car && nIn > 1) {
+        // each tag (and each dot in 2D) opens its person; the carrier itself opens the first one; all of them wave
+        this.hits.push({ x: cx, y: ly, r: 11, ev });
+        if (!is3) this.hits.push({ x: hx, y: hy, r: 12, ev });
+        if (ix === 0) this.hits.push({ x: p.x, y: p.y, r: 30, ev });
+      } else this.hits.push({ x: hx, y: hy, r: 30, ev });
     }
     const marker = (pt, obj, color, name, ev) => {
       const p = this.project(obj.position);
