@@ -15,6 +15,7 @@ import { RideGroups, liftCapacity } from './liftgroups.js';
 import { scheme, cls, runColor, runSym, runName } from './rating.js';
 import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel, movingPr } from './terrainprep.js';
 import { simplifyRun, simplifyPath3 } from './simplify.js';
+import { clearance, nextSeen, fade, stale, HIDE_DEPTH } from './sightline.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
 
@@ -228,6 +229,35 @@ export class SkiMap {
     const i = fx | 0, j = fy | 0, u = fx - i, v = fy - j, o = j * nx + i;
     const za = h[o], zb = h[o + 1], zd = h[o + nx], ze = h[o + nx + 1];
     return zmin + (u >= v ? za + u * (zb - za) + v * (ze - zb) : za + u * (ze - zd) + v * (zd - za)) / 10;
+  }
+
+  /**
+   * Height of the drawn ground at local (x, y), above zmin like world y: the detailed map inside its edge, the coarse
+   * surrounding land outside (eased into it over ~420 m, as buildSurround draws it), -Infinity beyond both.
+   * Used for the sight-line check of labels (src/sightline.js).
+   */
+  groundAt(x, y) {
+    const geo = this.geo, zmin = this.resort.grid.zmin;
+    if (x >= 0 && y >= 0 && x <= geo.W && y <= geo.H) return this.surfaceZ(x, y) - zmin;
+    const sr = this.resort.surround, sh = this.surroundH;
+    if (!sr || !sh) return -Infinity;
+    const fx = (x - sr.x0) / sr.cell, fy = (y - sr.y0) / sr.cell;
+    if (fx < 0 || fy < 0 || fx > sr.nx - 1.001 || fy > sr.ny - 1.001) return -Infinity;
+    const i = fx | 0, j = fy | 0, u = fx - i, v = fy - j, o = j * sr.nx + i;
+    const coarse = sr.zmin + (sh[o] * (1 - u) + sh[o + 1] * u) * (1 - v) + (sh[o + sr.nx] * (1 - u) + sh[o + sr.nx + 1] * u) * v;
+    const ex = Math.min(geo.W, Math.max(0, x)), ey = Math.min(geo.H, Math.max(0, y)), w = Math.min(1, Math.hypot(x - ex, y - ey) / 420);
+    return this.surfaceZ(ex, ey) * (1 - w) + coarse * w - zmin;
+  }
+
+  /** Highest ground anywhere on the map (world y): a sight line above it cannot be blocked. */
+  groundTop() {
+    if (this._groundTop != null) return this._groundTop;
+    const h = this.geo.h, sh = this.surroundH, zmin = this.resort.grid.zmin;
+    let m = 0;
+    for (let i = 0; i < h.length; i++) if (h[i] > m) m = h[i];
+    let top = m / 10;
+    if (sh && this.resort.surround) { let s = 0; for (let i = 0; i < sh.length; i++) if (sh[i] > s) s = sh[i]; top = Math.max(top, s + this.resort.surround.zmin - zmin); }
+    return (this._groundTop = top + 2);
   }
 
   // ---------- scene building
@@ -1781,7 +1811,7 @@ vec3 groundColour() {
     if (!still) { this.pickLods(); this.renderer.render(this.scene, this.camera); this.drawnAt = now; this.needsRender = false; }
     // the label layer: when the view or what is on it changed; otherwise every second while friends are shown (their
     // "last seen" times) and every few seconds when not
-    if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > (this.friends.size ? 1000 : 3000)) {
+    if (key !== this.overlayKey || this.overlayDirty || this.labelsPending || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > (this.friends.size ? 1000 : 3000)) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
       this.drawOverlay();
     }
@@ -1813,13 +1843,17 @@ vec3 groundColour() {
       ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,0.92)'; ctx.lineJoin = 'round';
       ctx.strokeText(s, x, y); ctx.fillStyle = fill; ctx.fillText(s, x, y);
     };
-    const label = (s, p, fill, size, weight) => {
+    const label = (s, p, fill, size, weight, a = 1) => {
+      if (a <= 0) return false;
       ctx.font = `${weight || 600} ${size}px "Nunito Sans Variable", -apple-system, system-ui, sans-serif`;
       const tw = ctx.measureText(s).width;
       if (!free(p.x - tw / 2 - 3, p.y - size / 2 - 2, tw + 6, size + 4)) return false;
-      text(s, p.x, p.y, fill, size, weight);
+      ctx.globalAlpha = a; text(s, p.x, p.y, fill, size, weight); ctx.globalAlpha = 1;
       return true;
     };
+    // In 3D a label shows only where its spot can be seen from the camera: not when a ridge is in the way (trees
+    // never hide one). seen(key, v) gives its opacity (0 hidden ... 1 shown); see sightline().
+    const seen = this.sightline(is3);
 
     if (!is3) {
       // north arrow (the 2D map is turned so uphill is up)
@@ -1838,11 +1872,14 @@ vec3 groundColour() {
     for (const d of people) {
       const p = this.project(d.obj.position);
       if (!p) continue;
+      // you and your friends always stay findable: behind a ridge their tag is only drawn fainter
+      const pa = 0.45 + 0.55 * seen(d.obj, d.obj.position, 3, true);
+      ctx.globalAlpha = pa;
       const col = d.stale ? COLORS.closed : d.color;
       // People sharing a chair or cabin: their name tags stacked above it (3D) or under their dots, which sit side by
       // side (2D). A full gondola shows three names and a "+5" tag for the rest; each tag opens that person.
       const car = d.obj.userData.car, ix = car ? d.obj.userData.seatIx || 0 : 0, nIn = car ? car.userData.ids.length : 1;
-      if (nIn > 4 && ix > 3) continue;
+      if (nIn > 4 && ix > 3) { ctx.globalAlpha = 1; continue; }
       const more = nIn > 4 && ix === 3 ? nIn - 3 : 0, cx = p.x;
       let ly, hx = p.x, hy;
       if (is3) { const top = this.project(d.obj.position.clone().add(new THREE.Vector3(0, 2.4 * d.obj.scale.y, 0))); ly = (top ? top.y : p.y) - 9 - ix * 20; hy = ix ? ly : (p.y + ly) / 2; }
@@ -1860,6 +1897,7 @@ vec3 groundColour() {
       ctx.fillStyle = more ? '#3d4b5a' : col; roundRect(ctx, cx - tw / 2, ly - 9, tw, 18, 9); ctx.fill();
       ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(tag, cx, ly + 0.5);
       boxes.push([cx - tw / 2, ly - 9, tw, 18]);
+      ctx.globalAlpha = 1;
       const ev = d.me ? { type: 'me' } : { type: 'friend', id: d.id };
       if (car && nIn > 1) {
         // each tag (and each dot in 2D) opens its person; the carrier itself opens the first one; all of them wave
@@ -1868,11 +1906,14 @@ vec3 groundColour() {
         if (ix === 0) this.hits.push({ x: p.x, y: p.y, r: 30, ev });
       } else this.hits.push({ x: hx, y: hy, r: 30, ev });
     }
+    // the dropped pin and the group's meeting point are places you are heading for: like people, fainter behind a ridge
     const marker = (pt, obj, color, name, ev) => {
       const p = this.project(obj.position);
       if (!p) return;
       if (!is3) { ctx.beginPath(); ctx.arc(p.x, p.y, 8, 0, 7); ctx.fillStyle = color; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = '#fff'; ctx.stroke(); }
+      ctx.globalAlpha = 0.45 + 0.55 * seen(obj, obj.position, 3, true);
       text(name, p.x, p.y + (is3 ? 12 : 18), color, 11, 700);
+      ctx.globalAlpha = 1;
       this.hits.push({ x: p.x, y: p.y - (is3 ? 10 : 0), r: 28, ev });
     };
     if (this.pin) marker(this.pin, this.pinObj, '#d92d20', t('Pin'), { type: 'pin' });
@@ -1889,10 +1930,12 @@ vec3 groundColour() {
       if (st[2] > 1 + near * 1.3 || p.kind === 'lifttop') continue;
       const s = this.project(v);
       if (!s || s.x < -20 || s.x > w + 20 || s.y < 30 || s.y > h) continue;
-      if (!free(s.x - 9, s.y - 9, 18, 18)) continue;
+      const a = seen(p, v);
+      if (a <= 0 || !free(s.x - 9, s.y - 9, 18, 18)) continue;
+      ctx.globalAlpha = a;
       ctx.beginPath(); ctx.arc(s.x, s.y, 8.5, 0, 7); ctx.fillStyle = st[0]; ctx.fill(); ctx.lineWidth = 1.5; ctx.strokeStyle = '#fff'; ctx.stroke();
       ctx.font = '700 10px "Nunito Sans Variable", -apple-system, system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(st[1], s.x, s.y + 0.5);
-      this.hits.push({ x: s.x, y: s.y, r: 20, ev: { type: 'poi', id: p.id } });
+      if (a > 0.5) this.hits.push({ x: s.x, y: s.y, r: 20, ev: { type: 'poi', id: p.id } });
       if (near > 1.6 || st[2] === 0) {
         const name = p.name.replace(' (base)', '');
         const sub = placeTr(name);                        // in the reader's language, under the real name
@@ -1904,14 +1947,15 @@ vec3 groundColour() {
           if (sub) text(`(${sub})`, s.x, s.y + 28, '#3d4b5a', 9.5, 600);
         }
       }
+      ctx.globalAlpha = 1;
     }
     // zone + lift + trail names
-    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label(ZONES[z.kind].sym + ' ' + z.name, s, ZONES[z.kind].ink, 11, 700); }
+    if (near > 1.5) for (const z of this.parkLabels) { const s = this.project(z.p); if (s) label(ZONES[z.kind].sym + ' ' + z.name, s, ZONES[z.kind].ink, 11, 700, seen(z, z.p)); }
     if (near > 1.15) for (const z of this.liftLabels) {
       const s = this.project(z.p);
       if (!s) continue;
-      const shut = this.closed.has('l' + z.l.id), sub = placeTr(z.l.name);
-      if (label(z.l.name + (shut ? ` (${t('closed')})` : ''), s, shut ? '#6b7280' : COLORS.liftInk, 11, 700) && sub) label(`(${sub})`, { x: s.x, y: s.y + 13 }, shut ? '#6b7280' : COLORS.liftInk, 9.5, 600);
+      const shut = this.closed.has('l' + z.l.id), sub = placeTr(z.l.name), a = seen(z, z.p);
+      if (label(z.l.name + (shut ? ` (${t('closed')})` : ''), s, shut ? '#6b7280' : COLORS.liftInk, 11, 700, a) && sub) label(`(${sub})`, { x: s.x, y: s.y + 13 }, shut ? '#6b7280' : COLORS.liftInk, 9.5, 600, a);
     }
     if (near > 1.7) {
       const sym = ['●', '■', '◆', '◆◆'];
@@ -1920,9 +1964,59 @@ vec3 groundColour() {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        label(`${runSym(this.resort, z.t)} ${runName(z.t)}${shut ? ` (${t('closed')})` : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
+        label(`${runSym(this.resort, z.t)} ${runName(z.t)}${shut ? ` (${t('closed')})` : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600, seen(z, z.p));
       }
     }
+    seen.done();
+  }
+
+  /**
+   * The sight-line check for one redraw of the label layer (src/sightline.js). Returns seen(key, v, lift = 0,
+   * always = false): the opacity for the label `key` at world point v (lifted `lift` metres). Each label remembers
+   * whether it was seen and where the camera was then; it is checked again only once the camera has moved enough.
+   * A label never checked is checked at once (up to ~3 ms a redraw; beyond that it waits for the next redraw); labels
+   * due for a fresh check are done after drawing, oldest first, for up to ~1 ms, so on a big map every label still
+   * gets its turn while the view moves. `always` (people, pin, meeting point: few, and they move) checks every time.
+   * seen.done() runs the queued checks; labelsPending asks for another redraw while checks or fades are left.
+   * In 2D (seen from straight above) nothing is hidden.
+   */
+  sightline(is3) {
+    if (!is3) { const all = () => 1; all.done = () => { this.labelsPending = false; }; return all; }
+    const now = performance.now(), dt = Math.min(0.25, (now - (this.labelAt || now)) / 1000);
+    this.labelAt = now;
+    const st = (this.labelSeen ||= new WeakMap()), cp = this.cam3.position, [cx, cy] = this.local(cp.x, cp.z);
+    const cam = { x: cx, y: cy, h: cp.y }, ground = (this.losGround ||= (x, y) => this.groundAt(x, y)), top = this.groundTop();
+    const opts = { top, stopBelow: HIDE_DEPTH + 2 };
+    const later = [], firstEnd = now + 3;
+    let pending = false, n = this.losTurn || 0;
+    const test = (s) => {
+      const [x, y] = this.local(s.v.x, s.v.z), tgt = { x, y, h: s.v.y + s.lift };
+      s.seen = nextSeen(s.seen, clearance(ground, cam, tgt, opts));
+      s.at = cam; s.dist = Math.hypot(cam.x - x, cam.y - y, cam.h - tgt.h); s.n = ++n;
+    };
+    const seen = (key, v, lift = 0, always = false) => {
+      let s = st.get(key);
+      if (!s) {
+        if (performance.now() > firstEnd) { pending = true; return 0; }
+        s = { seen: null, a: 0, v, lift }; st.set(key, s); test(s); s.a = s.seen ? 1 : 0;
+        return s.a;
+      }
+      s.v = v; s.lift = lift;
+      if (always) test(s); else if (stale(s.at, cam, s.dist)) later.push(s);
+      s.a = fade(s.a, s.seen, dt);
+      if (s.a !== (s.seen ? 1 : 0)) pending = true;
+      return s.a;
+    };
+    seen.done = () => {
+      later.sort((a, b) => a.n - b.n);
+      const end = performance.now() + 1;
+      let k = 0;
+      for (; k < later.length && performance.now() < end; k++) { const was = later[k].seen; test(later[k]); if (later[k].seen !== was) pending = true; }
+      if (k < later.length) pending = true;
+      this.losTurn = n;
+      this.labelsPending = pending;
+    };
+    return seen;
   }
 }
 
