@@ -1,0 +1,18 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "(unnamed run 247)": "unnamed cross-country piece (groomed classic) next to the nordic area (2026-11-23)"
+ },
+ "dead_end": {
+  "Lower 40 Gully South": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Lower 40 Gully": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Outer Outer Outer": "ends at a walking path by the road, not at a lift (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {
+  "Sun Bowl -> Big Bend Bowl": "automatic join between two bowl outlines that climbs a little; left for a look (2026-11-23)",
+  "Sun Bowl -> SP Bowl": "automatic join between two bowl outlines that climbs a little; left for a look (2026-11-23)"
+ }
+}

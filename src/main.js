@@ -15,7 +15,7 @@ import { sessions, kv, prefs, persist } from './store.js';
 import { loadWeather, describeCode, hourIndex, skiNotes } from './weather.js';
 import { COMING_SOON } from './resorts.js';
 import { Clouds } from './clouds.js';
-import { dragPanel } from './drag.js';
+import { dragPanel, dragStops } from './drag.js';
 import { parseLook, lookString, CHARACTERS, SKIN, HAIR_COLORS, LENS, HAT_COLORS, PANTS, GEAR, HEADS, HAIRS } from './look.js';
 import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
@@ -362,7 +362,7 @@ async function openStart(from = null) {
   el.classList.remove('focus');
   el.classList.remove('hidden');
   $('#resort-card').classList.add('hidden');
-  $('#start-panel').classList.remove('hidden', 'mini');
+  showStartPanel();
   $('.start-top').classList.remove('hidden');
   $('#f-resort').value = '';
   renderResortList('');
@@ -373,8 +373,8 @@ async function openStart(from = null) {
   // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
   globe.onTap = () => {
     const p = $('#start-panel');
-    if (p.classList.contains('hidden') || p.classList.contains('mini')) return false;
-    setStartMini(true);
+    if (p.classList.contains('hidden') || startState() !== 'normal') return false;
+    goStart('mini');
     return true;
   };
   $('#globe-out').classList.add('hidden');
@@ -387,27 +387,85 @@ async function openStart(from = null) {
 }
 
 /** Size the resting globe to the space between the title and the mountain list. */
-function layoutGlobe(animate = true) {
-  if (!globe) return;
-  const box = $('#start').getBoundingClientRect(), top = $('.start-top').getBoundingClientRect().bottom - box.top + 14;
+function layoutGlobe(animate = true, state = startState()) {
+  if (!globe || state === 'full') return;      // the list covers the whole screen: the globe is hidden
+  const box = $('#start').getBoundingClientRect(), st = $('.start-top'), top = st.offsetTop + st.offsetHeight + 14;
   const p = $('#start-panel');
-  let bottom = box.height;
-  if (!p.classList.contains('hidden')) bottom = box.height - p.offsetHeight + (p.classList.contains('mini') ? miniShift() : 0);
+  const bottom = p.classList.contains('hidden') ? box.height : startGeom().pos[state];
   globe.setFrame(top, bottom - 14, animate);
 }
-/** How far the mountain list slides down when shrunk: only its grab bar and title stay on screen. */
-function miniShift() {
-  const p = $('#start-panel'), h = p.querySelector('h2');
-  return Math.max(0, p.offsetHeight - (h.offsetTop + h.offsetHeight + 16));
-}
-function setStartMini(on) {
+
+// The mountain list rests in one of three places: 'normal', 'full' (pulled up over the whole screen; the globe,
+// title and backdrop fade out and the globe stops drawing) or 'mini' (pulled down: only its bar and title show).
+// It moves between them by dragging its bar, tapping the bar, tapping the globe or starting a search.
+const START_PAD = 22;                            // space above the grab bar and title in the normal place
+let startTok = 0;
+function startState() {
   const p = $('#start-panel');
-  if (p.classList.contains('mini') === on) return;
-  p.style.setProperty('--mini', miniShift() + 'px');
-  p.classList.toggle('mini', on);
-  if (on) $('#f-resort').blur();
-  layoutGlobe(true);
+  return p.classList.contains('full') ? 'full' : p.classList.contains('mini') ? 'mini' : 'normal';
 }
+/** The list's sizes, measured as it would sit in its normal place, and the top of the panel in each place. */
+function startGeom() {
+  const p = $('#start-panel'), H = $('#start').clientHeight;
+  const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full') };
+  p.style.removeProperty('--padt');
+  p.classList.add('full');
+  const sat = Math.max(0, parseFloat(getComputedStyle(p).paddingTop) - START_PAD) || 0;   // the notch
+  p.classList.remove('full');
+  p.style.height = ''; p.style.maxHeight = '';
+  const h = p.offsetHeight, hd = p.querySelector('h2');
+  const mini = Math.max(0, h - (hd.offsetTop + hd.offsetHeight + 16));
+  p.classList.toggle('full', keep.full);
+  p.style.height = keep.h; p.style.maxHeight = keep.mh;
+  if (keep.pt) p.style.setProperty('--padt', keep.pt);
+  return { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
+}
+/** Put the top of the list at p (px from the top of the screen): above its normal place it grows, below it slides down. */
+function placeStart(g, p) {
+  const el = $('#start-panel');
+  el.style.maxHeight = 'none';
+  if (p >= g.pos.normal) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
+  else { el.style.height = Math.round(g.H - Math.max(p, -40)) + 'px'; el.style.transform = 'translateY(0px)'; }
+  // near the top the title moves down out of the notch, and the rounded corners square off
+  el.style.setProperty('--padt', START_PAD + Math.max(0, g.sat - Math.max(0, p)) + 'px');
+  const r = Math.max(0, Math.min(26, p / 2));
+  el.style.borderRadius = `${r}px ${r}px 0 0`;
+}
+function clearStartPlace() {
+  const el = $('#start-panel');
+  for (const k of ['height', 'max-height', 'transform', 'border-radius', '--padt']) el.style.removeProperty(k);
+}
+/** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now. */
+function goStart(state, from = null, g = startGeom()) {
+  const el = $('#start-panel'), start = $('#start'), prev = startState(), tok = ++startTok;
+  if (from == null) {
+    if (prev === state) return;
+    el.classList.add('dragging'); placeStart(g, g.pos[prev]); void el.offsetHeight; el.classList.remove('dragging');
+  }
+  if (state === 'mini') el.style.setProperty('--mini', g.mini + 'px');
+  el.classList.toggle('full', state === 'full');
+  el.classList.toggle('mini', state === 'mini');
+  start.classList.toggle('full', state === 'full');
+  if (state !== 'full') globe?.setPaused(false);
+  if (state !== prev && (state === 'mini' || prev === 'full')) $('#f-resort').blur();
+  placeStart(g, g.pos[state]);
+  if (state !== 'full') layoutGlobe(true, state);
+  setTimeout(() => {
+    if (tok !== startTok) return;
+    clearStartPlace();
+    if (state === 'full') globe?.setPaused(true);   // faded out by now: stop drawing it
+  }, 380);
+}
+/** Back to the normal place at once (when the list is hidden for a mountain's card, or shown again). */
+function resetStartPanel() {
+  startTok++;
+  clearStartPlace();
+  $('#start-panel').classList.remove('mini', 'full', 'dragging');
+  $('#start').classList.remove('full');
+  globe?.setPaused(false);
+}
+function hideStartPanel() { resetStartPanel(); $('#start-panel').classList.add('hidden'); }
+function showStartPanel() { resetStartPanel(); $('#start-panel').classList.remove('hidden'); }
 
 function renderResortList(q) {
   q = (q ?? $('#f-resort').value).trim().toLowerCase();
@@ -451,7 +509,7 @@ async function renderDayList(q) {
 async function openDay(rid, sid) {
   const r = placeById(rid);
   if (!r?.available || !globe) { toast('That mountain\'s map is not available.'); return; }
-  $('#start-panel').classList.add('hidden');
+  hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
   card.innerHTML = `<p class="soon" style="text-align:center;margin:10px 0 14px">Opening your day at <b>${esc(r.name)}</b>…</p>`;
@@ -511,7 +569,7 @@ async function pickResort(id) {
   const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
-  $('#start-panel').classList.add('hidden');
+  hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
   card.innerHTML = resortCard(r);
@@ -605,7 +663,7 @@ async function startJoinGo(btn) {
 
 /** From the globe: fly to the group's mountain and join it there. */
 async function travelToGroup(code, r) {
-  $('#start-panel').classList.add('hidden');
+  hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
   card.innerHTML = `<p class="soon" style="text-align:center;margin:10px 0 14px">Joining group <b>${code}</b> at <b>${esc(r.name)}</b>…</p>`;
@@ -664,7 +722,7 @@ async function exitToGlobe() {
     await globe.rise(1.8);
     $('.start-top').classList.remove('hidden');
     $('#start').classList.remove('fade');
-    $('#start-panel').classList.remove('hidden', 'mini');
+    showStartPanel();
     layoutGlobe(true);                          // the list may have changed height while hidden (saved days load late)
   } catch (e) {
     // no globe available (e.g. first run offline): stay on the mountain
@@ -818,8 +876,18 @@ function closeDoc() { $('#docview')?.classList.add('hidden'); }
 window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data === 'skiwithme:close-doc') closeDoc(); });
 // Pull panels down by their grab bar: the mountain list shrinks (the globe grows into the space),
 // every other panel closes.
-dragPanel($('#start-panel'), { zone: 70, offset: () => ($('#start-panel').classList.contains('mini') ? miniShift() : 0),
-  onDown: () => setStartMini(true), onUp: () => setStartMini(false), onTap: () => { if (!$('#start-panel').classList.contains('mini')) return false; setStartMini(false); return true; } });
+// The mountain list: drag its bar up to fill the screen, down to shrink it to its title; a tap on the bar goes
+// up one step from shrunk or normal, and back to normal from the whole screen.
+dragStops($('#start-panel'), {
+  zone: () => { const h = $('#start-panel .start-head'); return h.offsetTop + h.offsetHeight + 4; },
+  stops: () => startGeom().pos,
+  current: startState,
+  move: (p, stops) => placeStart({ ...startGeom(), pos: stops }, p),
+  settle: (state, p) => goStart(state, p),
+  onTap: () => { const now = startState(); goStart(now === 'mini' ? 'normal' : now === 'normal' ? 'full' : 'normal'); return true; },
+});
+// starting a search: give the list the whole screen, so more results show above the keyboard
+$('#f-resort').addEventListener('focus', () => { if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full'); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);

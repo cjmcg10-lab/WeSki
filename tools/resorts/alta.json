@@ -11,5 +11,119 @@
   40.5498,
   -111.5866,
   40.6096
+ ],
+ "links": [
+  [
+   "trail:EBT to Collins",
+   "trail:Baldy Chutes",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:Mount Baldy",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:Main Chute",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:Little Chute",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:Chamonix Chutes",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:Livin' the Dream",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:High Ridge 3",
+   "hike"
+  ],
+  [
+   "trail:EBT to Collins",
+   "trail:High Baldy Traverse",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "trail:EBT to Collins -> trail:Baldy Chutes (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:Mount Baldy (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:Main Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:Little Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:Chamonix Chutes (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:Livin' the Dream (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:High Ridge 3 (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)",
+  "trail:EBT to Collins -> trail:High Baldy Traverse (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse (EBT to Collins) to its top (the hike)"
+ },
+ "rename": {
+  "180° Bend": "180 Bend",
+  "Nina's Curve": "Nina's",
+  "Patsy Marley": "Patsey Marley",
+  "Pine Glade": "Piney Glade",
+  "East Baldy Traverse": "EBT to Collins"
+ },
+ "extra_trails": [
+  {
+   "name": "Christmas Tree",
+   "pts": [
+    [-111.6337, 40.58253],
+    [-111.635, 40.5829],
+    [-111.6363, 40.58325]
+   ],
+   "why": "Alta trail map (skimap.org 36318): short run starting below the West Rustler label and running beside Stone Crusher, between Jitterbug and Stone Crusher in the map's order; drawn midway between those two mapped runs (about 30 m from each). Approximate (about 50 m)"
+  },
+  {
+   "name": "Fred's Slot",
+   "pts": [
+    [-111.63337, 40.57361],
+    [-111.63348, 40.57377],
+    [-111.63358, 40.57393],
+    [-111.63369, 40.57409],
+    [-111.6338, 40.57425],
+    [-111.6339, 40.57441],
+    [-111.63401, 40.57457],
+    [-111.63412, 40.57473],
+    [-111.63425, 40.57489],
+    [-111.63438, 40.57503],
+    [-111.63452, 40.57518],
+    [-111.63465, 40.57533],
+    [-111.63477, 40.57549],
+    [-111.63488, 40.57565],
+    [-111.63498, 40.57581],
+    [-111.63509, 40.57597],
+    [-111.63519, 40.57613],
+    [-111.63526, 40.5763],
+    [-111.63529, 40.57648],
+    [-111.6353, 40.57666],
+    [-111.63536, 40.57683],
+    [-111.63543, 40.57701],
+    [-111.63547, 40.57718],
+    [-111.6355, 40.57736],
+    [-111.63553, 40.57754],
+    [-111.63554, 40.57772],
+    [-111.63559, 40.5779],
+    [-111.63564, 40.57807],
+    [-111.63569, 40.57825],
+    [-111.63572, 40.57843],
+    [-111.63572, 40.57861],
+    [-111.63576, 40.57878],
+    [-111.63584, 40.57895],
+    [-111.63595, 40.57911],
+    [-111.63605, 40.57928],
+    [-111.63616, 40.57944],
+    [-111.6362, 40.5795]
+   ],
+   "why": "Alta trail map (skimap.org 36318): from Mambo down between the Collins lift side and Spring Valley, parallel to Spring Valley; placed by that order and the map's length, then moved onto the open strip in the 1 m canopy height map (Meta/WRI) not taken by another run: tree cover 4% (17% before), moved 18 m on average. Approximate (about 60 m)",
+   "fitted": "terrain: never climbs, moved 4 m on average"
+  }
  ]
 }

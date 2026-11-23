@@ -171,5 +171,16 @@
  "lifts_explained": {
   "Learn to Carpet": "beginner carpet; probably the map's Learn To Snowboard Carpet or a Snowplay carpet (names differ)",
   "Progression Carpet I": "beginner carpet; probably one of the map's Snowplay carpets (names differ)"
+ },
+ "hide": {
+  "Hawkeye": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Nor'easter": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Nor'easter - Lower": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Thunderball": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Old Sundog": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Old Sunrise Trail": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Old Gold Dust": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Gold Dust - Upper": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list",
+  "Gold Dust - Lower": "mapped in OpenStreetMap in 2026 as a freeride line (an old, closed or lost trail); not on Killington's 2025-26 trail map or trail list"
  }
 }

@@ -22,5 +22,19 @@
   "Headwall Forrest": "Headwall Forest",
   "Postcard": "Post Card",
   "Wood Lawn": "Woodlawn"
+ },
+ "links": [
+  [
+   "trail:Honeycomb Chutes (bottom)",
+   "trail:Voltaire"
+  ],
+  [
+   "trail:Main Street (bottom)",
+   "trail:Easy Street"
+  ]
+ ],
+ "links_notes": {
+  "trail:Honeycomb Chutes (bottom) -> trail:Voltaire": "2026-11-23: run stops short; terrain falls straight to Voltaire in Honeycomb Canyon (40-79 m, no climb)",
+  "trail:Main Street (bottom) -> trail:Easy Street": "2026-11-23: the run stops short; the terrain falls from its end to Easy Street (14 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

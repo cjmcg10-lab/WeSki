@@ -11,5 +11,19 @@
   43.5707,
   -110.8067,
   43.6232
- ]
+ ],
+ "links": [
+  [
+   "trail:Expert Chutes (bottom)",
+   "trail:Paint Brush"
+  ],
+  [
+   "trail:Expert Chutes (bottom)",
+   "trail:Horn's Hole Traverse"
+  ]
+ ],
+ "links_notes": {
+  "trail:Expert Chutes (bottom) -> trail:Paint Brush": "2026-11-23: the run stops short; the terrain falls from its end to Paint Brush (73 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Expert Chutes (bottom) -> trail:Horn's Hole Traverse": "2026-11-23: the run stops short; the terrain falls from its end to Horn's Hole Traverse (14 m, 0 m of climb) (tools/check_connections.py dead end)"
+ }
 }

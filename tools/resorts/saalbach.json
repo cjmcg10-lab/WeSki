@@ -8,7 +8,8 @@
  "poi_range": 120,
  "area_name": "Skicircus Saalbach-Hinterglemm Leogang Fieberbrunn",
  "isolated_lifts": [
-  "Babylift Viehhofen"
+  "Babylift Viehhofen",
+  "Schanteilift"
  ],
  "dem": {
   "source": "cog",
@@ -17,5 +18,6 @@
    "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2700000E4500000.tif",
    "https://data.bev.gv.at/download/ALS/DTM/20230915/ALS_DTM_CRS3035RES50000mN2650000E4500000.tif"
   ]
- }
+ },
+ "isolated_lifts_note": "2026-11-23: Schanteilift is new in OpenStreetMap: a short village lift (75 m rise) whose unnamed runs join nothing else on the ground."
 }

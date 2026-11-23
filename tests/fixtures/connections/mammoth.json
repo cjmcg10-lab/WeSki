@@ -1,0 +1,16 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "St. Anton": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)",
+  "Andy's Double Gold": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)",
+  "Blue Ox": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)",
+  "Terry's Run": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)",
+  "Fascination": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)",
+  "Agee's Run": "St. Anton area pieces that need a climb back of more than 25 m by this checker's count, though they join St. Anton on the map; left for a look (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

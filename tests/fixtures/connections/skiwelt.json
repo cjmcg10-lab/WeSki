@@ -1,0 +1,12 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Skiroute Schrandl": "ski route to the valley (Schrandl, Tanzer) that ends at a walking path or road, not at a lift (2026-11-23)",
+  "Tanzer Abfahrt": "ski route to the valley (Schrandl, Tanzer) that ends at a walking path or road, not at a lift (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

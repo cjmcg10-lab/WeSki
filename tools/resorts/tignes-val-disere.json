@@ -431,5 +431,16 @@
    "len": 3886,
    "why": "terrain: the drawn line climbs 24 m"
   }
- }
+ },
+ "area_name": "Tignes - Val d'Isère",
+ "osm_bbox": [
+  6.8546,
+  45.3994,
+  7.0791,
+  45.5128
+ ],
+ "dem": {
+  "source": "ign"
+ },
+ "area_note": "2026-11-23: area_name and osm_bbox added (the built map's extent). Without them the whole-resort search followed joined ground into Les Arcs and Courchevel and kept widening the download."
 }
