@@ -216,61 +216,116 @@ export function animateAvatar(g, t, dt, moving) {
 }
 
 /**
- * Someone riding a lift: their own chair with them sitting on it (or, on a gondola or tram,
- * a cabin in their colour). The origin is at seat height so it can be scaled like an avatar.
- * kind: 'chair' | 'cabin'
+ * How a rider's carrier fits on the map. hang: from the model's origin up to the cable (model units, before scaling);
+ * s0: the scale the map draws that lift's own carriers at (chairs and cabins 1.6, trams 1.5, trains and surface lifts
+ * 1), so up close a rider's carrier is exactly the size of the ones around it; smax: the most it grows when zoomed
+ * out (it grows with distance so riders stay easy to find, like people on the snow).
  */
-export function makeRide(kind, avatar, color) {
-  const g = new THREE.Group();
-  const glass = new THREE.MeshLambertMaterial({ color: 0x9fc4e0, transparent: true, opacity: 0.28, depthWrite: false });
+export const RIDE_FIT = {
+  chair: { hang: 3.4, s0: 1.6, smax: 25 },
+  cabin: { hang: 3.4, s0: 1.6, smax: 25 },
+  tram: { hang: 6.275, s0: 1.5, smax: 6 },
+  train: { hang: 0, s0: 1, smax: 2 },
+  funicular: { hang: 0, s0: 1, smax: 2 },
+  tow: { hang: 0, s0: 1, smax: 25 },
+};
+export const rideFit = (kind) => RIDE_FIT[kind?.startsWith('tow-') ? 'tow' : kind] || RIDE_FIT.tow;
+
+// shared, never disposed: the plain carrier shapes (only the colour pieces differ from rider to rider)
+const shared = new Map();
+const keep = (key, make) => { let g = shared.get(key); if (!g) { g = make(); g.userData.shared = true; shared.set(key, g); } return g; };
+const glassMat = () => new THREE.MeshLambertMaterial({ color: 0x9fc4e0, transparent: true, opacity: 0.3, depthWrite: false, side: THREE.DoubleSide });
+
+/**
+ * Someone riding a lift, or several group members sharing one carrier: the same detailed chair, gondola cabin, tram
+ * cabin, T-bar, platter or train the map draws for that lift, with the riders in it. The origin is at seat height
+ * (chairs and cabins), on the cabin floor (trams), on the rails (trains) or on the snow (surface lifts), so it can be
+ * scaled like an avatar.
+ * kind: 'chair' | 'cabin' | 'tram' | 'train' | 'funicular' | 'tow-tbar' | 'tow-platter' | 'tow-rope'
+ * riders: [{ avatar, color }] (one or more; the ones beyond the seats drawn ride along unseen)
+ * o: { seats, bubble, down } for chairs. userData.avs: the riders' figures, in the order given (for waving).
+ */
+export function makeRide(kind, riders, o = {}) {
+  if (!Array.isArray(riders)) riders = [{ avatar: riders, color: o }], o = {};   // old form: (kind, avatar, color)
+  const g = new THREE.Group(), cols = riders.map((r) => r.color), avs = [];
+  const add = (geo, mat, y = 0) => { const m = new THREE.Mesh(geo, mat); m.position.y = y; g.add(m); return m; };
+  const fit = rideFit(kind);
   if (kind === 'cabin') {
-    // a gondola cabin in their colour with glass all round; they sit on the bench inside
-    const c = new THREE.Color(color), geo = mergeGeometries([
-      part(box(0.14, 1.5, 0.14), 0x3a3f4a, 0, 3.0, 0),
-      part(box(2.0, 0.2, 2.3), 0xe9edf2, 0, 2.1, 0),
-      ...[[-0.97, -1.12], [0.97, -1.12], [-0.97, 1.12], [0.97, 1.12]].map(([x, z]) => part(box(0.08, 1.0, 0.08), 0xe9edf2, x, 1.5, z)),
-      part(box(2.0, 0.95, 2.3), c, 0, 0.55, 0),
-      part(box(1.6, 0.2, 1.9), 0x2a2f38, 0, 0, 0),
-      part(box(0.55, 0.12, 1.9), 0x3a3f4a, -0.62, 0.62, 0),       // bench along one side
-    ]);
-    g.add(new THREE.Mesh(geo, vcMat()), new THREE.Mesh(box(1.96, 0.98, 2.26).translate(0, 1.5, 0), glass));
-    g.userData = { ride: kind, av: seat(g, avatar, color, -0.72, 0.68 - SEAT_Y, 0, Math.PI / 2, true) };
-    return g;
+    // a gondola cabin: the body in the rider's colour (panels in each rider's colour when shared), see-through glass,
+    // riders on the two benches facing each other: the back one (facing forward) fills first
+    add(gondolaGeometry(cols.length > 1 ? cols : cols[0], { open: true }), vcMat(), fit.hang);
+    add(keep('cabinGlass', () => cabinGlass('cabin')), glassMat(), fit.hang);
+    riders.slice(0, 8).forEach((r, i) => {
+      const back = i < 4, row = back ? Math.min(4, riders.length) : Math.min(4, riders.length - 4), k = back ? i : i - 4;
+      const x = (k - (row - 1) / 2) * 0.44;
+      avs.push(seat(g, r.avatar, r.color, back ? x : -x, 0.07 - SEAT_Y, back ? -0.8 : 0.8, back ? 0 : Math.PI, true));
+    });
+  } else if (kind === 'tram') {
+    // the tram cabin, riders standing inside in rows across it
+    add(tramGeometry(cols.length > 1 ? cols : cols[0], { open: true }), vcMat(), fit.hang);
+    add(keep('tramGlass', () => cabinGlass('tram')), glassMat(), fit.hang);
+    riders.slice(0, 18).forEach((r, i) => avs.push(stand(g, r.avatar, r.color, ((i % 3) - 1) * 0.85, 0, 2.2 - Math.floor(i / 3) * 0.9)));
+  } else if (kind === 'train' || kind === 'funicular') {
+    // the same train or funicular car the map runs on that line, its sides panelled in the riders' colours
+    add(trainGeometry(kind, { colors: cols, open: true }), vcMat());
+    add(keep('rail' + kind, () => railGlass(kind)), glassMat());
+    riders.slice(0, 18).forEach((r, i) => avs.push(stand(g, r.avatar, r.color, ((i % 3) - 1) * 0.75, 0.7, 4.5 - Math.floor(i / 3) * 1.6)));
+  } else if (kind.startsWith('tow-')) {
+    // standing on the snow, towed: the lift's own T-bar (its pads in the riders' colours) or platter behind the hips,
+    // its stem leaning forward up to the cable; on a rope tow the hands hold the rope itself
+    const style = kind.slice(4), two = style === 'tbar' && riders.length > 1;
+    const xs = two ? [-0.32, 0.32] : [style === 'tbar' ? -0.32 : 0];
+    riders.slice(0, xs.length).forEach((r, i) => {
+      const av = makeAvatar(r.avatar, r.color);
+      av.userData.rig = null; av.position.x = xs[i];
+      g.add(av); avs.push(av);
+    });
+    if (style === 'rope') add(part(box(0.06, 0.06, 3.2), 0x8a6b3d, 0.35, 1.05, 0.6), vcMat());
+    else {
+      const geo = style === 'platter' ? platterGeometry(cols[0]) : tbarGeometry(two ? cols : [cols[0], 0x3b6ea8]);
+      // pivot about the bar (T or disc) and lean the stem forward, as the map's own hangers do while pulling
+      const bar = style === 'platter' ? 2.65 : 2.8;
+      const m = add(geo.translate(0, bar, 0), vcMat());
+      m.rotation.x = 0.38; m.position.set(0, 0.92, -0.16);
+    }
+  } else {
+    // chairlift: the lift's own chair (its seat count and weather bubble), riders side by side in the middle seats,
+    // the seat back behind each one padded in their colour
+    const n = Math.max(1, o.seats || 2), w = 0.55 * Math.max(2, n) + 0.2, k = Math.min(n, riders.length), first = Math.floor((n - k) / 2);
+    add(keep(`chair${n}${o.bubble ? 'b' : ''}`, () => chairGeometry(n, !!o.bubble)), vcMat(), fit.hang);
+    const pads = [];
+    riders.slice(0, k).forEach((r, i) => {
+      const x = n === 1 ? 0 : -w / 2 + 0.1 + 0.55 * (first + i + 0.5);
+      pads.push(part(box(0.46, 0.56, 0.04), r.color, x, -2.98 + fit.hang, -0.2, -0.12));
+      avs.push(seat(g, r.avatar, r.color, x, 0.07 - SEAT_Y, 0.08, 0));
+    });
+    if (pads.length) add(mergeGeometries(pads), vcMat());
+    if (o.bubble) {
+      // lowered over the riders going up, raised behind them coming down (as on the map's chairs)
+      const bub = add(keep(`bubble${n}`, () => bubbleGeometry(n)), new THREE.MeshLambertMaterial({ color: 0xe58a3a, transparent: true, opacity: 0.32, depthWrite: false, side: THREE.DoubleSide }), fit.hang);
+      if (o.down) { const [, by, bz] = BUBBLE_PIVOT; bub.geometry = bub.geometry.clone(); bub.geometry.userData = {}; bub.geometry.translate(0, -by, -bz).rotateX(-1.9).translate(0, by, bz); }
+    }
   }
-  if (kind === 'train' || kind === 'funicular') {
-    // a single rail car in the rider's colour, windows all round, a seat by the window
-    const c = new THREE.Color(color), geo = mergeGeometries([
-      part(box(1.9, 0.35, 4.6), 0x2a2f38, 0, 0.25, 0),
-      part(box(2.1, 1.0, 4.8), c, 0, 0.95, 0),
-      ...[-2.35, -0.8, 0.8, 2.35].flatMap((z) => [part(box(0.08, 0.8, 0.12), c, -1.02, 1.85, z), part(box(0.08, 0.8, 0.12), c, 1.02, 1.85, z)]),
-      part(box(2.2, 0.22, 5.0), 0xe9edf2, 0, 2.3, 0),
-      part(box(0.9, 0.12, 0.6), 0x3a3f4a, 0.45, 0.95, 0),          // seat
-    ]);
-    g.add(new THREE.Mesh(geo, vcMat()), new THREE.Mesh(box(2.06, 0.8, 4.76).translate(0, 1.85, 0), glass));
-    g.userData = { ride: kind, av: seat(g, avatar, color, 0.45, 1.01 - SEAT_Y, -0.1, 0, true) };
-    return g;
-  }
-  if (kind.startsWith('tow-')) {
-    // standing on the snow, towed: a T-bar or platter pole runs from behind the hips up to the
-    // cable; on a rope tow the hands hold the rope itself
-    const av = makeAvatar(avatar, color);
-    av.userData.rig = null;
-    g.add(av);
-    const style = kind.slice(4);
-    if (style === 'rope') g.add(new THREE.Mesh(part(box(0.06, 0.06, 3.2), 0x8a6b3d, 0.35, 1.05, 0.6), vcMat()));
-    else g.add(new THREE.Mesh(mergeGeometries([
-      part(box(0.07, 3.2, 0.07), 0x3a3f4a, 0, 2.3, -0.75, -0.45),
-      part(style === 'platter' ? new THREE.CylinderGeometry(0.22, 0.22, 0.06, 10) : box(0.9, 0.1, 0.1), 0xd8dde6, 0, 0.9, -0.1, style === 'platter' ? Math.PI / 2 : 0),
-    ]), vcMat()));
-    g.userData = { ride: kind, av };
-    return g;
-  }
-  // chairlift: sitting on the seat, back against the backrest, skis or board hanging in front
-  const chair = new THREE.Mesh(chairGeometry(2), vcMat());
-  chair.position.y = 3.4;                       // seat surface at y = 0.07, hanger rising above
-  g.add(chair);
-  g.userData = { ride: kind, av: seat(g, avatar, color, 0, 0.07 - SEAT_Y, 0.08, 0), seated: true };
+  g.userData = { ride: kind, avs, av: avs[0], seated: kind === 'chair', s0: fit.s0, smax: fit.smax };
   return g;
+}
+
+/** Free a rider's carrier or a person (geometry and materials), but never the shared carrier shapes. */
+export function disposeModel(obj) {
+  obj.traverse((m) => {
+    if (!m.isMesh) return;
+    if (!m.geometry.userData.shared) m.geometry.dispose();
+    m.material.dispose?.();
+  });
+}
+
+function stand(g, avatar, color, x, y, z) {
+  const av = makeAvatar(avatar, color);
+  av.children[0].children[0].visible = false;               // skis and boards ride outside, in the racks
+  av.userData.rig = null;
+  av.position.set(x, y, z);
+  g.add(av);
+  return av;
 }
 
 // how high above the boot soles a sitting rider's seat is (the underside of the thighs)
@@ -384,24 +439,51 @@ export function bubbleGeometry(seats) {
   return g;
 }
 
-/** Gondola cabin: rounded body, glass all round with white pillars, roof cap, grip carriage, ski racks. */
-export function gondolaGeometry(color = 0xd32f2f) {
+/** Gondola cabin: rounded body, glass all round with white pillars, roof cap, grip carriage, ski racks.
+ * color: one colour, or a list (riders sharing a cabin: the body's eight panels take their colours in turn).
+ * o.open: leave out the dark window band (a rider's cabin draws see-through glass there instead, cabinGlass) and
+ * put in the two benches. */
+export function gondolaGeometry(color = 0xd32f2f, o = {}) {
+  const cols = Array.isArray(color) ? color : [color];
+  const body = oct(2.0, 0.85, 2.3, cols[0], 0, -3.28, 0);                    // lower body
+  if (cols.length > 1) panels(body, cols);
   const p = [
     part(box(0.34, 0.36, 1.0), DARK, 0, 0.05, 0),               // grip carriage
     part(box(0.5, 0.12, 0.55), STEEL, 0, 0.3, 0),
     part(box(0.13, 1.25, 0.13), STEEL, 0, -0.7, 0),             // hanger
     part(box(0.9, 0.12, 0.45), STEEL, 0, -1.35, 0),
     oct(2.0, 0.3, 2.3, WHITE, 0, -1.56, 0, 0.8),                // roof
-    oct(1.92, 1.05, 2.22, GLASS, 0, -2.24, 0),                  // windows
+    ...(o.open ? [] : [oct(1.92, 1.05, 2.22, GLASS, 0, -2.24, 0)]),   // windows
     oct(2.02, 0.12, 2.32, WHITE, 0, -2.8, 0),                   // white belt line
-    oct(2.0, 0.85, 2.3, color, 0, -3.28, 0),                    // lower body
+    body,
     oct(1.7, 0.18, 1.98, 0x2a2f38, 0, -3.78, 0),                // floor
     part(box(0.04, 1.85, 0.05), 0x1d2530, 0, -2.75, 1.16),      // door seam
   ];
   const px = 0.3536 * 2.0, pz = 0.3536 * 2.3;                   // the middle of each cut corner
   for (const x of [-px, px]) for (const z of [-pz, pz]) p.push(part(box(0.1, 1.05, 0.1), WHITE, x, -2.24, z));
   for (const x of [-1.06, 1.06]) p.push(part(box(0.1, 0.55, 1.3), 0x1d2530, x, -3.1, 0));   // ski racks
+  if (o.open) for (const z of [-0.8, 0.8]) p.push(part(box(1.6, 0.1, 0.42), STEEL, 0, -3.38, z));   // benches facing each other
   return mergeGeometries(p);
+}
+
+/** Recolour an octagonal body (from oct) panel by panel: the eight sides take the colours in turn, and so do the
+ * matching slices of its top and bottom. A cabin shared by several riders shows each of them. */
+function panels(g, cols) {
+  const pos = g.attributes.position, col = g.attributes.color, c = new THREE.Color();
+  for (let i = 0; i < pos.count; i += 3) {
+    let x = 0, z = 0;
+    for (let k = 0; k < 3; k++) { x += pos.getX(i + k); z += pos.getZ(i + k); }
+    const f = ((Math.round(Math.atan2(x, z) / (Math.PI / 4)) % 8) + 8) % 8;
+    c.set(cols[f % cols.length]);
+    for (let k = 0; k < 3; k++) col.setXYZ(i + k, c.r, c.g, c.b);
+  }
+}
+
+/** The see-through window band of a rider's gondola or tram cabin (no colours: drawn with its own glass material). */
+export function cabinGlass(kind) {
+  const k = 2 * Math.cos(Math.PI / 8);
+  if (kind === 'tram') return cyl(1, 1, 1.35, 8).rotateY(Math.PI / 8).scale(3.1 / k, 1, 6.5 / k).translate(0, -4.2, 0);
+  return cyl(1, 1, 1.05, 8).rotateY(Math.PI / 8).scale(1.92 / k, 1, 2.22 / k).translate(0, -2.24, 0);
 }
 
 export function gondolaFarGeometry(color = 0xd32f2f) {
@@ -413,41 +495,54 @@ export function gondolaFarGeometry(color = 0xd32f2f) {
 }
 
 /** Aerial tram cabin: running carriage with wheels on the track ropes, two-legged hanger, a big rounded
- * cabin with a band of windows. Long axis along Z. */
-export function tramGeometry(color) {
+ * cabin with a band of windows. Long axis along Z. color: one colour, or a list (riders sharing the cabin: a row
+ * of panels in their colours along each side). o.open: no dark window band (see cabinGlass). */
+export function tramGeometry(color, o = {}) {
+  const cols = Array.isArray(color) ? color : [color];
   const frame = 0x444a55, p = [
     part(box(1.0, 0.7, 5.2), frame, 0, -0.1, 0),
     beam([0, -0.4, -1.8], [0, -3.0, -0.9], 0.35, frame),
     beam([0, -0.4, 1.8], [0, -3.0, 0.9], 0.35, frame),
     part(box(1.4, 0.3, 2.4), frame, 0, -3.05, 0),
     oct(3.2, 0.35, 6.6, WHITE, 0, -3.35, 0, 0.86),
-    oct(3.1, 1.35, 6.5, GLASS, 0, -4.2, 0),
+    ...(o.open ? [] : [oct(3.1, 1.35, 6.5, GLASS, 0, -4.2, 0)]),
     oct(3.22, 0.14, 6.62, WHITE, 0, -4.93, 0),
-    oct(3.2, 1.3, 6.6, color, 0, -5.65, 0),
+    oct(3.2, 1.3, 6.6, cols.length > 1 ? 0x4a5260 : cols[0], 0, -5.65, 0),   // shared: a dark body under the riders' panels
     oct(2.8, 0.35, 6.0, 0x2a2f38, 0, -6.45, 0),
   ];
   for (const z of [-2.0, -0.65, 0.65, 2.0]) for (const x of [-0.56, 0.56]) p.push(part(cyl(0.36, 0.36, 0.16, 7), 0x2a2f38, x, 0.18, z, 0, 0, Math.PI / 2));
   for (const z of [-2.15, -1.05, 0, 1.05, 2.15]) p.push(part(box(3.16, 1.35, 0.08), WHITE, 0, -4.2, z));   // window pillars
+  if (cols.length > 1) p.push(...sidePanels(cols, 3.22, 5.0, 1.0, -5.65));
   return mergeGeometries(p);
 }
 
+/** A row of coloured panels along both long sides of a car (width w, panels over `len`, `h` tall, centred at y). */
+function sidePanels(cols, w, len, h, y, z0 = 0) {
+  const p = [], n = cols.length, step = len / n;
+  for (let i = 0; i < n; i++) {
+    const z = z0 - len / 2 + step * (i + 0.5);
+    for (const x of [-w / 2, w / 2]) p.push(part(box(0.06, h, Math.max(0.1, step - 0.12)), cols[i], x, y, z));
+  }
+  return p;
+}
+
 /** T-bar: spring box under the cable, the stem, the T with its two pads. */
-export function tbarGeometry() {
+export function tbarGeometry(pads = [0x3b6ea8, 0x3b6ea8]) {
   return mergeGeometries([
     part(cyl(0.15, 0.15, 0.8, 6), 0x2f3540, 0, -0.45, 0),
     part(box(0.06, 1.95, 0.06), STEEL, 0, -1.83, 0),
     part(box(1.0, 0.09, 0.09), LIGHT, 0, -2.8, 0),
-    part(box(0.3, 0.1, 0.15), 0x3b6ea8, -0.32, -2.87, 0),
-    part(box(0.3, 0.1, 0.15), 0x3b6ea8, 0.32, -2.87, 0),
+    part(box(0.3, 0.1, 0.15), pads[0], -0.32, -2.87, 0),
+    part(box(0.3, 0.1, 0.15), pads[1] ?? pads[0], 0.32, -2.87, 0),
   ]);
 }
 
 /** Platter (button) lift hanger: spring box, a single pole with a disc. */
-export function platterGeometry() {
+export function platterGeometry(disc = 0x3b6ea8) {
   return mergeGeometries([
     part(cyl(0.13, 0.13, 0.7, 6), 0x2f3540, 0, -0.4, 0),
     part(box(0.06, 1.85, 0.06), STEEL, 0, -1.7, 0),
-    part(cyl(0.22, 0.22, 0.07, 10), 0x3b6ea8, 0, -2.65, 0, Math.PI / 2),
+    part(cyl(0.22, 0.22, 0.07, 10), disc, 0, -2.65, 0, Math.PI / 2),
   ]);
 }
 
@@ -480,21 +575,30 @@ export function beltGeometry(pts) {
   return p.length ? mergeGeometries(p) : null;
 }
 
-/** A mountain train (two cars) or a funicular car; origin on the rails at its middle, facing +z. */
-export function trainGeometry(kind) {
+/** A mountain train (two cars) or a funicular car; origin on the rails at its middle, facing +z.
+ * o.colors: riders sharing it (a row of panels in their colours along each side); o.open: no dark windows, the
+ * see-through ones are drawn separately (railGlass), so riders inside show. */
+export function trainGeometry(kind, o = {}) {
   const car = (z, len, body, roofKit) => {
     const p = [
       part(box(2.2, 0.5, len - 1), 0x2a2f38, 0, 0.45, z),
       part(box(2.7, 1.3, len), body, 0, 1.35, z),
-      part(box(2.62, 0.95, len - 0.6), GLASS, 0, 2.45, z),
+      ...(o.open ? [] : [part(box(2.62, 0.95, len - 0.6), GLASS, 0, 2.45, z)]),
       part(box(2.8, 0.3, len + 0.2), WHITE, 0, 3.05, z),
       part(box(2.72, 0.12, len + 0.02), WHITE, 0, 1.98, z),
     ];
     for (let k = -len / 2 + 1.6; k < len / 2 - 1; k += 2.2) p.push(part(box(2.66, 0.95, 0.14), body, 0, 2.45, z + k));
     if (roofKit) p.push(part(box(1.2, 0.35, 2.4), STEEL, 0, 3.35, z), part(box(0.08, 0.9, 1.6), DARK, 0, 3.9, z, 0.5));
+    if (o.colors?.length) p.push(...sidePanels(o.colors, 2.76, len - 2, 0.9, 1.35, z));
     return p;
   };
   return mergeGeometries(kind === 'funicular' ? car(0, 16, 0x1f6fb5, false) : [...car(-8.3, 16, 0xb5341f, true), ...car(8.3, 16, 0xb5341f, false)]);
+}
+
+/** The window band of a train or funicular, without colours (drawn with see-through glass). */
+export function railGlass(kind) {
+  const cars = kind === 'funicular' ? [0] : [-8.3, 8.3];
+  return mergeGeometries(cars.map((z) => box(2.62, 0.95, 15.4).translate(0, 2.45, z).toNonIndexed()));
 }
 
 /** Lift towers come in two instanced pieces: a pole one metre tall (scaled to each tower's height) and a
