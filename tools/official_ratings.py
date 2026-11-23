@@ -203,6 +203,10 @@ def check(rid):
     names = COLOURS if colour else NAMES
     seen, diff, extra = set(), {}, set()
     for T in R["trails"]:
+        for n in T.get("also") or []:   # a run drawn once on a stretch it shares with another (build_data)
+            if find(n):
+                seen.add(key(n))
+                seen.add(loose(n))
         if not T["name"]:
             continue
         hit = find(T["name"]) or by_number(off, T["name"], T.get("ref"))
@@ -214,7 +218,9 @@ def check(rid):
                 if number_of(o) == n:
                     seen.add(key(o))
             have = T.get("c", COLOURS.index("blue")) if colour else T["d"]
-            if hit[0] != have:
+            # a stretch carrying a second name ("also") rightly takes the harder of the two ratings
+            harder = max([hit[0]] + [find(n)[0] for n in T.get("also") or [] if find(n)])
+            if hit[0] != have and harder != have:
                 diff[T["name"]] = (have, hit[0])
         else:
             extra.add(T["name"])

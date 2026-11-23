@@ -57,5 +57,12 @@
  "isolated_lifts": [
   "Club Med"
  ],
- "isolated_lifts_note": "2026-11-23: the Club Med hotel lift at Arc 1600 rises 3.5 m; its top joins the runs only by a 23 m climb, which the build no longer counts as a ski join."
+ "isolated_lifts_note": "2026-11-23: the Club Med hotel lift at Arc 1600 rises 3.5 m; its top joins the runs only by a 23 m climb, which the build no longer counts as a ski join.",
+ "shared_runs": [
+  [
+   "Lanches",
+   "Dou de l'Homme"
+  ]
+ ],
+ "shared_runs_note": "Dou de l'Homme was drawn 0-10 m beside Lanches for 90% of its length: the shared stretch is drawn once and carries both names; Dou de l'Homme's own end is kept (2026-11-23)."
 }

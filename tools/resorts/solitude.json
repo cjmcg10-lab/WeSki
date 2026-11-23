@@ -31,10 +31,60 @@
   [
    "trail:Main Street (bottom)",
    "trail:Easy Street"
+  ],
+  [
+   "Summit Express (top)",
+   "trail:Highway to Heaven",
+   "hike"
   ]
  ],
  "links_notes": {
   "trail:Honeycomb Chutes (bottom) -> trail:Voltaire": "2026-11-23: run stops short; terrain falls straight to Voltaire in Honeycomb Canyon (40-79 m, no climb)",
-  "trail:Main Street (bottom) -> trail:Easy Street": "2026-11-23: the run stops short; the terrain falls from its end to Easy Street (14 m, 0 m of climb) (tools/check_connections.py dead end)"
- }
+  "trail:Main Street (bottom) -> trail:Easy Street": "2026-11-23: the run stops short; the terrain falls from its end to Easy Street (14 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "Summit Express (top) -> trail:Highway to Heaven (hike)": "2026-11-23: Highway to Heaven is reached on foot from the Summit Express top along the traverse under Black Bess Peak (gates on the trail map inset)"
+ },
+ "way_names": {
+  "618576407": "Serenity Upper",
+  "618576409": "Serenity Lower"
+ },
+ "way_names_note": "618576407 and 618576409: OpenStreetMap's 'Serenity/F.I.S.' upper and lower ways are the resort's Serenity Upper (black) and Serenity Lower (blue); the ratings match (2026-11-23).",
+ "extra_trails": [
+  {
+   "name": "Evergreen Chutes",
+   "pts": [
+    [-111.598036, 40.600913],
+    [-111.598423, 40.60112],
+    [-111.598827, 40.601304],
+    [-111.599175, 40.601548],
+    [-111.599467, 40.601832],
+    [-111.599737, 40.602127],
+    [-111.599986, 40.602433],
+    [-111.60011, 40.602587]
+   ],
+   "why": "2026-11-23, approximate (steep forest and rock, no cut strip): Solitude 2026 trail map (skimap.org 46359) labels Evergreen Chutes (double diamond) on the north face just below Evergreen Peak, between Barrett's Glade and Corner Chute. Placed from the ridge 70 m west of the Mount Evergreen summit (OpenStreetMap peak) down the terrain fall line to Corner Chute. Within about 100 m."
+  },
+  {
+   "name": "Highway to Heaven",
+   "pts": [
+    [-111.607834, 40.596961],
+    [-111.607429, 40.59663],
+    [-111.607024, 40.596299],
+    [-111.606619, 40.595976],
+    [-111.606109, 40.595745],
+    [-111.605552, 40.595613],
+    [-111.604972, 40.595517],
+    [-111.604381, 40.595484],
+    [-111.603791, 40.595568],
+    [-111.603488, 40.59611],
+    [-111.603379, 40.597056],
+    [-111.602142, 40.597513],
+    [-111.600964, 40.59797],
+    [-111.599788, 40.598652],
+    [-111.598609, 40.598883],
+    [-111.597429, 40.599204],
+    [-111.596652, 40.599515]
+   ],
+   "why": "2026-11-23, approximate (open backside slope): the inset 'Highway to Heaven and back of Evergreen Peak' on Solitude 2026 trail map (skimap.org 46359) puts Highway to Heaven (double diamond) on the slope below the traverse under Black Bess Peak, running down to the Twin Lakes reservoir, where SolBright begins. Placed from below that traverse (about 3055 m; the steepest top 100 m under the cliffs is left off and reached by the hike link from the Summit Express top) down the terrain fall line to the reservoir's west end, then along its north shore (flat, about 2885 m) to SolBright. Within about 150 m; the shore run-out is a guess at the way skiers return."
+  }
+ ]
 }
