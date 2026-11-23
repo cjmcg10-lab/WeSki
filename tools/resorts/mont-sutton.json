@@ -37,5 +37,39 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
- }
+ },
+ "rename": {
+  "3 Startlet": "Starlet",
+  "4 Sous-bois Startlet": "Sous-bois Starlet",
+  "A Fantaisie": "Fantaisie",
+  "B Extase": "Extase",
+  "C Séduction": "Séduction",
+  "Detour": "Détour",
+  "Dou-le-lom": "Dou-de-Lom",
+  "Bo Real": "Bo-Réal",
+  "Emótion": "Émotion",
+  "9A Forêt des merveilles": "Forêt des merveilles",
+  "1 Alleghanys": "Alleghanys",
+  "10 Connection": "Connection",
+  "11 Passeport": "Passeport",
+  "12 Transit": "Transit",
+  "13 Cendrillon": "Cendrillon",
+  "2 Coucou": "Coucou",
+  "5 Loup de Loup": "Loup de Loup",
+  "6 Bee-bop": "Bee-Bop",
+  "7 St-Bernard": "St-Bernard",
+  "8 Ricochet": "Ricochet",
+  "9 Yum-Yum": "Yum-Yum"
+ },
+ "links": [
+  [
+   "trail:Starlet (bottom)",
+   "I (base)"
+  ],
+  [
+   "trail:Coucou (bottom)",
+   "I (base)"
+  ]
+ ],
+ "links_notes": "Starlet and Coucou end at the bottom of the old I OW chair, which is not on the 2026-27 trail map (hidden); on the map they run out to the base of chair I (about 140 m across the base area)"
 }

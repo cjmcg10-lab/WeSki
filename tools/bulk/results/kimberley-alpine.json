@@ -15,11 +15,10 @@
   "1m": 23.7,
   "30m": 76.3
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Owl T-Bar"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 81,
- "rebuild_seconds": 25
+ "rebuild_seconds": 25,
+ "seconds": 37
 }

@@ -10,7 +10,6 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   Pine Flats 14 m
 - info: audit: run climbs: 1
 - info: same counts as the previous build
-- info: lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Owl T-Bar
 - pass: 0 shown runs rated by guess
 - pass: reachable from the base: 72 of 72 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)

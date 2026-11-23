@@ -6,7 +6,7 @@
   217,
   217
  ],
- "auto_joins": 12,
+ "auto_joins": 11,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 1,
@@ -17,9 +17,8 @@
   "1m": 0.0,
   "30m": 100.0
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Tube Carpet"
- ],
+ "notes": [],
  "first_build_seconds": 22,
- "rebuild_seconds": 40
+ "rebuild_seconds": 40,
+ "seconds": 23
 }

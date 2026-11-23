@@ -36,5 +36,37 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "only 106 of 118 run pieces reachable from a lift; 8 runs no lift reaches"
+ "links": [
+  [
+   "Lift 9 (top)",
+   "trail:Wild Child",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Porcupine Saddle",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Marmot",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Field of Dreams",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Velvet Hammer",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Rock Chutes",
+   "hike"
+  ]
+ ],
+ "links_notes": "Ridge terrain along the Continental Divide (2025 trail map, skimap.org 35275): reached from the top of Lift 9 along the ridge through closure gates 1S-5S (Super Bowl, Wild Child, Porcupine Saddle) and 1N-5N (Velvet Hammer, Field of Dreams, Marmot, Rock Chutes; also served by the Ridge snowcat). Drawn as walks from the Lift 9 top."
 }

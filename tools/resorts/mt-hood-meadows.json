@@ -39,5 +39,26 @@
  "terrain_res": 10,
  "terrain_shares": {
   "10m": 100.0
- }
+ },
+ "links": [
+  [
+   "Cascade Express (top)",
+   "trail:Dallas Bowl",
+   "hike"
+  ],
+  [
+   "Cascade Express (top)",
+   "trail:Chute 225",
+   "hike"
+  ],
+  [
+   "Cascade Express (top)",
+   "trail:Gold Bowl"
+  ],
+  [
+   "Cascade Express (top)",
+   "trail:Diamond Bowl"
+  ]
+ ],
+ "links_notes": "Dallas Bowl and Chute 225 start 209 m above the top of Cascade Express (hike-to terrain above the lifts); Gold Bowl and Diamond Bowl start below that top and are skied to from it"
 }

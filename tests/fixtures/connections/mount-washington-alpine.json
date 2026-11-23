@@ -1,28 +1,16 @@
 {
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
- "unreachable": {
-  "Fools Gold": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Paydirt": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Gold Digger": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Copper Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Slag Heap": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Hot Shots": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Tailings": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "(unnamed run 123)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "D1 Trees": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
- },
+ "unreachable": {},
  "dead_end": {
-  "Boomerang": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Billabong": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "(unnamed run 122)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "West Basin": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Billabong": "an expert backcountry-groomed line in OpenStreetMap whose bottom ends 113 m from the unnamed cat track below it, which itself leads nowhere on our map (see the next entry); no source placed the way out. Looked at by a person 2026-11-23",
+  "(unnamed run 122)": "an unnamed 1.6 km green track from the summit area into the Outback that ends 219 m from Copper Glades and about 300 m above the Boomerang chair base with no mapped way down; left rather than inventing a join. Looked at by a person 2026-11-23"
  },
  "outside_core": {},
  "lift_end": {},
  "uphill": {},
  "doubled": {
-  "Lower O'Henry ~ Lower O'Henry": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Harry's Trees ~ Harry's Trees": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Lower O'Henry ~ Lower O'Henry": "OpenStreetMap maps Lower O'Henry as two ways along the same ground; the build keeps both because other runs start or end on them. Looked at by a person 2026-11-23",
+  "Harry's Trees ~ Harry's Trees": "two OpenStreetMap ways of Harry's Trees (a glade) along the same ground for 140 m; kept because other runs join them. Looked at by a person 2026-11-23"
  }
 }

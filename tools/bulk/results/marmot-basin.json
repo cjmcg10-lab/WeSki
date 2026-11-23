@@ -1,10 +1,10 @@
 {
  "id": "marmot-basin",
  "reachable": [
-  134,
-  136
+  140,
+  140
  ],
- "auto_joins": 42,
+ "auto_joins": 41,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 0,
@@ -19,5 +19,6 @@
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 75,
- "rebuild_seconds": 16
+ "rebuild_seconds": 16,
+ "seconds": 17
 }

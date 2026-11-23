@@ -920,7 +920,7 @@
   "trails": 74,
   "lifts": 13,
   "zones": false,
-  "bytes": 786061,
+  "bytes": 786328,
   "checked": false
  },
  {
@@ -957,6 +957,23 @@
   "bytes": 1129585,
   "checked": false,
   "coarse": true
+ },
+ {
+  "id": "le-massif",
+  "name": "Le Massif",
+  "region": "Quebec, Canada",
+  "tz": "America/Toronto",
+  "lat": 47.28259,
+  "lon": -70.61508,
+  "baseLat": 47.27469,
+  "baseLon": -70.57489,
+  "top": 794,
+  "base": 37,
+  "trails": 59,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 575483,
+  "checked": false
  },
  {
   "id": "les-arcs",
@@ -1027,6 +1044,23 @@
   "checked": false
  },
  {
+  "id": "loveland-basin",
+  "name": "Loveland Basin",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.69342,
+  "lon": -105.91998,
+  "baseLat": 39.67992,
+  "baseLon": -105.89765,
+  "top": 3960,
+  "base": 3317,
+  "trails": 86,
+  "lifts": 7,
+  "zones": false,
+  "bytes": 533107,
+  "checked": false
+ },
+ {
   "id": "lutsen-mountains",
   "name": "Lutsen Mountains",
   "region": "Minnesota, USA",
@@ -1040,7 +1074,7 @@
   "trails": 90,
   "lifts": 7,
   "zones": true,
-  "bytes": 527207,
+  "bytes": 530433,
   "checked": false
  },
  {
@@ -1108,7 +1142,7 @@
   "trails": 91,
   "lifts": 6,
   "zones": false,
-  "bytes": 438649,
+  "bytes": 440234,
   "checked": false,
   "coarse": true
  },
@@ -1128,6 +1162,23 @@
   "zones": false,
   "bytes": 224773,
   "checked": true
+ },
+ {
+  "id": "monarch-mountain",
+  "name": "Monarch Mountain",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 38.52183,
+  "lon": -106.34245,
+  "baseLat": 38.51859,
+  "baseLon": -106.35458,
+  "top": 3631,
+  "base": 3259,
+  "trails": 77,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 467451,
+  "checked": false
  },
  {
   "id": "mont-sainte-anne",
@@ -1160,12 +1211,12 @@
   "trails": 60,
   "lifts": 9,
   "zones": false,
-  "bytes": 543147,
-  "checked": false
+  "bytes": 544953,
+  "checked": true
  },
  {
   "id": "mont-tremblant-mont-tremblant",
-  "name": "Mont Tremblant Resort, Station Mont Tremblant",
+  "name": "Tremblant",
   "region": "Quebec, Canada",
   "tz": "America/Toronto",
   "lat": 46.22002,
@@ -1177,7 +1228,7 @@
   "trails": 114,
   "lifts": 16,
   "zones": true,
-  "bytes": 1465194,
+  "bytes": 1475695,
   "checked": true
  },
  {
@@ -1194,8 +1245,25 @@
   "trails": 60,
   "lifts": 6,
   "zones": false,
-  "bytes": 777399,
+  "bytes": 777735,
   "checked": false
+ },
+ {
+  "id": "mount-ashland",
+  "name": "Mount Ashland",
+  "region": "Oregon, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 42.08129,
+  "lon": -122.71764,
+  "baseLat": 42.08444,
+  "baseLon": -122.70746,
+  "top": 2278,
+  "base": 1926,
+  "trails": 52,
+  "lifts": 6,
+  "zones": true,
+  "bytes": 299573,
+  "checked": true
  },
  {
   "id": "mount-rose-tahoe",
@@ -1279,7 +1347,7 @@
   "trails": 100,
   "lifts": 10,
   "zones": true,
-  "bytes": 731887,
+  "bytes": 732725,
   "checked": false,
   "coarse": true
  },
@@ -1297,7 +1365,7 @@
   "trails": 106,
   "lifts": 15,
   "zones": true,
-  "bytes": 1384161,
+  "bytes": 1384820,
   "checked": false
  },
  {
@@ -1314,7 +1382,7 @@
   "trails": 126,
   "lifts": 11,
   "zones": true,
-  "bytes": 922254,
+  "bytes": 922524,
   "checked": false
  },
  {

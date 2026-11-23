@@ -48,5 +48,50 @@
  ],
  "isolated_notes": {
   "Tube Carpet": "rule: tubing or sledding lift"
- }
+ },
+ "links": [
+  [
+   "Eagle Express (top)",
+   "trail:Gold Digger"
+  ],
+  [
+   "Eagle Express (top)",
+   "trail:Paydirt"
+  ],
+  [
+   "Eagle Express (top)",
+   "trail:D1 Trees"
+  ],
+  [
+   "Boomerang (top)",
+   "trail:Copper Glades"
+  ],
+  [
+   "trail:Boomerang (bottom)",
+   "trail:Crikey"
+  ],
+  [
+   "trail:Paydirt",
+   "trail:Slag Heap",
+   "hike"
+  ],
+  [
+   "trail:Paydirt",
+   "trail:Hot Shots",
+   "hike"
+  ],
+  [
+   "trail:Paydirt",
+   "trail:Tailings"
+  ],
+  [
+   "trail:Paydirt",
+   "trail:Fools Gold"
+  ],
+  [
+   "trail:West Basin (bottom)",
+   "trail:Dingo"
+  ]
+ ],
+ "links_notes": "2024-25 trail map (skimap.org 30655): Gold Rush Glades (Gold Digger, Paydirt) lie west of the summit and are skied to from the top of Eagle Express; D1 Trees from the same top; the Outback glades (Copper Glades) from the top of Boomerang; the run Boomerang stops 48 m short of Crikey; the other Gold Rush glades (Slag Heap, Hot Shots, Tailings) and Fools Gold start along the same ridge as Paydirt, a little lower; West Basin stops 53 m above Dingo"
 }

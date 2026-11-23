@@ -41,5 +41,23 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
- }
+ },
+ "links": [
+  [
+   "Cornice Express (top)",
+   "trail:Lightning",
+   "hike"
+  ],
+  [
+   "Cornice Express (top)",
+   "trail:KGF",
+   "hike"
+  ],
+  [
+   "Cornice Express (top)",
+   "trail:Jeff's Line",
+   "hike"
+  ]
+ ],
+ "links_notes": "Lightning, KGF and Jeff's Line are in Palisades and Reuter Bowls (2025-26 trail map, skimap.org 38415), reached along the boundary ridge from the top of Cornice Express (chair 6) past Sentinel Bowl; drawn as walks, since no lift reaches their tops"
 }
