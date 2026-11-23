@@ -36,5 +36,16 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Ammonousuc": "Ammonoosuc",
+  "Blueberrylane": "Blueberry Lane",
+  "Lower Myth Maker": "Lower Mythmaker",
+  "Lower Snowdancer": "Lower Snow Dancer",
+  "Snowdancer": "Snow Dancer",
+  "Stoney Brook": "Stony Brook",
+  "Stoney Brook By Pass": "Stony Brook Bypass",
+  "Upper Myth Maker": "Upper Mythmaker",
+  "Barksville Glad": "Barksville Glade"
  }
 }

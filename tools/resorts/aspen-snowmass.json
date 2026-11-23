@@ -58,5 +58,12 @@
  "isolated_notes": {
   "Pines Lower": "rule: not joined to the rest of the lifts on the map",
   "Pines Upper": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Wall 1": "Wall One",
+  "Wall 2": "Wall Two",
+  "Camp Three": "Camp 3",
+  "Shear Bliss": "Sheer Bliss",
+  "Rocky Mountain High": "Rocky Mtn High"
  }
 }

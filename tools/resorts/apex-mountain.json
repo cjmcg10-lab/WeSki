@@ -36,5 +36,12 @@
  "terrain_shares": {
   "1m": 26.7,
   "30m": 73.3
+ },
+ "rename": {
+  "Dawdler1": "Dawdler 1",
+  "Dawdler2": "Dawdler 2",
+  "Dude ney Trail": "Dude'ney Trail",
+  "Grommit": "Gromit",
+  "Pea Shooter": "Peashooter"
  }
 }
