@@ -512,4 +512,8 @@ export default {
   1410: 'Nieuwe versie klaar',
   1411: 'Herladen',
   1430: 'Erg koud bij de liften: het voelt als {0} in het koudste skiuur.',
+  1452: "Gladde randen",
+  1453: "Maakt gekartelde randen op de 3D-kaart zachter. Geldt vanaf de volgende keer dat je een berg opent.",
+  1454: "Standaard uit op heel scherpe schermen, waar gekartelde randen nauwelijks te zien zijn en gladmaken de meeste snelheid kost. Zet het uit als de kaart traag aanvoelt; zet het aan als randen gekarteld lijken.",
+  1455: "Geldt vanaf de volgende keer dat je een berg opent.",
 };

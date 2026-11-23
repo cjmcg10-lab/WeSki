@@ -10,10 +10,10 @@
   "baseLon": -111.63799,
   "top": 3371,
   "base": 2604,
-  "trails": 141,
+  "trails": 143,
   "lifts": 11,
   "zones": false,
-  "bytes": 1115884
+  "bytes": 1121286
  },
  {
   "id": "berkshire-east",
@@ -42,10 +42,10 @@
   "baseLon": -111.36752,
   "top": 3401,
   "base": 2077,
-  "trails": 324,
+  "trails": 340,
   "lifts": 43,
   "zones": false,
-  "bytes": 3518178
+  "bytes": 3539846
  },
  {
   "id": "bolton-valley",
@@ -301,7 +301,7 @@
   "trails": 154,
   "lifts": 20,
   "zones": true,
-  "bytes": 2073371
+  "bytes": 2073370
  },
  {
   "id": "killington",
@@ -666,10 +666,10 @@
   "baseLon": -111.67394,
   "top": 3463,
   "base": 2365,
-  "trails": 206,
+  "trails": 212,
   "lifts": 14,
   "zones": false,
-  "bytes": 1334474
+  "bytes": 1352812
  },
  {
   "id": "snowshoe",
@@ -810,10 +810,10 @@
   "baseLon": -107.82076,
   "top": 4033,
   "base": 2662,
-  "trails": 131,
+  "trails": 139,
   "lifts": 19,
   "zones": false,
-  "bytes": 2093122
+  "bytes": 2106626
  },
  {
   "id": "tignes-val-disere",

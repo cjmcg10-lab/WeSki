@@ -9,7 +9,11 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { loopTimer, detachSegments, shuttle, swing, tramRide, stationClashes } from './liftmotion.js';
 import { scheme, cls, runColor, runSym, runName } from './rating.js';
+import { prepInput, prepTerrain, runRadius, shownAreas, chunkSurface, skirtLayout, pieceIndex, pickLevel, movingPr } from './terrainprep.js';
+import { simplifyRun, simplifyPath3 } from './simplify.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
 
@@ -40,18 +44,53 @@ const POI_STYLE = {
   service: ['#59636e', '•', 4], parking: ['#3b6ea8', 'P', 4], shelter: ['#59636e', '•', 4], lifttop: ['#e03131', '', 9],
 };
 
-// Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the
-// camera lifts are still animated (metres).
+// Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the camera lifts are
+// animated and their chairs and cabins drawn at all, within what distance those are drawn in full detail (metres),
+// and how many screen pixels of height error the far ground may have (coarser pieces far away). Detail goes first,
+// sharpness last: a step down lowers the far detail before it softens the picture.
 const QUALITY = [
-  { pr: 2, trees: 1, lifts: 4500 },
-  { pr: 1.5, trees: 0.75, lifts: 3500 },
-  { pr: 1.25, trees: 0.5, lifts: 2500 },
-  { pr: 1, trees: 0.3, lifts: 1600 },
+  { pr: 2, trees: 1, lifts: 4500, near: 480, lod: 2 },
+  { pr: 2, trees: 0.75, lifts: 3500, near: 420, lod: 3 },
+  { pr: 1.5, trees: 0.5, lifts: 2500, near: 340, lod: 4 },
+  { pr: 1, trees: 0.3, lifts: 1600, near: 260, lod: 6 },
 ];
+// While the map moves, it is drawn at this share of its sharpness (never below 1x) and drawn sharp again once it
+// stops; only on screens drawn sharper than 1.2x, where it saves the most and shows the least.
+// (movingPr in src/terrainprep.js)
+const SHARP_AFTER_MS = 250;
+// Trees further than this are thinned out with distance (to a share of FAR_TREES), and so are the land's far pieces.
+const TREES_FULL_M = 2500, FAR_TREES = 0.35;
+const STATION_COLOR = 0x8b2f2f;
+const UP = new THREE.Vector3(0, 1, 0);
+// real line speeds of the carriers other than chairs (m/s)
+const CARRIER_SPEED = { cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
 
 export class SkiMap {
-  constructor(container, resort, geo, surroundH = null, canopy = null) {
+  /**
+   * The ground's heavy set-up (snow mask, colour fields, the ground cut into pieces), worked out in a background
+   * worker so the screen does not freeze while it runs; resolves to what the constructor takes as `opts.prep`.
+   * Falls back to the main thread where workers are not available.
+   */
+  static prepare(resort, geo) {
+    const input = prepInput(resort, geo.h);
+    if (typeof Worker === 'undefined') return Promise.resolve(prepTerrain(input));
+    return new Promise((resolve) => {
+      let w;
+      const local = () => { w?.terminate(); resolve(prepTerrain(input)); };
+      try { w = new Worker(new URL('./terrain.worker.js', import.meta.url), { type: 'module' }); } catch { local(); return; }
+      w.onmessage = (e) => { w.terminate(); if (e.data?.mask) resolve(e.data); else local(); };
+      w.onerror = (e) => { e.preventDefault?.(); local(); };
+      w.postMessage(input);
+    });
+  }
+
+  /**
+   * opts.prep: the result of SkiMap.prepare (worked out here when missing); opts.antialias: smooth edges (default:
+   * on, except on screens sharper than 2.5x, where jagged edges are hard to see and smoothing costs the most).
+   */
+  constructor(container, resort, geo, surroundH = null, canopy = null, opts = {}) {
     this.surroundH = surroundH;
+    this.prep = opts.prep || prepTerrain(prepInput(resort, geo.h));
     // real tree cover (tools/build_canopy.py), or null for maps without one; a file made for another build of the
     // map (a different grid) is ignored, and the old trees are drawn instead
     const g0 = resort.grid;
@@ -71,7 +110,8 @@ export class SkiMap {
     this.clock = new THREE.Clock();
     this.t = 0;
 
-    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance', stencil: true }));
+    this.antialias = opts.antialias ?? SkiMap.defaultAntialias();
+    const r = (this.renderer = new THREE.WebGLRenderer({ antialias: this.antialias, powerPreference: 'high-performance', stencil: true }));
     r.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
     container.appendChild(r.domElement);
     this.overlay = document.createElement('canvas');
@@ -112,7 +152,7 @@ export class SkiMap {
     this.buildLifts();
     this.buildBuildings();
     this.buildMarkers();
-    this.scene.traverse((o) => { if (o.isMesh && o !== this.trees) clearsTreeMark(o.material); });
+    this.prep = null;      // its arrays now live in the scene's buffers and textures
 
     const c = (this.controls = new MapControls(this.cam3, r.domElement));
     c.enableDamping = true;
@@ -146,13 +186,21 @@ export class SkiMap {
     this.loop();
   }
 
+  /** Antialiasing unless the screen is sharper than 2.5x (where it is hardly visible and costs the most). */
+  static defaultAntialias() {
+    return (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1) < 2.5;
+  }
+
   /** Tear the map down (when switching to another resort) and give its graphics memory back. */
   dispose() {
     this.dead = true; this.running = false;
     this.ro.disconnect();
     document.removeEventListener('visibilitychange', this.onVis);
     this.controls.dispose();
-    this.scene.traverse((o) => { o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose()); });
+    this.scene.traverse((o) => {
+      o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose());
+      for (const g of o.userData?.geos || []) g?.dispose();      // coarser ground pieces not drawn right now
+    });
     this.groundTex?.dispose(); this.zoneTex?.dispose(); this.canopyTex?.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss?.();
@@ -180,79 +228,81 @@ export class SkiMap {
   }
 
   // ---------- scene building
-  /**
-   * Half the width of a run's snow. Measured on aerial photos where we have it (`w`, tools/align_trails.py
-   * --widths: typically 20 m wide, most 12-48 m); otherwise a typical cut run (26 m, greens a little wider).
-   * Runs were all drawn 50-60 m wide before, which is wider than 94% of the measured ones.
-   * Glades keep a wider band: they are runs through the trees, not cut strips.
-   */
-  runRadius(t) {
-    if (t.glade) return 16;
-    if (t.w) return Math.min(45, Math.max(6, t.w / 2));
-    return t.d === 0 ? 15 : 13;
-  }
+  /** Half the width of a run's snow (src/terrainprep.js). */
+  runRadius(t) { return runRadius(t); }
 
   /** Slope outlines (OpenStreetMap piste areas) shown on the map: those whose run is not hidden. */
-  shownAreas() {
-    const hidden = new Set(this.resort.trails.filter((t) => t.hide && t.name).map((t) => t.name));
-    const shown = new Set(this.resort.trails.filter((t) => !t.hide && t.name).map((t) => t.name));
-    return (this.resort.areas || []).filter((a) => !a.name || shown.has(a.name) || !hidden.has(a.name));
+  shownAreas() { return shownAreas(this.resort); }
+
+  /**
+   * The ground: the LiDAR grid as one smoothly shaded surface, cut into square pieces (src/terrainprep.js) so the
+   * pieces off screen are skipped, and each piece drawn with fewer heights the further away it is (pickLods), as long
+   * as the shape changes by less than a pixel or two there. Short skirts under every piece's edge hide the gaps
+   * where two neighbours are drawn with different detail. The light and shade use the full-detail normals, so the
+   * slopes keep their look; the colours come from groundMaterial().
+   */
+  buildTerrain() {
+    const { zmin } = this.resort.grid, S = this.prep.surface;
+    this.snowMask = this.prep.mask;
+    const posA = new THREE.BufferAttribute(S.pos, 3), nrmA = new THREE.BufferAttribute(S.nrm, 3), idxA = new THREE.BufferAttribute(S.index, 1);
+    const gm = this.groundMaterial(zmin);
+    // the whole ground as one mesh, not drawn (the pieces are): for tools that read the full surface
+    const full = new THREE.BufferGeometry();
+    full.setAttribute('position', posA); full.setAttribute('normal', nrmA); full.setIndex(idxA);
+    this.terrain = new THREE.Mesh(full, gm);
+    this.terrainGroup = this.piecesOf(S, { position: posA, normal: nrmA }, idxA, gm);
+    this.terrainPieces = this.terrainGroup.children;
+    this.scene.add(this.terrainGroup);
+    this.buildSurround();
   }
 
-  buildTerrain() {
-    const { nx, ny, cell, zmin } = this.resort.grid, h = this.geo.h, geo = this.geo;
-    // Snow mask: groomed trails, lift lines and base areas are open snow, the rest is forest.
-    const mask = new Float32Array(nx * ny);
-    const stamp = (x, y, rad, v) => {
-      const r = Math.ceil(rad / cell), ci = Math.round(x / cell), cj = Math.round(y / cell);
-      for (let j = Math.max(0, cj - r); j <= Math.min(ny - 1, cj + r); j++)
-        for (let i = Math.max(0, ci - r); i <= Math.min(nx - 1, ci + r); i++) {
-          if (Math.hypot(i * cell - x, j * cell - y) <= rad) mask[j * nx + i] = Math.max(mask[j * nx + i], v);
-        }
-    };
-    for (const t of this.resort.trails) if (!t.hide) for (let i = 0; i < t.pts.length; i += 2) stamp(t.pts[i], t.pts[i + 1], this.runRadius(t), t.glade ? 0.4 : 1);
-    // a slope's real outline is open snow too
-    for (const a of this.shownAreas()) {
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (let k = 0; k < a.pts.length; k += 2) { x0 = Math.min(x0, a.pts[k]); x1 = Math.max(x1, a.pts[k]); y0 = Math.min(y0, a.pts[k + 1]); y1 = Math.max(y1, a.pts[k + 1]); }
-      for (let j = Math.max(0, Math.floor(y0 / cell)); j <= Math.min(ny - 1, Math.ceil(y1 / cell)); j++)
-        for (let i = Math.max(0, Math.floor(x0 / cell)); i <= Math.min(nx - 1, Math.ceil(x1 / cell)); i++)
-          if (inPoly(a.pts, i * cell, j * cell)) mask[j * nx + i] = 1;
+  /** One mesh per piece of a chunked surface (chunkSurface), all sharing its vertex buffers and index buffer. */
+  piecesOf(S, attrs, idxA, mat) {
+    const P = S.pos, nx = S.nx, group = new THREE.Group(), sk = skirtLayout(S.nx, S.ny, S.C);
+    group.renderOrder = GROUND_ORDER;
+    for (const ch of S.chunks) {
+      const g = new THREE.BufferGeometry();
+      for (const [k, a] of Object.entries(attrs)) g.setAttribute(k, a);
+      g.setIndex(idxA); g.setDrawRange(ch.start, ch.count);
+      // the piece's own bounds (computeBoundingSphere would measure the whole shared buffer), skirts included
+      const c0 = (ch.j0 * nx + ch.i0) * 3, c1 = (ch.j1 * nx + ch.i1) * 3;
+      g.boundingBox = new THREE.Box3(new THREE.Vector3(P[c0], ch.y0, P[c1 + 2]), new THREE.Vector3(P[c1], ch.y1, P[c0 + 2]));
+      g.boundingSphere = g.boundingBox.getBoundingSphere(new THREE.Sphere());
+      const m = new THREE.Mesh(g, mat);
+      m.renderOrder = GROUND_ORDER;      // before the runs (see buildTrails)
+      m.userData = { ch, geos: [g], L: 0, sk, nx, attrs };
+      group.add(m);
     }
-    for (const b of this.resort.buildings) stamp(b.pts[0], b.pts[1], 30, 1);
-    for (const l of this.resort.lifts) {
-      if (l.hide) continue;
-      const n = Math.ceil(l.len / 12);
-      for (let k = 0; k <= n; k++) {
-        const f = k / n, x = l.pts[0] + (l.pts[l.pts.length - 2] - l.pts[0]) * f, y = l.pts[1] + (l.pts[l.pts.length - 1] - l.pts[1]) * f;
-        stamp(x, y, 9, 0.5);     // lift lines are cut through the trees (0.5: no trees; glades are 0.4)
+    return group;
+  }
+
+  /**
+   * Per piece, the coarsest version whose height error stays under the quality step's pixel limit (QUALITY lod) at
+   * its distance from the camera; coarser index lists are made the first time a piece needs one. In 2D, where a
+   * height error only shifts the shading a little, three times the limit is allowed. Also sets the ground's depth
+   * bias (groundMaterial) so a run line never dips into a coarser far piece.
+   */
+  pickLods() {
+    const is3 = this.mode === '3d', Q = QUALITY[this.q || 0], cam = this.camera.position;
+    // metres a screen pixel covers (per metre of distance, in 3D)
+    const mpp = is3 ? (2 * Math.tan(THREE.MathUtils.degToRad(this.cam3.fov / 2))) / (this.h || 1) : 1 / this.zoom2;
+    const px = is3 ? Q.lod : Q.lod * 3;
+    if (this.groundBias) this.groundBias.value.set(is3 ? px * mpp * 1.3 : 0, is3 ? 0 : px * mpp * 1.3 + 2);
+    for (const group of [this.terrainGroup, this.surroundGroup]) if (group) for (const m of group.children) {
+      const u = m.userData, errs = u.ch.errs;
+      if (errs.length < 2) continue;
+      const bs = u.geos[0].boundingSphere, d = is3 ? Math.max(1, cam.distanceTo(bs.center) - bs.radius) : 1;
+      const L = pickLevel(errs, mpp * d, px);
+      if (L === u.L) continue;
+      if (!u.geos[L]) {
+        const g = new THREE.BufferGeometry();
+        for (const [k, a] of Object.entries(u.attrs)) g.setAttribute(k, a);
+        g.setIndex(new THREE.BufferAttribute(pieceIndex(u.ch, u.ch.steps[L], u.nx, u.sk), 1));
+        g.boundingBox = u.geos[0].boundingBox; g.boundingSphere = bs;
+        u.geos[L] = g;
       }
+      m.geometry = u.geos[L]; u.L = L;
     }
-    this.snowMask = mask;
-    // Smoothly shaded mesh whose corners are shared (indexed): far less memory than one separate
-    // triangle per face. Its colours come from groundMaterial().
-    const n = nx * ny;
-    const pos = new Float32Array(n * 3);
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) {
-      const o = j * nx + i;
-      pos[o * 3] = i * cell - geo.W / 2; pos[o * 3 + 1] = h[o] / 10; pos[o * 3 + 2] = -(j * cell - geo.H / 2);
-    }
-    const idx = new Uint32Array((nx - 1) * (ny - 1) * 6);
-    let k = 0;
-    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
-      idx[k++] = a; idx[k++] = b; idx[k++] = e; idx[k++] = a; idx[k++] = e; idx[k++] = d;
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setIndex(new THREE.BufferAttribute(idx, 1));
-    g.computeVertexNormals();
-    const gm = this.groundMaterial(zmin);
-    // stencil: where the ground is the nearest thing it clears the "tree here" mark (see buildTrails)
-    Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
-    this.terrain = new THREE.Mesh(g, gm);
-    this.scene.add(this.terrain);
-    this.buildSurround();
   }
 
   /**
@@ -266,64 +316,7 @@ export class SkiMap {
   groundMaterial(zmin) {
     const { nx, ny, cell } = this.resort.grid, geo = this.geo;
     const W = (nx - 1) * cell, H = (ny - 1) * cell;
-    const tw = Math.ceil(W / Math.max(cell / 2, Math.max(W, H) / 2048)), th = Math.ceil(H / Math.max(cell / 2, Math.max(W, H) / 2048));
-    const sx = W / tw, sy = H / th, N = tw * th;
-    const RW = Math.max(12, 2 * Math.max(sx, sy));                  // distance covered by the field each side of an edge
-    const field = new Uint8Array(N * 4), zc = new Uint8Array(N);
-    for (let o = 3; o < field.length; o += 4) field[o] = 255;
-    // field value: 0.5 on the edge `rad` from the line, 1 well inside, 0 well outside
-    const stroke = (pts, rad, fn) => {
-      const R = rad + RW;
-      for (let q = 0; q < pts.length; q += 2) {
-        const x1 = pts[q], y1 = pts[q + 1], last = q + 2 >= pts.length, x2 = last ? x1 : pts[q + 2], y2 = last ? y1 : pts[q + 3];
-        const dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy;
-        const i0 = Math.max(0, Math.floor((Math.min(x1, x2) - R) / sx)), i1 = Math.min(tw - 1, Math.ceil((Math.max(x1, x2) + R) / sx));
-        const j0 = Math.max(0, Math.floor((Math.min(y1, y2) - R) / sy)), j1 = Math.min(th - 1, Math.ceil((Math.max(y1, y2) + R) / sy));
-        for (let j = j0; j <= j1; j++) {
-          const y = (j + 0.5) * sy;
-          for (let i = i0; i <= i1; i++) {
-            const x = (i + 0.5) * sx, t = L2 ? Math.max(0, Math.min(1, ((x - x1) * dx + (y - y1) * dy) / L2)) : 0;
-            const d = Math.hypot(x - x1 - t * dx, y - y1 - t * dy);
-            if (d < R) fn(j * tw + i, Math.min(1, 0.5 + (rad - d) / (2 * RW)));
-          }
-        }
-      }
-    };
-    const into = (ch) => (o, f) => { const v = f * 255; if (v > field[o * 4 + ch]) field[o * 4 + ch] = v; };
-    const T = this.resort.trails.filter((t) => !t.hide);
-    for (const t of T) stroke(t.pts, this.runRadius(t), into(t.glade ? 1 : 0));
-    // slopes OpenStreetMap outlines (piste areas): filled to their real shape, with the same soft edge
-    for (const a of this.shownAreas()) {
-      const P = a.pts;
-      let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-      for (let k = 0; k < P.length; k += 2) { x0 = Math.min(x0, P[k]); x1 = Math.max(x1, P[k]); y0 = Math.min(y0, P[k + 1]); y1 = Math.max(y1, P[k + 1]); }
-      const i0 = Math.max(0, Math.floor((x0 - RW) / sx)), i1 = Math.min(tw - 1, Math.ceil((x1 + RW) / sx));
-      const j0 = Math.max(0, Math.floor((y0 - RW) / sy)), j1 = Math.min(th - 1, Math.ceil((y1 + RW) / sy));
-      for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
-        const x = (i + 0.5) * sx, y = (j + 0.5) * sy, d = edgeDist(P, x, y);
-        if (d > RW) { if (inPoly(P, x, y)) into(0)(j * tw + i, 1); continue; }
-        into(0)(j * tw + i, Math.max(0, Math.min(1, 0.5 + (inPoly(P, x, y) ? d : -d) / (2 * RW))));
-      }
-    }
-    for (const b of this.resort.buildings) stroke([b.pts[0], b.pts[1]], 30, into(0));
-    for (const l of this.resort.lifts) if (!l.hide) stroke([l.pts[0], l.pts[1], l.pts[l.pts.length - 2], l.pts[l.pts.length - 1]], 9, into(1));
-    // zones, by code; later codes win where zones overlap (as before). +16: may tint off the groomed snow
-    const CODE = { free: 1, extreme: 2, sled: 3, race: 4, learn: 5, family: 6, slow: 7, park: 8 };
-    // A pixel's code is read without blending, so where a zone has nothing under it, it also takes pixels a little
-    // outside its edge (f > 0.35): the smooth field then draws the edge instead of the texture cells. Such a pixel is
-    // only held weakly: any other zone that really covers it (f > 0.5) takes it over.
-    const paint = (pts, rad, v, off) => stroke(pts, rad, (o, f) => {
-      const cur = zc[o] & 15;
-      const fv = f * 255;
-      const take = !cur ? f > 0.35 : v !== cur && f > 0.5 && (v > cur || field[o * 4 + 2] < 127.5);
-      if (take) { zc[o] = v | (off ? 16 : 0); field[o * 4 + 2] = fv; } else if (v === cur && fv > field[o * 4 + 2]) field[o * 4 + 2] = fv;
-    });
-    for (const t of T) {
-      const z = t.z || (t.slow ? 'slow' : null);
-      if (z) paint(t.pts, z === 'free' || z === 'extreme' ? 20 : 30, CODE[z], z === 'free' || z === 'extreme' ? 1 : 0);
-    }
-    for (const z of this.resort.zones || []) paint(z.pts, 14, CODE[z.kind], 1);
-    for (const p of this.resort.parks) paint(p.pts, 17, CODE.park, p.trail >= 0 ? 0 : 1);
+    const { field, zc, tw, th } = this.prep.fields;      // worked out by src/terrainprep.js groundFields
     const fieldTex = new THREE.DataTexture(field, tw, th, THREE.RGBAFormat);
     fieldTex.minFilter = THREE.LinearMipmapLinearFilter; fieldTex.magFilter = THREE.LinearFilter; fieldTex.generateMipmaps = true;
     fieldTex.anisotropy = Math.min(4, this.renderer.capabilities.getMaxAnisotropy());
@@ -340,7 +333,11 @@ export class SkiMap {
     const lin = (r, g, b) => new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
     const Z = ['free', 'extreme', 'sled', 'race', 'learn', 'family', 'slow', 'park'].map((k) => lin(...ZONES[k].rgb));
     const tl = (this.resort.treeline || 1300) - zmin;                // treeline in the mesh's height units
+    // depth bias (pickLods): the ground is pushed back a little in depth, never moved on screen, so a run line floating
+    // above the snow is never hidden by a coarser far piece. x: share of the distance in 3D; y: metres in 2D.
+    this.groundBias = { value: new THREE.Vector2() };
     const U = {
+      uBias: this.groundBias,
       uField: { value: fieldTex }, uZone: { value: zoneTex }, uCanopy: { value: canopyTex }, uHasCanopy: { value: cv ? 1 : 0 },
       cOpen: { value: lin(228, 235, 240) },
       uOrigin: { value: new THREE.Vector2(geo.W / 2, geo.H / 2) }, uSize: { value: new THREE.Vector2(W, H) },
@@ -353,7 +350,10 @@ export class SkiMap {
       Object.assign(sh.uniforms, U);
       sh.vertexShader = sh.vertexShader
         .replace('#include <common>', '#include <common>\nvarying vec3 vGPos;\nvarying vec3 vGNrm;')
-        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGPos = position;\nvGNrm = normal;');
+        .replace('#include <begin_vertex>', '#include <begin_vertex>\nvGPos = position;\nvGNrm = normal;')
+        .replace('#include <common>', '#include <common>\nuniform vec2 uBias;')
+        .replace('#include <project_vertex>', `#include <project_vertex>
+{ vec4 bp = mvPosition; if (isOrthographic) bp.z -= uBias.y; else bp.xyz *= 1.0 + uBias.x; gl_Position = projectionMatrix * bp; }`);
       sh.fragmentShader = sh.fragmentShader
         .replace('#include <common>', `#include <common>
 varying vec3 vGPos;
@@ -432,18 +432,16 @@ vec3 groundColour() {
       if (z > tl + 60) c.setRGB(0.76, 0.81, 0.85); else if (z > tl - 260) c.copy(high); else if (z > tl - 440) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (tl - 820 - z) / 250)));
       col[o * 3] = c.r; col[o * 3 + 1] = c.g; col[o * 3 + 2] = c.b;
     }
-    const idx = [];
-    for (let j = 0; j < ny - 1; j++) for (let i = 0; i < nx - 1; i++) {
-      const a = j * nx + i, b = a + 1, d = a + nx, e = d + 1;
-      if (inside[a] && inside[b] && inside[d] && inside[e]) continue; // hidden under the detailed map
-      idx.push(a, b, e, a, e, d);
-    }
-    const g = new THREE.BufferGeometry();
-    g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    g.setIndex(idx);
-    g.computeVertexNormals();     // smooth shading, like the detailed map (it used to be faceted)
-    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true })));
+    // in pieces like the detailed ground (buildTerrain): those off screen are skipped and the far ones drawn coarser;
+    // cells hidden under the detailed map are left out (smooth shading, like the detailed map)
+    const hidden = (i, j) => { const a = j * nx + i; return inside[a] && inside[a + 1] && inside[a + nx] && inside[a + nx + 1]; };
+    const S = chunkSurface(pos, nx, ny, { C: 32, steps: [1, 2, 4], skip: hidden });
+    const C = new Float32Array(S.pos.length);
+    C.set(col);
+    for (let k = 0; k < S.skirtSrc.length; k++) { const v = nx * ny + k, o = S.skirtSrc[k]; C[v * 3] = col[o * 3]; C[v * 3 + 1] = col[o * 3 + 1]; C[v * 3 + 2] = col[o * 3 + 2]; }
+    const attrs = { position: new THREE.BufferAttribute(S.pos, 3), normal: new THREE.BufferAttribute(S.nrm, 3), color: new THREE.BufferAttribute(C, 3) };
+    this.surroundGroup = this.piecesOf(S, attrs, new THREE.BufferAttribute(S.index, 1), new THREE.MeshLambertMaterial({ vertexColors: true }));
+    this.scene.add(this.surroundGroup);
     // short skirt under the edge of the detailed map hides any sliver between the two meshes
     const { nx: fx, ny: fy, cell: fc } = this.resort.grid, sk = [];
     const edge = (x1, y1, x2, y2) => {
@@ -496,23 +494,49 @@ vec3 groundColour() {
       if (rnd() < 0.3) spots.push([(i + rnd() * 1.6 - 0.8) * cell, (j + rnd() * 1.6 - 0.8) * cell, rnd()]);
     }
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
-    // stencil: trees mark the pixels they cover, so runs can be drawn through them (see buildTrails)
-    const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
-    const mesh = new THREE.InstancedMesh(M.treeGeometry(), treeMat, spots.length);
+    // stencil: a tree is not drawn where a run was seen in front of the ground (see buildTrails), so runs show
+    // through the trees but never through the ground
+    const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilWriteMask: 0, stencilRef: SEEN_BIT, stencilFuncMask: SEEN_BIT,
+      stencilFunc: THREE.NotEqualStencilFunc, stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp });
+    const geo = M.treeGeometry();
+    // Trees in blocks of the map, each its own mesh: blocks off screen are skipped, and far blocks draw only part of
+    // their trees (updateTrees). Within a block the trees are in random order, so any first part of them is an even
+    // thinning.
+    const B = 5, bw = this.geo.W / B, bh = this.geo.H / B, lists = Array.from({ length: B * B }, () => []);
+    for (const sp of spots) lists[Math.min(B - 1, Math.max(0, Math.floor(sp[1] / bh))) * B + Math.min(B - 1, Math.max(0, Math.floor(sp[0] / bw)))].push(sp);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
-    spots.forEach(([x, y, r, tall], i) => {
-      const p = this.world(x, y, -0.5);
-      // real height where known (the cone is 4.2 units tall), a little narrower than before; else as before
-      if (tall) { const s = (tall * (0.85 + r * 0.3)) / 4.2; m.compose(p, qn, sc.set(s * 0.95, s, s * 0.95)); }
-      else { const s = 2.6 + r * 1.5; m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3)); }
-      mesh.setMatrixAt(i, m);
-      const alt = p.y + this.resort.grid.zmin;
-      c.copy(dark).lerp(light, r).lerp(frost, alt > tl - 300 ? Math.min(0.75, (alt - (tl - 300)) / 200) : 0);
-      mesh.setColorAt(i, c);
-    });
-    this.trees = mesh; this.treeTotal = spots.length;
-    this.scene.add(mesh);
+    this.trees = new THREE.Group();
+    for (const list of lists) {
+      if (!list.length) continue;
+      const mesh = new THREE.InstancedMesh(geo, treeMat, list.length);
+      list.forEach(([x, y, r, tall], i) => {
+        const p = this.world(x, y, -0.5);
+        // real height where known (the cone is 4.2 units tall), a little narrower than before; else as before
+        if (tall) { const s = (tall * (0.85 + r * 0.3)) / 4.2; m.compose(p, qn, sc.set(s * 0.95, s, s * 0.95)); }
+        else { const s = 2.6 + r * 1.5; m.compose(p, qn, sc.set(s * 1.3, s, s * 1.3)); }
+        mesh.setMatrixAt(i, m);
+        const alt = p.y + this.resort.grid.zmin;
+        c.copy(dark).lerp(light, r).lerp(frost, alt > tl - 300 ? Math.min(0.75, (alt - (tl - 300)) / 200) : 0);
+        mesh.setColorAt(i, c);
+      });
+      mesh.computeBoundingSphere();
+      mesh.userData.total = list.length;
+      this.trees.add(mesh);
+    }
+    this.treeTotal = spots.length;
+    this.scene.add(this.trees);
+  }
+
+  /** Trees drawn per block: the quality step's share, thinned further with distance beyond TREES_FULL_M. */
+  updateTrees() {
+    if (!this.trees?.visible) return;
+    const share = QUALITY[this.q || 0].trees, cam = this.camera.position;
+    for (const mesh of this.trees.children) {
+      const bs = mesh.boundingSphere, d = Math.max(0, cam.distanceTo(bs.center) - bs.radius);
+      const far = d <= TREES_FULL_M ? 1 : Math.max(FAR_TREES, TREES_FULL_M / d);
+      mesh.count = Math.max(1, Math.floor(mesh.userData.total * share * far));
+    }
   }
 
   /** flat [x,y,...] polyline -> segment-pair world positions at `lift` metres above the snow */
@@ -523,6 +547,14 @@ vec3 groundColour() {
       if (prev) out.push(prev.x, prev.y, prev.z, p.x, p.y, p.z);
       prev = p;
     }
+    return out;
+  }
+
+  /** A run's points for drawing: only those needed to stay within 2 m of it in plan and 1.5 m in height (src/simplify.js). */
+  runPts(t) {
+    const C = (this._runPts ||= new WeakMap());
+    let out = C.get(t);
+    if (!out) { out = simplifyRun(t.pts, (x, y) => this.surfaceZ(x, y)); C.set(t, out); }
     return out;
   }
 
@@ -552,11 +584,12 @@ vec3 groundColour() {
     const faded = {};
     for (const t of R.trails) {
       if (t.hide) continue;       // not open to the public (tools/verify_exists.py)
-      if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
+      const pts = this.runPts(t);
+      if (closed.has('t' + t.id)) { this.segs(pts, 3.2, shut); continue; }
       // a real run the resort's map leaves off: drawn faded, without the white edge
-      if (t.unof) { this.segs(t.pts, 3.2, (faded[cls(R, t)] ||= [])); continue; }
-      if (!t.glade) this.segs(t.pts, 2.7, casing);
-      this.segs(t.pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
+      if (t.unof) { this.segs(pts, 3.2, (faded[cls(R, t)] ||= [])); continue; }
+      if (!t.glade) this.segs(pts, 2.7, casing);
+      this.segs(pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
     }
     for (const [c, pos] of Object.entries(faded)) G.add(this.fatLine(pos, scheme(R).colors[+c], 2.4, { order: 4, opacity: 0.45 }));
     // Outlines of wide slopes (OpenStreetMap piste areas): a thin dotted edge in the colour of the run of the same
@@ -576,18 +609,20 @@ vec3 groundColour() {
       runs.push(this.fatLine(pos, scheme(R).colors[+key[0]], glade ? 2.6 : 3.2, { order: 4, dash: glade ? [16, 11] : null }));
     }
     runs.push(this.fatLine(shut, COLORS.closed, 3, { order: 4, dash: [8, 10] }));
-    // Runs through the woods: drawn a second time only where a tree is in front of them (the trees mark their
-    // pixels, the ground clears the mark where it is nearer), so a glade or a run hidden by the canopy still shows,
-    // in its true place, while a run behind a ridge stays hidden.
-    for (const l of runs) {
+    // Runs through the woods, in one pass: the runs are drawn straight after the ground and before everything else,
+    // tested against the ground only, so a run behind a ridge or on the far side of the mountain stays hidden. Where
+    // a run is drawn it leaves a mark (SEEN_BIT); trees are not drawn on that mark (buildTrees), so a glade or a run
+    // under the canopy shows in its true place, while trees in front of a ridge that hides a run are drawn as usual
+    // (owner's rule, 2026-11-23). The coloured lines write depth, so a building, lift or person in front of a run
+    // still covers it and one behind it does not; the white edge is drawn first and writes none, so the colour
+    // always lies on top of it.
+    runs.forEach((l, i) => {
+      Object.assign(l.material, { transparent: false, depthTest: true, depthWrite: i > 0, stencilWrite: true,
+        stencilRef: SEEN_BIT, stencilWriteMask: SEEN_BIT, stencilFunc: THREE.AlwaysStencilFunc,
+        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.ReplaceStencilOp });
+      l.renderOrder = i ? RUN_ORDER : RUN_ORDER - 0.5;
       G.add(l);
-      const x = new LineSegments2(l.geometry, l.material.clone());
-      Object.assign(x.material, { depthTest: false, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc,
-        stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp, stencilWriteMask: 0 });
-      x.material.opacity = l.material.opacity * 0.9;
-      x.renderOrder = l.renderOrder + 2; x.frustumCulled = false;
-      G.add(x);
-    }
+    });
     this.scene.add(G);
     // label anchors: one per trail name (longest segment)
     const best = new Map();
@@ -610,7 +645,7 @@ vec3 groundColour() {
   buildLifts() {
     const R = this.resort;
     this.liftPaths = [];
-    const cable = [], symbol = [], towerMats = [], stationGeos = [];
+    const cable = [], symbol = [], towerMats = [], stationGeos = [], belts = [];
     const count = { chair: 0, cabin: 0, bar: 0, platter: 0, rope: 0, pad: 0 };
     const rail = { bed: [], rails: [], dark: [], white: [], tunnel: [], sleepers: [], portals: [], paths: [] };
     // per lift type: tower height, station height, half cable spacing, longest span between
@@ -620,8 +655,20 @@ vec3 groundColour() {
       gondola: { th: 13, endH: 7.5, r: 3, span: 120, clear: 7.5, sag: [2.5, 0.015], carrier: 'cabin', gap: 85, red: RED_UP },
       chair: { th: 9.5, endH: 6.5, r: 2.4, span: 100, clear: 6.5, sag: [2.5, 0.015], carrier: 'chair', gap: 48, red: RED_UP },
       surface: { th: 4.5, endH: 4.5, r: 1, span: 60, clear: 3.6, sag: [0, 0], carrier: 'bar', gap: 30, red: 2 },
-      carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 6, red: 2.5 },
+      carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 2.5, red: 2.5 },
     };
+    // A lift end on a mapped station building is drawn once: the terminal model, or the building when it is a big
+    // lodge the lift starts inside (stationClashes). buildBuildings leaves out the buildings listed here.
+    const endKeys = [], endPts = [];
+    for (const l of R.lifts) {
+      if (l.hide || l.kind === 'train' || l.kind === 'funicular' || l.kind === 'carpet' || l.pts.length < 4) continue;
+      const n = l.pts.length;
+      endKeys.push(`${l.id}:0`, `${l.id}:1`);
+      endPts.push([l.pts[0], l.pts[1]], [l.pts[n - 2], l.pts[n - 1]]);
+    }
+    const clash = stationClashes(R.buildings || [], endPts);
+    this.skipBuildings = clash.skipBuildings;
+    const skipEnd = new Set([...clash.skipEnds].map((i) => endKeys[i]));
     for (const l of R.lifts) {
       if (l.hide) continue;
       if (l.kind === 'train' || l.kind === 'funicular') { this.liftPaths.push(this.buildRail(l, rail)); continue; }
@@ -660,7 +707,8 @@ vec3 groundColour() {
       const seats = [1, 2, 3, 4, 6, 8].reduce((a, b) => (Math.abs(b - (l.seats || 4)) < Math.abs(a - (l.seats || 4)) ? b : a));
       const carrier = K.carrier === 'chair' ? `chair${seats}${l.bubble ? 'b' : ''}` : K.carrier;
       const path = { l, tram, pts, cum, L, r, loop: 2 * L + 2 * Math.PI * r, chairs: 0, first: 0, carrier, chair: K.carrier === 'chair', seats, bubble: !!l.bubble, gondola: l.kind === 'gondola', carpet: low };
-      const line = (ring, close) => { for (let i = 0; i + 1 < ring.length + (close ? 1 : 0); i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); } };
+      // cables are drawn with only the points needed to stay within 25 cm of their sag (straight spans need two)
+      const line = (ring0, close) => { const ring = simplifyPath3(ring0, 0.25); for (let i = 0; i + 1 < ring.length + (close ? 1 : 0); i++) { const p = ring[i], q = ring[(i + 1) % ring.length]; cable.push(p.x, p.y, p.z, q.x, q.y, q.z); } };
       if (tram) {
         // Aerial tram: each cabin has its own pair of fixed cables, one on each side of the towers.
         for (const side of [r, -r]) line(cum.map((d) => this.pathPoint(path, d, side).pos), false);
@@ -681,58 +729,95 @@ vec3 groundColour() {
           ? Math.min(150, Math.max(12, (lineSpeed * 3600 * (path.chair ? seats : l.seats || 8)) / l.cap))
           : path.chair && fast ? 70 : K.gap;
         path.fast = fast;
-        path.chairs = Math.min(90, Math.max(4, Math.floor(path.loop / spacing)));
+        // on the map every lift runs at twice its real line speed, so the motion reads at mountain scale
+        path.speed = (path.chair ? (fast ? 5 : 2.4) : CARRIER_SPEED[carrier] || 2.5) * 2;
+        if ((path.chair && fast) || path.gondola) {
+          // detachable: carriers let go of the cable in the stations, slow to a crawl and bunch up there
+          path.timer = loopTimer(detachSegments(L, r, path.speed, path.gondola ? 0.8 : 1));
+          path.chairs = Math.min(110, Math.max(4, Math.floor((path.speed * path.timer.T) / spacing)));
+          path.dt = path.timer.T / path.chairs;
+        } else path.chairs = Math.min(l.kind === 'carpet' ? 240 : 90, Math.max(4, Math.floor(path.loop / spacing)));
+        path.gap = path.loop / path.chairs;
         path.first = count[carrier] || 0; count[carrier] = path.first + path.chairs;
       }
       path.mid = this.pathPoint(path, L / 2, 0).pos;
       // The single red line that stands for the lift: it follows the cables, midway between the
       // two of them and clearly above, and is drawn after them, so from far away the red always
       // lies on top of the dark cables instead of blending into them.
-      for (let i = 1; i < pts.length; i++) symbol.push(pts[i - 1].x, pts[i - 1].y + K.red, pts[i - 1].z, pts[i].x, pts[i].y + K.red, pts[i].z);
+      { const sp = simplifyPath3(pts, 0.25); for (let i = 1; i < sp.length; i++) symbol.push(sp[i - 1].x, sp[i - 1].y + K.red, sp[i - 1].z, sp[i].x, sp[i].y + K.red, sp[i].z); }
       const dir = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
       // towers stand on the ground under each support and reach up to the cable there
+      const tk = SPEC[l.kind] && l.kind !== 'carpet' ? l.kind : 'chair';
+      if (tram) path.towerD = [];
       if (l.kind !== 'carpet') for (let i = 1; i < n - 1; i++) {
-        const base = this.world(xy[i][0], xy[i][1], 0);
-        towerMats.push({ p: base, yaw, h: Math.round(Math.max(K.th, this.pathPoint(path, this.alongAt(path, sup[i]), 0).pos.y - base.y)), arm: 2 * r + 0.8 });
+        const base = this.world(xy[i][0], xy[i][1], 0), at = this.alongAt(path, sup[i]);
+        towerMats.push({ p: base, yaw, h: Math.max(K.th, this.pathPoint(path, at, 0).pos.y - base.y), kind: tk, r });
+        if (tram) path.towerD.push(at);
       }
-      if (!low) for (const e of [0, n - 1]) {
-        const g = M.stationGeometry(l.kind, 0x8b2f2f, K.endH + 1, r);
+      // terminals at both ends: the motor room at the bottom (at the top on a tram), the long housing of a
+      // detachable lift where its carriers slow down
+      if (l.kind !== 'carpet') for (const e of [0, n - 1]) {
+        if (skipEnd.has(`${l.id}:${e ? 1 : 0}`)) continue;
+        const g = M.stationGeometry(tk, STATION_COLOR, K.endH + 1, r, { end: e ? 1 : 0, detach: !!path.timer, drive: tram ? !!e : !e });
         const base = this.world(xy[e][0], xy[e][1], 0);
         g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
         stationGeos.push(g);
       }
+      if (l.kind === 'carpet') { const b = M.beltGeometry(pts.map((q) => q.clone().setY(q.y - K.clear))); if (b) belts.push(b); }
+      if (tram) path.ride = tramRide(L, l.dur);
       this.liftPaths.push(path);
     }
     this.scene.add(this.fatLine(symbol, COLORS.lift, 2.8, { order: 8 }));
     // steel cables: thin and dark, so the red map line stays the one line you read per lift
     this.liftLine = this.fatLine(cable, '#3d444d', 1, { order: 6, opacity: 0.8 });
     this.scene.add(this.liftLine);
-    // towers: one instanced mesh per tower type
-    const types = new Map();
-    for (const t of towerMats) { const k = t.h + '|' + t.arm; if (!types.has(k)) types.set(k, []); types.get(k).push(t); }
-    const towerMat = M.vcMat(true);   // smooth shading: round steel poles
-    for (const list of types.values()) {
-      const mesh = new THREE.InstancedMesh(M.towerGeometry(list[0].h + 1, list[0].arm), towerMat, list.length);
-      const mt = new THREE.Matrix4();
-      list.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, mt); });
-      this.scene.add(mesh);
+    // towers: two instanced meshes per kind of lift (the poles, stretched to each tower's height, and the heads
+    // with crossarm and sheaves), so a whole resort's towers cost a handful of draw calls
+    const kinds = new Map();
+    for (const t of towerMats) { if (!kinds.has(t.kind)) kinds.set(t.kind, []); kinds.get(t.kind).push(t); }
+    const towerMat = M.vcMat(true), headMat = M.vcMat();   // smooth shading: round steel poles
+    const mt = new THREE.Matrix4(), mq = new THREE.Quaternion(), ms = new THREE.Vector3(), mp = new THREE.Vector3();
+    for (const [kind, list] of kinds) {
+      const poles = new THREE.InstancedMesh(M.towerPoleGeometry(kind), towerMat, list.length);
+      const heads = new THREE.InstancedMesh(M.towerHeadGeometry(kind, list[0].r), headMat, list.length);
+      list.forEach((t, i) => {
+        mq.setFromAxisAngle(UP, t.yaw);
+        poles.setMatrixAt(i, mt.compose(mp.set(t.p.x, t.p.y - 1, t.p.z), mq, ms.set(1, t.h + 1 - M.TOWER_HEAD[kind], 1)));
+        heads.setMatrixAt(i, mt.compose(mp.set(t.p.x, t.p.y + t.h, t.p.z), mq, ms.set(1, 1, 1)));
+      });
+      for (const m of [poles, heads]) { m.computeBoundingSphere(); this.scene.add(m); }
     }
-    for (const g of stationGeos) this.scene.add(new THREE.Mesh(g, M.vcMat()));
-    // one instanced mesh per kind of carrier, whatever the number of lifts
-    this.carriers = {};
+    // every terminal and magic-carpet belt in the resort is one merged mesh: a single draw call
+    const statics = [...stationGeos, ...belts];
+    if (statics.length) this.scene.add(new THREE.Mesh(mergeGeometries(statics), M.vcMat()));
+    // one instanced mesh per kind of carrier, whatever the number of lifts. Chairs and gondola cabins have two:
+    // a few boxes for the far ones, and the detailed model for those near the camera (filled each frame).
+    this.carriers = {}; this.carriersNear = {};
     const chairKinds = [...new Set(this.liftPaths.filter((p) => p.chair).map((p) => p.carrier))];
-    for (const [k, geo] of [...chairKinds.map((k) => [k, M.chairGeometry(+k.slice(5, 6), k.endsWith('b'))]), ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) {
-      const mesh = new THREE.InstancedMesh(geo, M.vcMat(), Math.max(1, count[k]));
-      mesh.frustumCulled = false;
-      mesh.visible = count[k] > 0;
+    const add = (geo, mat, n) => {
+      const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, n));
+      mesh.frustumCulled = false; mesh.count = 0; mesh.visible = false;   // filled by animateLifts
       this.scene.add(mesh);
-      this.carriers[k] = mesh;
+      return mesh;
+    };
+    const glass = new THREE.MeshLambertMaterial({ color: 0xe58a3a, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide });
+    for (const k of chairKinds) {
+      const seats = +k.slice(5, 6), bubble = k.endsWith('b');
+      this.carriers[k] = add(M.chairFarGeometry(seats, bubble), M.vcMat(), count[k]);
+      this.carriersNear[k] = { mesh: add(M.chairGeometry(seats, bubble), M.vcMat(), count[k]), bubble: bubble ? add(M.bubbleGeometry(seats), glass, count[k]) : null };
     }
+    this.carriers.cabin = add(M.gondolaFarGeometry(), M.vcMat(), count.cabin);
+    this.carriersNear.cabin = { mesh: add(M.gondolaGeometry(), M.vcMat(), count.cabin), bubble: null };
+    for (const [k, geo] of [['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) this.carriers[k] = add(geo, M.vcMat(), count[k]);
+    for (const k in this.carriersNear) { const N = this.carriersNear[k]; N.mesh.count = 0; N.mesh.visible = false; if (N.bubble) { N.bubble.count = 0; N.bubble.visible = false; } }
+    // where a chair's bubble sits: lowered over the riders going up, raised behind the chair coming down
+    const [bx, by, bz] = M.BUBBLE_PIVOT, pivot = (a) => new THREE.Matrix4().makeTranslation(bx, by, bz).multiply(new THREE.Matrix4().makeRotationX(a)).multiply(new THREE.Matrix4().makeTranslation(-bx, -by, -bz));
+    this.bubbleDown = pivot(0); this.bubbleUp = pivot(-1.9);
     this.cabins = this.carriers.cabin;
     this.liftsMoved = false;
     // aerial trams (cable cars): two cabins each, every tram in the resort
     this.trams = this.liftPaths.filter((p) => p.tram).map((path) => ({ path, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] }));
-    for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
+    for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); c.rotation.order = 'YXZ'; this.scene.add(c); }
     this.tram = this.trams[0] || null;
     // railways: ballast bed, rails and sleepers on the ground, the classic black-and-white
     // railway line as the map symbol, faint dashes over tunnels, and a train on each stretch
@@ -858,31 +943,104 @@ vec3 groundColour() {
     return turn(pts[0], pts[0], pts[1], (u - 2 * L - Math.PI * r) / r, -1);
   }
 
-  animateLifts(t) {
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), big = new THREE.Vector3(1.6, 1.6, 1.6), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
-    const SPEED = { chair: 2.4, cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
-    // Lifts far from the camera are too small to see moving: only the ones in view range are
-    // advanced each frame (all of them once, so every carrier starts in the right place).
-    const cam = this.camera.position, all = !this.liftsMoved, is3 = this.mode === '3d';
-    const touched = {};
+  /** pathPoint without allocating: writes the position into `out`, returns the yaw. */
+  pathPointInto(path, d, side, out) {
+    const { pts, cum } = path;
+    // binary search for the stretch holding d
+    let lo = 1, hi = cum.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < d) lo = m + 1; else hi = m; }
+    const i = lo, a = pts[i - 1], b = pts[i];
+    const f = Math.min(1, Math.max(0, (d - cum[i - 1]) / (cum[i] - cum[i - 1] || 1)));
+    const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+    out.set(a.x + (b.x - a.x) * f + (-dz / len) * side, a.y + (b.y - a.y) * f, a.z + dz * f + (dx / len) * side);
+    return Math.atan2(dx, dz);
+  }
+
+  /** loopPoint without allocating: writes the position into `out`, returns the yaw. */
+  loopPointInto(path, u, out) {
+    const { pts, L, r, loop } = path, n = pts.length;
+    u = ((u % loop) + loop) % loop;
+    const turn = (c, a, b, ang, sign) => {
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1, fx = dx / len, fz = dz / len, sx = -fz, sz = fx;
+      const co = Math.cos(ang) * sign, si = Math.sin(ang) * sign;
+      out.set(c.x + sx * r * co + fx * r * si, c.y, c.z + sz * r * co + fz * r * si);
+      return Math.atan2(-sx * si + fx * co, -sz * si + fz * co);
+    };
+    if (u < L) return this.pathPointInto(path, u, r, out);
+    if (u < L + Math.PI * r) return turn(pts[n - 1], pts[n - 2], pts[n - 1], (u - L) / r, 1);
+    if (u < 2 * L + Math.PI * r) return this.pathPointInto(path, 2 * L + Math.PI * r - u, -r, out) + Math.PI;
+    return turn(pts[0], pts[0], pts[1], (u - 2 * L - Math.PI * r) / r, -1);
+  }
+
+  /**
+   * Move every carrier to where it is at time t. Chairs, cabins and T-bars are drawn only for lifts in view and within
+   * the quality step's lift range (QUALITY lifts: beyond it a chair is smaller than a pixel, while the red lift line,
+   * cables, towers and stations stay); the carriers drawn are packed at the start of each kind's mesh, so the ones
+   * left out cost nothing. Chairs and cabins near the camera are drawn with the detailed model, the rest with the
+   * simple one. hide: draw no carriers at all (zoomed so far out that lifts are not animated). Returns how many
+   * running lifts in view moved, so the frame loop knows whether the picture changed. Allocates nothing.
+   */
+  animateLifts(t, hide = false) {
+    const A = (this._anim ||= {
+      m: new THREE.Matrix4(), m2: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(0, 0, 0, 'YXZ'),
+      pos: new THREE.Vector3(), big: new THREE.Vector3(1.6, 1.6, 1.6), one: new THREE.Vector3(1, 1, 1), tuck: new THREE.Vector3(1, 0.4, 1),
+      fr: new THREE.Frustum(), pm: new THREE.Matrix4(), sph: new THREE.Sphere(), sh: { f: 0, v: 0, a: 0 },
+      cnt: {}, nc: {},
+    });
+    const cam = this.camera.position, all = !this.liftsMoved, is3 = this.mode === '3d', Q = QUALITY[this.q || 0];
+    const nearR2 = is3 && !hide ? Q.near * Q.near : -1;
+    this.camera.updateMatrixWorld();
+    A.pm.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+    A.fr.setFromProjectionMatrix(A.pm);
+    const inView = (c, rad) => { A.sph.center.copy(c); A.sph.radius = rad; return A.fr.intersectsSphere(A.sph); };
+    for (const k in this.carriers) A.cnt[k] = 0;
+    for (const k in this.carriersNear) A.nc[k] = 0;
+    let moved = 0;
     for (const p of this.liftPaths) {
-      if (!p.chairs) continue;
-      if (!all && is3 && p.mid.distanceTo(cam) > QUALITY[this.q || 0].lifts + p.L / 2) continue;
-      const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k];
-      const speed = (p.chair ? (p.fast ? 5 : 2.4) : SPEED[k]) * 2; // real line speed x2 so the motion reads at map scale
-      const gap = p.loop / p.chairs;
+      if (!p.chairs || hide) continue;
+      if ((is3 && p.mid.distanceTo(cam) > Q.lifts + p.L / 2) || !inView(p.mid, p.L / 2 + 40)) continue;
+      const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k], N = this.carriersNear[k];
+      const hang = p.chair || k === 'cabin', tow = k === 'bar' || k === 'platter', pad = k === 'pad';
+      const tt = running ? t : 0, ph0 = p.l.id * 2.3;
       for (let i = 0; i < p.chairs; i++) {
-        const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
-        q.setFromAxisAngle(up, yaw);
-        mesh.setMatrixAt(p.first + i, m.compose(pos, q, p.chair || k === 'cabin' ? big : one));
+        let u, acc = 0;
+        if (p.timer) { u = p.timer.at(i * p.dt + tt); acc = p.timer.acc; } else u = (i * p.gap + tt * p.speed) % p.loop;
+        const yaw = this.loopPointInto(p, u, A.pos);
+        const near = !!N && A.pos.distanceToSquared(cam) < nearR2;
+        let pitch = 0, scale = hang ? A.big : A.one;
+        // the sway is only worked out where it can be seen
+        if (hang) { if (near) pitch = swing(t, ph0 + i * 1.7, acc, running ? 0.02 : 0.006); }
+        else if (tow) { if (u < p.L) pitch = 0.38; else scale = A.tuck; }     // pulled back going up, tucked up coming down
+        else if (pad && u >= p.L) A.pos.y -= 3;                                // the belt's return run is underneath
+        if (pitch) A.q.setFromEuler(A.e.set(pitch, yaw, 0));
+        else A.q.set(0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2));
+        A.m.compose(A.pos, A.q, scale);
+        if (near) {
+          const j = A.nc[k]++;
+          N.mesh.setMatrixAt(j, A.m);
+          if (N.bubble) N.bubble.setMatrixAt(j, A.m2.multiplyMatrices(A.m, u < p.L ? this.bubbleDown : this.bubbleUp));
+        } else mesh.setMatrixAt(A.cnt[k]++, A.m);
       }
-      touched[k] = true;
+      if (running) moved++;
     }
-    for (const k in touched) this.carriers[k].instanceMatrix.needsUpdate = true;
+    let shown = false;
+    for (const k in this.carriers) {
+      const mesh = this.carriers[k], n = A.cnt[k];
+      if (n || mesh.count) { mesh.count = n; mesh.visible = n > 0; mesh.instanceMatrix.needsUpdate = true; }
+      shown ||= n > 0;
+    }
+    for (const k in this.carriersNear) {
+      const N = this.carriersNear[k], n = A.nc[k];
+      shown ||= n > 0;
+      if (!n && !N.mesh.count) continue;
+      for (const m of N.bubble ? [N.mesh, N.bubble] : [N.mesh]) { m.count = n; m.visible = n > 0; m.instanceMatrix.needsUpdate = true; }
+    }
+    this.carriersShown = shown;
     this.liftsMoved = true;
     // trains and funicular cars shuttle between their two stations, waiting at each end
     for (const car of this.railCars || []) {
       const p = car.path, running = !this.closed.has('l' + p.l.id);
+      if (!all && !inView(p.mid, p.L / 2 + 40)) continue;
       const ride = Math.max(25, p.L / (p.l.kind === 'funicular' ? 16 : 12)), dwell = 10, cyc = 2 * (ride + dwell), ph = running ? (t + p.l.id * 7) % cyc : 0;
       const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
       const d = p.L * tri * tri * (3 - 2 * tri);
@@ -890,27 +1048,36 @@ vec3 groundColour() {
       car.mesh.position.copy(a).lerp(b, 0.5);
       car.mesh.lookAt(b);
       car.mesh.visible = !p.tunnels.some(([u, v]) => d > u + 8 && d < v - 8);
+      if (running) moved++;
     }
     for (const tram of this.trams) {
-      // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
-      // other descends; both wait in their stations, then swap directions.
+      // Jig-back tram, like the real one: each cabin stays on its own track ropes. As one climbs the other comes
+      // down; each speeds up out of its station, cruises, slows into the other one, and both wait there. The
+      // cabins lean against the change of speed and swing a little after passing a tower.
       const p = tram.path, running = !this.closed.has('l' + p.l.id);
-      const ride = 75, dwell = 14, cyc = 2 * (ride + dwell), ph = running ? t % cyc : 0;
-      const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
-      const e = tri * tri * (3 - 2 * tri);      // eases out of and into the stations
+      if (!all && !inView(p.mid, p.L / 2 + 60)) continue;
+      const s = shuttle(running ? t + p.l.id * 11 : 0, p.ride, 14, 0.18, A.sh);
       tram.cabins.forEach((c, i) => {
-        const { pos, yaw } = this.pathPoint(p, p.L * (i ? 1 - e : e), i ? -p.r : p.r);
-        c.position.copy(pos); c.rotation.y = yaw;
+        const f = i ? 1 - s.f : s.f, d = p.L * f, dir = i ? -1 : 1;
+        c.rotation.y = this.pathPointInto(p, d, i ? -p.r : p.r, c.position);
+        // the last tower passed, in the direction of travel
+        let since = Infinity;
+        if (s.v) for (const td of p.towerD) { const x = (d - td) * dir * Math.sign(s.v); if (x >= 0 && x < since) since = x; }
+        const kick = since < 400 ? 0.05 * Math.exp(-since / 90) * Math.sin(since / 16) : 0;
+        c.rotation.x = swing(t, i * 2.1 + p.l.id, dir * s.a * p.L, 0.012) + kick;
       });
+      if (running) moved++;
     }
+    return moved;
   }
 
   buildBuildings() {
-    const out = { pos: [], col: [] };
+    const out = { pos: [], col: [], win: [] };
     const walls = ['#c9b79c', '#b89f7f', '#d8cdb9', '#a98a69'].map((c) => new THREE.Color(c));
     const roofs = ['#4c5563', '#6b3b33', '#3f4a45'].map((c) => new THREE.Color(c));
     const snow = new THREE.Color('#eef3f6');
     this.resort.buildings.forEach((b, bi) => {
+      if (this.skipBuildings?.has(bi)) return;   // a lift's own terminal model stands here (buildLifts)
       const ring = [];
       let base = Infinity, area = 0;
       for (let i = 0; i < b.pts.length; i += 2) {
@@ -930,13 +1097,27 @@ vec3 groundColour() {
       const h = b.levels ? Math.max(b.h, b.levels * 3) : b.h;   // about 3 m a storey
       const wall = b.wallCol ? new THREE.Color(b.wallCol) : walls[bi % walls.length];
       const roof = (b.roofCol ? new THREE.Color(b.roofCol) : roofs[bi % roofs.length].clone()).lerp(snow, shape === 'flat' ? 0.35 : 0.7);
-      M.addBuilding(out, ring, base, h, wall, roof, shape);
+      // rows of windows one storey apart (the storey count from OpenStreetMap where it has one); a chimney on
+      // most chalet-sized pitched roofs
+      const storey = b.levels ? h / b.levels : 3;
+      M.addBuilding(out, ring, base, h, wall, roof, shape, { storey, chimney: shape !== 'flat' && area > 40 && area < 1500 && bi % 3 !== 2 });
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(out.pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(out.col, 3));
+    g.setAttribute('win', new THREE.Float32BufferAttribute(out.win, 4));
     g.computeVertexNormals();
-    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide })));
+    this.buildingMat = M.buildingMaterial();
+    this.scene.add(new THREE.Mesh(g, this.buildingMat));
+    this.updateGlow();
+  }
+
+  /** Windows light up warm in the evening and at night, by the resort's own sun time (from its longitude). */
+  updateGlow(now = new Date()) {
+    if (!this.buildingMat) return;
+    const lon = this.geo?.p?.lon0 ?? 0;
+    this.buildingMat.userData.glow.value = M.windowGlow(now.getUTCHours() + now.getUTCMinutes() / 60 + lon / 15);
+    this.glowAt = performance.now();
   }
 
   buildMarkers() {
@@ -957,7 +1138,6 @@ vec3 groundColour() {
     const av = ride ? M.makeRide(ride, avatar, color) : M.makeAvatar(avatar, color);
     obj.add(av);
     if (ring) obj.add(M.makeRing(ring));
-    obj.traverse((o) => { if (o.isMesh) clearsTreeMark(o.material); });
     obj.userData.key = key; obj.userData.avatar = av;
     return true;
   }
@@ -1057,6 +1237,7 @@ vec3 groundColour() {
 
   // ---------- public state setters
   setMode(mode) {
+    this.needsRender = true;
     if (mode === this.mode) return;
     const c = this.controls;
     if (mode === '2d') {
@@ -1085,6 +1266,7 @@ vec3 groundColour() {
    * point lists ([t, x, y, z, state, gap]) or null to hide it. Lift rides and stops are left out.
    */
   setBreadcrumbs(lists) {
+    this.needsRender = true;
     const n = lists ? lists.reduce((k, l) => k + l.length, 0) : -1;
     if (n === this.crumbCount) return;            // nothing new since the last draw
     this.crumbCount = n;
@@ -1110,9 +1292,10 @@ vec3 groundColour() {
     this.scene.add(this.crumbs);
   }
 
-  setUnits(u) { this.units = u; }
+  setUnits(u) { this.units = u; this.overlayDirty = true; }
 
   setMe(me) {
+    this.needsRender = true;
     // me: {x, y, heading, avatar, color, moving, lift: {id, frac, down} | null} | null
     this.me = me;
     if (!me) { this.meObj.visible = false; return; }
@@ -1121,6 +1304,7 @@ vec3 groundColour() {
 
   /** friends: [{id, name, avatar, color, x, y, heading, moving, age (s), stale, paused, online}] */
   setFriends(list) {
+    this.needsRender = true;
     const ids = new Set(list.map((f) => f.id));
     for (const [id, f] of this.friends) if (!ids.has(id)) { this.scene.remove(f.obj); this.friends.delete(id); }
     for (const d of list) {
@@ -1137,6 +1321,7 @@ vec3 groundColour() {
 
   /** Draw directions. `walk` lists the stretches done on foot, drawn over the route in their own colour. */
   setRoute(pts, walk = null) {
+    this.needsRender = true;
     if (this.routeLine) { for (const l of this.routeLine) { this.scene.remove(l); l.geometry.dispose(); l.material.dispose(); } this.routeLine = null; }
     if (!pts || pts.length < 4) return;
     const pos = this.segs(densify(pts, 12), 6);
@@ -1150,6 +1335,7 @@ vec3 groundColour() {
 
   /** Recorded track for playback: points [[t,x,y,z,state,gap],...] */
   setTrack(points) {
+    this.needsRender = true;
     if (this.trackLine) { this.scene.remove(this.trackLine); this.trackLine.geometry.dispose(); this.trackLine.material.dispose(); this.trackLine = null; }
     this.playObj.visible = false;
     if (!points || points.length < 2) return;
@@ -1168,6 +1354,7 @@ vec3 groundColour() {
 
   /** Replay marker: the same animated avatar as live tracking. p: {x, y, heading, moving, avatar, color, snap} */
   setPlayhead(p) {
+    this.needsRender = true;
     this.playObj.visible = !!p;
     this.play = p;
     if (!p) { this.playObj.userData.target = null; return; }
@@ -1287,8 +1474,9 @@ vec3 groundColour() {
     const w = (this.w = this.el.clientWidth || 1), h = (this.h = this.el.clientHeight || 1);
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     // the 3D picture may be drawn a little less sharp when the phone is struggling; text stays crisp
-    this.renderer.setPixelRatio(Math.min(dpr, QUALITY[this.q || 0].pr));
+    this.renderer.setPixelRatio(this.sharpPr = Math.min(dpr, QUALITY[this.q || 0].pr));
     this.renderer.setSize(w, h);
+    this.needsRender = true;
     this.overlayKey = '';
     this.overlay.width = w * dpr; this.overlay.height = h * dpr;
     this.overlay.style.width = w + 'px'; this.overlay.style.height = h + 'px';
@@ -1397,13 +1585,27 @@ vec3 groundColour() {
 
   setQuality(q) {
     this.q = Math.max(0, Math.min(QUALITY.length - 1, q));
-    if (this.trees) this.trees.count = Math.max(1, Math.floor(this.treeTotal * QUALITY[this.q].trees));
+    this.needsRender = true;
     if (this.perf) this.perf.q = this.q;
     this.resize();
   }
 
   /** Stop drawing while the start screen covers the map. */
   setPaused(p) { this.paused = p; }
+
+  /**
+   * Sharpness while moving: a little softer while the camera moves, sharp again SHARP_AFTER_MS after it stops. The
+   * canvas is redrawn in the same frame as the change, so no empty frame ever shows. Returns true when it changed.
+   */
+  movingSharpness(now) {
+    const full = this.sharpPr || 1;
+    if (full <= 1.2) return false;
+    const moving = !!this.flight || now - (this.lastCameraMove || 0) < SHARP_AFTER_MS;
+    const want = moving ? movingPr(full) : full;
+    if (want === this.renderer.getPixelRatio()) return false;
+    this.renderer.setPixelRatio(want);
+    return true;
+  }
 
   frame() {
     const c = this.controls, is3 = this.mode === '3d';
@@ -1437,8 +1639,18 @@ vec3 groundColour() {
       cam.updateProjectionMatrix();
     }
     // chairs are sub-pixel from far away: skip moving ~400 of them when zoomed right out
-    const farOut = is3 ? this.cam3.position.distanceTo(c.target) > 7500 : this.zoom2 < 0.12;
-    if (!farOut || this.flight) this.animateLifts(this.t);
+    const camDist = is3 ? this.cam3.position.distanceTo(c.target) : 0, now0 = performance.now();
+    const farOut = is3 ? camDist > 7500 : this.zoom2 < 0.12;
+    // While nobody touches the map, lifts are stepped smoothly up close and only a few times a second from
+    // further away, where a chair moves less than a pixel between steps; frames with nothing new are not drawn.
+    const touching = now0 - (this.lastInput || 0) < 900 || now0 - (this.lastCameraMove || 0) < 150;
+    const liftGap = touching || this.flight ? 0 : is3 ? (camDist < 1500 ? 0 : camDist < 4000 ? 100 : 200) : (this.zoom2 > 0.5 ? 0 : 150);
+    let liftsMoved = false;
+    if (!farOut || this.flight) {
+      if (now0 - (this.liftAt || 0) >= liftGap) { liftsMoved = this.animateLifts(this.t) > 0; this.liftAt = now0; }
+    } else if (this.carriersShown) { this.animateLifts(this.t, true); liftsMoved = true; }
+    if (now0 - (this.glowAt || 0) > 60000) this.updateGlow();
+    if (is3) this.updateTrees();
     // Avatars and markers are scaled with distance so they stay readable at mountain scale.
     // They grow as you zoom out so they stay findable, up to a cap (about 45 m tall for a
     // person) so that from far away they no longer swamp the map.
@@ -1466,11 +1678,15 @@ vec3 groundColour() {
     this.peopleMoving = people;
     if (justSettled) this.overlayDirty = true;
     if (key !== this.overlayKey) this.lastCameraMove = now;
-    // Nothing is moving when the view is still, no lift is being animated and nobody on the map is
-    // moving: the picture is then only refreshed twice a second (saves battery and heat).
-    const still = !this.flight && farOut && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
-    if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
-    if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
+    const resharp = this.movingSharpness(now);
+    // Nothing is moving when the view is still, no lift is being animated and nobody on the map is moving: the
+    // picture is then only refreshed every few seconds (saves battery and heat). Changes made from outside (a new
+    // route, closures, a pin) set overlayDirty or needsRender, which draw at once.
+    const still = !this.flight && !liftsMoved && !people && !justSettled && !this.overlayDirty && !this.needsRender && !resharp && key === this.overlayKey && now - (this.drawnAt || 0) < 3000;
+    if (!still) { this.pickLods(); this.renderer.render(this.scene, this.camera); this.drawnAt = now; this.needsRender = false; }
+    // the label layer: when the view or what is on it changed; otherwise every second while friends are shown (their
+    // "last seen" times) and every few seconds when not
+    if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > (this.friends.size ? 1000 : 3000)) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
       this.drawOverlay();
     }
@@ -1624,32 +1840,7 @@ function densify(pts, step) {
   return out;
 }
 
-/** Is (x, y) inside the closed polygon [x0, y0, x1, y1, ...]? */
-function inPoly(P, x, y) {
-  let c = false;
-  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
-    const xi = P[i], yi = P[i + 1], xj = P[j], yj = P[j + 1];
-    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
-  }
-  return c;
-}
-
-/** Distance from (x, y) to the nearest edge of the closed polygon [x0, y0, x1, y1, ...]. */
-function edgeDist(P, x, y) {
-  let best = Infinity;
-  for (let i = 0, j = P.length - 2; i < P.length; j = i, i += 2) {
-    const ax = P[j], ay = P[j + 1], dx = P[i] - ax, dy = P[i + 1] - ay, L2 = dx * dx + dy * dy;
-    const t = L2 ? Math.max(0, Math.min(1, ((x - ax) * dx + (y - ay) * dy) / L2)) : 0;
-    best = Math.min(best, Math.hypot(x - ax - t * dx, y - ay - t * dy));
-  }
-  return best;
-}
-
-/** A solid thing in front of a tree (a person, a lift, a building) clears the tree's stencil mark, so the runs drawn
- * through the trees (buildTrails) never draw over it. */
-function clearsTreeMark(mat) {
-  for (const m of Array.isArray(mat) ? mat : [mat]) {
-    if (!m || m.stencilWrite || m.isLineMaterial || m.transparent) continue;
-    Object.assign(m, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
-  }
-}
+// Stencil mark and draw order for runs seen through trees (buildTrails): the ground first, then the runs, which mark
+// where they are seen, then everything else (trees, lifts, buildings) at the default order 0.
+const SEEN_BIT = 2;
+const GROUND_ORDER = -2, RUN_ORDER = -1;

@@ -2,24 +2,24 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**513 runs (324 named, 261.7 km), 40 lifts. 4 things to look at.**
+**538 runs (340 named, 266.6 km), 40 lifts. 4 things to look at.**
 
-- **LOOK**: 33 runs on the resort's list are not on the map  
-  0-3 Cache Trees, 1-3 Little Gullies, Bone Crusher, Class 5, Class 6, Cutbank, Double Direct, Erika's Glade, Final Final, Half Moon, Kastle Rock (A-Z), Lady Yaya, Launcher Road, Lost Frontier, Mr. Ed, Orbit, Ore Cart, Oxbow, PK Ridge, Secret Meadow, Summit Direct, Tears, The Gullies 1, The Gullies 2, The Gullies 3, The Gullies 4, The Gullies 5, The Gullies 6, Three Forks 1, Three Forks 2, Three Forks 3, Trident, Zucchini Patch (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
+- **LOOK**: 7 runs on the resort's list are not on the map  
+  Class 5, Class 6, Final Final, Half Moon, Launcher Road, Ore Cart, Oxbow (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - **LOOK**: 1 shown runs rated by guess  
   (no name)
-- **LOOK**: reachable from the base: 511 of 515 run pieces  
+- **LOOK**: reachable from the base: 537 of 541 run pieces  
   not reachable: ['Highway 102', 'Homeward Bound', 'Meadowlark']
 - **LOOK**: 1 runs climb more than 12 m  
   Headwaters Hiking Area 20 m
-- info: 29 joins made automatically (look at the longest ones on the map)  
-  Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Upper A-Z Chutes top ski 257 m; Whitetail top walk 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top walk 73 m; Gambler top ski 47 m; Dodgeball top ski 86 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Diamond Hitch top ski 139 m; None bottom walk 176 m; Dodgeball bottom ski 56 m; None top walk 210 m; Papa Bear top ski 149 m; Upper A-Z Chutes ski 327 m; Headwaters Hiking Area ski 250 m; Three Forks ski 54 m; Whitetail ski 52 m; Class 4 ski 72 m; Rock Creek ski 79 m; Dirtbag Wall ski 102 m; Three Moons ski 105 m; Bonecrusher Hiking Area ski 253 m; Horseshoe Bowl ski 193 m; Yellow Hammer ski 41 m; unnamed#461
-- info: 2 run pieces hidden (not on the resort's list and not a link)  
-  (no name) (1461961711, 489 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1462084327, 57 m): unnamed piece, not on the resort's list, leads nowhere on it
+- info: 39 joins made automatically (look at the longest ones on the map)  
+  Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Whitetail top walk 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top ski 42 m; Gambler top ski 57 m; Dodgeball top ski 86 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Diamond Hitch top ski 139 m; None bottom walk 176 m; Dodgeball bottom ski 56 m; None top walk 210 m; Papa Bear top ski 149 m; Orbit top ski 65 m; Trident top walk 44 m; Trident bottom ski 51 m; Double Direct top walk 74 m; Summit Direct top ski 43 m; Summit Direct bottom ski 41 m; Tears top walk 67 m; Kastle Rock (A-Z) top ski 42 m; Kastle Rock (A-Z) bottom walk 85 m; Zucchini Patch top ski 42 m; Zucchini Patch bottom ski 39 m; 0-3 Cache Tre
+- info: 3 run pieces hidden (not on the resort's list and not a link)  
+  (no name) (1461366088, 21 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1461366090, 9 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1461366089, 6 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 9 lifts flagged for review were already on the previous build (checked then)
 - info: audit: dead end: 2, flat black: 2, no rating: 2, run climbs: 1
-- info: same counts as the previous build
+- info: change from the previous build: runs 526 -> 538, named 324 -> 340, km 262.9 -> 266.6
 - pass: ratings checked against the resort's own list  
-  284 on the list, 431 matched, 0 corrected from OpenStreetMap
+  284 on the list, 478 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 39 of 39 on the map
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)

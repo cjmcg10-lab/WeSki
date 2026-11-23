@@ -512,4 +512,8 @@ export default {
   1410: 'Nouvelle version prête',
   1411: 'Recharger',
   1430: 'Très froid sur les remontées : ressenti de {0} à l’heure de ski la plus froide.',
+  1452: "Bords lissés",
+  1453: "Adoucit les bords crénelés de la carte 3D. S’applique la prochaine fois que vous ouvrez une montagne.",
+  1454: "Désactivé par défaut sur les écrans très nets, où les bords crénelés se voient à peine et où les lisser coûte le plus en vitesse. Désactivez-le si la carte est lente ; activez-le si les bords paraissent crénelés.",
+  1455: "S’applique la prochaine fois que vous ouvrez une montagne.",
 };

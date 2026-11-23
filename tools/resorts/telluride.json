@@ -154,5 +154,102 @@
   "trail:Gold Hill 6 (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (714 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Lower Galloping Goose (bottom) -> trail:Marmot": "2026-11-23: the run stops short; the terrain falls from its end to Marmot (20 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Lower Galloping Goose (bottom) -> trail:Meadows": "2026-11-23: the run stops short; the terrain falls from its end to Meadows (14 m, 0 m of climb) (tools/check_connections.py dead end)"
- }
+ },
+ "rename": {
+  "Humbolt Draw": "Humboldt Draw"
+ },
+ "way_names": {
+  "530459912": "Dew Drop Drain",
+  "530890349": "Bail Out (black, Oak Street side)",
+  "530890353": "Bail Out (blue)",
+  "530890373": "Bail Out (black, Oak Street side)",
+  "1055162327": "Sundance (upper, blue)",
+  "1055162328": "Sundance (lower, green)"
+ },
+ "extra_trails": [
+  {
+   "name": "Silver Glade",
+   "glade": true,
+   "pts": [
+    [-107.82531, 37.91202],
+    [-107.82545, 37.91216],
+    [-107.82559, 37.9123],
+    [-107.82572, 37.91245],
+    [-107.82586, 37.91259],
+    [-107.82599, 37.91274],
+    [-107.82612, 37.91289],
+    [-107.82625, 37.91303],
+    [-107.82639, 37.91318],
+    [-107.82652, 37.91332],
+    [-107.82665, 37.91347],
+    [-107.82679, 37.91362],
+    [-107.82692, 37.91376],
+    [-107.82705, 37.91391],
+    [-107.82719, 37.91405],
+    [-107.82733, 37.91419],
+    [-107.82748, 37.91433],
+    [-107.82766, 37.91444],
+    [-107.82783, 37.91456],
+    [-107.82801, 37.91467],
+    [-107.8282, 37.91477],
+    [-107.8284, 37.91486],
+    [-107.8286, 37.91495],
+    [-107.82879, 37.91503],
+    [-107.829, 37.91512],
+    [-107.8292, 37.9152],
+    [-107.82932, 37.91524]
+   ],
+   "why": "Telluride 2024-25 trail map (skimap.org 45884): glade on the north side of the Apex lift (Lift 6) down to its base; placed from 8 control points (lift ends, run tops; median leave-one-out error 120 m) and kept 25 to 35 m off the lift line. Glade: approximate (about 100 m)",
+   "fitted": "terrain: never climbs, moved 1 m on average"
+  },
+  {
+   "name": "Giant Steps",
+   "pts": [
+    [-107.82496, 37.91206],
+    [-107.82595, 37.91211],
+    [-107.82691, 37.91311],
+    [-107.8275, 37.91349],
+    [-107.82813, 37.91385],
+    [-107.82891, 37.91407],
+    [-107.8293, 37.91462],
+    [-107.83002, 37.91511]
+   ],
+   "why": "Telluride 2024-25 trail map (skimap.org 45884): drawn right beside the Apex lift (Lift 6) down to its base; placed from 8 control points (median leave-one-out error 120 m), then moved onto the open strip in the 1 m canopy height map (Meta/WRI): the lift-line clearing (tree cover 4%, 30% before), moved 22 m on average"
+  },
+  {
+   "name": "Chongos",
+   "pts": [
+    [-107.82538, 37.91184],
+    [-107.82644, 37.912],
+    [-107.82726, 37.91208],
+    [-107.82868, 37.91225]
+   ],
+   "why": "Telluride 2024-25 trail map (skimap.org 45884): leaves the Apex lift line near the top of Silver Glade and Giant Steps and runs across toward Happy Thought; placed from 8 control points (median leave-one-out error 120 m). The canopy map shows no clear strip (13% tree cover on the best line), so the trail-map line is kept: approximate (about 120 m)"
+  },
+  {
+   "name": "Buzz's Glade",
+   "glade": true,
+   "pts": [
+    [-107.82291, 37.90717],
+    [-107.82437, 37.90781],
+    [-107.82601, 37.9086],
+    [-107.82688, 37.90882]
+   ],
+   "why": "Telluride 2024-25 trail map (skimap.org 45884): glade from See Forever down between Happy Thought and Electra toward Bon Vivant; placed from 8 control points (median leave-one-out error 120 m). Glade: approximate (about 100 m)"
+  },
+  {
+   "name": "Stormin' Norman",
+   "pts": [
+    [-107.82951, 37.91012],
+    [-107.8298, 37.9106],
+    [-107.8302, 37.91104],
+    [-107.8307, 37.91144],
+    [-107.83079, 37.91202],
+    [-107.83087, 37.91317],
+    [-107.8315, 37.91354],
+    [-107.83192, 37.91389]
+   ],
+   "why": "Telluride 2024-25 trail map (skimap.org 45884): from Bon Vivant down between Ophir Loop and Dew Drop; placed from 8 control points (median error 120 m), then moved onto the open strip in the 1 m canopy height map (Meta/WRI) not taken by another run: tree cover 0% (24% before), moved 35 m on average"
+  }
+ ]
 }

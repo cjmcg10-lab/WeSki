@@ -340,8 +340,15 @@ export class Globe {
     return new THREE.Color(out[0], out[1], out[2]);
   }
 
+  /** Stop drawing while the globe is covered (the mountain list pulled up to fill the screen), to save battery. */
+  setPaused(on) {
+    this.paused = !!on;
+    if (!this.paused && this.alive && !this.running) { this.last = performance.now(); this.loop(); }
+  }
+
   loop() {
-    if (!this.alive) return;
+    if (!this.alive || this.paused) { this.running = false; return; }
+    this.running = true;
     requestAnimationFrame(() => this.loop());
     const now = performance.now(), dt = Math.min(0.12, (now - this.last) / 1000);
     this.last = now; this.t += dt;

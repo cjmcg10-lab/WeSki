@@ -444,8 +444,6 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 #start #globe { z-index: 1; }
 .start-top { z-index: 3; }
 .start-top { padding: calc(var(--sat) + 22px) 0 0; background: none; transition: opacity .9s; }
-.start-logo { display: flex; align-items: center; justify-content: center; gap: 10px; }
-.start-logo img { width: 52px; height: 52px; border-radius: 13px; box-shadow: 0 4px 16px rgba(0, 0, 0, .5); }
 .start-top h1 { font-size: 34px; letter-spacing: -.6px; }
 .start-top p { background: none; box-shadow: none; padding: 0; margin: 6px 0 0; font-size: 16.5px; font-weight: 500; color: #e8f0f8; text-shadow: 0 2px 8px rgba(0, 0, 0, .7); }
 #start.fade .start-sky, #start.fade .start-top { opacity: 0; }
@@ -833,3 +831,32 @@ textarea.field { resize: vertical; font: inherit; }
 #update-bar .up-go { flex: none; border: 0; border-radius: 10px; padding: 7px 14px; background: var(--teal); color: var(--teal-ink); font: inherit; font-weight: 700; cursor: pointer; }
 #update-bar .up-x { flex: none; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font-size: 14px; cursor: pointer; }
 @keyframes up-in { from { transform: translateY(-12px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ---------- home screen: the mountain list pulls up to fill the screen (2026-11-23)
+   Three resting places: normal, .full (whole screen; globe, title and backdrop fade out) and .mini (only its title).
+   main.js sets height / transform / --padt inline while dragging and gliding, then clears them. */
+#start-panel { --padt: 22px; padding-top: var(--padt); max-height: calc(var(--app-h) * .54);
+  transition: transform .34s cubic-bezier(.2, .8, .2, 1), height .34s cubic-bezier(.2, .8, .2, 1), padding-top .34s cubic-bezier(.2, .8, .2, 1), border-radius .34s; }
+#start-panel.dragging { transition: none; }
+#start-panel.full { --padt: calc(var(--sat) + 22px); height: 100%; max-height: none; border-radius: 0; }
+#start-panel .grab { top: calc(var(--padt) - 13px); transition: top .34s cubic-bezier(.2, .8, .2, 1); }
+#start-panel.dragging .grab { transition: none; }
+#start-panel .grab::before { content: ''; position: absolute; inset: -14px -30px; }   /* a bigger target for the finger */
+#start #globe { transition: opacity .4s ease, transform .5s cubic-bezier(.2, .8, .2, 1); }
+.start-top { transition: opacity .9s, transform .5s cubic-bezier(.2, .8, .2, 1); }
+#start.full #globe { opacity: 0; transform: scale(.9); pointer-events: none; }
+#start.full .start-top { opacity: 0; transform: translateY(-28px); transition-duration: .3s, .4s; }
+#start.full .start-sky { opacity: 0; transition-duration: .4s; }
+#start.full .globe-out { opacity: 0; pointer-events: none; }
+
+/* ---------- home screen title: the app's name in a display font over the night-sky backdrop (2026-11-23) */
+/* Bowlby One (SIL Open Font License, public/fonts/OFL-bowlby-one.txt): snow-white letters standing on a teal block,
+   like the lettering on an old ski poster. Only the Latin letters are in the file, which is all the name needs. */
+@font-face { font-family: "Bowlby One"; font-style: normal; font-weight: 400; font-display: swap; src: url(/fonts/bowlby-one.woff2) format("woff2"); }
+.start-top { padding-top: calc(var(--sat) + 14px); }
+.start-top .start-title { margin: 0; font-family: "Bowlby One", var(--font-head); font-weight: 400; font-size: clamp(34px, 10.4vw, 42px); line-height: 1.1; letter-spacing: 0; color: #f6fbff;
+  text-shadow: 0 1px 0 #3ee6c4, 0 2px 0 #2fcdae, 0 3px 0 #23b497, 0 4px 0 #189a80, 0 5px 0 #0f7f69, 0 9px 18px rgba(0, 0, 0, .65), 0 0 26px rgba(62, 230, 196, .3); }
+.start-top .start-slogan { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 7px 0 0; padding: 0 6px; font-family: var(--font-head); font-size: clamp(11.5px, 3.4vw, 13px); font-weight: 800; letter-spacing: clamp(1.5px, .66vw, 2.6px); text-transform: uppercase; color: #c8f6ee; text-shadow: 0 1px 8px rgba(0, 10, 25, .9); }
+/* the little lines either side give way first when a language needs the room */
+.start-top .start-slogan::before, .start-top .start-slogan::after { content: ''; flex: 1 1 0; max-width: 26px; height: 2px; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--teal, #3ee6c4)); }
+.start-top .start-slogan::after { transform: scaleX(-1); }
