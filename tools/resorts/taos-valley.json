@@ -46,21 +46,22 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "isolated_lifts": [
-  "Kachina Peak Lift",
-  "Lift 2",
-  "Lift 4",
-  "Lift 7",
-  "Lift 7A",
-  "Lift 8"
+ "links": [
+  [
+   "Lift 1 (top)",
+   "trail:White Feather"
+  ],
+  [
+   "Lift 1 (top)",
+   "trail:Psycho Path"
+  ]
  ],
- "isolated_notes": {
-  "Kachina Peak Lift": "rule: not joined to the rest of the lifts on the map",
-  "Lift 2": "rule: not joined to the rest of the lifts on the map",
-  "Lift 4": "rule: not joined to the rest of the lifts on the map",
-  "Lift 7": "rule: not joined to the rest of the lifts on the map",
-  "Lift 7A": "rule: not joined to the rest of the lifts on the map",
-  "Lift 8": "rule: not joined to the rest of the lifts on the map"
+ "links_notes": {
+  "Lift 1 (top) -> trail:White Feather": "2026-11-23: the 2026 trail map (skimap.org 48818) shows the green High Five running from the Lift 1 top past the Whistlestop Cafe to White Feather and the Lift 2 base; OpenStreetMap lacks it, which cut Lifts 2, 4, 7, 7A, 8 and Kachina off from the base",
+  "Lift 1 (top) -> trail:Psycho Path": "2026-11-23: on the 2026 trail map Psycho Path leaves the Lift 1 top area below White Feather; OpenStreetMap only joins it through a short unnamed piece that the resort does not show (hidden)"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Lift 2, Lift 7A, Lift 7, Lift 8, Lift 4, Kachina Peak Lift"
+ "rename": {
+  "Powerderhorn": "Powderhorn",
+  "Whitefeather Gully": "White Feather Gully"
+ }
 }
