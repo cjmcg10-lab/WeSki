@@ -276,5 +276,15 @@
   "New Sensation": "Solitude Nordic Center: cross-country trails in Silver Lake flats, not downhill runs",
   "Silver Lake": "Solitude Nordic Center: cross-country trails in Silver Lake flats, not downhill runs",
   "Solitude Street": "Solitude Nordic Center: cross-country trails in Silver Lake flats, not downhill runs"
+ },
+ "not_runs": {
+  "Main Street Terrain Park": "terrain-park features set up along the Main Street run (orange park symbols on Main Street on the 2026 trail map); Main Street itself is on the map",
+  "Upper Tude Dudes Terrain Park": "the upper part of the Tude Dude's terrain park beside Moonbeam, shown on the map as the park outline (OpenStreetMap 'Tude Dude's Terrain Park'), not a separate run"
+ },
+ "notes_trace": {
+  "Serenity Upper": "2026-11-23: named on OpenStreetMap's upper Serenity/F.I.S. way (config way_names).",
+  "Serenity Lower": "2026-11-23: named on OpenStreetMap's lower Serenity/F.I.S. way (config way_names).",
+  "Evergreen Chutes": "2026-11-23: traced (config extra_trails), approximate.",
+  "Highway to Heaven": "2026-11-23: traced (config extra_trails), approximate."
  }
 }

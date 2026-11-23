@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**146 runs (132 named, 80.8 km), 18 lifts. 1 things to look at.**
+**147 runs (132 named, 80.8 km), 18 lifts. 1 things to look at.**
 
 - **LOOK**: lifts on the resort's list: 14 of 16 on the map  
   MISSING: Easy Up, Schoolhouse Lift. A missing chair or gondola usually means a missing area: find it before going live (not in OpenStreetMap: extra_lifts; removed by the resort: explain it in the official json under lifts_explained)
@@ -13,7 +13,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   111 on the list, 158 matched, 0 corrected from OpenStreetMap
 - pass: resort areas mostly missing from the map: 0
 - pass: 0 shown runs rated by guess
-- pass: reachable from the base: 146 of 146 run pieces
+- pass: reachable from the base: 147 of 147 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m
 - pass: audit: nothing flagged

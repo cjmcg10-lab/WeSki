@@ -7,19 +7,7 @@
  "building_range": 150,
  "poi_range": 120,
  "area_name": "SkiWelt Wilder Kaiser Brixental",
- "extra_trails": [
-  {
-   "name": "33 Übungslift Salvista",
-   "pts": [
-    [12.16749, 47.48274],
-    [12.1663, 47.48322],
-    [12.16511, 47.48369],
-    [12.16393, 47.48416],
-    [12.16274, 47.48463]
-   ]
-  }
- ],
- "extra_note_33": "33 Übungslift Salvista: the practice slope beside the Salvista T-bar at Itter (lift 33 on the 2025-26 map), drawn 35 m beside the lift; approximate.",
+ "extra_note_33": "33 Übungslift Salvista: the practice slope beside the Salvista T-bar at Itter (lift 33 on the 2025-26 map). It was drawn by hand 35 m beside the lift until OpenStreetMap mapped it (way 1246174319, no name, 17 m from the hand-drawn line); since 2026-11-23 that way carries the name and the hand-drawn copy is gone.",
  "include_ways": [
   4442612,
   4442613,
@@ -45,5 +33,15 @@
  "two_way_lifts": [
   "Sonnenband"
  ],
- "two_way_lifts_note": "Sonnenband: a flat beginner conveyor, usable both ways."
+ "two_way_lifts_note": "Sonnenband: a flat beginner conveyor, usable both ways.",
+ "way_names": {
+  "1246174319": "33 Übungslift Salvista"
+ },
+ "shared_runs": [
+  [
+   "Südhang - Abfahrt II",
+   "Verbindung Osthang Berg -Südhang"
+  ]
+ ],
+ "shared_runs_note": "Verbindung Osthang Berg -Südhang was drawn 5-12 m beside Südhang - Abfahrt II for almost its whole length (two OpenStreetMap ways on one slope, neither name on the resort's list): drawn once (2026-11-23)."
 }

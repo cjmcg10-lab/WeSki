@@ -286,7 +286,8 @@
   "Supreme (Lower)": "Supreme",
   "Supreme (Upper)": "Supreme",
   "Tug of War (Lower)": "Tug of War",
-  "Tug of War (Upper)": "Tug of War"
+  "Tug of War (Upper)": "Tug of War",
+  "Daly Chutes": "Daly Chute 1"
  },
  "lifts": [
   "Aurora",
@@ -583,5 +584,17 @@
  },
  "lifts_explained": {
   "East Village Gondola Mid Station": "a station of the East Village Gondola, not a separate lift"
+ },
+ "notes_trace": {
+  "Kebob": "2026-11-23: OpenStreetMap spells it Kabob (between Keno and Nabob, where the trail map puts Kebob): config rename.",
+  "Humbug": "2026-11-23: OpenStreetMap spells it Ham Bug: config rename.",
+  "Daly Chutes": "2026-11-23: the feed's one line for the chutes OpenStreetMap maps one by one as Daly Chute 1 to 8.",
+  "Ottobahn": "2026-11-23: the 2026-27 trail map draws Ottobahn (blue square) just left of Little Reb with the race-course signs; OpenStreetMap maps that line as 'Race Course'. Config rename.",
+  "Deertrail": "2026-11-23: the 2026-27 trail map draws Deertrail (green) along the boundary from the Jordanelle side to the Mountaineer Express base; OpenStreetMap maps that line as 'Keetly'. Config rename.",
+  "Short Line": "2026-11-23: named on an unnamed OpenStreetMap piece (config way_names).",
+  "DT's Trees": "2026-11-23: traced (config extra_trails), approximate.",
+  "Gumby Glade": "2026-11-23: traced, approximate.",
+  "Four Ply": "2026-11-23: traced, approximate.",
+  "Son of Rattler": "2026-11-23: traced, approximate."
  }
 }

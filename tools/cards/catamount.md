@@ -2,7 +2,7 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**49 runs (46 named, 19.0 km), 7 lifts. Ready.**
+**49 runs (46 named, 18.9 km), 7 lifts. Ready.**
 
 - info: 1 joins made automatically (look at the longest ones on the map)  
   Ali's Alley ski 28 m
