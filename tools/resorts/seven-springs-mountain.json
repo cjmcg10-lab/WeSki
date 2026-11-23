@@ -50,5 +50,12 @@
  ],
  "isolated_notes": {
   "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Little North Face Glades": "Little Northface Glades",
+  "North Face Bypass Trail": "Northface Bypass Trail",
+  "Yodeler By Pass": "Yodeler Bypass",
+  "Soutwind Village Trail": "Southwind Village Trail",
+  "E Southwind Village Trail": "Southwind Village Trail"
  }
 }

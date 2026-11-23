@@ -38,5 +38,16 @@
  },
  "two_way_lifts": [
   "Silver Mountain Gondola List"
- ]
+ ],
+ "rename": {
+  "LowerPaymaster": "Lower Paymaster",
+  "LowerTerrible Edith": "Lower Terrible Edith",
+  "Quicksliver": "Quicksilver",
+  "Sliver Basin": "Silver Basin",
+  "Sliver Basin Traverse": "Silver Basin Traverse",
+  "16-To-1": "16 to 1",
+  "Alpineway": "Alpenway",
+  "Heavenly": "Heaven",
+  "Shear Bilss": "Sheer Bliss"
+ }
 }

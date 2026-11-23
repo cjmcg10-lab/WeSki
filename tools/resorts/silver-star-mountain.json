@@ -49,5 +49,11 @@
  ],
  "isolated_notes": {
   "Tube Town Carpet": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Abbot's Gulch": "Abbott's Gulch",
+  "Freefall": "Free Fall",
+  "Rusty Whistle": "Russty Whistle",
+  "FIS": "F.I.S."
  }
 }

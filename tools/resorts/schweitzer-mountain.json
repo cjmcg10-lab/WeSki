@@ -51,5 +51,11 @@
   "Idyle Our T-Bar": "rule: not joined to the rest of the lifts on the map",
   "Stella": "rule: not joined to the rest of the lifts on the map"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple"
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple",
+ "rename": {
+  "Scars Spur": "Sars Spur",
+  "Siberia Runout": "Siberia Run Out",
+  "Kohli's Big TImber": "Kohli's Big Timber",
+  "Lakeside": "Lakeside Chutes"
+ }
 }
