@@ -284,19 +284,170 @@ function seat(g, avatar, color, x, y, z, yaw, inside = false) {
   return av;
 }
 
-/** T-bar / platter hanger on a surface lift: hangs from the cable at y=0. */
-export function tbarGeometry() {
+// ---------- lifts: carriers, towers, stations
+// Every carrier hangs from the cable at y = 0 and travels towards +Z. Chairs and cabins come in two
+// versions: a detailed one drawn near the camera and a few boxes for everything further away (the
+// map switches between them per carrier, see SkiMap.animateLifts).
+
+const STEEL = 0x3a3f4a, DARK = 0x30343c, LIGHT = 0xd8dde6, WHITE = 0xe9edf2, GLASS = 0x26384c, WALL = 0xcfc8bc, CONCRETE = 0x9a9ea5;
+const cyl = (rt, rb, h, seg = 8, open = false) => new THREE.CylinderGeometry(rt, rb, h, seg, 1, open);
+const UP = new THREE.Vector3(0, 1, 0);
+
+/** A square bar from point a to point b (thickness t). */
+function beam(a, b, t, color) {
+  const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A), len = d.length();
+  const g = box(t, len, t);
+  g.applyQuaternion(new THREE.Quaternion().setFromUnitVectors(UP, d.normalize()));
+  g.translate((A.x + B.x) / 2, (A.y + B.y) / 2, (A.z + B.z) / 2);
+  return part(g, color);
+}
+
+/** A box w x h x d with its corners cut off (an octagonal prism): cabins look rounded with 8 sides.
+ * top < 1 tapers it towards the top (a roof cap). */
+function oct(w, h, d, color, x, y, z, top = 1) {
+  const k = 2 * Math.cos(Math.PI / 8);
+  const g = cyl(top, 1, h, 8).rotateY(Math.PI / 8).scale(w / k, 1, d / k);
+  return part(g, color, x, y, z);
+}
+
+/** A low hipped roof w x d, h tall, its eaves at y (a square frustum). */
+function hipRoof(w, d, h, color, x, y, z) {
+  const g = cyl(0.3, 1, h, 4).rotateY(Math.PI / 4).scale(w / Math.SQRT2, 1, d / Math.SQRT2);
+  return part(g, color, x, y + h / 2, z);
+}
+
+/**
+ * Chairlift chair: grip and hanger, seat frame, padded seat and backrest, armrests, the safety bar
+ * lowered with its footrest. Seat surface at y = -3.33 (makeRide seats riders on it). The weather
+ * bubble is a separate see-through piece (bubbleGeometry).
+ */
+export function chairGeometry(seats, bubble = false) {
+  const n = Math.max(2, seats || 2), w = 0.55 * n + 0.2, cushion = 0x33405a, bar = 0xc3c9d2;
+  const p = [
+    part(box(0.3, 0.34, 0.62), DARK, 0, 0.02, 0),                 // grip clamped on the cable
+    part(box(0.16, 0.2, 0.95), STEEL, 0, 0.24, 0),                // grip carriage with its rollers
+    part(box(0.11, 2.3, 0.11), STEEL, 0, -1.25, 0),               // hanger
+    beam([0, -2.36, 0], [0, -2.64, -0.32], 0.11, STEEL),          // knee back to the frame
+    part(box(w, 0.09, 0.09), STEEL, 0, -2.64, -0.32),             // top of the seat frame
+    part(box(w - 0.08, 0.7, 0.09), cushion, 0, -2.98, -0.26, -0.12),
+    part(box(w - 0.04, 0.12, 0.6), cushion, 0, -3.39, 0.08),
+    part(box(w, 0.06, 0.62), STEEL, 0, -3.48, 0.08),
+    part(box(w, 0.06, 0.06), bar, 0, -2.95, 0.62),                // safety bar, down
+    part(box(w * 0.92, 0.07, 0.26), bar, 0, -3.78, 0.74),         // footrest
+  ];
+  for (const sx of [-w / 2, w / 2]) {
+    p.push(beam([sx, -2.64, -0.32], [sx, -3.42, -0.2], 0.08, STEEL));
+    p.push(part(box(0.07, 0.07, 0.5), STEEL, sx, -3.06, 0.0));
+    p.push(beam([sx, -2.68, -0.3], [sx, -2.95, 0.62], 0.06, bar));
+  }
+  const pairs = Math.ceil(n / 2);
+  for (let k = 0; k < pairs; k++) {
+    const x = -w / 2 + ((k + 0.5) * w) / pairs;
+    p.push(beam([x, -2.95, 0.62], [x, -3.76, 0.7], 0.05, bar));
+  }
+  if (bubble) p.push(part(box(w + 0.1, 0.06, 0.5), 0xd9762b, 0, -1.98, -0.1));   // the bubble's hinge rail
+  return mergeGeometries(p);
+}
+
+/** The few boxes a chair is drawn with from further away (same size and colours as the detailed one). */
+export function chairFarGeometry(seats, bubble = false) {
+  const w = 0.55 * Math.max(2, seats || 2) + 0.2;
   return mergeGeometries([
-    part(box(0.08, 2.6, 0.08), 0x3a3f4a, 0, -1.3, 0),
-    part(box(0.9, 0.1, 0.1), 0xd8dde6, 0, -2.6, 0),
+    part(box(0.12, 2.6, 0.12), STEEL, 0, -1.3, 0),
+    part(box(w, 0.14, 0.7), 0x25282f, 0, -3.4, 0.1),
+    part(box(w, 0.8, 0.12), 0x25282f, 0, -2.95, -0.22),
+    part(box(w, 0.08, 0.3), LIGHT, 0, -3.75, 0.7),
+    ...(bubble ? [part(box(w + 0.15, 1.0, 0.9), 0xd9762b, 0, -2.4, 0.35)] : []),
   ]);
 }
 
-/** Platter (button) lift hanger: a single pole with a disc. */
+/** Pivot of a chair's bubble (it swings about the x axis through here). */
+export const BUBBLE_PIVOT = [0, -2.95, 0.05];
+
+/**
+ * A chair's weather bubble, lowered: a curved see-through shell over the seat from above the
+ * backrest down to the footrest, with side panels. Drawn with its own tinted, see-through
+ * material. Rotate it by about -1.9 rad round BUBBLE_PIVOT to raise it behind the chair.
+ */
+export function bubbleGeometry(seats) {
+  const w = 0.55 * Math.max(2, seats || 2) + 0.35, R = 1.02, [, cy, cz] = BUBBLE_PIVOT;
+  const a0 = (100 * Math.PI) / 180, a1 = (-38 * Math.PI) / 180, N = 6, pos = [];
+  const at = (k, x) => { const a = a0 + ((a1 - a0) * k) / N; return [x, cy + R * Math.sin(a), cz + R * Math.cos(a)]; };
+  for (let k = 0; k < N; k++) {
+    const p0 = at(k, -w / 2), p1 = at(k, w / 2), p2 = at(k + 1, w / 2), p3 = at(k + 1, -w / 2);
+    pos.push(...p0, ...p1, ...p2, ...p0, ...p2, ...p3);
+    for (const x of [-w / 2, w / 2]) pos.push(x, cy, cz, ...at(k, x), ...at(k + 1, x));
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  g.computeVertexNormals();
+  return g;
+}
+
+/** Gondola cabin: rounded body, glass all round with white pillars, roof cap, grip carriage, ski racks. */
+export function gondolaGeometry(color = 0xd32f2f) {
+  const p = [
+    part(box(0.34, 0.36, 1.0), DARK, 0, 0.05, 0),               // grip carriage
+    part(box(0.5, 0.12, 0.55), STEEL, 0, 0.3, 0),
+    part(box(0.13, 1.25, 0.13), STEEL, 0, -0.7, 0),             // hanger
+    part(box(0.9, 0.12, 0.45), STEEL, 0, -1.35, 0),
+    oct(2.0, 0.3, 2.3, WHITE, 0, -1.56, 0, 0.8),                // roof
+    oct(1.92, 1.05, 2.22, GLASS, 0, -2.24, 0),                  // windows
+    oct(2.02, 0.12, 2.32, WHITE, 0, -2.8, 0),                   // white belt line
+    oct(2.0, 0.85, 2.3, color, 0, -3.28, 0),                    // lower body
+    oct(1.7, 0.18, 1.98, 0x2a2f38, 0, -3.78, 0),                // floor
+    part(box(0.04, 1.85, 0.05), 0x1d2530, 0, -2.75, 1.16),      // door seam
+  ];
+  const px = 0.3536 * 2.0, pz = 0.3536 * 2.3;                   // the middle of each cut corner
+  for (const x of [-px, px]) for (const z of [-pz, pz]) p.push(part(box(0.1, 1.05, 0.1), WHITE, x, -2.24, z));
+  for (const x of [-1.06, 1.06]) p.push(part(box(0.1, 0.55, 1.3), 0x1d2530, x, -3.1, 0));   // ski racks
+  return mergeGeometries(p);
+}
+
+export function gondolaFarGeometry(color = 0xd32f2f) {
+  return mergeGeometries([
+    part(box(0.14, 1.5, 0.14), STEEL, 0, -0.75, 0),
+    part(box(2.0, 1.15, 2.3), GLASS, 0, -2.1, 0),
+    part(box(2.0, 1.0, 2.3), color, 0, -3.2, 0),
+  ]);
+}
+
+/** Aerial tram cabin: running carriage with wheels on the track ropes, two-legged hanger, a big rounded
+ * cabin with a band of windows. Long axis along Z. */
+export function tramGeometry(color) {
+  const frame = 0x444a55, p = [
+    part(box(1.0, 0.7, 5.2), frame, 0, -0.1, 0),
+    beam([0, -0.4, -1.8], [0, -3.0, -0.9], 0.35, frame),
+    beam([0, -0.4, 1.8], [0, -3.0, 0.9], 0.35, frame),
+    part(box(1.4, 0.3, 2.4), frame, 0, -3.05, 0),
+    oct(3.2, 0.35, 6.6, WHITE, 0, -3.35, 0, 0.86),
+    oct(3.1, 1.35, 6.5, GLASS, 0, -4.2, 0),
+    oct(3.22, 0.14, 6.62, WHITE, 0, -4.93, 0),
+    oct(3.2, 1.3, 6.6, color, 0, -5.65, 0),
+    oct(2.8, 0.35, 6.0, 0x2a2f38, 0, -6.45, 0),
+  ];
+  for (const z of [-2.0, -0.65, 0.65, 2.0]) for (const x of [-0.56, 0.56]) p.push(part(cyl(0.36, 0.36, 0.16, 7), 0x2a2f38, x, 0.18, z, 0, 0, Math.PI / 2));
+  for (const z of [-2.15, -1.05, 0, 1.05, 2.15]) p.push(part(box(3.16, 1.35, 0.08), WHITE, 0, -4.2, z));   // window pillars
+  return mergeGeometries(p);
+}
+
+/** T-bar: spring box under the cable, the stem, the T with its two pads. */
+export function tbarGeometry() {
+  return mergeGeometries([
+    part(cyl(0.15, 0.15, 0.8, 6), 0x2f3540, 0, -0.45, 0),
+    part(box(0.06, 1.95, 0.06), STEEL, 0, -1.83, 0),
+    part(box(1.0, 0.09, 0.09), LIGHT, 0, -2.8, 0),
+    part(box(0.3, 0.1, 0.15), 0x3b6ea8, -0.32, -2.87, 0),
+    part(box(0.3, 0.1, 0.15), 0x3b6ea8, 0.32, -2.87, 0),
+  ]);
+}
+
+/** Platter (button) lift hanger: spring box, a single pole with a disc. */
 export function platterGeometry() {
   return mergeGeometries([
-    part(box(0.07, 2.6, 0.07), 0x3a3f4a, 0, -1.3, 0),
-    part(new THREE.CylinderGeometry(0.2, 0.2, 0.06, 10), 0xd8dde6, 0, -2.6, 0, Math.PI / 2),
+    part(cyl(0.13, 0.13, 0.7, 6), 0x2f3540, 0, -0.4, 0),
+    part(box(0.06, 1.85, 0.06), STEEL, 0, -1.7, 0),
+    part(cyl(0.22, 0.22, 0.07, 10), 0x3b6ea8, 0, -2.65, 0, Math.PI / 2),
   ]);
 }
 
@@ -304,19 +455,155 @@ export function platterGeometry() {
 export function ropeHandleGeometry() {
   return mergeGeometries([
     part(box(0.05, 0.9, 0.05), 0x8a6b3d, 0, -0.45, 0),
-    part(box(0.45, 0.07, 0.07), 0xd8dde6, 0, -0.9, 0),
+    part(box(0.45, 0.07, 0.07), LIGHT, 0, -0.9, 0),
   ]);
+}
+
+/** One rib of a magic-carpet belt: a light stripe across the dark belt, moving with it. */
+export function padGeometry() {
+  return part(box(0.95, 0.03, 0.14), 0xaeb6bf, 0, -0.58, 0);
+}
+
+/** A magic carpet's belt, along world points a -> b -> ... on the snow: dark belt, light side rails. */
+export function beltGeometry(pts) {
+  const p = [], m = new THREE.Matrix4(), q = new THREE.Quaternion();
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], len = a.distanceTo(b);
+    if (len < 0.05) continue;
+    m.lookAt(a, b, UP); q.setFromRotationMatrix(m);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    for (const [w, h, x, y, c] of [[1.15, 0.22, 0, 0.1, 0x2c3038], [0.12, 0.38, 0.66, 0.2, 0xb8bec6], [0.12, 0.38, -0.66, 0.2, 0xb8bec6]]) {
+      const g = box(w, h, len + 0.1).translate(x, y, 0).applyQuaternion(q).translate(mid.x, mid.y, mid.z);
+      p.push(part(g, c));
+    }
+  }
+  return p.length ? mergeGeometries(p) : null;
 }
 
 /** A mountain train (two cars) or a funicular car; origin on the rails at its middle, facing +z. */
 export function trainGeometry(kind) {
-  const car = (z, len, body) => [
-    part(box(2.2, 0.5, len - 1), 0x2a2f38, 0, 0.45, z),
-    part(box(2.7, 1.3, len), body, 0, 1.35, z),
-    part(box(2.6, 0.9, len - 0.6), 0x1d2530, 0, 2.4, z),
-    part(box(2.8, 0.3, len + 0.2), 0xe9edf2, 0, 3.0, z),
+  const car = (z, len, body, roofKit) => {
+    const p = [
+      part(box(2.2, 0.5, len - 1), 0x2a2f38, 0, 0.45, z),
+      part(box(2.7, 1.3, len), body, 0, 1.35, z),
+      part(box(2.62, 0.95, len - 0.6), GLASS, 0, 2.45, z),
+      part(box(2.8, 0.3, len + 0.2), WHITE, 0, 3.05, z),
+      part(box(2.72, 0.12, len + 0.02), WHITE, 0, 1.98, z),
+    ];
+    for (let k = -len / 2 + 1.6; k < len / 2 - 1; k += 2.2) p.push(part(box(2.66, 0.95, 0.14), body, 0, 2.45, z + k));
+    if (roofKit) p.push(part(box(1.2, 0.35, 2.4), STEEL, 0, 3.35, z), part(box(0.08, 0.9, 1.6), DARK, 0, 3.9, z, 0.5));
+    return p;
+  };
+  return mergeGeometries(kind === 'funicular' ? car(0, 16, 0x1f6fb5, false) : [...car(-8.3, 16, 0xb5341f, true), ...car(8.3, 16, 0xb5341f, false)]);
+}
+
+/** Lift towers come in two instanced pieces: a pole one metre tall (scaled to each tower's height) and a
+ * head at cable height, so every tower of a kind is one draw call. kind: chair | gondola | tram | surface. */
+export function towerPoleGeometry(kind) {
+  const g = kind === 'tram' ? cyl(0.9, 2.4, 1, 4, true).rotateY(Math.PI / 4)
+    : kind === 'gondola' ? cyl(0.3, 0.55, 1, 8, true)
+    : kind === 'surface' ? cyl(0.13, 0.22, 1, 6, true)
+    : cyl(0.24, 0.44, 1, 8, true);
+  return part(g.translate(0, 0.5, 0), kind === 'tram' ? 0x7a808a : 0x6d7480);
+}
+
+/** How far below the cable a tower's pole stops (the head covers the rest). */
+export const TOWER_HEAD = { chair: 0.95, gondola: 1.0, tram: 2.3, surface: 0.45 };
+
+/** A tower's head, origin at cable height: crossarm, sheave trains under each cable, a work platform. */
+export function towerHeadGeometry(kind, r) {
+  const arm = 2 * r + 0.8, c = 0x565c68;
+  if (kind === 'tram') {
+    return mergeGeometries([
+      part(box(2 * r + 3, 1.4, 3), 0x6a707a, 0, -1.6, 0),
+      part(box(2.2, 0.6, 2.2), 0x6a707a, 0, -2.4, 0),
+      part(box(0.9, 0.7, 5), DARK, -r, -0.6, 0), part(box(0.9, 0.7, 5), DARK, r, -0.6, 0),
+    ]);
+  }
+  if (kind === 'surface') {
+    return mergeGeometries([
+      part(box(2 * r + 0.6, 0.18, 0.22), c, 0, -0.4, 0),
+      part(box(0.18, 0.2, 0.9), DARK, -r, -0.15, 0), part(box(0.18, 0.2, 0.9), DARK, r, -0.15, 0),
+    ]);
+  }
+  const sh = kind === 'gondola' ? 3.4 : 2.4;
+  const p = [
+    part(box(arm, 0.32, 0.42), c, 0, -0.75, 0),
+    part(box(0.7, 0.45, 0.7), c, 0, -0.95, 0),
+    part(box(arm * 0.85, 0.05, 0.8), 0x8a9099, 0, -0.93, 0.62),          // work platform
   ];
-  return mergeGeometries(kind === 'funicular' ? car(0, 16, 0x1f6fb5) : [...car(-8.3, 16, 0xb5341f), ...car(8.3, 16, 0xb5341f)]);
+  for (const x of [-r, r]) p.push(part(box(0.3, 0.3, sh), DARK, x, -0.2, 0), part(box(0.12, 0.4, 0.12), c, x, -0.5, 0));
+  return mergeGeometries(p);
+}
+
+/**
+ * Lift terminal, origin on the ground under the end of the cable, +Z along the lift line (from the
+ * bottom towards the top). o.end: 0 bottom, 1 top. o.detach: a detachable lift, whose long housing
+ * covers the stretch where the carriers slow down. o.drive: this end holds the motor room.
+ * Chairlift: mast and bullwheel under a hood, loading platform, operator hut. Gondola: a hall the
+ * cabins pass through. Tram: a dock the cabins pull into. Surface lift: a post and wheel (and a hut).
+ */
+export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4, o = {}) {
+  const out = o.end ? 1 : -1, p = [];
+  const hut = (x, z, w = 2.4, d = 2.6, h = 2.5) => p.push(
+    part(box(w, h, d), WALL, x, h / 2, z),
+    part(box(w + 0.06, 0.8, d + 0.06), GLASS, x, h - 0.75, z),
+    hipRoof(w + 0.6, d + 0.6, 0.9, color, x, h, z),
+  );
+  const wheel = (y, rad) => p.push(
+    part(cyl(rad, rad, 0.3, 16, true), DARK, 0, y, 0),
+    part(box(2 * rad, 0.12, 0.22), DARK, 0, y, 0),
+    part(box(0.22, 0.12, 2 * rad), DARK, 0, y, 0),
+  );
+  if (kind === 'tram') {
+    p.push(
+      part(box(1, 13, 16), WALL, -8.5, 6.5, 0), part(box(1, 13, 16), WALL, 8.5, 6.5, 0),
+      part(box(1.06, 2.2, 13), GLASS, -8.5, 9.4, 0), part(box(1.06, 2.2, 13), GLASS, 8.5, 9.4, 0),
+      part(box(18, 13, 1), WALL, 0, 6.5, out * 8),
+      part(box(19.5, 1.2, 18.5), 0x4a505c, 0, 13.6, out * 0.6),
+      part(box(17, 0.6, 16), 0x8a8f98, 0, 0.3, 0),
+      part(box(18.2, 0.5, 0.7), color, 0, 12.7, -out * 8),      // a coloured beam over the opening
+    );
+    if (o.drive) { p.push(part(box(10, 4, 7), WALL, 0, 16.2, out * 4), part(box(10.06, 1, 7.06), GLASS, 0, 16.8, out * 4)); p.push(hipRoof(11, 8, 1.4, color, 0, 18.2, out * 4)); }
+    return mergeGeometries(p);
+  }
+  if (kind === 'surface') {
+    p.push(part(box(0.45, wheelY + 0.5, 0.45), 0x6d7480, 0, (wheelY + 0.5) / 2, out * (r + 0.4)));
+    p.push(part(box(0.3, 0.3, r + 0.6), 0x6d7480, 0, wheelY + 0.3, out * (r + 0.4) / 2));
+    wheel(wheelY, r);
+    if (o.drive) hut(r + 2.4, -out * 1.5, 2.0, 2.2, 2.3);
+    return mergeGeometries(p);
+  }
+  const dock = o.detach ? 14 : 0;
+  const zOut = out * (r + 2), zIn = -out * (dock + 3), len = Math.abs(zOut - zIn), zc = (zOut + zIn) / 2;
+  if (kind === 'gondola') {
+    // a hall the cabins pass through: side walls with a band of windows, closed at the far end
+    const W = 2 * r + 5.5, H = wheelY + 2.8;
+    for (const x of [-W / 2, W / 2]) p.push(part(box(0.5, H, len), WALL, x, H / 2, zc), part(box(0.56, 2.2, len - 2), GLASS, x, H - 3.4, zc));
+    p.push(part(box(W, H, 0.5), WALL, 0, H / 2, zOut), part(box(W, 0.5, len), CONCRETE, 0, 0.25, zc));
+    p.push(part(box(W + 0.8, 0.5, 0.6), color, 0, H - 0.6, zIn));
+    p.push(hipRoof(W + 1.8, len + 1.8, 2.2, color, 0, H, zc));
+    wheel(wheelY, r);
+    if (o.drive) hut(W / 2 + 2, zc, 3.2, Math.min(len - 2, 8), 3.4);
+    return mergeGeometries(p);
+  }
+  // chairlift
+  p.push(part(box(0.9, wheelY + 1.6, 0.9), 0x6d7480, 0, (wheelY + 1.6) / 2, 0));
+  wheel(wheelY, r);
+  if (o.detach) {
+    // the long terminal housing over the slow track, on legs outside the chairs' path
+    const W = 2 * r + 4;
+    p.push(part(box(W, 1.6, len), color, 0, wheelY + 1.4, zc), part(box(W + 0.1, 0.25, len + 0.1), WHITE, 0, wheelY + 0.55, zc));
+    p.push(hipRoof(W + 0.4, len + 0.4, 1.1, color, 0, wheelY + 2.2, zc));
+    for (const z of [zIn + out * 1.5, zc]) for (const x of [-(r + 2.5), r + 2.5]) p.push(part(box(0.5, wheelY + 0.8, 0.5), 0x6d7480, x, (wheelY + 0.8) / 2, z));
+  } else {
+    p.push(part(box(2 * r + 1.4, 1.0, 2 * r + 1.4), color, 0, wheelY + 1.0, 0));
+    p.push(hipRoof(2 * r + 1.8, 2 * r + 1.8, 0.8, color, 0, wheelY + 1.5, 0));
+  }
+  p.push(part(box(2 * r + 6, 0.35, 8), CONCRETE, 0, 0.17, -out * (dock * 0.5 + 4)));      // loading / unloading area
+  hut(r + 3.8, -out * 3);
+  if (o.drive) p.push(part(box(2 * r + 1, 3.2, 3.6), WALL, 0, 1.6, out * (r + 2.6)), hipRoof(2 * r + 1.6, 4.2, 1, color, 0, 3.2, out * (r + 2.6)));
+  return mergeGeometries(p);
 }
 
 /** Tunnel mouth: a dark arch the track disappears into (origin on the track, opening towards +z). */
@@ -329,95 +616,12 @@ export function portalGeometry() {
   ]);
 }
 
-/** One section of a magic-carpet belt, lying on the ground. */
-export function padGeometry() {
-  return part(box(0.9, 0.08, 1.6), 0x4a515c, 0, 0.05, 0);
-}
-
 /** Ring drawn under an avatar (stale friends get a grey one). */
 export function makeRing(color) {
   const m = new THREE.Mesh(new THREE.RingGeometry(0.85, 1.15, 20), new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, transparent: true, opacity: 0.9, depthWrite: false }));
   m.rotation.x = -Math.PI / 2;
   m.position.y = 0.06;
   return m;
-}
-
-/** Chairlift chair hanging from the cable at y=0, facing +Z. */
-export function chairGeometry(seats, bubble = false) {
-  const w = 0.55 * Math.max(2, seats || 2) + 0.2;
-  // a weather bubble: tinted cover over the seat, pulled down in front (open at the back)
-  const cover = bubble ? [
-    part(box(w + 0.15, 0.1, 1.1), 0xd9762b, 0, -2.05, 0.25),
-    part(box(w + 0.15, 1.05, 0.08), 0xd9762b, 0, -2.6, 0.82),
-  ] : [];
-  return mergeGeometries([
-    ...cover,
-    part(box(0.12, 2.6, 0.12), 0x3a3f4a, 0, -1.3, 0),
-    part(box(w, 0.1, 0.12), 0x3a3f4a, 0, -2.6, 0),
-    part(box(w, 0.14, 0.7), 0x25282f, 0, -3.4, 0.2),
-    part(box(w, 0.9, 0.12), 0x25282f, 0, -2.95, -0.15),
-    part(box(0.1, 0.9, 0.1), 0x3a3f4a, -w / 2, -3.0, -0.1),
-    part(box(0.1, 0.9, 0.1), 0x3a3f4a, w / 2, -3.0, -0.1),
-    part(box(w, 0.08, 0.08), 0xd8dde6, 0, -3.05, 0.6),
-  ]);
-}
-
-/** Gondola cabin hanging from the cable at y=0, facing +Z. */
-export function gondolaGeometry() {
-  return mergeGeometries([
-    part(box(0.14, 1.5, 0.14), 0x3a3f4a, 0, -0.75, 0),
-    part(box(0.9, 0.16, 0.5), 0x3a3f4a, 0, -1.5, 0),
-    part(box(2.0, 0.2, 2.3), 0xe9edf2, 0, -1.65, 0),
-    part(box(1.9, 1.0, 2.2), 0x1d2530, 0, -2.25, 0),
-    part(box(2.0, 0.95, 2.3), 0xd32f2f, 0, -3.2, 0),
-    part(box(1.6, 0.2, 1.9), 0x2a2f38, 0, -3.75, 0),
-  ]);
-}
-
-/** Aerial tram cabin hanging from the cable at y=0, long axis along Z. */
-export function tramGeometry(color) {
-  const dark = 0x1d2530;
-  return mergeGeometries([
-    part(box(0.5, 3.2, 0.5), 0x444a55, 0, -1.6, 0),
-    part(box(1.2, 0.5, 3.2), 0x444a55, 0, -0.1, 0),
-    part(box(3.2, 0.3, 6.6), 0xe9edf2, 0, -3.3, 0),
-    part(box(3.0, 1.3, 6.4), dark, 0, -4.1, 0),
-    part(box(3.2, 1.5, 6.6), color, 0, -5.5, 0),
-    part(box(2.6, 0.35, 5.4), 0x2a2f38, 0, -6.4, 0),
-  ]);
-}
-
-export function towerGeometry(h, arm) {
-  return mergeGeometries([
-    // a round pole, open at both ends: its foot is in the snow and its top inside the crossarm (16 + 12 triangles)
-    part(new THREE.CylinderGeometry(0.28, 0.5, h, 8, 1, true), 0x6d7480, 0, h / 2, 0),
-    part(box(arm, 0.35, 0.5), 0x565c68, 0, h, 0),
-  ]);
-}
-
-/** Lift terminal: hut + bullwheel. */
-/**
- * Lift terminal, origin on the ground under the end of the cable, +Z along the lift line.
- * Chairlift: a mast carrying the horizontal bullwheel the haul cable turns around (at `wheelY`),
- * under a roof, with an operator hut beside it. Tram: an open dock the cabins pull into.
- */
-export function stationGeometry(kind, color, wheelY = 7.5, r = 2.4) {
-  if (kind === 'tram') {
-    return mergeGeometries([
-      part(box(1, 13, 16), 0xcfc8bc, -8.5, 6.5, 0),
-      part(box(1, 13, 16), 0xcfc8bc, 8.5, 6.5, 0),
-      part(box(18.5, 1.2, 17), 0x4a505c, 0, 14.6, 0),
-      part(box(17, 0.6, 16), 0x8a8f98, 0, 0.3, 0),
-      part(box(1.2, 14, 1.2), 0x565c68, 0, 7, 0),
-    ]);
-  }
-  return mergeGeometries([
-    part(box(0.9, wheelY + 1.6, 0.9), 0x6d7480, 0, (wheelY + 1.6) / 2, 0),
-    part(new THREE.CylinderGeometry(r, r, 0.35, 14), 0x30343c, 0, wheelY, 0),
-    part(box(r * 2 + 3, 0.5, r * 2 + 5), color, 0, wheelY + 1.8, 0),
-    part(box(2.4, 2.6, 2.6), 0xcfc8bc, r + 3.2, 1.3, 0),
-    part(box(2.8, 0.3, 3), 0x343a44, r + 3.2, 2.75, 0),
-  ]);
 }
 
 /** Small conifer, base at y=0. */
@@ -450,21 +654,33 @@ export function makeFlag(color) {
 }
 
 /**
- * Extruded building with a low hipped roof. ring: [[x,z],...] counter-clockwise seen from above
- * (in world X/Z), base: ground y, h: wall height. Appends to arrays for one merged mesh.
+ * A building from its footprint. ring: [[x,z],...] counter-clockwise seen from above (world X/Z), base: ground y,
+ * h: wall height. shape: 'flat', 'hipped' (slopes on every side) or 'gabled' (a ridge along the building's long
+ * side, triangular gable ends in the wall colour). `roof` is the roof's colour as seen (snow on it already mixed in
+ * by the caller). Pitched roofs overhang the walls (eaves). o.storey: storey height for the rows of windows, which
+ * the building material draws from the `win` attribute (along-wall metres, height above the ground, storey height,
+ * wall height; zeros on roofs). o.chimney: a stone chimney on a pitched roof. Appends to out.pos / out.col / out.win
+ * for one merged mesh.
  */
-/**
- * A building from its footprint. shape: 'flat', 'hipped' (slopes on every side) or 'gabled' (a ridge along the
- * building's long side, triangular gable ends in the wall colour). `roof` is the roof's colour as seen (snow on it
- * already mixed in by the caller).
- */
-export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped') {
+export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped', o = {}) {
   const n = ring.length, flat = shape === 'flat';
-  let cx = 0, cz = 0;
+  let cx = 0, cz = 0, area = 0;
   for (const [x, z] of ring) { cx += x; cz += z; }
   cx /= n; cz /= n;
+  for (let i = 0; i < n; i++) { const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n]; area += x0 * z1 - x1 * z0; }
+  const sgn = area >= 0 ? 1 : -1;
+  area = Math.abs(area) / 2;
   const top = base + h, peak = top + (flat ? 0.4 : Math.min(4.5, 1.5 + h * 0.22));
-  let inset;
+  // eaves: the roof starts a little outside the walls (mitred at the corners) and a little lower than their top
+  const e = flat ? 0 : Math.min(0.8, Math.sqrt(area) * 0.06), eaveY = flat ? top : top - 0.15;
+  const eave = e ? ring.map(([x, z], i) => {
+    const [xp, zp] = ring[(i + n - 1) % n], [xn, zn] = ring[(i + 1) % n];
+    const l1 = Math.hypot(x - xp, z - zp) || 1, l2 = Math.hypot(xn - x, zn - z) || 1;
+    const n1x = (sgn * (z - zp)) / l1, n1z = (-sgn * (x - xp)) / l1, n2x = (sgn * (zn - z)) / l2, n2z = (-sgn * (xn - x)) / l2;
+    const k = e / Math.max(0.4, 1 + n1x * n2x + n1z * n2z);
+    return [x + (n1x + n2x) * k, z + (n1z + n2z) * k];
+  }) : ring;
+  let inset, ridge = null;
   if (shape === 'gabled') {
     // the ridge runs along the longest wall, through the middle; every corner rises to the point of the ridge level with it
     let ax = 1, az = 0, best = -1;
@@ -472,26 +688,92 @@ export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped') {
       const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0);
       if (L > best) { best = L; ax = (x1 - x0) / L; az = (z1 - z0) / L; }
     }
-    inset = ring.map(([x, z]) => { const t = (x - cx) * ax + (z - cz) * az; return [cx + ax * t, cz + az * t]; });
-  } else inset = ring.map(([x, z]) => [cx + (x - cx) * 0.45, cz + (z - cz) * 0.45]);
-  const push = (a, b, c, col) => {
+    ridge = [ax, az];
+    inset = eave.map(([x, z]) => { const t = (x - cx) * ax + (z - cz) * az; return [cx + ax * t, cz + az * t]; });
+  } else inset = eave.map(([x, z]) => [cx + (x - cx) * 0.45, cz + (z - cz) * 0.45]);
+  const Z = [0, 0, 0, 0];
+  const push = (a, b, c, col, wa = Z, wb = Z, wc = Z) => {
     out.pos.push(...a, ...b, ...c);
     for (let i = 0; i < 3; i++) out.col.push(col.r, col.g, col.b);
+    if (out.win) out.win.push(...wa, ...wb, ...wc);
   };
+  // windows only on walls of a real building (not a shed or a kiosk)
+  const st = o.storey || 3, wh = h >= 2.6 && area >= 25 ? h : 0;
+  let u = 0;
   for (let i = 0; i < n; i++) {
-    const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n];
-    const [u0, w0] = inset[i], [u1, w1] = inset[(i + 1) % n];
+    const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0);
+    const W = (uu, vv) => [uu, vv, st, wh];
     // wall quad (two winding orders are both emitted via DoubleSide material, so order is not critical)
-    push([x0, base - 2, z0], [x1, base - 2, z1], [x1, top, z1], wall);
-    push([x0, base - 2, z0], [x1, top, z1], [x0, top, z0], wall);
+    push([x0, base - 2, z0], [x1, base - 2, z1], [x1, top, z1], wall, W(u, -2), W(u + L, -2), W(u + L, h));
+    push([x0, base - 2, z0], [x1, top, z1], [x0, top, z0], wall, W(u, -2), W(u + L, h), W(u, h));
+    u += L;
+  }
+  for (let i = 0; i < n; i++) {
+    const [x0, z0] = eave[i], [x1, z1] = eave[(i + 1) % n];
+    const [u0, w0] = inset[i], [u1, w1] = inset[(i + 1) % n];
     // roof slope; on a gabled roof the end walls (both corners rise to one ridge point) are wall, not roof
     const gableEnd = shape === 'gabled' && Math.hypot(u1 - u0, w1 - w0) < 0.05 * Math.hypot(x1 - x0, z1 - z0);
-    push([x0, top, z0], [x1, top, z1], [u1, peak, w1], gableEnd ? wall : roof);
-    if (!gableEnd) push([x0, top, z0], [u1, peak, w1], [u0, peak, w0], roof);
+    push([x0, eaveY, z0], [x1, eaveY, z1], [u1, peak, w1], gableEnd ? wall : roof);
+    if (!gableEnd) push([x0, eaveY, z0], [u1, peak, w1], [u0, peak, w0], roof);
+  }
+  if (o.chimney && !flat) {
+    // on the ridge (gabled) or the flat top of the hipped roof, a third of the way towards the first corner
+    const [x0, z0] = ring[0];
+    let px = cx + (x0 - cx) * 0.3, pz = cz + (z0 - cz) * 0.3;
+    if (ridge) { const t = ((x0 - cx) * ridge[0] + (z0 - cz) * ridge[1]) * 0.3; px = cx + ridge[0] * t; pz = cz + ridge[1] * t; }
+    const s = 0.38, y0 = peak - 0.9, y1 = peak + 1.1, stone = o.chimneyCol || new THREE.Color(0x7a746c), cap = new THREE.Color(0x3a3530);
+    const c = [[px - s, pz - s], [px + s, pz - s], [px + s, pz + s], [px - s, pz + s]];
+    for (let i = 0; i < 4; i++) {
+      const [ax, az] = c[i], [bx, bz] = c[(i + 1) % 4];
+      push([ax, y0, az], [bx, y0, bz], [bx, y1, bz], stone);
+      push([ax, y0, az], [bx, y1, bz], [ax, y1, az], stone);
+    }
+    push([c[0][0], y1, c[0][1]], [c[1][0], y1, c[1][1]], [c[2][0], y1, c[2][1]], cap);
+    push([c[0][0], y1, c[0][1]], [c[2][0], y1, c[2][1]], [c[3][0], y1, c[3][1]], cap);
   }
   if (shape === 'gabled') return;
   const tris = THREE.ShapeUtils.triangulateShape(inset.map(([x, z]) => new THREE.Vector2(x, z)), []);
   for (const [a, b, c] of tris) push([inset[a][0], peak, inset[a][1]], [inset[b][0], peak, inset[b][1]], [inset[c][0], peak, inset[c][1]], roof);
 }
 
+/**
+ * The material buildings are drawn with: flat-shaded vertex colours, plus rows of windows painted on the walls
+ * from the `win` attribute (no extra triangles). Far away, where a window would be smaller than about a pixel,
+ * they fade into the wall instead of shimmering. `uniforms.glow` (0 by day, 1 at night) lights them warm.
+ */
+export function buildingMaterial() {
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
+  const glow = { value: 0 };
+  mat.userData.glow = glow;
+  mat.onBeforeCompile = (sh) => {
+    sh.uniforms.uGlow = glow;
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nattribute vec4 win;\nvarying vec4 vWin;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWin = win;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying vec4 vWin;\nuniform float uGlow;\nfloat winMask;')
+      .replace('#include <color_fragment>', `#include <color_fragment>
+        winMask = 0.0;
+        if (vWin.w > 0.0 && vWin.y > 0.6 && vWin.y < vWin.w - 0.5) {
+          vec2 cell = vec2(vWin.x / 2.6, vWin.y / vWin.z);
+          vec2 f = fract(cell);
+          float m = step(0.22, f.x) * step(f.x, 0.78) * step(0.34, f.y) * step(f.y, 0.8);
+          // fade out where the pattern gets smaller than about two pixels
+          float px = max(fwidth(cell.x), fwidth(cell.y));
+          winMask = mix(m, 0.2, smoothstep(0.25, 0.6, px));
+          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.22, 0.3), winMask);
+        }`)
+      .replace('#include <opaque_fragment>', 'outgoingLight += vec3(1.0, 0.72, 0.36) * winMask * uGlow * 0.9;\n#include <opaque_fragment>');
+  };
+  return mat;
+}
+
 export { lambert, vcMat };
+
+/** How lit the windows are (0 to 1) at a local sun time in hours: dark by day, warming up from 16:00 to full by
+ * 17:30, fading out again between 6:30 and 8:30. */
+export function windowGlow(hours) {
+  const h = ((hours % 24) + 24) % 24, s = (x) => { const k = Math.min(1, Math.max(0, x)); return k * k * (3 - 2 * k); };
+  if (h >= 12) return s((h - 16) / 1.5);
+  return 1 - s((h - 6.5) / 2);
+}

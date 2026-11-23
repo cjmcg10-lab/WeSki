@@ -9,6 +9,8 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import { loopTimer, detachSegments, shuttle, swing, tramRide } from './liftmotion.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
@@ -41,13 +43,17 @@ const POI_STYLE = {
 };
 
 // Automatic quality steps, best first: pixel ratio cap, share of trees drawn, how far from the
-// camera lifts are still animated (metres).
+// camera lifts are still animated, and within what distance chairs and cabins are drawn in full detail (metres).
 const QUALITY = [
-  { pr: 2, trees: 1, lifts: 4500 },
-  { pr: 1.5, trees: 0.75, lifts: 3500 },
-  { pr: 1.25, trees: 0.5, lifts: 2500 },
-  { pr: 1, trees: 0.3, lifts: 1600 },
+  { pr: 2, trees: 1, lifts: 4500, near: 480 },
+  { pr: 1.5, trees: 0.75, lifts: 3500, near: 420 },
+  { pr: 1.25, trees: 0.5, lifts: 2500, near: 340 },
+  { pr: 1, trees: 0.3, lifts: 1600, near: 260 },
 ];
+const STATION_COLOR = 0x8b2f2f;
+const UP = new THREE.Vector3(0, 1, 0);
+// real line speeds of the carriers other than chairs (m/s)
+const CARRIER_SPEED = { cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
 
 export class SkiMap {
   constructor(container, resort, geo, surroundH = null, canopy = null) {
@@ -623,7 +629,7 @@ vec3 groundColour() {
   buildLifts() {
     const R = this.resort;
     this.liftPaths = [];
-    const cable = [], symbol = [], towerMats = [], stationGeos = [];
+    const cable = [], symbol = [], towerMats = [], stationGeos = [], belts = [];
     const count = { chair: 0, cabin: 0, bar: 0, platter: 0, rope: 0, pad: 0 };
     const rail = { bed: [], rails: [], dark: [], white: [], tunnel: [], sleepers: [], portals: [], paths: [] };
     // per lift type: tower height, station height, half cable spacing, longest span between
@@ -633,7 +639,7 @@ vec3 groundColour() {
       gondola: { th: 13, endH: 7.5, r: 3, span: 120, clear: 7.5, sag: [2.5, 0.015], carrier: 'cabin', gap: 85, red: RED_UP },
       chair: { th: 9.5, endH: 6.5, r: 2.4, span: 100, clear: 6.5, sag: [2.5, 0.015], carrier: 'chair', gap: 48, red: RED_UP },
       surface: { th: 4.5, endH: 4.5, r: 1, span: 60, clear: 3.6, sag: [0, 0], carrier: 'bar', gap: 30, red: 2 },
-      carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 6, red: 2.5 },
+      carpet: { th: 0.8, endH: 0.8, r: 0.5, span: 14, clear: 0.8, sag: [0, 0], carrier: 'pad', gap: 2.5, red: 2.5 },
     };
     for (const l of R.lifts) {
       if (l.hide) continue;
@@ -694,7 +700,15 @@ vec3 groundColour() {
           ? Math.min(150, Math.max(12, (lineSpeed * 3600 * (path.chair ? seats : l.seats || 8)) / l.cap))
           : path.chair && fast ? 70 : K.gap;
         path.fast = fast;
-        path.chairs = Math.min(90, Math.max(4, Math.floor(path.loop / spacing)));
+        // on the map every lift runs at twice its real line speed, so the motion reads at mountain scale
+        path.speed = (path.chair ? (fast ? 5 : 2.4) : CARRIER_SPEED[carrier] || 2.5) * 2;
+        if ((path.chair && fast) || path.gondola) {
+          // detachable: carriers let go of the cable in the stations, slow to a crawl and bunch up there
+          path.timer = loopTimer(detachSegments(L, r, path.speed, path.gondola ? 0.8 : 1));
+          path.chairs = Math.min(110, Math.max(4, Math.floor((path.speed * path.timer.T) / spacing)));
+          path.dt = path.timer.T / path.chairs;
+        } else path.chairs = Math.min(l.kind === 'carpet' ? 240 : 90, Math.max(4, Math.floor(path.loop / spacing)));
+        path.gap = path.loop / path.chairs;
         path.first = count[carrier] || 0; count[carrier] = path.first + path.chairs;
       }
       path.mid = this.pathPoint(path, L / 2, 0).pos;
@@ -704,48 +718,76 @@ vec3 groundColour() {
       for (let i = 1; i < pts.length; i++) symbol.push(pts[i - 1].x, pts[i - 1].y + K.red, pts[i - 1].z, pts[i].x, pts[i].y + K.red, pts[i].z);
       const dir = sup[n - 1].clone().sub(sup[0]).setY(0).normalize(), yaw = Math.atan2(dir.x, dir.z);
       // towers stand on the ground under each support and reach up to the cable there
+      const tk = SPEC[l.kind] && l.kind !== 'carpet' ? l.kind : 'chair';
+      if (tram) path.towerD = [];
       if (l.kind !== 'carpet') for (let i = 1; i < n - 1; i++) {
-        const base = this.world(xy[i][0], xy[i][1], 0);
-        towerMats.push({ p: base, yaw, h: Math.round(Math.max(K.th, this.pathPoint(path, this.alongAt(path, sup[i]), 0).pos.y - base.y)), arm: 2 * r + 0.8 });
+        const base = this.world(xy[i][0], xy[i][1], 0), at = this.alongAt(path, sup[i]);
+        towerMats.push({ p: base, yaw, h: Math.max(K.th, this.pathPoint(path, at, 0).pos.y - base.y), kind: tk, r });
+        if (tram) path.towerD.push(at);
       }
-      if (!low) for (const e of [0, n - 1]) {
-        const g = M.stationGeometry(l.kind, 0x8b2f2f, K.endH + 1, r);
+      // terminals at both ends: the motor room at the bottom (at the top on a tram), the long housing of a
+      // detachable lift where its carriers slow down
+      if (l.kind !== 'carpet') for (const e of [0, n - 1]) {
+        const g = M.stationGeometry(tk, STATION_COLOR, K.endH + 1, r, { end: e ? 1 : 0, detach: !!path.timer, drive: tram ? !!e : !e });
         const base = this.world(xy[e][0], xy[e][1], 0);
         g.applyMatrix4(new THREE.Matrix4().makeRotationY(yaw).setPosition(base.x, base.y - 1, base.z));
         stationGeos.push(g);
       }
+      if (l.kind === 'carpet') { const b = M.beltGeometry(pts.map((q) => q.clone().setY(q.y - K.clear))); if (b) belts.push(b); }
+      if (tram) path.ride = tramRide(L, l.dur);
       this.liftPaths.push(path);
     }
     this.scene.add(this.fatLine(symbol, COLORS.lift, 2.8, { order: 8 }));
     // steel cables: thin and dark, so the red map line stays the one line you read per lift
     this.liftLine = this.fatLine(cable, '#3d444d', 1, { order: 6, opacity: 0.8 });
     this.scene.add(this.liftLine);
-    // towers: one instanced mesh per tower type
-    const types = new Map();
-    for (const t of towerMats) { const k = t.h + '|' + t.arm; if (!types.has(k)) types.set(k, []); types.get(k).push(t); }
-    const towerMat = M.vcMat(true);   // smooth shading: round steel poles
-    for (const list of types.values()) {
-      const mesh = new THREE.InstancedMesh(M.towerGeometry(list[0].h + 1, list[0].arm), towerMat, list.length);
-      const mt = new THREE.Matrix4();
-      list.forEach((t, i) => { mt.makeRotationY(t.yaw).setPosition(t.p.x, t.p.y - 1, t.p.z); mesh.setMatrixAt(i, mt); });
-      this.scene.add(mesh);
+    // towers: two instanced meshes per kind of lift (the poles, stretched to each tower's height, and the heads
+    // with crossarm and sheaves), so a whole resort's towers cost a handful of draw calls
+    const kinds = new Map();
+    for (const t of towerMats) { if (!kinds.has(t.kind)) kinds.set(t.kind, []); kinds.get(t.kind).push(t); }
+    const towerMat = M.vcMat(true), headMat = M.vcMat();   // smooth shading: round steel poles
+    const mt = new THREE.Matrix4(), mq = new THREE.Quaternion(), ms = new THREE.Vector3(), mp = new THREE.Vector3();
+    for (const [kind, list] of kinds) {
+      const poles = new THREE.InstancedMesh(M.towerPoleGeometry(kind), towerMat, list.length);
+      const heads = new THREE.InstancedMesh(M.towerHeadGeometry(kind, list[0].r), headMat, list.length);
+      list.forEach((t, i) => {
+        mq.setFromAxisAngle(UP, t.yaw);
+        poles.setMatrixAt(i, mt.compose(mp.set(t.p.x, t.p.y - 1, t.p.z), mq, ms.set(1, t.h + 1 - M.TOWER_HEAD[kind], 1)));
+        heads.setMatrixAt(i, mt.compose(mp.set(t.p.x, t.p.y + t.h, t.p.z), mq, ms.set(1, 1, 1)));
+      });
+      for (const m of [poles, heads]) { m.computeBoundingSphere(); this.scene.add(m); }
     }
-    for (const g of stationGeos) this.scene.add(new THREE.Mesh(g, M.vcMat()));
-    // one instanced mesh per kind of carrier, whatever the number of lifts
-    this.carriers = {};
+    // every terminal and magic-carpet belt in the resort is one merged mesh: a single draw call
+    const statics = [...stationGeos, ...belts];
+    if (statics.length) this.scene.add(new THREE.Mesh(mergeGeometries(statics), M.vcMat()));
+    // one instanced mesh per kind of carrier, whatever the number of lifts. Chairs and gondola cabins have two:
+    // a few boxes for the far ones, and the detailed model for those near the camera (filled each frame).
+    this.carriers = {}; this.carriersNear = {};
     const chairKinds = [...new Set(this.liftPaths.filter((p) => p.chair).map((p) => p.carrier))];
-    for (const [k, geo] of [...chairKinds.map((k) => [k, M.chairGeometry(+k.slice(5, 6), k.endsWith('b'))]), ['cabin', M.gondolaGeometry()], ['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) {
-      const mesh = new THREE.InstancedMesh(geo, M.vcMat(), Math.max(1, count[k]));
-      mesh.frustumCulled = false;
-      mesh.visible = count[k] > 0;
+    const add = (geo, mat, n) => {
+      const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, n));
+      mesh.frustumCulled = false; mesh.visible = n > 0;
       this.scene.add(mesh);
-      this.carriers[k] = mesh;
+      return mesh;
+    };
+    const glass = new THREE.MeshLambertMaterial({ color: 0xe58a3a, transparent: true, opacity: 0.42, depthWrite: false, side: THREE.DoubleSide });
+    for (const k of chairKinds) {
+      const seats = +k.slice(5, 6), bubble = k.endsWith('b');
+      this.carriers[k] = add(M.chairFarGeometry(seats, bubble), M.vcMat(), count[k]);
+      this.carriersNear[k] = { mesh: add(M.chairGeometry(seats, bubble), M.vcMat(), count[k]), bubble: bubble ? add(M.bubbleGeometry(seats), glass, count[k]) : null };
     }
+    this.carriers.cabin = add(M.gondolaFarGeometry(), M.vcMat(), count.cabin);
+    this.carriersNear.cabin = { mesh: add(M.gondolaGeometry(), M.vcMat(), count.cabin), bubble: null };
+    for (const [k, geo] of [['bar', M.tbarGeometry()], ['platter', M.platterGeometry()], ['rope', M.ropeHandleGeometry()], ['pad', M.padGeometry()]]) this.carriers[k] = add(geo, M.vcMat(), count[k]);
+    for (const k in this.carriersNear) { const N = this.carriersNear[k]; N.mesh.count = 0; N.mesh.visible = false; if (N.bubble) { N.bubble.count = 0; N.bubble.visible = false; } }
+    // where a chair's bubble sits: lowered over the riders going up, raised behind the chair coming down
+    const [bx, by, bz] = M.BUBBLE_PIVOT, pivot = (a) => new THREE.Matrix4().makeTranslation(bx, by, bz).multiply(new THREE.Matrix4().makeRotationX(a)).multiply(new THREE.Matrix4().makeTranslation(-bx, -by, -bz));
+    this.bubbleDown = pivot(0); this.bubbleUp = pivot(-1.9);
     this.cabins = this.carriers.cabin;
     this.liftsMoved = false;
     // aerial trams (cable cars): two cabins each, every tram in the resort
     this.trams = this.liftPaths.filter((p) => p.tram).map((path) => ({ path, cabins: [new THREE.Mesh(M.tramGeometry(0xd32f2f), M.vcMat()), new THREE.Mesh(M.tramGeometry(0x2e8b57), M.vcMat())] }));
-    for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); this.scene.add(c); }
+    for (const tr of this.trams) for (const c of tr.cabins) { c.scale.setScalar(1.5); c.rotation.order = 'YXZ'; this.scene.add(c); }
     this.tram = this.trams[0] || null;
     // railways: ballast bed, rails and sleepers on the ground, the classic black-and-white
     // railway line as the map symbol, faint dashes over tunnels, and a train on each stretch
@@ -871,31 +913,104 @@ vec3 groundColour() {
     return turn(pts[0], pts[0], pts[1], (u - 2 * L - Math.PI * r) / r, -1);
   }
 
-  animateLifts(t) {
-    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), big = new THREE.Vector3(1.6, 1.6, 1.6), one = new THREE.Vector3(1, 1, 1), up = new THREE.Vector3(0, 1, 0);
-    const SPEED = { chair: 2.4, cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
-    // Lifts far from the camera are too small to see moving: only the ones in view range are
-    // advanced each frame (all of them once, so every carrier starts in the right place).
-    const cam = this.camera.position, all = !this.liftsMoved, is3 = this.mode === '3d';
-    const touched = {};
+  /** pathPoint without allocating: writes the position into `out`, returns the yaw. */
+  pathPointInto(path, d, side, out) {
+    const { pts, cum } = path;
+    // binary search for the stretch holding d
+    let lo = 1, hi = cum.length - 1;
+    while (lo < hi) { const m = (lo + hi) >> 1; if (cum[m] < d) lo = m + 1; else hi = m; }
+    const i = lo, a = pts[i - 1], b = pts[i];
+    const f = Math.min(1, Math.max(0, (d - cum[i - 1]) / (cum[i] - cum[i - 1] || 1)));
+    const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+    out.set(a.x + (b.x - a.x) * f + (-dz / len) * side, a.y + (b.y - a.y) * f, a.z + dz * f + (dx / len) * side);
+    return Math.atan2(dx, dz);
+  }
+
+  /** loopPoint without allocating: writes the position into `out`, returns the yaw. */
+  loopPointInto(path, u, out) {
+    const { pts, L, r, loop } = path, n = pts.length;
+    u = ((u % loop) + loop) % loop;
+    const turn = (c, a, b, ang, sign) => {
+      const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1, fx = dx / len, fz = dz / len, sx = -fz, sz = fx;
+      const co = Math.cos(ang) * sign, si = Math.sin(ang) * sign;
+      out.set(c.x + sx * r * co + fx * r * si, c.y, c.z + sz * r * co + fz * r * si);
+      return Math.atan2(-sx * si + fx * co, -sz * si + fz * co);
+    };
+    if (u < L) return this.pathPointInto(path, u, r, out);
+    if (u < L + Math.PI * r) return turn(pts[n - 1], pts[n - 2], pts[n - 1], (u - L) / r, 1);
+    if (u < 2 * L + Math.PI * r) return this.pathPointInto(path, 2 * L + Math.PI * r - u, -r, out) + Math.PI;
+    return turn(pts[0], pts[0], pts[1], (u - 2 * L - Math.PI * r) / r, -1);
+  }
+
+  /**
+   * Move every carrier to where it is at time t. Only lifts in range and in view are moved (all of them the first
+   * time, so every carrier starts in the right place). Chairs and cabins near the camera are drawn with the
+   * detailed model, the rest with the simple one. noNear: put every carrier back on the simple model (when
+   * zooming out so far that lifts stop being animated). Returns how many running lifts in view moved, so the
+   * frame loop knows whether the picture changed. Allocates nothing.
+   */
+  animateLifts(t, noNear = false) {
+    const A = (this._anim ||= {
+      m: new THREE.Matrix4(), m2: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(0, 0, 0, 'YXZ'),
+      pos: new THREE.Vector3(), big: new THREE.Vector3(1.6, 1.6, 1.6), one: new THREE.Vector3(1, 1, 1), tuck: new THREE.Vector3(1, 0.4, 1),
+      zero: new THREE.Matrix4().makeScale(0, 0, 0), fr: new THREE.Frustum(), pm: new THREE.Matrix4(), sph: new THREE.Sphere(), sh: { f: 0, v: 0, a: 0 },
+      touched: {}, nc: {},
+    });
+    const cam = this.camera.position, all = !this.liftsMoved, is3 = this.mode === '3d', Q = QUALITY[this.q || 0];
+    const nearR2 = is3 && !noNear ? Q.near * Q.near : -1;
+    this.camera.updateMatrixWorld();
+    A.pm.multiplyMatrices(this.camera.projectionMatrix, this.camera.matrixWorldInverse);
+    A.fr.setFromProjectionMatrix(A.pm);
+    const inView = (c, rad) => { A.sph.center.copy(c); A.sph.radius = rad; return A.fr.intersectsSphere(A.sph); };
+    for (const k in this.carriers) A.touched[k] = false;
+    for (const k in this.carriersNear) A.nc[k] = 0;
+    let moved = 0, nearUsed = false;
     for (const p of this.liftPaths) {
       if (!p.chairs) continue;
-      if (!all && is3 && p.mid.distanceTo(cam) > QUALITY[this.q || 0].lifts + p.L / 2) continue;
-      const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k];
-      const speed = (p.chair ? (p.fast ? 5 : 2.4) : SPEED[k]) * 2; // real line speed x2 so the motion reads at map scale
-      const gap = p.loop / p.chairs;
+      const skip = !all && ((is3 && p.mid.distanceTo(cam) > Q.lifts + p.L / 2) || !inView(p.mid, p.L / 2 + 40));
+      // a lift leaving the view keeps its last positions, but must not keep chairs on the detailed model
+      if (skip && !p.nearUsed) continue;
+      const running = !this.closed.has('l' + p.l.id), k = p.carrier, mesh = this.carriers[k], N = skip ? null : this.carriersNear[k];
+      const hang = p.chair || k === 'cabin', tow = k === 'bar' || k === 'platter', pad = k === 'pad';
+      const tt = running ? t : 0, ph0 = p.l.id * 2.3;
+      p.nearUsed = false;
       for (let i = 0; i < p.chairs; i++) {
-        const { pos, yaw } = this.loopPoint(p, i * gap + (running ? t * speed : 0));
-        q.setFromAxisAngle(up, yaw);
-        mesh.setMatrixAt(p.first + i, m.compose(pos, q, p.chair || k === 'cabin' ? big : one));
+        let u, acc = 0;
+        if (p.timer) { u = p.timer.at(i * p.dt + tt); acc = p.timer.acc; } else u = (i * p.gap + tt * p.speed) % p.loop;
+        const yaw = this.loopPointInto(p, u, A.pos);
+        const near = !!N && A.pos.distanceToSquared(cam) < nearR2;
+        let pitch = 0, scale = hang ? A.big : A.one;
+        // the sway is only worked out where it can be seen
+        if (hang) { if (near) pitch = swing(t, ph0 + i * 1.7, acc, running ? 0.02 : 0.006); }
+        else if (tow) { if (u < p.L) pitch = 0.38; else scale = A.tuck; }     // pulled back going up, tucked up coming down
+        else if (pad && u >= p.L) A.pos.y -= 3;                                // the belt's return run is underneath
+        if (pitch) A.q.setFromEuler(A.e.set(pitch, yaw, 0));
+        else A.q.set(0, Math.sin(yaw / 2), 0, Math.cos(yaw / 2));
+        A.m.compose(A.pos, A.q, scale);
+        if (near) {
+          const j = A.nc[k]++;
+          N.mesh.setMatrixAt(j, A.m);
+          if (N.bubble) N.bubble.setMatrixAt(j, A.m2.multiplyMatrices(A.m, u < p.L ? this.bubbleDown : this.bubbleUp));
+          mesh.setMatrixAt(p.first + i, A.zero);
+          p.nearUsed = true;
+        } else mesh.setMatrixAt(p.first + i, A.m);
       }
-      touched[k] = true;
+      nearUsed ||= p.nearUsed;
+      A.touched[k] = true;
+      if (running && !skip) moved++;
     }
-    for (const k in touched) this.carriers[k].instanceMatrix.needsUpdate = true;
+    for (const k in A.touched) if (A.touched[k]) this.carriers[k].instanceMatrix.needsUpdate = true;
+    for (const k in this.carriersNear) {
+      const N = this.carriersNear[k], n = A.nc[k];
+      if (!n && !N.mesh.count) continue;
+      for (const m of N.bubble ? [N.mesh, N.bubble] : [N.mesh]) { m.count = n; m.visible = n > 0; m.instanceMatrix.needsUpdate = true; }
+    }
+    this.liftsNearUsed = nearUsed;
     this.liftsMoved = true;
     // trains and funicular cars shuttle between their two stations, waiting at each end
     for (const car of this.railCars || []) {
       const p = car.path, running = !this.closed.has('l' + p.l.id);
+      if (!all && !inView(p.mid, p.L / 2 + 40)) continue;
       const ride = Math.max(25, p.L / (p.l.kind === 'funicular' ? 16 : 12)), dwell = 10, cyc = 2 * (ride + dwell), ph = running ? (t + p.l.id * 7) % cyc : 0;
       const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
       const d = p.L * tri * tri * (3 - 2 * tri);
@@ -903,23 +1018,31 @@ vec3 groundColour() {
       car.mesh.position.copy(a).lerp(b, 0.5);
       car.mesh.lookAt(b);
       car.mesh.visible = !p.tunnels.some(([u, v]) => d > u + 8 && d < v - 8);
+      if (running) moved++;
     }
     for (const tram of this.trams) {
-      // Jig-back tram, like the real one: each cabin stays on its own side. As one climbs the
-      // other descends; both wait in their stations, then swap directions.
+      // Jig-back tram, like the real one: each cabin stays on its own track ropes. As one climbs the other comes
+      // down; each speeds up out of its station, cruises, slows into the other one, and both wait there. The
+      // cabins lean against the change of speed and swing a little after passing a tower.
       const p = tram.path, running = !this.closed.has('l' + p.l.id);
-      const ride = 75, dwell = 14, cyc = 2 * (ride + dwell), ph = running ? t % cyc : 0;
-      const tri = ph < ride ? ph / ride : ph < ride + dwell ? 1 : ph < 2 * ride + dwell ? 1 - (ph - ride - dwell) / ride : 0;
-      const e = tri * tri * (3 - 2 * tri);      // eases out of and into the stations
+      if (!all && !inView(p.mid, p.L / 2 + 60)) continue;
+      const s = shuttle(running ? t + p.l.id * 11 : 0, p.ride, 14, 0.18, A.sh);
       tram.cabins.forEach((c, i) => {
-        const { pos, yaw } = this.pathPoint(p, p.L * (i ? 1 - e : e), i ? -p.r : p.r);
-        c.position.copy(pos); c.rotation.y = yaw;
+        const f = i ? 1 - s.f : s.f, d = p.L * f, dir = i ? -1 : 1;
+        c.rotation.y = this.pathPointInto(p, d, i ? -p.r : p.r, c.position);
+        // the last tower passed, in the direction of travel
+        let since = Infinity;
+        if (s.v) for (const td of p.towerD) { const x = (d - td) * dir * Math.sign(s.v); if (x >= 0 && x < since) since = x; }
+        const kick = since < 400 ? 0.05 * Math.exp(-since / 90) * Math.sin(since / 16) : 0;
+        c.rotation.x = swing(t, i * 2.1 + p.l.id, dir * s.a * p.L, 0.012) + kick;
       });
+      if (running) moved++;
     }
+    return moved;
   }
 
   buildBuildings() {
-    const out = { pos: [], col: [] };
+    const out = { pos: [], col: [], win: [] };
     const walls = ['#c9b79c', '#b89f7f', '#d8cdb9', '#a98a69'].map((c) => new THREE.Color(c));
     const roofs = ['#4c5563', '#6b3b33', '#3f4a45'].map((c) => new THREE.Color(c));
     const snow = new THREE.Color('#eef3f6');
@@ -943,13 +1066,27 @@ vec3 groundColour() {
       const h = b.levels ? Math.max(b.h, b.levels * 3) : b.h;   // about 3 m a storey
       const wall = b.wallCol ? new THREE.Color(b.wallCol) : walls[bi % walls.length];
       const roof = (b.roofCol ? new THREE.Color(b.roofCol) : roofs[bi % roofs.length].clone()).lerp(snow, shape === 'flat' ? 0.35 : 0.7);
-      M.addBuilding(out, ring, base, h, wall, roof, shape);
+      // rows of windows one storey apart (the storey count from OpenStreetMap where it has one); a chimney on
+      // most chalet-sized pitched roofs
+      const storey = b.levels ? h / b.levels : 3;
+      M.addBuilding(out, ring, base, h, wall, roof, shape, { storey, chimney: shape !== 'flat' && area > 40 && area < 1500 && bi % 3 !== 2 });
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(out.pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(out.col, 3));
+    g.setAttribute('win', new THREE.Float32BufferAttribute(out.win, 4));
     g.computeVertexNormals();
-    this.scene.add(new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide })));
+    this.buildingMat = M.buildingMaterial();
+    this.scene.add(new THREE.Mesh(g, this.buildingMat));
+    this.updateGlow();
+  }
+
+  /** Windows light up warm in the evening and at night, by the resort's own sun time (from its longitude). */
+  updateGlow(now = new Date()) {
+    if (!this.buildingMat) return;
+    const lon = this.geo?.p?.lon0 ?? 0;
+    this.buildingMat.userData.glow.value = M.windowGlow(now.getUTCHours() + now.getUTCMinutes() / 60 + lon / 15);
+    this.glowAt = performance.now();
   }
 
   buildMarkers() {
@@ -1450,8 +1587,17 @@ vec3 groundColour() {
       cam.updateProjectionMatrix();
     }
     // chairs are sub-pixel from far away: skip moving ~400 of them when zoomed right out
-    const farOut = is3 ? this.cam3.position.distanceTo(c.target) > 7500 : this.zoom2 < 0.12;
-    if (!farOut || this.flight) this.animateLifts(this.t);
+    const camDist = is3 ? this.cam3.position.distanceTo(c.target) : 0, now0 = performance.now();
+    const farOut = is3 ? camDist > 7500 : this.zoom2 < 0.12;
+    // While nobody touches the map, lifts are stepped smoothly up close and only a few times a second from
+    // further away, where a chair moves less than a pixel between steps; frames with nothing new are not drawn.
+    const touching = now0 - (this.lastInput || 0) < 900 || now0 - (this.lastCameraMove || 0) < 150;
+    const liftGap = touching || this.flight ? 0 : is3 ? (camDist < 1500 ? 0 : camDist < 4000 ? 100 : 200) : (this.zoom2 > 0.5 ? 0 : 150);
+    let liftsMoved = false;
+    if (!farOut || this.flight) {
+      if (now0 - (this.liftAt || 0) >= liftGap) { liftsMoved = this.animateLifts(this.t) > 0; this.liftAt = now0; }
+    } else if (this.liftsNearUsed) { this.animateLifts(this.t, true); liftsMoved = true; }
+    if (now0 - (this.glowAt || 0) > 60000) this.updateGlow();
     // Avatars and markers are scaled with distance so they stay readable at mountain scale.
     // They grow as you zoom out so they stay findable, up to a cap (about 45 m tall for a
     // person) so that from far away they no longer swamp the map.
@@ -1481,7 +1627,7 @@ vec3 groundColour() {
     if (key !== this.overlayKey) this.lastCameraMove = now;
     // Nothing is moving when the view is still, no lift is being animated and nobody on the map is
     // moving: the picture is then only refreshed twice a second (saves battery and heat).
-    const still = !this.flight && farOut && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
+    const still = !this.flight && !liftsMoved && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
     if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
     if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
