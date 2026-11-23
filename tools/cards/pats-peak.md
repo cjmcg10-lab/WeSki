@@ -2,14 +2,14 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**44 runs (36 named, 16.3 km), 11 lifts. Ready.**
+**45 runs (36 named, 16.4 km), 11 lifts. Ready.**
 
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   26 on the list, 33 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 11 of 11 on the map
 - pass: 0 shown runs rated by guess
-- pass: reachable from the base: 44 of 44 run pieces
+- pass: reachable from the base: 45 of 45 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m
 - pass: audit: nothing flagged

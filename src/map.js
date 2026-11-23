@@ -9,7 +9,7 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
-import { scheme, cls, runColor, runSym } from './rating.js';
+import { scheme, cls, runColor, runSym, runName } from './rating.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
 
@@ -591,7 +591,8 @@ vec3 groundColour() {
     this.scene.add(G);
     // label anchors: one per trail name (longest segment)
     const best = new Map();
-    for (const t of R.trails) if (t.name && !t.hide && (!best.has(t.name) || best.get(t.name).len < t.len)) best.set(t.name, t);
+    // (keyed by the name as shown, so a shared stretch "A / B" gets its own label beside A's and B's)
+    for (const t of R.trails) if (t.name && !t.hide && (!best.has(runName(t)) || best.get(runName(t)).len < t.len)) best.set(runName(t), t);
     this.trailLabels = [...best.values()].map((t) => {
       const i = Math.floor(t.pts.length / 4) * 2;
       return { t, p: this.world(t.pts[i], t.pts[i + 1], 14) };
@@ -1596,7 +1597,7 @@ vec3 groundColour() {
         const s = this.project(z.p);
         if (!s) continue;
         const shut = this.closed.has('t' + z.t.id);
-        label(`${runSym(this.resort, z.t)} ${z.t.name}${shut ? ` (${t('closed')})` : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
+        label(`${runSym(this.resort, z.t)} ${runName(z.t)}${shut ? ` (${t('closed')})` : ''}`, s, shut ? '#6b7280' : runColor(this.resort, z.t), 10.5, 600);
       }
     }
   }

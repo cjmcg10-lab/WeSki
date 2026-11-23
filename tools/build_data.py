@@ -259,6 +259,23 @@ def main():
         pistes = [w for w in pistes if ours(w)]
         lifts = [w for w in lifts if ours(w)]
 
+    # Runs and lifts drawn by hand (extra_trails, extra_lifts) because OpenStreetMap lacked them: once OpenStreetMap
+    # maps one itself, under the same name, the hand-drawn copy is left out (OpenStreetMap's line follows the
+    # aerial photos; the hand-drawn one is approximate and drew the run twice: Keystone's Outback, 2026-11).
+    # "keep_traced": [names] keeps a hand-drawn run anyway (when OpenStreetMap's run of that name is only a piece).
+    # (an OpenStreetMap outline of the slope, area=yes, does not count: the hand-drawn line is its line)
+    osm_runs = {_dkey(t["name"]) for wid, _, t in pistes if t.get("name") and not t.get("_traced") and t.get("area") != "yes"}
+    osm_lifts = {_dkey(t.get("name")) for wid, _, t in lifts if t.get("name") and not str(wid).startswith("x")}
+    keep_tr = set(cfg.get("keep_traced", []))
+    gone_tr = [t["name"] for _, _, t in pistes if t.get("_traced") and _dkey(t["name"]) in osm_runs and t["name"] not in keep_tr]
+    gone_xl = [t["name"] for wid, _, t in lifts if str(wid).startswith("x") and t.get("name") and _dkey(t["name"]) in osm_lifts
+               and t["name"] not in keep_tr]
+    if gone_tr or gone_xl:
+        print(f"hand-drawn runs and lifts OpenStreetMap now maps, left out ({len(gone_tr) + len(gone_xl)}): "
+              f"{', '.join(gone_tr + gone_xl)} (remove them from extra_trails / extra_lifts)")
+        pistes = [w for w in pistes if not (w[2].get("_traced") and w[2]["name"] in gone_tr)]
+        lifts = [w for w in lifts if not (str(w[0]).startswith("x") and w[2].get("name") in gone_xl)]
+
     if cfg.get("dem_only"):
         # a resort that runs over a border the elevation model stops at (Zermatt / Cervinia):
         # keep only what the model covers
@@ -420,7 +437,8 @@ def main():
         if t.get("_traced"):
             trails[-1]["traced"] = True   # not in OpenStreetMap: drawn by hand from the trail map
         trail_ways.append(nd)
-    trails, trail_ways = drop_duplicates(trails, trail_ways, elev)
+    trails, trail_ways = drop_duplicates(trails, trail_ways, elev, on_list, cfg.get("separate_runs", []),
+                                         cfg.get("shared_runs", []))
 
     # ---- lifts
     lift_out = []
@@ -923,67 +941,258 @@ def main():
           f"parks {len(parks)} nodes {len(G.pts)} edges {len(edges)} slow {sum(T['slow'] for T in trails)}")
 
 
-def drop_duplicates(trails, ways, elev, tol=12.0):
-    """OpenStreetMap often maps one run twice: two ways along the same line (one drawn each way, a piste
-    mapped on top of the road it follows, an old and a new version). Drawn together they look like a double
-    line. Going from the longest run down, a run that lies along a run already kept with the same name (or
-    has no name of its own) is left out when most of it is covered, and cut back to the part that is not when
-    only part of it is. The kept run takes the harder rating of the two. Each removal is printed for review."""
+def drop_duplicates(trails, ways, elev, on_list=lambda n: None, separate=(), shared=(), tol=15.0, tight=8.0):
+    """One run drawn twice, or two runs drawn on the same ground, look like a double line on the map, and the
+    copy's loose ends lead nowhere. Going from the longest run down, each run is compared with the runs kept so far:
+
+    1. the same run twice (the same name, or a piece with no name of its own), within `tol` metres: OpenStreetMap
+       often maps one run as two ways (one drawn each way, a piste on top of the road it follows, an old and a new
+       version). Left out when most of it lies on the kept run (which takes the harder rating and, if it had none,
+       the name), cut back to the part that is not when only part of it does.
+    2. a run with a different name on the same line (within `tight` metres; `tol` for a hand-drawn run, which is
+       approximate): OpenStreetMap drawing one stretch under two names, a short run mapped on top of the one it
+       follows, a hand-drawn run that OpenStreetMap now maps under another name. When most of it lies on the kept
+       run it is drawn once: if the resort lists it, the kept run is split where the shared stretch starts and ends
+       and that stretch carries both names ("also": the label reads "A / B", search finds both, build_zones gives it
+       the harder of the two official ratings); a name the resort does not list is dropped. When only part of it
+       lies on the kept run it is cut back to its own part, one point into the shared stretch, so it still touches
+       the kept run there and the graph joins it where it turns off.
+    Pairs in `separate` (config "separate_runs": [[A, B], ...]) are two real runs side by side and never merged.
+    Pairs in `shared` (config "shared_runs": [[A, B], ...]) share a stretch that A keeps (the name the trail map
+    shows there): B is cut back to where it leaves A (within 20 m), in as many pieces as it has stretches of its own;
+    if the resort lists B and 100 m or more of it was on A, that stretch of A carries both names.
+    A piece with no name is cut the same way. Every change is printed for review."""
     from shapely.geometry import Point
+    sep = {frozenset((_dkey(a), _dkey(b))) for a, b in separate}
     order = sorted(range(len(trails)), key=lambda i: (not trails[i]["name"], -trails[i]["len"]))
-    kept, out_ways, dropped, trimmed = [], {}, [], []
+    kept, out_ways, dropped, trimmed, merged = [], {}, [], [], []
+    # which runs use each OpenStreetMap node: a piece with no name is never left out or cut while a run that starts or
+    # ends on one of its end nodes would lose its way on: one that does not reach the covering run, or another piece
+    # with no name or a name the resort does not list (a chain of connecting pieces: Pizol's speed track hung on two
+    # unnamed pieces beside Chli Täli)
+    users = defaultdict(set)
+    for j, w in enumerate(ways):
+        for n_ in (w or []):
+            users[n_].add(j)
+
+    def holds_others(i, nd, near, tl):
+        for n_ in ((nd[0], nd[-1]) if nd else ()):
+            for j in users[n_] - {i}:
+                if (not trails[j]["name"] or on_list(trails[j]["name"]) is None
+                        or min(k["_line"].distance(trails[j]["_line"]) for k in near) >= tl):
+                    return True
+        return False
+
+    def cover(a, near, tl):
+        n = max(2, int(a.length // 5))
+        return [min(k["_line"].distance(a.interpolate(j / (n - 1), normalized=True)) for k in near) < tl
+                for j in range(n)]
+
+    def piece(t, pts, s, e):
+        sub = LineString(pts[s:e + 1])
+        return dict(t, _line=sub, len=round(sub.length), pts=flat(_densify(pts[s:e + 1])),
+                    top=round(elev(*pts[s])), bot=round(elev(*pts[e])))
+
+    def cut_to_own(t, nd, near, tl, multi=False):
+        """t cut back to its one stretch that does not lie on `near`: (t, nd), starting and ending at an OpenStreetMap
+        node inside the shared part, so it still touches the run there and the graph joins it; None when what is left
+        is under 40 m; False when it cannot be cut cleanly (more than one stretch of its own, or no nodes to cut at).
+        With multi: [(piece, nd)], t without its shared ends, whatever lies between them (a shared stretch in the
+        middle stays, so a piece never falls apart into pieces joined only through another run, which may run the
+        other way or be hidden later: Jackson Hole's bowls lost their way out that way, 2026-11-23). A stretch counts
+        as shared segment by segment, sampled every 5 m (two shared nodes 200 m apart do not make the 200 m between
+        them shared)."""
+        pts = list(t["_line"].coords)
+        if len(pts) < 2:
+            return False
+
+        def seg_on(p, q):
+            n = max(1, int(math.dist(p, q) // 5))
+            return all(min(k["_line"].distance(Point(p[0] + (q[0] - p[0]) * i / n, p[1] + (q[1] - p[1]) * i / n))
+                           for k in near) < tl for i in range(n + 1))
+        sc = [seg_on(p, q) for p, q in zip(pts, pts[1:])]
+        runs, s = [], None
+        for j, c in enumerate(sc + [True]):
+            if not c and s is None:
+                s = j
+            elif c and s is not None:
+                runs.append((s, j))      # vertices s .. j: segments s .. j-1 are its own
+                s = None
+        if not runs:
+            return None
+        if multi == "all":
+            # every stretch of its own of 40 m or more, as separate pieces (config shared_runs only: the kept run A
+            # carries skiers across the gaps, both ways being downhill runs side by side)
+            if not (nd and len(nd) == len(pts)):
+                return False
+            if runs == [(0, len(pts) - 1)]:
+                return False
+            out = [(piece(t, pts, s, e), nd[s:e + 1]) for s, e in runs if LineString(pts[s:e + 1]).length >= 40]
+            return out or None
+        if not multi and len(runs) != 1:
+            return False
+        s, e = (runs[0][0], runs[-1][1]) if multi else runs[0]
+        if e <= s or LineString(pts[s:e + 1]).length < 40:
+            return None
+        if not (nd and len(nd) == len(pts)):
+            return False
+        if s == 0 and e == len(pts) - 1:
+            return False
+        return [(piece(t, pts, s, e), nd[s:e + 1])] if multi else (piece(t, pts, s, e), nd[s:e + 1])
+
+    def split_shared(k, a, tl):
+        """Kept run k split into the stretch lying along line a and the rest (pieces under 40 m stay with the shared
+        stretch): [(piece, nd, shared)], or None when k has no nodes to split at."""
+        nd = out_ways[id(k)]
+        pts = list(k["_line"].coords)
+        if not nd or len(nd) != len(pts):
+            return None
+        on = [j for j, p in enumerate(pts) if a.distance(Point(p)) < tl]
+        if not on:
+            return None
+        i0, i1 = on[0], on[-1]
+        if i0 > 0 and LineString(pts[:i0 + 1]).length < 40:
+            i0 = 0
+        if i1 < len(pts) - 1 and LineString(pts[i1:]).length < 40:
+            i1 = len(pts) - 1
+        if i1 <= i0:
+            return None
+        return [(piece(k, pts, s, e), nd[s:e + 1], sh) for s, e, sh in ((0, i0, False), (i0, i1, True), (i1, len(pts) - 1, False))
+                if e > s]
+
     for i in order:
         t, nd = trails[i], ways[i]
-        key = _dkey(t["name"]) if t["name"] else None
-        same = [k for k in kept if key is None or (k["name"] and _dkey(k["name"]) == key)]
         a = t["_line"]
-        near = [k for k in same if k["_line"].distance(a) < tol]
-        if near and a.length > 0:
-            n = max(2, int(a.length // 5))
-            cov = [min(k["_line"].distance(a.interpolate(j / (n - 1), normalized=True)) for k in near) < tol
-                   for j in range(n)]
-            f = sum(cov) / n
-            if f >= 0.75:
-                for k in near:
-                    if k["_line"].distance(a) < tol:
-                        k["d"] = max(k["d"], t["d"])
-                        if not k["name"]:
-                            k["name"] = t["name"]
-                        break
-                dropped.append(t["name"] or "unnamed")
-                continue
-            if f >= 0.3:
-                pts = list(a.coords)
-                vc = [min(k["_line"].distance(Point(p)) for k in near) < tol for p in pts]
-                runs, s = [], None
-                for j, c in enumerate(vc + [True]):
-                    if not c and s is None:
-                        s = j
-                    elif c and s is not None:
-                        runs.append((s, j - 1))
-                        s = None
-                if len(runs) == 1:
-                    s, e = runs[0]
-                    s, e = max(0, s - 1), min(len(pts) - 1, e + 1)
-                    if e > s:
-                        sub = LineString(pts[s:e + 1])
-                        if sub.length >= 40 and nd and len(nd) == len(pts):
-                            t = dict(t, _line=sub, len=round(sub.length), pts=flat(_densify(pts[s:e + 1])),
-                                     top=round(elev(*pts[s])), bot=round(elev(*pts[e])))
-                            nd = nd[s:e + 1]
-                            trimmed.append(t["name"] or "unnamed")
-                        elif sub.length < 40:
-                            dropped.append(t["name"] or "unnamed")
-                            continue
+        key = _dkey(t["name"]) if t["name"] else None
+        if a.length > 0:
+            # 1. the same run drawn twice
+            # (two spellings the resort lists as two runs, "Le Tunnel" and "Tunnel" at La Plagne, are not the same run)
+            near = [k for k in kept if (key is None or (k["name"] and _dkey(k["name"]) == key
+                                                         and not (_nkey(k["name"]) != _nkey(t["name"]) and on_list(k["name"]) is not None
+                                                                  and on_list(t["name"]) is not None)))
+                    and k["_line"].distance(a) < tol]
+            if near and key is None and holds_others(i, nd, near, tol):
+                near = []
+            if near:
+                cov = cover(a, near, tol)
+                f = sum(cov) / len(cov)
+                if f >= 0.75:
+                    for k in near:
+                        if k["_line"].distance(a) < tol:
+                            k["d"] = max(k["d"], t["d"])
+                            # keep the spelling the resort lists ("Les Ours" over OpenStreetMap's "Ours")
+                            if not k["name"] or (t["name"] and on_list(t["name"]) is not None and on_list(k["name"]) is None):
+                                k["name"] = t["name"]
+                            break
+                    dropped.append(t["name"] or "unnamed")
+                    continue
+                if f >= 0.3 and key is None:
+                    # a piece with no name partly along runs: cut off its shared ends (each cut end touches the run)
+                    r = cut_to_own(t, nd, near, tol, multi=True)
+                    if r is None:
+                        dropped.append("unnamed")
+                        continue
+                    if r:
+                        for p, pnd in r:
+                            kept.append(p)
+                            out_ways[id(p)] = pnd
+                        trimmed.append("unnamed" + (f" (in {len(r)} pieces)" if len(r) > 1 else ""))
+                        continue
+                elif f >= 0.3:
+                    r = cut_to_own(t, nd, near, tol)
+                    if r is None:
+                        dropped.append(t["name"] or "unnamed")
+                        continue
+                    if r:
+                        t, nd = r
+                        a = t["_line"]
+                        trimmed.append(t["name"] or "unnamed")
+            # 2. a run with another name on the same line
+            # (a hand-drawn run is approximate. Named runs from OpenStreetMap stay at `tight`, even names the resort
+            # does not list: side-by-side chutes 10 m apart, like Deer Valley's Daly Chutes, are separate runs)
+            tl = tol if t.get("traced") else tight
+            other = [k for k in kept if key and k["name"] and _dkey(k["name"]) != key
+                     and frozenset((key, _dkey(k["name"]))) not in sep and k["_line"].distance(a) < tl]
+            if other:
+                cov = cover(a, other, tl)
+                f = sum(cov) / len(cov)
+                if f >= 0.75:
+                    k = max(other, key=lambda o: sum(cover(a, [o], tl)))
+                    listed = on_list(t["name"]) is not None
+                    if listed and t["name"] not in (k.get("also") or []):
+                        parts = split_shared(k, a, tl)
+                        if parts:
+                            at = kept.index(k)
+                            kept[at:at + 1] = [p for p, _, _ in parts]
+                            del out_ways[id(k)]
+                            for p, pnd, sh in parts:
+                                out_ways[id(p)] = pnd
+                                if sh:
+                                    p["also"] = (k.get("also") or []) + [t["name"]]
+                        else:
+                            k["also"] = (k.get("also") or []) + [t["name"]]
+                    merged.append(f"{t['name']} on {k['name']}" + (" (shared stretch carries both names)" if listed else
+                                                                   " (not on the resort's list: left out)"))
+                    continue
+                if f >= 0.3 and not t.get("traced"):
+                    r = cut_to_own(t, nd, other, tl)
+                    if r:
+                        t, nd = r
+                        trimmed.append(f"{t['name']} (on {other[0]['name']})")
         kept.append(t)
         out_ways[id(t)] = nd
+    # the resort's own spelling: a kept run whose name the resort does not list, while a copy left out above had the
+    # same name in the spelling the resort lists ("Le Tunnel" and "Tunnel", "Ours" and "Les Ours"), takes that spelling
+    listed = {}
+    for t in trails:
+        if t["name"] and on_list(t["name"]) is not None:
+            listed.setdefault(_dkey(t["name"]), t["name"])
+    for k in kept:
+        if k["name"] and on_list(k["name"]) is None and _dkey(k["name"]) in listed:
+            k["name"] = listed[_dkey(k["name"])]
+    # 3. stretches the config says two runs share: B is cut back to where it leaves A
+    for an, bn in shared:
+        A_ = [k for k in kept if k["name"] == an]
+        B_ = [k for k in kept if k["name"] == bn]
+        assert A_ and B_, f"shared_runs: no run named {an!r} or {bn!r}"
+        for b_ in B_:
+            A_ = [k for k in kept if k["name"] == an]
+            if not any(k["_line"].distance(b_["_line"]) < 20 for k in A_):
+                continue
+            r = cut_to_own(b_, out_ways[id(b_)], A_, 20.0, multi="all")
+            if r is False:
+                print(f"shared_runs: {bn} not cut (no shared end, or no OpenStreetMap nodes to cut at)")
+                continue
+            at = kept.index(b_)
+            del out_ways[id(b_)]
+            kept[at:at + 1] = [p for p, _ in r or []]
+            for p, pnd in r or []:
+                out_ways[id(p)] = pnd
+            own = sum(p["len"] for p, _ in r or [])
+            if on_list(bn) is not None and (not r or b_["len"] - own >= 100):   # its name goes on A's stretch too
+                k = min(A_, key=lambda k: k["_line"].distance(b_["_line"]))
+                parts = split_shared(k, b_["_line"], 20.0)
+                if parts:
+                    at = kept.index(k)
+                    kept[at:at + 1] = [p for p, _, _ in parts]
+                    del out_ways[id(k)]
+                    for p, pnd, sh in parts:
+                        out_ways[id(p)] = pnd
+                        if sh:
+                            p["also"] = (k.get("also") or []) + [bn]
+                else:
+                    k["also"] = (k.get("also") or []) + [bn]
+            merged.append(f"{bn} cut back to where it leaves {an} (shared_runs)" + ("" if r else ": nothing of its own")
+                          + (f", the shared stretch carries both names" if on_list(bn) is not None and (not r or b_["len"] - own >= 100) else ""))
+    # pieces split off one run keep its id for ordering; then number them afresh
     kept.sort(key=lambda t: t["id"])
     new_ways = [out_ways[id(t)] for t in kept]
     for j, t in enumerate(kept):
         t["id"] = j
-    if dropped or trimmed:
+    if dropped or trimmed or merged:
         print(f"duplicate runs left out ({len(dropped)}): {', '.join(sorted(dropped))}")
         print(f"duplicate parts cut off ({len(trimmed)}): {', '.join(sorted(trimmed))}")
+        print(f"runs drawn on another run, drawn once ({len(merged)}): {'; '.join(sorted(merged))}")
     return kept, new_ways
 
 

@@ -12,5 +12,9 @@
  },
  "outside_core": {},
  "lift_end": {},
- "uphill": {}
+ "uphill": {},
+ "doubled": {
+  "(unnamed run 77) ~ (unnamed run 99)": "a connecting piece with no name, kept on purpose: other runs start or end on it, or the stretch it shares lies in its middle, so drawing that stretch once would cut the way apart (build_data keeps such pieces); the key holds run numbers, so it changes on a rebuild (2026-11-23)",
+  "(unnamed run 432) ~ Übungslift Schischule": "a connecting piece with no name, kept on purpose: other runs start or end on it, or the stretch it shares lies in its middle, so drawing that stretch once would cut the way apart (build_data keeps such pieces); the key holds run numbers, so it changes on a rebuild (2026-11-23)"
+ }
 }

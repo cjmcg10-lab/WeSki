@@ -13,5 +13,10 @@
  },
  "outside_core": {},
  "lift_end": {},
- "uphill": {}
+ "uphill": {},
+ "doubled": {
+  "Boulder Bumps ~ Lost Boulder": "PENDING (Deer Valley is being traced on another branch, so its config was not touched): Boulder Bumps is a mogul lane 9 m beside the top of Lost Boulder under the lift, both on the resort's list. Proposed: config shared_runs [[\"Lost Boulder\", \"Boulder Bumps\"]] to draw the stretch once with both names (2026-11-23)",
+  "Daly Chute 1 ~ Daly Chute 2": "Daly Chutes 1, 2 and 3 are separate side-by-side chutes 10-15 m apart that meet at the bottom (aerial photo and OpenStreetMap agree); not drawn twice (2026-11-23)",
+  "Daly Chute 2 ~ Daly Chute 3": "Daly Chutes 1, 2 and 3 are separate side-by-side chutes 10-15 m apart that meet at the bottom (aerial photo and OpenStreetMap agree); not drawn twice (2026-11-23)"
+ }
 }

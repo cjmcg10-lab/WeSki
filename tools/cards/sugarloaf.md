@@ -2,12 +2,12 @@
 
 Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**171 runs (155 named, 103.8 km), 15 lifts. Ready.**
+**171 runs (154 named, 104.1 km), 15 lifts. Ready.**
 
 - info: 9 joins made automatically (look at the longest ones on the map)  
   Sweeper 2 bottom ski 67 m; Lower Stub's bottom ski 137 m; Windrow bottom ski 168 m; [condo access] bottom ski 74 m; Kennebec Glade bottom ski 200 m; Rough Cut Glade top ski 53 m; Adroscoggin Glade bottom walk 87 m; Little Androscoggin Glade bottom ski 105 m; Gin Pole ski 6 m
 - info: 1 lifts flagged for review were already on the previous build (checked then)
-- info: audit: flat black: 3, run climbs: 2, stub: 1
+- info: audit: flat black: 3, no rating: 1, run climbs: 2, run missing: 1
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   132 on the list, 192 matched, 0 corrected from OpenStreetMap

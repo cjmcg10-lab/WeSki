@@ -216,6 +216,21 @@ Completeness work (2026-11-18): the goal is that every run on the resort's own l
   the same name (or has no name), and cuts a partly overlapping one back to its own part; the kept run takes the harder
   rating. It prints "duplicate runs left out" and "duplicate parts cut off". Before it, about 440 run pairs overlapped
   across the 50 mountains, mostly OSM mapping one run as two ways.
+- Doubled runs (2026-11-23, after the owner saw Keystone's Outback drawn twice): `build_data.py` now (1) leaves out a
+  hand-drawn `extra_trails` run or `extra_lifts` lift once OpenStreetMap has a run line (not an area outline) or lift of
+  the same name, printing "hand-drawn runs and lifts OpenStreetMap now maps" (remove them from the config; `keep_traced`
+  [names] keeps one when OSM's run is only a piece); (2) `drop_duplicates` compares same-name and unnamed pieces within
+  15 m, and differently named runs within 8 m (15 m for a hand-drawn one): a run lying on another is drawn once, and if
+  the resort lists it the shared stretch is split off and carries both names (`also` in resort.json: label "A / B",
+  search finds both, `build_zones.py` gives it the harder official rating, `official_ratings.py check` counts it); a run
+  partly on another is cut back to its own part, touching the other where it turns off. Config `shared_runs`
+  [[A, B]] says A keeps a stretch the two share and B is cut back to where it leaves A (B's name goes on the stretch
+  when 100 m or more was shared); `separate_runs` [[A, B]] are two real runs side by side, never merged.
+  `check_connections.py` kind "doubled" lists two shown runs on the same ground (a run of 120 m+ with over 70% of its
+  points within 18 m of another) and any hand-drawn run sharing a name with an OSM run; `tests/connections.test.js`
+  fails on a new one. Genuine side-by-side runs (Deer Valley's Daly Chutes, Whiteface's Wildway beside Mountain Run)
+  are in the allow-lists with the reason. `node tools/preview/maps.mjs <ids>` uploads rebuilt maps to the preview
+  only, without redeploying the preview app.
 - Still missing after the 2026-11-19 pass (no source placed them): Stratton "Stevek" (new, not on any map found),
   Sugarbush "Rob Roy" (Mt. Ellen), Zermatt Paradise (10), Mittelritz (30) and Platte (31, orange ski routes below
   Hohtälli), Pre de Veau-Pirovano; SkiWelt 8, La Plagne Croes and Jarsey, Tignes Combe du Géant and Les Champions,
