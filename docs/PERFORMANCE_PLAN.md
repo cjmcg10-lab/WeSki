@@ -117,6 +117,12 @@ Measured (ground triangles): Park City 565,000 to 27,000 (overview), 87,000 (mid
 322,000, 191,000, 174,000; Jay Peak 108,000 to 5,000-40,000. The Alps gain least in the overview because their steep
 ground keeps more detail under the 2-pixel rule.
 
+Skipping out-of-view pieces alone (`?perf=chunks`, measured at Zermatt) already does most of the work up close: ground
+838,000 to 374,000 (overview), 180,000 (mid), 164,000 (close). At Zermatt the distance detail adds only the overview
+gain (374,000 to 322,000; up close the skirts even add a few triangles). On gentler ground (Park City, Jay Peak) the
+distance detail matters much more: Park City's overview ground fell to 27,000. So the pieces can ship first and the
+distance detail second, as two smaller steps.
+
 Costs and risks: the prototype works out the errors when the map opens, which added 1.1 s at Zermatt and 0.5 s at Park
 City in this setup and about 40-50 MB of memory; a real version should compute them in the map build (or a worker) and
 store compact index lists. A run line can dip into a coarser far piece; the fix is a small depth bias on the ground that
