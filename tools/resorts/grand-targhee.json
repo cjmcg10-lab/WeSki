@@ -34,5 +34,37 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Chief Joe Bowl": "Chief Joseph Bowl",
+  "Croazy Horse Woods": "Crazy Horse Woods",
+  "Instructor's Chute": "Instructor Chute",
+  "Little Bighorn": "Little Big Horn",
+  "Lost Groomer": "Lost Groomers",
+  "Redezvous": "Rendezvous",
+  "Screaming Cheatah": "Screaming Cheetah",
+  "Watchabe Woods": "Wachabe Woods",
+  "Tanglewood": "Tanglefoot"
+ },
+ "links": [
+  [
+   "Colter Lift (top)",
+   "trail:K-1",
+   "hike"
+  ],
+  [
+   "trail:Blackfoot Traverse",
+   "trail:Lost Warrior"
+  ],
+  [
+   "trail:Ermine",
+   "trail:Thunder Trees",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Colter Lift (top) -> trail:K-1": "2026-11-23: K-1 starts below Mary's Nipple; the trail map draws a hiking route (orange dots) along the ridge from the Colter top to it",
+  "trail:Blackfoot Traverse -> trail:Lost Warrior": "2026-11-23: Lost Warrior starts beside the end of Blackfoot Traverse (about 150 m, downhill) on the trail map",
+  "trail:Ermine -> trail:Thunder Trees": "2026-11-23: Thunder Trees is reached on foot from Ermine through the access gate the trail map shows (orange dotted route)"
  }
 }

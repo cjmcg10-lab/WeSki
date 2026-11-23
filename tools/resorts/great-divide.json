@@ -34,5 +34,21 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Altitude": "Attitude",
+  "Blazing Saddle": "Blazing Saddles",
+  "Cow Puncher": "Cowpuncher",
+  "Desperado": "Desparado",
+  "Gun Smoke": "Gunsmoke",
+  "Hard Luck": "Hardluck",
+  "Huckelberry Hill": "Huckleberry Hill",
+  "Moose Meadow": "Moose Meadows",
+  "Snaggletooth": "Snaggle Tooth",
+  "Sunnysdie": "Sunnyside",
+  "Whoops Up": "Whoop Up",
+  "4th of July": "Fourth of July",
+  "Northwest Traverse": "NW Traverse",
+  "Zee": "Zees"
  }
 }
