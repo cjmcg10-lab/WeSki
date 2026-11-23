@@ -72,6 +72,11 @@ try {
   await page.locator('[data-act="tab"][data-tab="forecast"]').click();
   // opened inside Jay Peak: its forecast comes first ("You're here") and mountains can still be added
   await page.locator('.fc-rowhead', { hasText: 'Jay Peak' }).locator('.fc-here').waitFor({ state: 'visible', timeout: 30000 });
+  // its days open without adding it to the list first
+  await page.locator('[data-act="fc-day"][data-r="jay-peak"]').first().click();
+  await page.locator('.fc-back').first().waitFor({ state: 'visible', timeout: 15000 });
+  await page.locator('.fc-back').first().click();
+  await page.locator('.fc-rowhead', { hasText: 'Jay Peak' }).waitFor({ state: 'visible', timeout: 15000 });
   await page.locator('.fc-actions [data-act="fc-add"]').click();
   await page.locator('#fc-q').waitFor({ state: 'visible', timeout: 15000 });
   for (const [query, name] of [['Zermatt', 'Zermatt'], ['Mt Buller', 'Mount Buller']]) {
