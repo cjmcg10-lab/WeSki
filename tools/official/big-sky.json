@@ -427,5 +427,9 @@
   "S4": "one of the eight beginner carpets S1-S8; on the map as an unnamed magic carpet",
   "S5": "one of the eight beginner carpets S1-S8; on the map as an unnamed magic carpet",
   "S6": "one of the eight beginner carpets S1-S8; on the map as an unnamed magic carpet"
- }
+ },
+ "same_as": {
+  "Bone Crusher": "Bonecrusher Hiking Area"
+ },
+ "same_as_note": "Bone Crusher is the main map's label (diamond, no drawn line) for the hike-to area the Bowl inset names Bonecrusher Hiking Area, which OpenStreetMap draws."
 }
