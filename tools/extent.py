@@ -117,6 +117,10 @@ def resort(feats, areas, cfg, buffer_m=None):
         bx, by = buf / kx, buf / ky
         seed = {f["id"] for f in feats
                 if sum(w - bx <= p[0] <= e + bx and s - by <= p[1] <= n + by for p in f["pts"]) >= 0.5 * len(f["pts"])}
+    elif cfg.get("include_ways"):
+        # no outline we can read (automatic configs, issue #45): start from the resort's own lifts, as
+        # OpenSkiMap assigns them, and follow everything joined to them
+        seed = set()
     else:
         return {f["id"] for f in feats}, set()
     seed |= {f["id"] for f in feats if f["id"] in set(cfg.get("include_ways", []))}  # lifts found by name
@@ -136,10 +140,12 @@ def resort(feats, areas, cfg, buffer_m=None):
     # Another named outline is the resort's own when most of the lifts in it are on the resort's lift list
     # (Palisades has two outlines, one per valley). Holding a few of the resort's lifts is not enough: linked
     # neighbours share lifts across the border (La Plagne / Les Arcs through the Vanoise Express).
+    incl = set(cfg.get("include_ways", []))
     mine = []
     for n, rs in foreign:
         lifts_in = [f for f in feats if f["lift"] and f["name"] and in_area(f, rs)]
-        if len(lifts_in) >= 2 and sum(ours_by_name(f) for f in lifts_in) >= 0.6 * len(lifts_in):
+        # (or most of its lifts are the resort's own by OpenStreetMap id: include_ways, from OpenSkiMap)
+        if len(lifts_in) >= 2 and sum(ours_by_name(f) or f["id"] in incl for f in lifts_in) >= 0.6 * len(lifts_in):
             mine.append(n)
     if mine:
         seed |= {f["id"] for f in feats for n, rs in foreign if n in mine and in_area(f, rs)}
