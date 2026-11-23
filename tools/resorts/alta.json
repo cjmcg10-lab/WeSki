@@ -11,5 +11,57 @@
   40.5498,
   -111.5866,
   40.6096
- ]
+ ],
+ "links": [
+  [
+   "trail:East Baldy Traverse",
+   "trail:Baldy Chutes",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:Mount Baldy",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:Main Chute",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:Little Chute",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:Chamonix Chutes",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:Livin' the Dream",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:High Ridge 3",
+   "hike"
+  ],
+  [
+   "trail:East Baldy Traverse",
+   "trail:High Baldy Traverse",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "trail:East Baldy Traverse -> trail:Baldy Chutes (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:Mount Baldy (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:Main Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:Little Chute (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:Chamonix Chutes (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:Livin' the Dream (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:High Ridge 3 (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)",
+  "trail:East Baldy Traverse -> trail:High Baldy Traverse (hike)": "2026-11-23: Mount Baldy hike-to terrain; the terrain climbs 27-59 m from the East Baldy Traverse to its top (the hike)"
+ }
 }

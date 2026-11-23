@@ -1,0 +1,12 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {},
+ "outside_core": {
+  "Véleray (base)": "Véleray: a separate beginner lift by the village, not joined to the rest on the ground (2026-11-23)",
+  "Véleray (top)": "Véleray: a separate beginner lift by the village, not joined to the rest on the ground (2026-11-23)"
+ },
+ "lift_end": {},
+ "uphill": {}
+}

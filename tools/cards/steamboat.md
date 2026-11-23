@@ -7,7 +7,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - **LOOK**: 1 shown runs rated by guess  
   (no name)
 - info: 11 joins made automatically (look at the longest ones on the map)  
-  Ski-in/ski-out access trail top walk 143 m; Wild Blue Way top ski 39 m; Dawn top ski 82 m; The Gully top walk 59 m; Crowtrack bottom ski 92 m; No Names ski 315 m; The Gully ski 103 m; Alarm CLock ski 75 m; First Chance ski 122 m; Nelson's Run ski 74 m; Cyclone ski 68 m
+  Ski-in/ski-out access trail top walk 143 m; Wild Blue Way top ski 39 m; Dawn top ski 82 m; The Gully top walk 59 m; Crowtrack bottom ski 92 m; No Names walk 247 m; The Gully ski 103 m; Alarm CLock ski 81 m; First Chance ski 122 m; Nelson's Run ski 74 m; Cyclone ski 68 m
 - info: audit: flat black: 4, no rating: 6
 - info: same counts as the previous build
 - info: config has no osm_bbox: used the built map's extent (add osm_bbox to the config)

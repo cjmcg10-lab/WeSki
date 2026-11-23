@@ -1,0 +1,18 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Highway 102": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Homeward Bound": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "(unnamed run 324)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Meadowlark": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Goldfinch": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
+ },
+ "dead_end": {
+  "Yellow Hammer": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Highway 102": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

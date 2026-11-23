@@ -128,6 +128,26 @@
   [
    "trail:Big Bend Bowl (bottom)",
    "trail:West Gully"
+  ],
+  [
+   "trail:Our Father (bottom)",
+   "trail:Counterweight Gully"
+  ],
+  [
+   "trail:High Yellow Gully (bottom)",
+   "trail:Deer Camp"
+  ],
+  [
+   "trail:High Yellow Face (bottom)",
+   "trail:Deer Camp"
+  ],
+  [
+   "trail:Treeline Cirque Left (bottom)",
+   "trail:Hidden Knolls"
+  ],
+  [
+   "trail:Treeline Cirque Right (bottom)",
+   "trail:Hidden Knolls"
   ]
  ],
  "links_note": "Alpine Meadows: Beaver Bowl, Estelle Bowl and Idiot's Delight are reached along the ridge from the Summit Six top; OpenStreetMap has no traverse, so they are joined as walks (approximate).",
@@ -147,6 +167,11 @@
   "trail:West Gully (bottom) -> trail:Sherwood Face": "2026-11-23: the run stops short; the terrain falls from its end to Sherwood Face (321 m, 2 m of climb) (tools/check_connections.py dead end)",
   "trail:East Gully (bottom) -> trail:Sherwood Face": "2026-11-23: the run stops short; the terrain falls from its end to Sherwood Face (247 m, 2 m of climb) (tools/check_connections.py dead end)",
   "trail:Sun Bowl (bottom) -> trail:West Gully": "2026-11-23: bowl stops short; the terrain falls to West Gully (481 m, no climb)",
-  "trail:Big Bend Bowl (bottom) -> trail:West Gully": "2026-11-23: bowl stops short; the terrain falls to West Gully (562 m, 2 m of climb)"
+  "trail:Big Bend Bowl (bottom) -> trail:West Gully": "2026-11-23: bowl stops short; the terrain falls to West Gully (562 m, 2 m of climb)",
+  "trail:Our Father (bottom) -> trail:Counterweight Gully": "2026-11-23: the run stops short; the terrain falls from its end to Counterweight Gully (107 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:High Yellow Gully (bottom) -> trail:Deer Camp": "2026-11-23: the run stops short; the terrain falls from its end to Deer Camp (163 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:High Yellow Face (bottom) -> trail:Deer Camp": "2026-11-23: the run stops short; the terrain falls from its end to Deer Camp (175 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Treeline Cirque Left (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (79 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Treeline Cirque Right (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (59 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

@@ -795,7 +795,7 @@ def main():
                     end = low(wa)
                     wb = min(cb, key=lambda b: b["line"].distance(Point(end)))
                     na, nb = cut(wa, end), cut(wb, end)
-                    ski = elev(*G.pts[nb]) <= elev(*end) + 15
+                    ski = elev(*G.pts[nb]) <= elev(*end) + 3  # skied only if it does not climb (check_connections h)
                     links.append((na, nb, "x", False) if ski else (na, nb, "w", True))
                 continue
             else:
@@ -803,7 +803,7 @@ def main():
                 wa = min(ca, key=lambda w: math.dist(low(w), (B["x"], B["y"])))
                 end = low(wa)
                 na, nb, q = cut(wa, end), B["n"], (B["x"], B["y"])
-            ski = elev(*q) <= elev(*end) + 15
+            ski = elev(*q) <= elev(*end) + 3
             links.append((na, nb, "x", False) if ski else (na, nb, "w", True))
             continue
         if a_name.startswith("trail:") and b_name.startswith("trail:"):

@@ -8,8 +8,8 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   Evergreen Chutes, Highway to Heaven, Main Street Terrain Park, Serenity Lower, Serenity Upper, Upper Tude Dudes Terrain Park (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - **LOOK**: 4 runs climb more than 12 m  
   Cathedral Cirque 18 m; Wanderer 18 m; Memorial chutes 14 m; Crystal Point 13 m
-- info: 17 joins made automatically (look at the longest ones on the map)  
-  None top walk 112 m; Main Street bottom ski 44 m; Honeycomb Chutes top ski 113 m; Black Bess Chutes top walk 124 m; Black Bess Chutes top walk 116 m; Black Bess Chutes bottom ski 53 m; Black Bess Chutes top walk 133 m; Black Bess Chutes bottom ski 51 m; Evening Star top walk 201 m; Prince Of Wales top ski 80 m; Barrett's Glade top walk 151 m; Honeycomb Chutes top ski 55 m; Honeycomb Chutes top ski 55 m; Black Bess Chutes walk 214 m; Honeycomb Chutes walk 241 m; Dead Tree ski 102 m; unnamed#12 ski 285 m
+- info: 20 joins made automatically (look at the longest ones on the map)  
+  None top walk 112 m; Main Street bottom ski 44 m; Honeycomb Chutes top ski 113 m; Black Bess Chutes top walk 124 m; Black Bess Chutes top walk 116 m; Black Bess Chutes bottom ski 53 m; Black Bess Chutes top walk 133 m; Black Bess Chutes bottom ski 51 m; Evening Star top walk 201 m; Prince Of Wales top ski 80 m; Barrett's Glade top walk 151 m; Honeycomb Chutes top ski 55 m; Honeycomb Chutes top ski 55 m; Black Bess Chutes walk 214 m; Honeycomb Chutes walk 241 m; Boundary Chutes ski 233 m; No Man's Land ski 113 m; Dead Tree ski 103 m; unnamed#12 ski 300 m; Crystal Point ski 259 m
 - info: audit: run climbs: 4
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  

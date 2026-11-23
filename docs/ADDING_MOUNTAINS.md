@@ -193,17 +193,16 @@ neighbouring runs, which need the terrain, are not counted.
   gondola or base-to-base lift mapped one way (`two_way_lifts`), a lift top with no run down in OpenStreetMap
   (`links`: lift top to the nearest run below, `"hike"` if it climbs), a club or private lift (`isolated_lifts`
   with a note).
-- **Connections** (2026-11-23): `python3 tools/check_connections.py <ids>` (or `--all`, `--json out`, `--data dir` for
-  an older copy) reads the built graph the way directions do and lists: (a) runs whose top the main lift network
-  cannot reach, (b) dead ends (no way back to a lift), (c) loose run ends within 60 m of another run or lift station,
-  (d) loose bottoms more than 45 m past the last junction, (e) lift ends that join nothing, (f) lifts outside the
-  network. Lifts in `isolated_lifts` count as their own small network. Fix what the trail map or the terrain shows
-  with config `links`; a run that stops short of the run or lift base it flows into takes
-  `["trail:A (bottom)", "trail:B"]` or `["trail:A (bottom)", "<lift> (base)"]` (from A's lowest end; skied if not
-  uphill, walked otherwise). Runs that leave the map for a neighbour not on it (Alta and Snowbird into each other,
-  Solitude into Brighton) are real dead ends on our map: leave them and record them in
-  `tests/fixtures/connections-west.json`, which `tests/connections-west.test.js` holds the western, Alpine and Japanese
-  maps to.
+- **Joins from a run's bottom** (2026-11-23, west and Alps pass): `["trail:A (bottom)", "trail:B"]` joins every piece
+  of A whose lowest end lies within 300 m of B (unless that end runs on into another piece of A) to the nearest point
+  of B; `["trail:A (bottom)", "<lift> (base)"]` joins A's lowest end to a lift base. Ways may run either way in
+  OpenStreetMap, so "lowest" is by terrain height. The join is skied when B is no more than 3 m above the end, walked
+  otherwise. The candidates in that pass came from following the terrain downhill from each dead-end bottom to the
+  nearest run that gets back to a lift (only joins up to about 300 m with no climb were made by rule; longer ones,
+  up to 800 m at Telluride's Gold Hill and Palmyra basin, were looked at one by one). Each join carries its reason in
+  the config's `links_notes`. Runs that leave the map for a neighbour not on it (Alta and Snowbird into each other,
+  Solitude into Brighton, Park City into Deer Valley's new terrain) stay dead ends on our map and are written in
+  their `tests/fixtures/connections/<id>.json`.
 - `dem_from_built.py` finds the projection a map was built in from its grid (before 2026-11-23 it assumed NAD83 / UTM,
   which broke every European and Japanese rebuild). When fresh OpenStreetMap data reaches past the old map, the
   terrain made from the old map has holes: `pipeline.py` then downloads the terrain again for the larger extent.

@@ -125,6 +125,10 @@
   [
    "trail:Jeffs Chute (bottom)",
    "trail:Derailer"
+  ],
+  [
+   "trail:G-Face (bottom)",
+   "trail:Eldorado"
   ]
  ],
  "links_note": "Jelly Roll is reached by hiking north along the Vasquez Cirque ridge.",
@@ -134,6 +138,7 @@
   "trail:Key Hole (bottom) -> trail:Runaway": "2026-11-23: chute ends in the cirque; terrain falls straight to Runaway (147 m, no climb)",
   "trail:Better Not (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (153 m, no climb)",
   "trail:Baldys Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (104 m, no climb)",
-  "trail:Jeffs Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (84 m, no climb)"
+  "trail:Jeffs Chute (bottom) -> trail:Derailer": "2026-11-23: chute ends in the cirque; terrain falls straight to Derailer (84 m, no climb)",
+  "trail:G-Face (bottom) -> trail:Eldorado": "2026-11-23: the run stops short; the terrain falls from its end to Eldorado (107 m, 1 m of climb) (tools/check_connections.py dead end)"
  }
 }

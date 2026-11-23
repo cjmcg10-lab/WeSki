@@ -1,0 +1,16 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Skiweg Wallegghof": "run to a hamlet or the valley road (Wallegghof, Kendlhof, Eibing) at the edge of the area: it ends at a walking path, not a lift (2026-11-23)"
+ },
+ "dead_end": {
+  "Skiroute zum Wallegghof": "run to a hamlet or the valley road (Wallegghof, Kendlhof, Eibing) at the edge of the area: it ends at a walking path, not a lift (2026-11-23)",
+  "Zum Kendlhof": "run to a hamlet or the valley road (Wallegghof, Kendlhof, Eibing) at the edge of the area: it ends at a walking path, not a lift (2026-11-23)",
+  "Eibingabfahrt": "run to a hamlet or the valley road (Wallegghof, Kendlhof, Eibing) at the edge of the area: it ends at a walking path, not a lift (2026-11-23)",
+  "Skiroute Eibing": "run to a hamlet or the valley road (Wallegghof, Kendlhof, Eibing) at the edge of the area: it ends at a walking path, not a lift (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

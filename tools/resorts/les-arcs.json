@@ -44,5 +44,18 @@
  ],
  "dem": {
   "source": "ign"
- }
+ },
+ "links": [
+  [
+   "trail:Bois de Saule (bottom)",
+   "trail:Les Granges"
+  ]
+ ],
+ "links_notes": {
+  "trail:Bois de Saule (bottom) -> trail:Les Granges": "2026-11-23: the run stops short; the terrain falls from its end to Les Granges (19 m, 0 m of climb) (tools/check_connections.py dead end)"
+ },
+ "isolated_lifts": [
+  "Club Med"
+ ],
+ "isolated_lifts_note": "2026-11-23: the Club Med hotel lift at Arc 1600 rises 3.5 m; its top joins the runs only by a 23 m climb, which the build no longer counts as a ski join."
 }

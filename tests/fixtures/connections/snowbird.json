@@ -1,0 +1,32 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Pipeline Couloir": "hike-to couloir above Mineral Basin; the terrain climbs over 50 m from the nearest run; not joined without evidence of the route (2026-11-23)",
+  "Pipeline Bowl": "hike-to bowl above Mineral Basin; not joined without evidence of the route (2026-11-23)"
+ },
+ "dead_end": {
+  "Blackjack Gully": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Lightning Tree Gully": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Blitz": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Taint": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Johnson's Warm Up": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Stimulation": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Aggie's Alley": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Main Street": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Westward Ho": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Punch Bowl": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Cliff Access": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Condo & Bypass Rd. Parking Access": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Who Cares": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Wildcat Face": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Rock Gully": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Who Dunnit": "Alta-side run or the Baldy and Blackjack side: it leads to Alta's lifts or the bypass road, which are on the Alta map, not this one (2026-11-23)",
+  "Gravy Boat": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Sugar Bowl": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look",
+  "Devil's Elbow": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

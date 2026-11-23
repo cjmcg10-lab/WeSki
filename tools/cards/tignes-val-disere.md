@@ -1,6 +1,6 @@
 # Tignes – Val d'Isère (tignes-val-disere)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **379 runs (181 named, 253.9 km), 78 lifts. 6 things to look at.**
 
@@ -17,12 +17,11 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (n
 - **LOOK**: 3 runs climb more than 12 m  
   Pylônes 14 m; Triffollet 13 m; Col Pers 16 m
 - info: 16 joins made automatically (look at the longest ones on the map)  
-  couloir de grande balme top walk 41 m; None top ski 42 m; Couloir de petite balme bottom walk 126 m; None top ski 65 m; Chemin vers le Lavachet (piste non répertoriée) top ski 83 m; Digues bottom ski 60 m; Lavachet top ski 44 m; Chemin vers le Lavachet (piste non répertoriée) top ski 60 m; Couloir de la Table d'orientation top ski 67 m; Face de Bellevarde top walk 67 m; None top ski 64 m; Face de Bellevarde walk 194 m; Cafo ski 56 m; Arcosses ski 121 m; unnamed#193 ski 61 m; Liaison Myrtilles Pitots ski 49 m
+  couloir de grande balme top walk 41 m; None top ski 42 m; Couloir de petite balme bottom walk 126 m; None top ski 65 m; Chemin vers le Lavachet (piste non répertoriée) top ski 83 m; Digues bottom ski 60 m; Lavachet top ski 44 m; Chemin vers le Lavachet (piste non répertoriée) top ski 60 m; Couloir de la Table d'orientation top ski 67 m; Face de Bellevarde top walk 67 m; None top ski 64 m; Face de Bellevarde walk 194 m; Cafo ski 56 m; Arcosses ski 125 m; unnamed#193 ski 61 m; Liaison Myrtilles Pitots ski 49 m
 - info: 4 run pieces hidden (not on the resort's list and not a link)  
   (no name) (52876757, 1398 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (52876758, 512 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (30769981, 69 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (30736407, 46 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 8 lifts flagged for review were already on the previous build (checked then)
-- info: audit: dead end: 4, lift missing: 4, no rating: 6, overlap: 1, run climbs: 5, run missing: 1, steep green: 3, stub: 2
-- info: change from the previous build: runs 378 -> 379, km 253.6 -> 253.9
-- info: build_canopy.py did not finish: build_canopy.py failed:
+- info: audit: dead end: 6, lift missing: 4, no rating: 6, overlap: 1, run climbs: 5, run missing: 1, steep green: 3, stub: 2
+- info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   135 on the list, 204 matched, 0 corrected from OpenStreetMap

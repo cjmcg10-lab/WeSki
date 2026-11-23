@@ -116,6 +116,14 @@
   [
    "trail:Gold Hill 6 (bottom)",
    "trail:Gold Hill 2"
+  ],
+  [
+   "trail:Lower Galloping Goose (bottom)",
+   "trail:Marmot"
+  ],
+  [
+   "trail:Lower Galloping Goose (bottom)",
+   "trail:Meadows"
   ]
  ],
  "links_notes": {
@@ -143,6 +151,8 @@
   "trail:Sweet Martha (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (533 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Zipper Rock (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (385 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Snowslide Cabin (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (512 m, 0 m of climb) (tools/check_connections.py dead end)",
-  "trail:Gold Hill 6 (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (714 m, 0 m of climb) (tools/check_connections.py dead end)"
+  "trail:Gold Hill 6 (bottom) -> trail:Gold Hill 2": "2026-11-23: the run stops short; the terrain falls from its end to Gold Hill 2 (714 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Lower Galloping Goose (bottom) -> trail:Marmot": "2026-11-23: the run stops short; the terrain falls from its end to Marmot (20 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Lower Galloping Goose (bottom) -> trail:Meadows": "2026-11-23: the run stops short; the terrain falls from its end to Meadows (14 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

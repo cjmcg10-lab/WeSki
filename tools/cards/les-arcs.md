@@ -1,6 +1,6 @@
 # Les Arcs (les-arcs)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **567 runs (128 named, 195.4 km), 78 lifts. 3 things to look at.**
 

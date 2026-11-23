@@ -12,8 +12,8 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   not reachable: ['Highway 102', 'Homeward Bound', 'Meadowlark']
 - **LOOK**: 1 runs climb more than 12 m  
   Headwaters Hiking Area 20 m
-- info: 21 joins made automatically (look at the longest ones on the map)  
-  Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Upper A-Z Chutes top ski 257 m; Whitetail top ski 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top walk 73 m; Gambler top ski 47 m; Dodgeball top ski 86 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Diamond Hitch top ski 139 m; None bottom walk 176 m; Dodgeball bottom ski 56 m; None top walk 210 m; Papa Bear top ski 149 m; Three Forks ski 54 m; Rock Creek ski 78 m; Yellow Hammer ski 39 m; unnamed#461 ski 2 m; unnamed#481 ski 11 m
+- info: 29 joins made automatically (look at the longest ones on the map)  
+  Three Moons top walk 68 m; Upper Pinnacles top ski 53 m; Upper A-Z Chutes top ski 257 m; Whitetail top walk 41 m; Firehole top walk 71 m; Hellroaring top walk 66 m; Rock Creek top walk 73 m; Gambler top ski 47 m; Dodgeball top ski 86 m; Dodgeball top ski 56 m; Dodgeball bottom ski 86 m; Diamond Hitch top ski 139 m; None bottom walk 176 m; Dodgeball bottom ski 56 m; None top walk 210 m; Papa Bear top ski 149 m; Upper A-Z Chutes ski 327 m; Headwaters Hiking Area ski 250 m; Three Forks ski 54 m; Whitetail ski 52 m; Class 4 ski 72 m; Rock Creek ski 79 m; Dirtbag Wall ski 102 m; Three Moons ski 105 m; Bonecrusher Hiking Area ski 253 m; Horseshoe Bowl ski 193 m; Yellow Hammer ski 41 m; unnamed#461
 - info: 2 run pieces hidden (not on the resort's list and not a link)  
   (no name) (1461961711, 489 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1462084327, 57 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 9 lifts flagged for review were already on the previous build (checked then)

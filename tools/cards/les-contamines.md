@@ -1,6 +1,6 @@
 # Les Contamines (les-contamines)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: rebuilt from the existing map (no download).
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **99 runs (46 named, 70.4 km), 27 lifts. 3 things to look at.**
 

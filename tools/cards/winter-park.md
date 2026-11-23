@@ -13,7 +13,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 1 run pieces hidden (not on the resort's list and not a link)  
   (no name) (878422903, 189 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: 1 lifts flagged for review were already on the previous build (checked then)
-- info: audit: dead end: 2, flat black: 2, no rating: 2, run climbs: 1
+- info: audit: flat black: 2, no rating: 2, run climbs: 1
 - info: same counts as the previous build
 - info: config has no osm_bbox: used the built map's extent (add osm_bbox to the config)
 - pass: ratings checked against the resort's own list  

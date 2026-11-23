@@ -140,6 +140,10 @@
   [
    "trail:Lady Morgan Bowl (bottom)",
    "trail:Black Forest"
+  ],
+  [
+   "trail:Pearl (bottom)",
+   "trail:Empire Bowl"
   ]
  ],
  "links_note": "Hike-to terrain as the official trail map shows it: Jupiter Peak along the ridge from McConkey's, Pinecone Ridge from the Jupiter lift, Murdock Peak from Super Condor. Directions show these approaches as a walk.",
@@ -366,6 +370,7 @@
   "trail:Rhino (bottom) -> trail:Two Goons": "2026-11-23: the run stops short; the terrain falls from its end to Two Goons (452 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Pinecone (bottom) -> trail:Two Goons": "2026-11-23: the run stops short; the terrain falls from its end to Two Goons (215 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:West Scott's Bowl (bottom) -> trail:Two Goons": "2026-11-23: the run stops short; the terrain falls from its end to Two Goons (353 m, 0 m of climb) (tools/check_connections.py dead end)",
-  "trail:Lady Morgan Bowl (bottom) -> trail:Black Forest": "2026-11-23: the run stops short; the terrain falls from its end to Black Forest (373 m, 2 m of climb) (tools/check_connections.py dead end)"
+  "trail:Lady Morgan Bowl (bottom) -> trail:Black Forest": "2026-11-23: the run stops short; the terrain falls from its end to Black Forest (373 m, 2 m of climb) (tools/check_connections.py dead end)",
+  "trail:Pearl (bottom) -> trail:Empire Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Empire Bowl (81 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

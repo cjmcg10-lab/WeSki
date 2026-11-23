@@ -60,5 +60,14 @@
   "190613827": "2026-11-23: OpenStreetMap renamed this way; kept as 'Ledges - Upper', the name the resort's list matches",
   "190613830": "2026-11-23: OpenStreetMap renamed this way; kept as 'Ledges - Lower', the name the resort's list matches",
   "1561881391": "2026-11-23: OpenStreetMap renamed this way; kept as 'Silk Road', the name the resort's list matches"
+ },
+ "links": [
+  [
+   "trail:China Bridge Access Road (bottom)",
+   "trail:Cloud 9 - Middle"
+  ]
+ ],
+ "links_notes": {
+  "trail:China Bridge Access Road (bottom) -> trail:Cloud 9 - Middle": "2026-11-23: the run stops short; the terrain falls from its end to Cloud 9 - Middle (51 m, 1 m of climb) (tools/check_connections.py dead end)"
  }
 }

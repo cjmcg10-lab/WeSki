@@ -60,6 +60,53 @@
   [
    "trail:Double Barrel (bottom)",
    "trail:Quandary"
+  ],
+  [
+   "trail:Debbie's Alley (bottom)",
+   "trail:Peak 7 Bowl"
+  ],
+  [
+   "trail:Boundary Chutes (bottom)",
+   "trail:Forget Me Not"
+  ],
+  [
+   "trail:Whale's Tail (bottom)",
+   "trail:Peak 7 Bowl"
+  ],
+  [
+   "trail:Vertigo (bottom)",
+   "trail:Peak 7 Bowl"
+  ],
+  [
+   "trail:C.J.'s (bottom)",
+   "trail:Magic Carpet"
+  ],
+  [
+   "trail:y chute (bottom)",
+   "trail:Peak 7 Bowl"
+  ],
+  [
+   "trail:Irie (bottom)",
+   "trail:Serenity Bowl"
+  ],
+  [
+   "trail:Chi (bottom)",
+   "trail:Serenity Bowl"
+  ],
+  [
+   "Imperial SuperChair (top)",
+   "trail:Peak 7 Bowl",
+   "hike"
+  ],
+  [
+   "Imperial SuperChair (top)",
+   "trail:The Dunes",
+   "hike"
+  ],
+  [
+   "Imperial SuperChair (top)",
+   "trail:Whiskey River",
+   "hike"
   ]
  ],
  "links_note": "Breathless is hike-to terrain above the Kensho SuperChair.",
@@ -75,6 +122,17 @@
   "trail:Snow White (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (486 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Way Out (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (175 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Vertigo (bottom) -> trail:y chute": "2026-11-23: the run stops short; the terrain falls from its end to y chute (84 m, 0 m of climb) (tools/check_connections.py dead end)",
-  "trail:Double Barrel (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (248 m, 0 m of climb) (tools/check_connections.py dead end)"
+  "trail:Double Barrel (bottom) -> trail:Quandary": "2026-11-23: the run stops short; the terrain falls from its end to Quandary (248 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Debbie's Alley (bottom) -> trail:Peak 7 Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Peak 7 Bowl (182 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Boundary Chutes (bottom) -> trail:Forget Me Not": "2026-11-23: the run stops short; the terrain falls from its end to Forget Me Not (146 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Whale's Tail (bottom) -> trail:Peak 7 Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Peak 7 Bowl (264 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Vertigo (bottom) -> trail:Peak 7 Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Peak 7 Bowl (222 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:C.J.'s (bottom) -> trail:Magic Carpet": "2026-11-23: the run stops short; the terrain falls from its end to Magic Carpet (42 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:y chute (bottom) -> trail:Peak 7 Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Peak 7 Bowl (70 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Irie (bottom) -> trail:Serenity Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Serenity Bowl (62 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Chi (bottom) -> trail:Serenity Bowl": "2026-11-23: the run stops short; the terrain falls from its end to Serenity Bowl (56 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "Imperial SuperChair (top) -> trail:Peak 7 Bowl (hike)": "2026-11-23: Peak 7 above-treeline terrain; no lift reaches its top on the map. From the top of the Imperial SuperChair along the ridge (about 750-830 m, the ground falls 60-80 m): drawn as a walk to be safe",
+  "Imperial SuperChair (top) -> trail:The Dunes (hike)": "2026-11-23: Peak 7 above-treeline terrain; no lift reaches its top on the map. From the top of the Imperial SuperChair along the ridge (about 750-830 m, the ground falls 60-80 m): drawn as a walk to be safe",
+  "Imperial SuperChair (top) -> trail:Whiskey River (hike)": "2026-11-23: Peak 7 above-treeline terrain; no lift reaches its top on the map. From the top of the Imperial SuperChair along the ridge (about 750-830 m, the ground falls 60-80 m): drawn as a walk to be safe"
  }
 }

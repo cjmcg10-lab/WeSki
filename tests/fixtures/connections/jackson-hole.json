@@ -1,0 +1,17 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Cody Bowl": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "Pucker Face": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "Four Shadows": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "Powder 8": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "No Shadows": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "Rock Springs Bowl": "backcountry-gate terrain (Cody Bowl, Rock Springs, Four Pines side) reached from the tram top through gates and on foot; no lift-served way on the map (2026-11-23)",
+  "(unnamed run 80)": "not resolved in the 2026-11-23 rebuild: no trail-map or terrain evidence found for a join; left for a later look"
+ },
+ "dead_end": {},
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

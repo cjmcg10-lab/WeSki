@@ -392,6 +392,22 @@
   [
    "trail:Ginger Bread (bottom)",
    "Canyon Express (base)"
+  ],
+  [
+   "trail:Andy's Double Gold (bottom)",
+   "trail:St. Anton"
+  ],
+  [
+   "trail:Terry's Run (bottom)",
+   "trail:St. Anton"
+  ],
+  [
+   "trail:Fascination (bottom)",
+   "trail:St. Anton"
+  ],
+  [
+   "trail:Agee's Run (bottom)",
+   "trail:Terry's Run"
   ]
  ],
  "links_notes": {
@@ -413,6 +429,10 @@
   "trail:Paranoid Chutes (bottom) -> trail:Philippes": "2026-11-23: the run stops short; the terrain falls from its end to Philippes (113 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Spring Canyon (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base",
   "trail:Round Robin (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base",
-  "trail:Ginger Bread (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base"
+  "trail:Ginger Bread (bottom) -> Canyon Express (base)": "2026-11-23: run ends near Canyon Lodge; the terrain falls about 70 m over 300-380 m to the Canyon Express base",
+  "trail:Andy's Double Gold (bottom) -> trail:St. Anton": "2026-11-23: the run stops short; the terrain falls from its end to St. Anton (34 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Terry's Run (bottom) -> trail:St. Anton": "2026-11-23: the run stops short; the terrain falls from its end to St. Anton (20 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Fascination (bottom) -> trail:St. Anton": "2026-11-23: the run stops short; the terrain falls from its end to St. Anton (70 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Agee's Run (bottom) -> trail:Terry's Run": "2026-11-23: the run stops short; the terrain falls from its end to Terry's Run (14 m, 0 m of climb) (tools/check_connections.py dead end)"
  }
 }

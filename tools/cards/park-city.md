@@ -15,7 +15,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 11 run pieces hidden (not on the resort's list and not a link)  
   (no name) (777199432, 737 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (1072126636, 293 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1072126635, 130 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1466925444, 59 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1464161303, 43 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1072126637, 42 m): unnamed piece,
 - info: 3 lifts flagged for review were already on the previous build (checked then)
-- info: audit: dead end: 1, flat black: 4, no rating: 17, run climbs: 9, run missing: 2
+- info: audit: dead end: 2, flat black: 4, no rating: 17, run climbs: 9, run missing: 2
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   345 on the list, 542 matched, 0 corrected from OpenStreetMap

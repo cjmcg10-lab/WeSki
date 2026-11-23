@@ -54,6 +54,51 @@
   [
    "trail:Chairline Left (bottom)",
    "trail:Double Ought's Right"
+  ],
+  [
+   "trail:Bear Pits (bottom)",
+   "trail:Gandy's Run"
+  ],
+  [
+   "trail:Frisco (bottom)",
+   "trail:Gandy's Run"
+  ],
+  [
+   "trail:Big Shot (bottom)",
+   "trail:Gandy's Run"
+  ],
+  [
+   "trail:Silver Basin",
+   "trail:Powder 8s"
+  ],
+  [
+   "trail:Silver Basin",
+   "trail:Hourglass"
+  ],
+  [
+   "trail:Silver Basin",
+   "trail:SE Right"
+  ],
+  [
+   "trail:Powder 8s (bottom)",
+   "trail:Queens"
+  ],
+  [
+   "trail:SE Right (bottom)",
+   "trail:Queens"
+  ],
+  [
+   "trail:Boxcar (bottom)",
+   "trail:Queens"
+  ],
+  [
+   "trail:Silver Basin (bottom)",
+   "trail:Easy Street"
+  ],
+  [
+   "Green Valley (top)",
+   "trail:Northway",
+   "hike"
   ]
  ],
  "links_notes": {
@@ -61,6 +106,17 @@
   "trail:Memorial Forest (bottom) -> trail:Upper Arwine's": "2026-11-23: run stops short; terrain falls straight to Upper Arwine's (118 m)",
   "trail:Double Ought's Left (bottom) -> trail:Downhill": "2026-11-23: run stops short; terrain falls straight to Downhill (127 m)",
   "trail:Rabbit Ears (bottom) -> trail:Downhill": "2026-11-23: run stops short; terrain falls straight to Downhill (214 m)",
-  "trail:Chairline Left (bottom) -> trail:Double Ought's Right": "2026-11-23: run stops short; terrain falls straight to Double Ought's Right (231 m)"
+  "trail:Chairline Left (bottom) -> trail:Double Ought's Right": "2026-11-23: run stops short; terrain falls straight to Double Ought's Right (231 m)",
+  "trail:Bear Pits (bottom) -> trail:Gandy's Run": "2026-11-23: the run stops short; the terrain falls from its end to Gandy's Run (228 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Frisco (bottom) -> trail:Gandy's Run": "2026-11-23: the run stops short; the terrain falls from its end to Gandy's Run (294 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Big Shot (bottom) -> trail:Gandy's Run": "2026-11-23: the run stops short; the terrain falls from its end to Gandy's Run (169 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Silver Basin -> trail:Powder 8s": "2026-11-23: a Silver Basin line starting below the top of the basin (the automatic join ran uphill the wrong way and is now dropped)",
+  "trail:Silver Basin -> trail:Hourglass": "2026-11-23: a Silver Basin line starting below the top of the basin (the automatic join ran uphill the wrong way and is now dropped)",
+  "trail:Silver Basin -> trail:SE Right": "2026-11-23: a Silver Basin line starting below the top of the basin (the automatic join ran uphill the wrong way and is now dropped)",
+  "trail:Powder 8s (bottom) -> trail:Queens": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1109 m along the ground to Queens with no climb. Check on the trail map.",
+  "trail:SE Right (bottom) -> trail:Queens": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1030 m along the ground to Queens with no climb. Check on the trail map.",
+  "trail:Boxcar (bottom) -> trail:Queens": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1354 m along the ground to Queens with no climb. Check on the trail map.",
+  "trail:Silver Basin (bottom) -> trail:Easy Street": "2026-11-23: Silver Basin run-out, not mapped in OpenStreetMap: the terrain falls 1195 m along the ground to Easy Street with no climb. Check on the trail map.",
+  "Green Valley (top) -> trail:Northway (hike)": "2026-11-23: way into the Northway (North Country) area along the ridge: OpenStreetMap only joined it by ski joins that climbed 42-94 m, which the build now drops. Drawn as a walk (782 m, nearly level) from the nearest lift top; check on the trail map which traverse the resort uses"
  }
 }

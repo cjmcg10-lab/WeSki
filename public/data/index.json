@@ -13,7 +13,7 @@
   "trails": 141,
   "lifts": 11,
   "zones": false,
-  "bytes": 777064
+  "bytes": 1114601
  },
  {
   "id": "berkshire-east",
@@ -45,7 +45,7 @@
   "trails": 324,
   "lifts": 43,
   "zones": false,
-  "bytes": 2328008
+  "bytes": 3503294
  },
  {
   "id": "bolton-valley",
@@ -77,7 +77,7 @@
   "trails": 213,
   "lifts": 35,
   "zones": true,
-  "bytes": 1637503
+  "bytes": 2225134
  },
  {
   "id": "bretton-woods",
@@ -100,16 +100,16 @@
   "name": "Brundage Mountain",
   "region": "Idaho, USA",
   "tz": "America/Boise",
-  "lat": 45.00958,
-  "lon": -116.13324,
+  "lat": 45.02132,
+  "lon": -116.1285,
   "baseLat": 44.99797,
   "baseLon": -116.15745,
-  "top": 2333,
+  "top": 2377,
   "base": 1792,
-  "trails": 77,
+  "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 440784
+  "bytes": 826296
  },
  {
   "id": "burke",
@@ -168,12 +168,12 @@
   "lon": -106.18282,
   "baseLat": 39.49888,
   "baseLon": -106.1462,
-  "top": 3762,
+  "top": 3763,
   "base": 2959,
   "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 966195
+  "bytes": 1485285
  },
  {
   "id": "crystal-mountain",
@@ -189,7 +189,7 @@
   "trails": 137,
   "lifts": 11,
   "zones": false,
-  "bytes": 681348
+  "bytes": 1251158
  },
  {
   "id": "deer-valley",
@@ -205,7 +205,7 @@
   "trails": 232,
   "lifts": 34,
   "zones": false,
-  "bytes": 1905087
+  "bytes": 2811928
  },
  {
   "id": "geto-kogen",
@@ -221,7 +221,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 174841
+  "bytes": 310695
  },
  {
   "id": "heavenly",
@@ -237,7 +237,7 @@
   "trails": 132,
   "lifts": 24,
   "zones": true,
-  "bytes": 1133428
+  "bytes": 1944312
  },
  {
   "id": "hunter-mountain",
@@ -269,7 +269,7 @@
   "trails": 143,
   "lifts": 17,
   "zones": false,
-  "bytes": 1356385
+  "bytes": 1954617
  },
  {
   "id": "jay-peak",
@@ -285,7 +285,7 @@
   "trails": 91,
   "lifts": 9,
   "zones": true,
-  "bytes": 463101
+  "bytes": 560094
  },
  {
   "id": "keystone",
@@ -298,10 +298,10 @@
   "baseLon": -105.95653,
   "top": 3803,
   "base": 2829,
-  "trails": 154,
-  "lifts": 20,
+  "trails": 156,
+  "lifts": 21,
   "zones": true,
-  "bytes": 1189865
+  "bytes": 2143285
  },
  {
   "id": "killington",
@@ -333,7 +333,7 @@
   "trails": 162,
   "lifts": 87,
   "zones": true,
-  "bytes": 2845130
+  "bytes": 3831259
  },
  {
   "id": "les-arcs",
@@ -349,7 +349,7 @@
   "trails": 128,
   "lifts": 78,
   "zones": true,
-  "bytes": 2827181
+  "bytes": 3724000
  },
  {
   "id": "les-contamines",
@@ -365,7 +365,7 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1179511
+  "bytes": 1776742
  },
  {
   "id": "loon",
@@ -413,7 +413,7 @@
   "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1091578
+  "bytes": 1636787
  },
  {
   "id": "mohawk-mountain",
@@ -493,7 +493,7 @@
   "trails": 264,
   "lifts": 44,
   "zones": true,
-  "bytes": 1626883
+  "bytes": 2605019
  },
  {
   "id": "park-city",
@@ -506,10 +506,10 @@
   "baseLon": -111.5472,
   "top": 3046,
   "base": 2050,
-  "trails": 352,
+  "trails": 358,
   "lifts": 41,
   "zones": true,
-  "bytes": 2361270
+  "bytes": 3446661
  },
  {
   "id": "pats-peak",
@@ -541,7 +541,7 @@
   "trails": 39,
   "lifts": 14,
   "zones": true,
-  "bytes": 899776
+  "bytes": 1459991
  },
  {
   "id": "powder-ridge",
@@ -587,9 +587,9 @@
   "top": 2089,
   "base": 813,
   "trails": 100,
-  "lifts": 81,
+  "lifts": 82,
   "zones": true,
-  "bytes": 2492252
+  "bytes": 3879823
  },
  {
   "id": "saddleback",
@@ -637,7 +637,7 @@
   "trails": 174,
   "lifts": 80,
   "zones": true,
-  "bytes": 3032126
+  "bytes": 4383099
  },
  {
   "id": "smugglers-notch",
@@ -669,7 +669,7 @@
   "trails": 207,
   "lifts": 14,
   "zones": false,
-  "bytes": 982157
+  "bytes": 1340332
  },
  {
   "id": "snowshoe",
@@ -685,7 +685,7 @@
   "trails": 61,
   "lifts": 13,
   "zones": true,
-  "bytes": 600997
+  "bytes": 980399
  },
  {
   "id": "solitude",
@@ -701,7 +701,7 @@
   "trails": 84,
   "lifts": 9,
   "zones": true,
-  "bytes": 573821
+  "bytes": 875063
  },
  {
   "id": "steamboat",
@@ -717,7 +717,7 @@
   "trails": 195,
   "lifts": 23,
   "zones": true,
-  "bytes": 1162478
+  "bytes": 1839609
  },
  {
   "id": "stowe",
@@ -813,11 +813,11 @@
   "trails": 132,
   "lifts": 19,
   "zones": false,
-  "bytes": 1372149
+  "bytes": 2096869
  },
  {
   "id": "tignes-val-disere",
-  "name": "Tignes – Val d'Isère",
+  "name": "Tignes \u2013 Val d'Is\u00e8re",
   "region": "Savoie, France",
   "tz": "Europe/Paris",
   "lat": 45.41266,
@@ -829,7 +829,7 @@
   "trails": 181,
   "lifts": 78,
   "zones": true,
-  "bytes": 2821138
+  "bytes": 3252219
  },
  {
   "id": "vail",
@@ -842,10 +842,10 @@
   "baseLon": -106.40166,
   "top": 3526,
   "base": 2454,
-  "trails": 219,
+  "trails": 213,
   "lifts": 32,
   "zones": false,
-  "bytes": 1780509
+  "bytes": 3018650
  },
  {
   "id": "val-thorens",
@@ -861,7 +861,7 @@
   "trails": 105,
   "lifts": 34,
   "zones": true,
-  "bytes": 1848120
+  "bytes": 2389429
  },
  {
   "id": "wachusett",
@@ -938,14 +938,14 @@
   "baseLon": -105.76308,
   "top": 3658,
   "base": 2771,
-  "trails": 186,
+  "trails": 187,
   "lifts": 25,
   "zones": true,
-  "bytes": 1120679
+  "bytes": 1757892
  },
  {
   "id": "zermatt",
-  "name": "Zermatt – Cervinia",
+  "name": "Zermatt \u2013 Cervinia",
   "region": "Valais, Switzerland / Aosta Valley, Italy",
   "tz": "Europe/Zurich",
   "lat": 45.92428,
@@ -957,6 +957,6 @@
   "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 2822716
+  "bytes": 3513150
  }
 ]
