@@ -10,6 +10,11 @@
   --tabs: calc(58px + var(--sab));
   --app-h: 100vh;
 }
+
+/* No scrollbars anywhere: on a phone you scroll by touch, and a bar only takes space (owner, 2026-11-23). Scrolling,
+   wheel and keyboard still work; the bar is just not drawn and reserves no width. */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
 :root[data-theme="light"] {
   --hero: #0b2239; --ink: #14202c; --muted: #5d6b79; --line: #e3e8ee; --line2: #c9d1da; --bg: #f5f7fa; --card: #ffffff; --card2: #ffffff;
   --chip: #e3e8ee; --chip-ink: #44515e; --field: #ffffff; --glass: rgba(255, 255, 255, .93); --glass-strong: rgba(255, 255, 255, .96); --fab-ink: #0b2239;
