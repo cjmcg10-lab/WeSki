@@ -34,6 +34,7 @@ export class Accounts extends DurableObject {
       CREATE TABLE IF NOT EXISTS crew (owner TEXT, email TEXT, PRIMARY KEY (owner, email));
       CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER, until INTEGER);
       CREATE TABLE IF NOT EXISTS consents (account TEXT, v TEXT, at INTEGER, PRIMARY KEY (account, v));
+      CREATE TABLE IF NOT EXISTS usage (day TEXT, k TEXT, n INTEGER, PRIMARY KEY (day, k));
     `);
   }
 
@@ -43,6 +44,24 @@ export class Accounts extends DurableObject {
     if (!id || !/^[0-9-]{10}$/.test(String(v))) return false;
     this.sql.exec('INSERT OR IGNORE INTO consents VALUES (?, ?, ?)', id, String(v), Date.now());
     return true;
+  }
+
+  /** The Worker's own daily counts for the usage alerts (worker/usage.js): add a batch, kept for 60 days. */
+  addUsage(day, batch) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+    for (const [k, n] of Object.entries(batch || {}).slice(0, 50)) {
+      if (/^[a-z:-]{3,30}$/.test(k) && Number.isFinite(n) && n > 0) {
+        this.sql.exec('INSERT INTO usage VALUES (?, ?, ?) ON CONFLICT (day, k) DO UPDATE SET n = n + excluded.n', day, k, Math.round(n));
+      }
+    }
+    this.sql.exec('DELETE FROM usage WHERE day < ?', new Date(Date.now() - 60 * 86400e3).toISOString().slice(0, 10));
+  }
+
+  /** {day: {counter: n}} from `since` (a date) on. */
+  usage(since) {
+    const out = {};
+    for (const r of this.rows('SELECT day, k, n FROM usage WHERE day >= ? ORDER BY day', since)) (out[r.day] ||= {})[r.k] = r.n;
+    return out;
   }
 
   rows(q, ...a) { return [...this.sql.exec(q, ...a)]; }

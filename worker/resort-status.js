@@ -1,4 +1,5 @@
 import { LIVE_SOURCES, MTNPOWDER_IDS } from './resort-status-feeds.js';
+import { count } from './usage.js';
 import { assumedStatus } from '../src/forecast/status.js';
 
 export { assumedStatus };
@@ -91,6 +92,7 @@ export async function cachedFeed(resortId) {
   const key = new Request(url);
   const hit = cache && (await cache.match(key));
   if (hit) return hit.json();
+  count('out:status');
   const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/json' }, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
   if (!res.ok) throw new Error(`resort feed ${res.status}`);
   const body = await res.text();

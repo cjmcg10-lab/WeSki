@@ -95,6 +95,13 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
 Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
 plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).
 
+## Running costs and usage alerts
+
+The app runs on free allowances (Cloudflare Workers Free, R2's free amount, Resend's free plan once sign-in is on). A
+daily check warns before any of them runs out and says what to upgrade and what it costs: an issue labelled
+`usage-alert` and a weekly summary. Read `docs/USAGE_ALERTS.md` (what is watched, the limits, the one-time steps for the
+owner). The first upgrade to expect is the Workers Paid plan, $5 a month for the whole Cloudflare account.
+
 ## Owner (comp) accounts
 
 `COMP_EMAILS` (Cloudflare secret, comma-separated emails) gives those accounts every paid feature with no end date
