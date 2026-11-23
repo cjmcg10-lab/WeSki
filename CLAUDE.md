@@ -611,4 +611,5 @@ phones.
    at 60 fps by default ("120 fps motion" in More). Awaiting their retest. The speed work of 2026-11-23 (#88, see
    `docs/PERFORMANCE_PLAN.md` "Built") cut the drawing per frame to a fifth to a third: simpler run lines, ground in
    chunks with distance detail and off-screen culling, lift detail by distance, softer picture while moving, fewer idle
-   redraws, ground set-up in a worker, "Smooth edges" switch. Not yet measured on a phone.
+   redraws, ground set-up in a worker, "Smooth edges" switch (on by default again since 2026-11-23, owner's request).
+   Not yet measured on a phone.

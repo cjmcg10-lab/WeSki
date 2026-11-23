@@ -191,9 +191,10 @@ export class SkiMap {
     this.loop();
   }
 
-  /** Antialiasing unless the screen is sharper than 2.5x (where it is hardly visible and costs the most). */
+  /** Smooth edges (antialiasing) are on by default on every screen (owner, 2026-11-23: jagged edges looked
+   *  unprofessional on the iPhone). They can still be switched off under Appearance & advanced. */
   static defaultAntialias() {
-    return (typeof window === 'undefined' ? 1 : window.devicePixelRatio || 1) < 2.5;
+    return true;
   }
 
   /** Tear the map down (when switching to another resort) and give its graphics memory back. */
