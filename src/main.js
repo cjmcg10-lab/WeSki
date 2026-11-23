@@ -22,6 +22,7 @@ import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
+import { watchClearButtons, syncClear, scan as addClearButtons } from './clearfield.js';
 import * as acct from './account.js';
 import * as fcUi from './forecast/ui.js';
 import { emergencyFor, mainNumber, telHref, fmtCoords, nearestLift, nearestRun, sourceHost } from './emergency.js';
@@ -43,6 +44,8 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
  */
 // On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
 const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
+/** Panels that list results as you type: they keep one height while typing (see fitSheetToKeyboard). */
+const LIST_SHEETS = new Set(['search', 'fcadd', 'closures']);
 function fitScreen() {
   if (window.visualViewport && window.visualViewport.scale > 1.01) return;
   const portrait = window.innerHeight >= window.innerWidth;
@@ -390,6 +393,7 @@ async function openStart(from = null) {
   showStartPanel();
   $('.start-top').classList.remove('hidden');
   $('#f-resort').value = '';
+  syncClear($('#f-resort'));
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
   // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
@@ -881,6 +885,7 @@ if (updates) {
 persist();
 // Language: translate the page as it changes, starting with the saved choice or the phone's language.
 watchPage();
+watchClearButtons();
 setLang(initialLang(), false).catch(() => {});
 onLangChange(() => {
   if (!$('#sheet').classList.contains('hidden')) renderSheet();
@@ -961,12 +966,39 @@ function fitStartToKeyboard() {
     p.style.setProperty('--kb-h', Math.round(vv.height) + 'px');
   } else { p.style.removeProperty('--kb-top'); p.style.removeProperty('--kb-h'); }
 }
+// Panels (sheets) with a text field get the same treatment (owner, 2026-11-23): while the keyboard is up the panel is
+// pinned to the part of the screen the keyboard leaves visible, and the page is kept unscrolled. Panels that list
+// results as you type (search, Forecast "add a mountain", closures) also keep one fixed height, the tallest they can
+// be, so the list does not shrink and drop under the keyboard as fewer results match: results sit at the top
+// (LIST_SHEETS, near the top of this file).
+/** The text field the person is typing in, when it is inside the panel. */
+function sheetField() {
+  const a = document.activeElement;
+  return a && $('#sheet').contains(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'date', 'button'].includes(a.type))) ? a : null;
+}
+/** While the on-screen keyboard is up and a panel field has focus, keep the panel inside the visible part of the screen. */
+function fitSheetToKeyboard() {
+  const sh = $('#sheet'), vv = window.visualViewport;
+  const kb = !!vv && !!sheetField() && !COLUMN.matches && !sh.classList.contains('hidden') && window.innerHeight - vv.height > 120;
+  sh.classList.toggle('kb', kb);
+  if (kb) {
+    const top = Math.max(0, Math.round(vv.offsetTop)), h = Math.round(vv.height);
+    sh.style.setProperty('--kb-top', top + 'px');
+    sh.style.setProperty('--kb-h', h + 'px');
+    sh.style.setProperty('--kb-bottom', Math.max(0, $('#app').clientHeight - top - h) + 'px');
+  } else { for (const k of ['--kb-top', '--kb-h', '--kb-bottom']) sh.style.removeProperty(k); }
+}
+$('#sheet').addEventListener('focusin', () => { if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } });
+$('#sheet').addEventListener('focusout', () => setTimeout(fitSheetToKeyboard, 0));
 if (window.visualViewport) {
-  const onVV = () => { if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard(); };
+  const onVV = () => {
+    if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard();
+    if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } else if ($('#sheet').classList.contains('kb')) fitSheetToKeyboard();
+  };
   window.visualViewport.addEventListener('resize', onVV);
   window.visualViewport.addEventListener('scroll', onVV);
 }
-window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort')) unscrollPage(); });
+window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort') || sheetField()) unscrollPage(); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
@@ -1589,6 +1621,7 @@ function closeSheet() {
   S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
   $('#sheet').classList.add('hidden');
+  fitSheetToKeyboard();
   renderChrome();
 }
 
@@ -1619,6 +1652,7 @@ function renderSheet() {
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
   $('#sheet').classList.toggle('tall', fcUi.isForecastSheet(S.sheet));
+  $('#sheet').classList.toggle('fill', LIST_SHEETS.has(S.sheet));
   $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
@@ -1628,6 +1662,7 @@ function renderSheet() {
   if (same && html === S.sheetHtml) return; // nothing changed: leave the DOM (and any tap in progress) alone
   S.sheetHtml = html;
   body.innerHTML = html;
+  addClearButtons(body);   // before anything focuses a field: wrapping a focused field would drop its focus
   if (same) body.scrollTop = keep;
   if (fcUi.isForecastSheet(S.sheet)) fcUi.afterRender(S.sheet);
   const pv = $('#av-preview');
@@ -2647,7 +2682,7 @@ async function onClick(e) {
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
     case 'nav-pin': if (S.pin) startNav({ type: 'pin', name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y }); break;
-    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus(), 60); } break;
+    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus({ preventScroll: true }), 60); } break;
     case 'search-go': $('#f-search')?.blur(); searchGo(d.k, d.v); break;
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;

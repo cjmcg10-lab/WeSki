@@ -1053,4 +1053,5 @@ export default {
   1487: "Rega air rescue",
   1488: "Alpine emergency (mountain rescue)",
   1489: "Fire and ambulance",
+  1490: "Clear the text",
 };

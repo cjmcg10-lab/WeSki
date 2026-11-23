@@ -547,4 +547,5 @@ export default {
   1487: "Rega luchtredding",
   1488: "Alpiene noodoproep (bergredding)",
   1489: "Brandweer en ambulance",
+  1490: "Tekst wissen",
 };

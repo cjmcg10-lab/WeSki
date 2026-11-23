@@ -547,4 +547,5 @@ export default {
   1487: "Rega Luftrettung",
   1488: "Alpinnotruf (Bergrettung)",
   1489: "Feuerwehr und Rettung",
+  1490: "Text löschen",
 };

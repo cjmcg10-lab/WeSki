@@ -547,4 +547,5 @@ export default {
   1487: "Resgate aéreo Rega",
   1488: "Emergência alpina (resgate de montanha)",
   1489: "Bombeiros e ambulância",
+  1490: "Apagar o texto",
 };
