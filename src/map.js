@@ -12,6 +12,8 @@ import * as M from './models.js';
 import { scheme, cls, runColor, runSym } from './rating.js';
 
 const RED_UP = 5;   // metres the red lift line sits above its cables
+// Performance study switches (claude/perf-study only): ?perf=lines,chunks,lod,noxray,pr75 turns prototypes on.
+const PERF = new Set((typeof location !== 'undefined' && new URLSearchParams(location.search).get('perf') || '').split(',').filter(Boolean));
 
 export const COLORS = {
   diff: ['#1fa750', '#2b7de9', '#16181d', '#a3122f'],
@@ -251,8 +253,109 @@ export class SkiMap {
     // stencil: where the ground is the nearest thing it clears the "tree here" mark (see buildTrails)
     Object.assign(gm, { stencilWrite: true, stencilRef: 0, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
     this.terrain = new THREE.Mesh(g, gm);
-    this.scene.add(this.terrain);
+    if (PERF.has('chunks') || PERF.has('lod')) this.chunkTerrain(g, gm);
+    else this.scene.add(this.terrain);
     this.buildSurround();
+  }
+
+  /**
+   * Prototype (?perf=chunks / ?perf=lod): the ground split into square pieces of C cells, each its own mesh, so
+   * pieces outside the view are skipped (frustum culling). With lod, each piece also has coarser versions (every
+   * 2nd, 4th, 8th height) and per frame takes the coarsest one whose worst height error stays under ~2 screen
+   * pixels; short skirts hang from every piece's edge so no gaps show where neighbours differ. All pieces share the
+   * one vertex buffer (normals from the full grid, so shading keeps its detail) and the one ground material.
+   */
+  chunkTerrain(g, gm) {
+    const { nx, ny, cell } = this.resort.grid, C = 64, lod = PERF.has('lod');
+    const pos0 = g.attributes.position.array, nrm0 = g.attributes.normal.array, n = nx * ny;
+    const extraP = [], extraN = [];
+    let next = n;
+    const skirtVert = (v, drop) => {
+      extraP.push(pos0[v * 3], pos0[v * 3 + 1] - drop, pos0[v * 3 + 2]);
+      extraN.push(nrm0[v * 3], nrm0[v * 3 + 1], nrm0[v * 3 + 2]);
+      return next++;
+    };
+    const hgt = (i, j) => pos0[(j * nx + i) * 3 + 1];
+    const pieces = [];
+    for (let j0 = 0; j0 < ny - 1; j0 += C) for (let i0 = 0; i0 < nx - 1; i0 += C) {
+      const i1 = Math.min(nx - 1, i0 + C), j1 = Math.min(ny - 1, j0 + C);
+      const levels = [];
+      for (const st of lod ? [1, 2, 4, 8] : [1]) {
+        if (st > 1 && (i1 - i0 < st * 2 || j1 - j0 < st * 2)) break;
+        const xs = [], ys = [];
+        for (let i = i0; i < i1; i += st) xs.push(i); xs.push(i1);
+        for (let j = j0; j < j1; j += st) ys.push(j); ys.push(j1);
+        // worst height error of this level against the full grid (bilinear between kept heights)
+        let err = 0;
+        if (st > 1) for (let b = 0; b + 1 < ys.length; b++) for (let a = 0; a + 1 < xs.length; a++) {
+          const ia = xs[a], ib = xs[a + 1], ja = ys[b], jb = ys[b + 1];
+          const h00 = hgt(ia, ja), h10 = hgt(ib, ja), h01 = hgt(ia, jb), h11 = hgt(ib, jb);
+          for (let j = ja; j <= jb; j++) for (let i = ia; i <= ib; i++) {
+            const u = (i - ia) / (ib - ia), v = (j - ja) / (jb - ja);
+            const e = Math.abs(h00 * (1 - u) * (1 - v) + h10 * u * (1 - v) + h01 * (1 - u) * v + h11 * u * v - hgt(i, j));
+            if (e > err) err = e;
+          }
+        }
+        const idx = [];
+        for (let b = 0; b + 1 < ys.length; b++) for (let a = 0; a + 1 < xs.length; a++) {
+          const A = ys[b] * nx + xs[a], B = ys[b] * nx + xs[a + 1], D = ys[b + 1] * nx + xs[a], E = ys[b + 1] * nx + xs[a + 1];
+          idx.push(A, B, E, A, E, D);
+        }
+        if (lod) {
+          // skirts round the edge, deep enough to cover the gap to a finer or coarser neighbour
+          const drop = Math.max(4, err * 1.5 + 2), ring = [];
+          for (const i of xs) ring.push(j0 * nx + i);
+          for (const j of ys.slice(1)) ring.push(j * nx + i1);
+          for (const i of xs.slice(0, -1).reverse()) ring.push(j1 * nx + i);
+          for (const j of ys.slice(0, -1).reverse()) ring.push(j * nx + i0);
+          const low = ring.map((v) => skirtVert(v, drop));
+          for (let k = 0; k + 1 < ring.length; k++) idx.push(ring[k], low[k], ring[k + 1], ring[k + 1], low[k], low[k + 1]);
+        }
+        levels.push({ idx, err });
+      }
+      pieces.push({ i0, j0, i1, j1, levels });
+    }
+    const P = new Float32Array((n + extraP.length / 3) * 3), N = new Float32Array(P.length);
+    P.set(pos0); P.set(extraP, n * 3); N.set(nrm0); N.set(extraN, n * 3);
+    const posA = new THREE.BufferAttribute(P, 3), nrmA = new THREE.BufferAttribute(N, 3);
+    const group = new THREE.Group();
+    this.terrainPieces = [];
+    for (const pc of pieces) {
+      const geos = pc.levels.map((L) => {
+        const q = new THREE.BufferGeometry();
+        q.setAttribute('position', posA); q.setAttribute('normal', nrmA);
+        q.setIndex(new THREE.BufferAttribute(new Uint32Array(L.idx), 1));
+        return q;
+      });
+      // the piece's own bounds (computeBoundingSphere would measure the whole shared buffer); skirts included
+      let y0 = Infinity, y1 = -Infinity;
+      for (let j = pc.j0; j <= pc.j1; j++) for (let i = pc.i0; i <= pc.i1; i++) { const y = pos0[(j * nx + i) * 3 + 1]; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+      y0 -= 40;
+      const box = new THREE.Box3(new THREE.Vector3(pos0[(pc.j0 * nx + pc.i0) * 3], y0, pos0[(pc.j1 * nx + pc.i1) * 3 + 2]), new THREE.Vector3(pos0[(pc.j1 * nx + pc.i1) * 3], y1, pos0[(pc.j0 * nx + pc.i0) * 3 + 2]));
+      const sphere = box.getBoundingSphere(new THREE.Sphere());
+      for (const q of geos) { q.boundingBox = box.clone(); q.boundingSphere = sphere.clone(); }
+      const mesh = new THREE.Mesh(geos[0], gm);
+      mesh.userData = { geos, errs: pc.levels.map((L) => L.err) };
+      group.add(mesh);
+      this.terrainPieces.push(mesh);
+    }
+    this.terrainGroup = group;
+    this.scene.add(group);
+  }
+
+  /** Prototype LOD: per piece, the coarsest level whose height error is under ~2 px on screen. */
+  pickTerrainLod() {
+    if (!this.terrainPieces || !PERF.has('lod')) return;
+    const cam = this.camera.position, is3 = this.mode === '3d';
+    const mpp = is3 ? (2 * Math.tan(THREE.MathUtils.degToRad(this.cam3.fov / 2))) / this.h : 1 / this.zoom2;   // metres per pixel (x distance in 3D)
+    for (const m of this.terrainPieces) {
+      const u = m.userData, bs = u.geos[0].boundingSphere;
+      const d = is3 ? Math.max(1, cam.distanceTo(bs.center) - bs.radius) : 1;
+      let k = 0;
+      // in 2D, height errors only show as a shift in shading: allow more
+      for (let L = 1; L < u.errs.length; L++) if (u.errs[L] < (is3 ? 2 : 6) * mpp * d) k = L;
+      if (m.geometry !== u.geos[k]) m.geometry = u.geos[k];
+    }
   }
 
   /**
@@ -498,6 +601,9 @@ vec3 groundColour() {
     for (let i = spots.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)), t = spots[i]; spots[i] = spots[j]; spots[j] = t; }
     // stencil: trees mark the pixels they cover, so runs can be drawn through them (see buildTrails)
     const treeMat = new THREE.MeshLambertMaterial({ stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+    // prototype ?perf=onepass: trees leave the depth buffer alone, so runs (drawn after them) show through the
+    // canopy but stay hidden behind ridges, in one pass instead of two
+    if (PERF.has('onepass')) Object.assign(treeMat, { stencilWrite: false, depthWrite: false });
     const mesh = new THREE.InstancedMesh(M.treeGeometry(), treeMat, spots.length);
     const m = new THREE.Matrix4(), qn = new THREE.Quaternion(), sc = new THREE.Vector3(), c = new THREE.Color();
     const dark = new THREE.Color('#1f5a3c'), light = new THREE.Color('#2f7a4f'), frost = new THREE.Color('#dbe8e6');
@@ -523,6 +629,39 @@ vec3 groundColour() {
       if (prev) out.push(prev.x, prev.y, prev.z, p.x, p.y, p.z);
       prev = p;
     }
+    return out;
+  }
+
+  /**
+   * A run's points for drawing. Runs are stored every ~9 m so they follow the ground; most of those points sit on a
+   * straight, even stretch. With ?perf=lines the drawn line keeps only the points needed to stay within 2 m of
+   * the mapped line in plan and 1.5 m of the snow surface in height (the line floats 2.7-3.2 m above it), which
+   * drops about 80% of the segments. Kept per run, so redrawing for closures costs nothing.
+   */
+  runPts(t) {
+    if (!PERF.has('lines') || t.pts.length < 6) return t.pts;
+    const C = (this._simple ||= new Map());
+    let out = C.get(t);
+    if (out) return out;
+    const P = t.pts, n = P.length / 2, z = new Float64Array(n);
+    for (let i = 0; i < n; i++) z[i] = this.surfaceZ(P[2 * i], P[2 * i + 1]);
+    const keep = new Uint8Array(n); keep[0] = keep[n - 1] = 1;
+    const stack = [[0, n - 1]];
+    while (stack.length) {
+      const [lo, hi] = stack.pop();
+      if (hi - lo < 2) continue;
+      const ax = P[2 * lo], ay = P[2 * lo + 1], az = z[lo], dx = P[2 * hi] - ax, dy = P[2 * hi + 1] - ay, dz = z[hi] - az, L2 = dx * dx + dy * dy || 1e-9;
+      let best = 1, bi = -1;
+      for (let k = lo + 1; k < hi; k++) {
+        const f = Math.max(0, Math.min(1, ((P[2 * k] - ax) * dx + (P[2 * k + 1] - ay) * dy) / L2)), qx = ax + f * dx, qy = ay + f * dy, qz = az + f * dz;
+        const e = Math.max(Math.hypot(P[2 * k] - qx, P[2 * k + 1] - qy) / 2, Math.abs(qz - this.surfaceZ(qx, qy)) / 1.5, Math.abs(qz - z[k]) / 1.5);
+        if (e > best) { best = e; bi = k; }
+      }
+      if (bi > 0) { keep[bi] = 1; stack.push([lo, bi], [bi, hi]); }
+    }
+    out = [];
+    for (let i = 0; i < n; i++) if (keep[i]) out.push(P[2 * i], P[2 * i + 1]);
+    C.set(t, out);
     return out;
   }
 
@@ -552,11 +691,11 @@ vec3 groundColour() {
     const faded = {};
     for (const t of R.trails) {
       if (t.hide) continue;       // not open to the public (tools/verify_exists.py)
-      if (closed.has('t' + t.id)) { this.segs(t.pts, 3.2, shut); continue; }
+      if (closed.has('t' + t.id)) { this.segs(this.runPts(t), 3.2, shut); continue; }
       // a real run the resort's map leaves off: drawn faded, without the white edge
-      if (t.unof) { this.segs(t.pts, 3.2, (faded[cls(R, t)] ||= [])); continue; }
-      if (!t.glade) this.segs(t.pts, 2.7, casing);
-      this.segs(t.pts, 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
+      if (t.unof) { this.segs(this.runPts(t), 3.2, (faded[cls(R, t)] ||= [])); continue; }
+      if (!t.glade) this.segs(this.runPts(t), 2.7, casing);
+      this.segs(this.runPts(t), 3.2, (byStyle[cls(R, t) + (t.glade ? 'g' : '')] ||= []));
     }
     for (const [c, pos] of Object.entries(faded)) G.add(this.fatLine(pos, scheme(R).colors[+c], 2.4, { order: 4, opacity: 0.45 }));
     // Outlines of wide slopes (OpenStreetMap piste areas): a thin dotted edge in the colour of the run of the same
@@ -581,6 +720,7 @@ vec3 groundColour() {
     // in its true place, while a run behind a ridge stays hidden.
     for (const l of runs) {
       G.add(l);
+      if (PERF.has('noxray') || PERF.has('onepass')) continue;
       const x = new LineSegments2(l.geometry, l.material.clone());
       Object.assign(x.material, { depthTest: false, stencilWrite: true, stencilRef: 1, stencilFunc: THREE.EqualStencilFunc,
         stencilFail: THREE.KeepStencilOp, stencilZFail: THREE.KeepStencilOp, stencilZPass: THREE.KeepStencilOp, stencilWriteMask: 0 });
@@ -1468,7 +1608,7 @@ vec3 groundColour() {
     // Nothing is moving when the view is still, no lift is being animated and nobody on the map is
     // moving: the picture is then only refreshed twice a second (saves battery and heat).
     const still = !this.flight && farOut && !people && !justSettled && !this.overlayDirty && key === this.overlayKey && now - (this.drawnAt || 0) < 500;
-    if (!still) { this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
+    if (!still) { this.pickTerrainLod(); this.renderer.render(this.scene, this.camera); this.drawnAt = now; }
     if (key !== this.overlayKey || this.overlayDirty || (people && now - (this.overlayAt || 0) > 66) || now - (this.overlayAt || 0) > 260) {
       this.overlayKey = key; this.overlayDirty = false; this.overlayAt = now;
       this.drawOverlay();
