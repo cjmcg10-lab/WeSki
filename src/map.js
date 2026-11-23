@@ -435,7 +435,7 @@ vec3 groundColour() {
     // in pieces like the detailed ground (buildTerrain): those off screen are skipped and the far ones drawn coarser;
     // cells hidden under the detailed map are left out (smooth shading, like the detailed map)
     const hidden = (i, j) => { const a = j * nx + i; return inside[a] && inside[a + 1] && inside[a + nx] && inside[a + nx + 1]; };
-    const S = chunkSurface(pos, nx, ny, { C: 16, steps: [1, 2, 4], skip: hidden });
+    const S = chunkSurface(pos, nx, ny, { C: 32, steps: [1, 2, 4], skip: hidden });
     const C = new Float32Array(S.pos.length);
     C.set(col);
     for (let k = 0; k < S.skirtSrc.length; k++) { const v = nx * ny + k, o = S.skirtSrc[k]; C[v * 3] = col[o * 3]; C[v * 3 + 1] = col[o * 3 + 1]; C[v * 3 + 2] = col[o * 3 + 2]; }
