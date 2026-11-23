@@ -186,10 +186,10 @@
   "baseLon": -121.4749,
   "top": 2125,
   "base": 1337,
-  "trails": 137,
+  "trails": 139,
   "lifts": 11,
   "zones": false,
-  "bytes": 1251158
+  "bytes": 1264971
  },
  {
   "id": "deer-valley",
@@ -202,10 +202,10 @@
   "baseLon": -111.44075,
   "top": 2954,
   "base": 1964,
-  "trails": 232,
+  "trails": 237,
   "lifts": 34,
   "zones": false,
-  "bytes": 2811928
+  "bytes": 2820516
  },
  {
   "id": "geto-kogen",
@@ -490,10 +490,10 @@
   "baseLon": -120.22914,
   "top": 2741,
   "base": 1889,
-  "trails": 264,
+  "trails": 296,
   "lifts": 44,
   "zones": true,
-  "bytes": 2605019
+  "bytes": 2654785
  },
  {
   "id": "park-city",
@@ -682,10 +682,10 @@
   "baseLon": -80.01598,
   "top": 1468,
   "base": 994,
-  "trails": 61,
+  "trails": 63,
   "lifts": 13,
   "zones": true,
-  "bytes": 980399
+  "bytes": 982811
  },
  {
   "id": "solitude",
@@ -698,10 +698,10 @@
   "baseLon": -111.60207,
   "top": 3185,
   "base": 2438,
-  "trails": 84,
+  "trails": 87,
   "lifts": 9,
   "zones": true,
-  "bytes": 875063
+  "bytes": 893776
  },
  {
   "id": "steamboat",

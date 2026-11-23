@@ -25,7 +25,11 @@
   "Niagra": "Niagara",
   "Non-Descript": "Nondescript",
   "Persistence": "Persistance",
-  "Trillby": "Trilby"
+  "Trillby": "Trilby",
+  "Kabob": "Kebob",
+  "Ham Bug": "Humbug",
+  "Race Course": "Ottobahn",
+  "Keetly": "Deertrail"
  },
  "links": [
   [
@@ -40,5 +44,66 @@
  "links_notes": {
   "trail:Tycoon (bottom) -> trail:Sultan Connection": "2026-11-23: the run stops short; the terrain falls from its end to Sultan Connection (14 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Black Forest (bottom) -> trail:Edgar's Alley": "2026-11-23: the run stops short; the terrain falls from its end to Edgar's Alley (54 m, 0 m of climb) (tools/check_connections.py dead end)"
- }
+ },
+ "way_names": {
+  "1313893101": "Short Line"
+ },
+ "way_names_note": "1313893101: the unnamed blue piece from the Keetley Point top down to Star is the trail map's Short Line (2026-27 map, label beside it; 2026-11-23).",
+ "extra_trails": [
+  {
+   "name": "DT's Trees",
+   "pts": [
+    [-111.496537, 40.611286],
+    [-111.496071, 40.612188],
+    [-111.495428, 40.613092],
+    [-111.494784, 40.613996],
+    [-111.494082, 40.6149],
+    [-111.493556, 40.615713],
+    [-111.493808, 40.616342]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (tree skiing, no cut strip): Deer Valley 2026-27 winter trail map (skimap.org 48005, high-resolution PDF) draws DT's Trees (black diamond, label only) in the forest band between Ontario Bowl and Hidden Treasure on Flagstaff. Placed midway between Hidden Treasure and the west edge of OpenStreetMap's Ontario Bowl outline (NAIP photo: that band is forest, the bowl beside it open), from the Ontario Bowl top down to Hidden Treasure. Within about 60 m across, the ends within about 100 m."
+  },
+  {
+   "name": "Gumby Glade",
+   "pts": [
+    [-111.496677, 40.614168],
+    [-111.496207, 40.61462],
+    [-111.495738, 40.615073],
+    [-111.49501, 40.615796],
+    [-111.494305, 40.61634],
+    [-111.493764, 40.616685]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (glade): Deer Valley 2026-27 winter trail map (skimap.org 48005, high-resolution PDF) draws Gumby Glade (black diamond, label only) between Hidden Treasure and the Quincy Express line, below the Hidden Treasure - Mountain Daisy crossover. Placed midway between Hidden Treasure and the Quincy line from below that crossover down to where they meet. Within about 50 m."
+  },
+  {
+   "name": "Four Ply",
+   "pts": [
+    [-111.497817, 40.616108],
+    [-111.497291, 40.616511],
+    [-111.4965, 40.616744],
+    [-111.495901, 40.617197],
+    [-111.495511, 40.617747],
+    [-111.494873, 40.618161],
+    [-111.494188, 40.618551]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (glade): Deer Valley 2026-27 winter trail map (skimap.org 48005, high-resolution PDF) draws Four Ply (black diamond, label only) in the gladed trees between Peeler and Three Ply. Placed midway between those two runs (the NAIP photo shows open-spaced trees there), from below their tops to above their bottoms. Within about 50 m."
+  },
+  {
+   "name": "Son of Rattler",
+   "pts": [
+    [-111.479828, 40.61558],
+    [-111.479529, 40.616273],
+    [-111.479556, 40.617017],
+    [-111.479614, 40.617753],
+    [-111.479843, 40.618474],
+    [-111.480057, 40.619188],
+    [-111.480301, 40.619878]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (tree skiing): Deer Valley 2026-27 winter trail map (skimap.org 48005, high-resolution PDF) draws Son of Rattler (black diamond, label only) in the trees between Reward and Rattler on the lower half of Bald Mountain. Placed midway between those two runs. Within about 60 m."
+  }
+ ]
 }

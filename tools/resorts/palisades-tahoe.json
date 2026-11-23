@@ -28,7 +28,14 @@
   "Reuter's 6th": "Reuter's - 6th Tree",
   "Standteiner's - 4th": "Standteiner's - 4th Tree",
   "Tomlinson's - 1st": "Tomlinson's - 1st Tree",
-  "Water Fall Gully": "Waterfall Gully"
+  "Water Fall Gully": "Waterfall Gully",
+  "75 Chute": "Chute 75",
+  "Montezuma's Revenge": "Montezuma's",
+  "Reilly's Run": "Reily's Run",
+  "National Chute": "National",
+  "Main Chute": "Main",
+  "Extra Chute": "Extra",
+  "Keyhole Open Slopes": "Keyhole Slopes"
  },
  "two_way_lifts": [
   "Base to Base Gondola"
@@ -82,7 +89,7 @@
    "trail:Howard's Hollow"
   ],
   [
-   "trail:Keyhole Open Slopes (bottom)",
+   "trail:Keyhole Slopes (bottom)",
    "trail:Howard's Hollow"
   ],
   [
@@ -156,7 +163,7 @@
   "trail:East Palisades (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (56 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Keyhole 1 (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (84 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Keyhole 2 (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (112 m, 0 m of climb) (tools/check_connections.py dead end)",
-  "trail:Keyhole Open Slopes (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (110 m, 0 m of climb) (tools/check_connections.py dead end)",
+  "trail:Keyhole Slopes (bottom) -> trail:Howard's Hollow": "2026-11-23: the run stops short; the terrain falls from its end to Howard's Hollow (110 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:NC (bottom) -> trail:Lower Saddle": "2026-11-23: the run stops short; the terrain falls from its end to Lower Saddle (107 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Marenka (bottom) -> trail:Lower Saddle": "2026-11-23: the run stops short; the terrain falls from its end to Lower Saddle (87 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Ashcroft Gully (bottom) -> trail:Robin Hood": "2026-11-23: the run stops short; the terrain falls from its end to Robin Hood (82 m, 0 m of climb) (tools/check_connections.py dead end)",
@@ -173,5 +180,418 @@
   "trail:High Yellow Face (bottom) -> trail:Deer Camp": "2026-11-23: the run stops short; the terrain falls from its end to Deer Camp (175 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Treeline Cirque Left (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (79 m, 0 m of climb) (tools/check_connections.py dead end)",
   "trail:Treeline Cirque Right (bottom) -> trail:Hidden Knolls": "2026-11-23: the run stops short; the terrain falls from its end to Hidden Knolls (59 m, 0 m of climb) (tools/check_connections.py dead end)"
- }
+ },
+ "way_names": {
+  "452731648": "Subway Beginner Area",
+  "1579458380": "Meadow Beginner Area",
+  "1579458379": "Meadow Beginner Area",
+  "452731659": "To Lakeview",
+  "452731656": "To Lakeview",
+  "452731655": "Scott Meadow",
+  "553033661": "To Mountain Run",
+  "249143578": "The Mora",
+  "906424379": "Costello's"
+ },
+ "way_names_note": "2026-11-23, from the 2025-26 trail maps: Subway and the green pieces from the Meadow chair top are the beginner areas; the unnamed blue track from the Treeline Cirque mid-station to the Lakeview chair is To Lakeview, its last piece through Scott Meadow (OpenStreetMap wetland) is Scott Meadow; the second Sunnyside way from the Wa She Shu top to the Siberia base is the map's 'to Mountain Run'; the green track OpenStreetMap calls Bailey's, from the Gold Coast Express top east, is The Mora; Adam's Rib, between Montezuma's and Strainer under Snow King, is the map's Costello's (moderate confidence).",
+ "split_ways": {
+  "452735632": [
+   [-120.239869, 39.161617],
+   "East Runout",
+   "Sandy's Corner"
+  ],
+  "248622080": [
+   [-120.242106, 39.188979],
+   "Nose Chutes",
+   "5th"
+  ]
+ },
+ "split_ways_note": "2026-11-23: OpenStreetMap maps East Runout and Sandy's Corner as one way (name Sandy's Corner, piste:name East Runout); the Alpine Meadows map puts East Runout on the upper part and Sandy's Corner by the base, so the way is cut a little below half way. West Face Alternates (248622080), the unlisted OpenStreetMap line from the Nose down the lower west face of KT-22, is the map's Nose Chutes above and its 5th below (fall lines from both trail-map labels run along it), so it is cut where the 5th label falls on it instead of drawing a second line beside it.",
+ "extra_trails": [
+  {
+   "name": "Alt 75",
+   "pts": [
+    [-120.242829, 39.184398],
+    [-120.243022, 39.184664],
+    [-120.243175, 39.184962],
+    [-120.2434, 39.185228],
+    [-120.243632, 39.18549],
+    [-120.243851, 39.18576],
+    [-120.244065, 39.186034]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): drawn midway between 75 Chute and Moseley's (West Face) over their upper third, where the map puts 'Alt 75' beside 75 Chute. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Downhill Cliffs",
+   "pts": [
+    [-120.240812, 39.183873],
+    [-120.240585, 39.184186],
+    [-120.240346, 39.184494],
+    [-120.240044, 39.184766],
+    [-120.239709, 39.185016],
+    [-120.239443, 39.185306],
+    [-120.239271, 39.18564],
+    [-120.239209, 39.185716]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Downhill Cliffs by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 82 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "East Face Cliffs",
+   "pts": [
+    [-120.237462, 39.183952],
+    [-120.237446, 39.18431],
+    [-120.237388, 39.184667],
+    [-120.237299, 39.18502],
+    [-120.237153, 39.185361],
+    [-120.236944, 39.185683],
+    [-120.23674, 39.186006],
+    [-120.236601, 39.186254]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows East Face Cliffs by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 89 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Enchanted Forest",
+   "pts": [
+    [-120.247319, 39.182722],
+    [-120.247579, 39.18302],
+    [-120.247866, 39.183303],
+    [-120.248157, 39.183582],
+    [-120.248498, 39.183826],
+    [-120.248875, 39.184035]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Enchanted Forest by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 80 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Heidi's Glades",
+   "pts": [
+    [-120.233287, 39.185483],
+    [-120.233624, 39.185648],
+    [-120.23396, 39.185818],
+    [-120.234289, 39.18602],
+    [-120.234617, 39.186223],
+    [-120.234902, 39.186488],
+    [-120.235106, 39.186809]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (glade, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307): the Heidi's Glades label sits between Heidi's and Tom's Tumble; drawn midway between those two runs. Checked against the NAIP aerial photo (open-spaced trees) and the other runs (no doubled line)."
+  },
+  {
+   "name": "Powder Horn",
+   "pts": [
+    [-120.241095, 39.187886],
+    [-120.240824, 39.188177],
+    [-120.240532, 39.188454],
+    [-120.240217, 39.188718],
+    [-120.239904, 39.188983],
+    [-120.239616, 39.189265],
+    [-120.239389, 39.189578],
+    [-120.239286, 39.189927],
+    [-120.239328, 39.190286],
+    [-120.239412, 39.19064],
+    [-120.239461, 39.190816]
+   ],
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Powder Horn by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 80 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Red Trail",
+   "pts": [
+    [-120.238833, 39.184415],
+    [-120.238757, 39.18477],
+    [-120.238812, 39.185127],
+    [-120.238752, 39.185483],
+    [-120.238573, 39.185812],
+    [-120.238204, 39.186025],
+    [-120.237786, 39.18618],
+    [-120.237578, 39.186258]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Red Trail by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 87 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "3rd",
+   "pts": [
+    [-120.242735, 39.187477],
+    [-120.243027, 39.187756],
+    [-120.243302, 39.188045],
+    [-120.243578, 39.188334],
+    [-120.243848, 39.188626],
+    [-120.2441, 39.188929],
+    [-120.244326, 39.189243],
+    [-120.244378, 39.189324]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows 3rd by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 83 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Paris Glades",
+   "pts": [
+    [-120.233742, 39.187925],
+    [-120.234068, 39.188466],
+    [-120.234034, 39.189035],
+    [-120.233916, 39.189598],
+    [-120.233763, 39.190158],
+    [-120.233708, 39.190753],
+    [-120.233704, 39.191371]
+   ],
+   "glade": true,
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): drawn midway between Christmas Tree and Lower Champs Elysees, the two runs the map shows on either side of the Paris Glades label. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Chicken Bowl",
+   "pts": [
+    [-120.266239, 39.182242],
+    [-120.266662, 39.18237],
+    [-120.267042, 39.182575],
+    [-120.26736, 39.182835],
+    [-120.267634, 39.183126],
+    [-120.26772, 39.183471],
+    [-120.267648, 39.183827],
+    [-120.267565, 39.18418],
+    [-120.267517, 39.184262]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Chicken Bowl by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 125 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Norm's",
+   "pts": [
+    [-120.259519, 39.184496],
+    [-120.259067, 39.184572],
+    [-120.258606, 39.184596],
+    [-120.25816, 39.18469],
+    [-120.257759, 39.184868],
+    [-120.257383, 39.185077],
+    [-120.256978, 39.185251],
+    [-120.256568, 39.185419],
+    [-120.256161, 39.185591],
+    [-120.256062, 39.185637]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Norm's by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 109 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Siberia Ridge",
+   "pts": [
+    [-120.272359, 39.183051],
+    [-120.272131, 39.183357],
+    [-120.271826, 39.183628],
+    [-120.271515, 39.183894],
+    [-120.271437, 39.183961]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Siberia Ridge by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 80 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Summer Road Pockets",
+   "pts": [
+    [-120.25518, 39.189502],
+    [-120.254807, 39.189293],
+    [-120.254383, 39.189148],
+    [-120.253968, 39.188988],
+    [-120.253577, 39.188797],
+    [-120.253182, 39.188608],
+    [-120.252768, 39.188447],
+    [-120.252666, 39.188405]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Summer Road Pockets by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 84 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Akja Cache Pockets",
+   "pts": [
+    [-120.255205, 39.190476],
+    [-120.255019, 39.190152],
+    [-120.254637, 39.189949],
+    [-120.254237, 39.189768],
+    [-120.253847, 39.189574],
+    [-120.253471, 39.189364],
+    [-120.253105, 39.189144],
+    [-120.253014, 39.189087]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Akja Cache Pockets by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 84 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Tower 12 Cliffs",
+   "pts": [
+    [-120.253135, 39.19191],
+    [-120.252682, 39.191836],
+    [-120.252219, 39.19184],
+    [-120.251757, 39.191852],
+    [-120.251303, 39.191789],
+    [-120.250858, 39.191692],
+    [-120.2504, 39.191703],
+    [-120.250006, 39.191889],
+    [-120.249636, 39.192105],
+    [-120.249254, 39.192308],
+    [-120.24886, 39.192496],
+    [-120.248441, 39.192652],
+    [-120.248018, 39.192795],
+    [-120.247564, 39.192863],
+    [-120.247115, 39.192949],
+    [-120.246657, 39.192922],
+    [-120.246251, 39.192753],
+    [-120.24589, 39.192527],
+    [-120.245538, 39.192293],
+    [-120.245163, 39.192082],
+    [-120.244965, 39.191989]
+   ],
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Tower 12 Cliffs by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 139 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Broken Arrow",
+   "pts": [
+    [-120.253922, 39.1928],
+    [-120.253584, 39.193047],
+    [-120.25327, 39.19331],
+    [-120.253001, 39.193603],
+    [-120.252758, 39.19391],
+    [-120.25242, 39.194146],
+    [-120.251961, 39.194133],
+    [-120.2515, 39.194157],
+    [-120.251054, 39.194254],
+    [-120.250607, 39.194345],
+    [-120.250147, 39.194333],
+    [-120.249696, 39.194252],
+    [-120.249264, 39.194124],
+    [-120.24889, 39.193916],
+    [-120.248647, 39.193611],
+    [-120.24844, 39.193289],
+    [-120.248145, 39.193012],
+    [-120.248059, 39.192951]
+   ],
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Broken Arrow by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 147 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Mainline Pocket",
+   "pts": [
+    [-120.277239, 39.189211],
+    [-120.276781, 39.189184],
+    [-120.276333, 39.189095],
+    [-120.275891, 39.188989],
+    [-120.275434, 39.188939],
+    [-120.275318, 39.188937]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Mainline Pocket by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 150 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Tram Bowl",
+   "pts": [
+    [-120.259168, 39.195819],
+    [-120.258762, 39.195989],
+    [-120.258394, 39.196208],
+    [-120.258008, 39.196406],
+    [-120.257614, 39.196594],
+    [-120.257224, 39.196788],
+    [-120.25711, 39.197106],
+    [-120.257159, 39.197188]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Tram Bowl by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 124 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Bailey's Cirque",
+   "pts": [
+    [-120.260286, 39.196573],
+    [-120.259919, 39.196792],
+    [-120.259529, 39.196985],
+    [-120.25912, 39.197153],
+    [-120.258714, 39.197325],
+    [-120.25836, 39.197555],
+    [-120.258109, 39.197857],
+    [-120.258071, 39.197941]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Bailey's Cirque by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 90 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Kathmandu",
+   "pts": [
+    [-120.254753, 39.196143],
+    [-120.255148, 39.196328],
+    [-120.255572, 39.196474],
+    [-120.25598, 39.196644],
+    [-120.256367, 39.196841],
+    [-120.25678, 39.197004],
+    [-120.256989, 39.19708]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map shows Kathmandu by its label and symbol only; the symbol was tied to the ground with a thin-plate fit to lift stations and the symbols of runs already on the map (corridor about 124 m here), and the line follows the 1 m terrain fall line from the top of that slope down to the first run it meets. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Jagged Edge",
+   "pts": [
+    [-120.252005, 39.183979],
+    [-120.251118, 39.184551],
+    [-120.25025, 39.185371],
+    [-120.250206, 39.185729],
+    [-120.250117, 39.186081],
+    [-120.24988, 39.186389],
+    [-120.249587, 39.186668],
+    [-120.249289, 39.186943],
+    [-120.248991, 39.187218],
+    [-120.248856, 39.187365]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map draws Jagged Edge as a line below its symbol; that line was tied to the ground and continued down the terrain fall line to the Headwall Express base. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "CII Ridge",
+   "pts": [
+    [-120.26567, 39.181856],
+    [-120.262917, 39.18252],
+    [-120.262247, 39.182184],
+    [-120.261735, 39.182003],
+    [-120.26098, 39.181829],
+    [-120.260946, 39.181651]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map draws CII Ridge as a line from the Headwall top across to Light Towers; that line was tied to the ground and continued down the fall line to Bullet. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Groove Tube",
+   "pts": [
+    [-120.269649, 39.185133],
+    [-120.269583, 39.1855],
+    [-120.26948, 39.185852],
+    [-120.269352, 39.18619],
+    [-120.269226, 39.186528],
+    [-120.269099, 39.186866],
+    [-120.268973, 39.187205]
+   ],
+   "why": "2026-11-23, approximate (trees, no cut strip): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): the map draws Groove Tube (blue) between Racers and Bill's Boardwalk; drawn midway between those two runs. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Wolverine Bowl",
+   "pts": [
+    [-120.249165, 39.154794],
+    [-120.248762, 39.154969],
+    [-120.248343, 39.155123],
+    [-120.247929, 39.155283],
+    [-120.247526, 39.15546],
+    [-120.247151, 39.155671],
+    [-120.246717, 39.155786],
+    [-120.246271, 39.155878],
+    [-120.245858, 39.156042],
+    [-120.245517, 39.156281],
+    [-120.245381, 39.156622],
+    [-120.245358, 39.156711]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Alpine Meadows front map (skimap.org 36309): symbol between North Peril and Lower Beaver Entrance on the Alpine Meadows map. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "Nottingham's Notch",
+   "pts": [
+    [-120.23486, 39.150879],
+    [-120.23459, 39.150587],
+    [-120.234369, 39.150271],
+    [-120.234172, 39.149945],
+    [-120.234045, 39.149693]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): back-side map (skimap.org 36310): the run below the Treeline Cirque top station toward Sherwood Run; placed down the fall line from the Treeline Cirque Upper top. Low confidence (the back map ties to the ground only within about 200 m). Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  },
+  {
+   "name": "4th",
+   "pts": [
+    [-120.242214, 39.187681],
+    [-120.242369, 39.187927],
+    [-120.242528, 39.188174],
+    [-120.242687, 39.188422],
+    [-120.242843, 39.188671],
+    [-120.242994, 39.188922],
+    [-120.243149, 39.189173],
+    [-120.243305, 39.189425],
+    [-120.243458, 39.189679]
+   ],
+   "why": "2026-11-23, approximate (open slope or cliffs, no cut strip to check against): Palisades Tahoe 2025-26 Olympic Valley trail map (skimap.org 36307, rendered at 300 dpi): drawn midway between the 3rd and 5th lines, as the map lists 3rd, 4th and 5th side by side on the lower west face of KT-22. Checked against the NAIP aerial photo for open ground and against the other runs (no doubled line)."
+  }
+ ]
 }

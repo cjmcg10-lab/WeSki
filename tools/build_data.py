@@ -252,7 +252,8 @@ def main():
         feats, areas = extent.load(osm_path)
         keep, added = extent.resort(feats, areas, cfg)
         inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
-        ours = lambda w: str(w[0]).startswith("x") or int(w[0]) in keep or inside_area(w)
+        # runs drawn by hand (extra_trails, ids from 9e9) are always the resort's own, even just outside its outline
+        ours = lambda w: str(w[0]).startswith("x") or int(w[0]) >= 9_000_000_000 or int(w[0]) in keep or inside_area(w)
         joined = sorted({w[2].get("name") or f"way {w[0]}" for w in lifts if not str(w[0]).startswith("x") and int(w[0]) in added and not inside_area(w)})
         if joined:
             print(f"lifts outside the outline but joined to the resort, kept: {', '.join(joined)}")
