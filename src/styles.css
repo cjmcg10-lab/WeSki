@@ -848,6 +848,9 @@ textarea.field { resize: vertical; font: inherit; }
 #start.full .start-top { opacity: 0; transform: translateY(-28px); transition-duration: .3s, .4s; }
 #start.full .start-sky { opacity: 0; transition-duration: .4s; }
 #start.full .globe-out { opacity: 0; pointer-events: none; }
+/* searching with the on-screen keyboard up: main.js (fitStartToKeyboard) pins the whole-screen list to the part of the
+   screen the keyboard leaves visible, so its top (the title and search field) never ends up above the screen */
+#start-panel.full.kb:not(.dragging) { top: var(--kb-top, 0px); bottom: auto; height: var(--kb-h, 100%); transition: none; }
 
 /* ---------- home screen title: the app's name in a display font over the night-sky backdrop (2026-11-23) */
 /* Bowlby One (SIL Open Font License, public/fonts/OFL-bowlby-one.txt): snow-white letters standing on a teal block,

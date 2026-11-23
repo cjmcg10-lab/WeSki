@@ -292,7 +292,11 @@ Start screen (owner's mock-up, 2026-11-17; title and pull-up changed 2026-11-23,
 "SkiWithMe" in Bowlby One (self-hosted in `public/fonts`, licence on the credits page; the owner chose it over Lilita One
 and Kanit) with the slogan in spaced capitals. The "Find your mountain" panel has three positions (full screen, normal,
 shrunk) dragged by its bar or tapped (`startState`, `dragStops` in `src/drag.js`); full screen hides the globe, title and
-backdrop and pauses the globe. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
+backdrop and pauses the globe. Tapping the search jumps the panel to full screen at once (no glide, so iOS measures the
+field at the top before scrolling for the keyboard), keeps the page unscrolled, and while the keyboard is up pins the panel
+to `visualViewport` (`fitStartToKeyboard`, `.kb`; #100). Picking a mountain downloads it during the globe's turn but builds
+its 3D map only once the globe arrives, Ski Here is tapped or 4 s pass (`holdMapBuild` in `src/main.js`; the build froze the
+turn). `tests/smoke/start.mjs` (part of `npm run smoke`) checks both with an imitated keyboard. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
 (`.start-sky` in `index.html`, drawn in front of the globe and kept while zoomed to a resort; it fades when the dive into
 the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
 Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted

@@ -160,10 +160,31 @@ const resortOf = (session) => session.resort || 'jay-peak'; // sessions saved be
 // ---------- boot
 let mapP = null, mapId = null, ticking = false;
 
+// While the globe turns toward a mountain picked on the start screen, building that mountain's 3D map (seconds of
+// main-thread work on a big resort: meshes, lifts, buildings, shaders) waits, or the turn freezes partway. The files
+// still download and the ground is still worked out in the background worker meanwhile. The wait ends when the turn
+// ends, when Ski Here is tapped, when another mountain is opened, or after 4 s. Back on the card keeps it waiting
+// (the globe is turning away again) until the mountain is picked again or another one is opened.
+let mapGate = null;
+function holdMapBuild(until) {
+  openMapGate();                                // a build already waiting re-checks and waits on the new gate
+  let open;
+  const g = { p: new Promise((r) => { open = r; }) };
+  g.open = () => { clearTimeout(g.timer); if (mapGate === g) mapGate = null; open(); };
+  g.timer = setTimeout(g.open, 4000);
+  // let the globe's last frame of the turn reach the screen before the heavy work starts
+  Promise.resolve(until).then(() => requestAnimationFrame(() => setTimeout(g.open, 0)), g.open);
+  mapGate = g;
+}
+function openMapGate() { mapGate?.open(); }
+/** Back from the card: the globe turns away, so do not build now (its turn would never "arrive"). */
+function keepMapGate() { if (mapGate) { clearTimeout(mapGate.timer); mapGate.timer = null; } }
+
 /** Open a resort: load its data and build its 3D map (replacing any other mountain that was open). */
 function initMap(id) {
   if (mapP && mapId === id) return mapP;
   const prev = mapP;
+  openMapGate();                                // a build of another mountain waiting for the globe gives up now
   mapId = id;
   return (mapP = (async () => {
     if (prev) await prev.catch(() => {});
@@ -182,6 +203,7 @@ function initMap(id) {
     // the ground's heavy set-up runs in a background worker, so the screen does not freeze while it is worked out
     const prep = await SkiMap.prepare(resort, { h: heights });
     if (mapId !== id) return;
+    while (mapGate) { await mapGate.p; if (mapId !== id) return; }   // see holdMapBuild
     if (S.map) {                              // leaving the previous mountain
       S.loc?.setSim(false); S.loc?.stop();
       S.map.dispose();
@@ -435,9 +457,24 @@ function clearStartPlace() {
   const el = $('#start-panel');
   for (const k of ['height', 'max-height', 'transform', 'border-radius', '--padt']) el.style.removeProperty(k);
 }
-/** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now. */
-function goStart(state, from = null, g = startGeom()) {
+/** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now.
+ *  `snap`: go there at once, with no glide (used when the search is tapped, see the focus handler below). */
+function goStart(state, from = null, g = startGeom(), snap = false) {
   const el = $('#start-panel'), start = $('#start'), prev = startState(), tok = ++startTok;
+  if (snap) {
+    if (prev === state) return;
+    el.classList.add('dragging');
+    el.classList.toggle('full', state === 'full');
+    el.classList.toggle('mini', state === 'mini');
+    if (state === 'mini') el.style.setProperty('--mini', g.mini + 'px');
+    start.classList.toggle('full', state === 'full');
+    clearStartPlace();
+    void el.offsetHeight;                       // lay it out in its new place now, before the phone measures it
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (tok === startTok) el.classList.remove('dragging'); }));
+    if (state === 'full') setTimeout(() => { if (tok === startTok) globe?.setPaused(true); }, 420);
+    else { globe?.setPaused(false); layoutGlobe(true, state); }
+    return;
+  }
   if (from == null) {
     if (prev === state) return;
     el.classList.add('dragging'); placeStart(g, g.pos[prev]); void el.offsetHeight; el.classList.remove('dragging');
@@ -575,11 +612,17 @@ async function pickResort(id) {
   card.innerHTML = resortCard(r);
   card.classList.remove('hidden');
   card.dataset.id = r.id;
-  // build the mountain while the card is on screen, then hold it still until it is needed
-  if (r.available) initMap(r.id).then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
   // aim the mountain at the middle of the space left above the card (the card is taller with a photo)
   const h = $('#start').clientHeight, f = Math.max(0.17, (card.getBoundingClientRect().top - $('#start').getBoundingClientRect().top) / h / 2);
-  await globe.flyTo(r, 1.8, 0.13 * (0.5 - f) / 0.19);
+  const flight = globe.flyTo(r, 1.8, 0.13 * (0.5 - f) / 0.19);
+  // download the mountain during the turn and build it once the globe has arrived (see holdMapBuild), then hold it
+  // still until it is needed
+  if (r.available) {
+    const built = initMap(r.id);
+    holdMapBuild(flight);
+    built.then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
+  }
+  await flight;
 }
 
 function toggleFav(id) {
@@ -677,6 +720,7 @@ const skiHere = (btn) => goSki(btn.dataset.id, btn);
 /** Dive from the globe into a mountain; with `joinCode`, join that group once there. */
 async function goSki(id, btn, joinCode = null) {
   if (btn) { btn.disabled = true; btn.textContent = 'Loading the mountain…'; }
+  openMapGate();                                // tapped before the globe arrived: build it now
   const r = placeById(id);
   try { await initMap(r.id); } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Ski Here'; } bootFailed(e); return; }
   const g = globe;
@@ -886,8 +930,40 @@ dragStops($('#start-panel'), {
   settle: (state, p) => goStart(state, p),
   onTap: () => { const now = startState(); goStart(now === 'mini' ? 'normal' : now === 'normal' ? 'full' : 'normal'); return true; },
 });
-// starting a search: give the list the whole screen, so more results show above the keyboard
-$('#f-resort').addEventListener('focus', () => { if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full'); });
+// Starting a search: give the list the whole screen, so more results show above the keyboard.
+// On an iPhone the first tap used to push the search bar off the top of the screen: the phone scrolls the page to keep
+// the field above the keyboard, measuring it where it sat before the list had glided up. So the list now jumps to the
+// whole screen at once (laid out before the phone measures), the page is kept scrolled to the top, and while the
+// keyboard is up the list is pinned to the part of the screen the keyboard leaves visible (visualViewport).
+$('#f-resort').addEventListener('focus', () => {
+  if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full', null, startGeom(), true);
+  unscrollPage();
+  fitStartToKeyboard();
+});
+$('#f-resort').addEventListener('blur', () => setTimeout(fitStartToKeyboard, 0));
+/** The app never scrolls as a page; undo the scroll a phone makes to show a focused field. */
+function unscrollPage() {
+  if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+  const se = document.scrollingElement;
+  if (se && se.scrollTop) se.scrollTop = 0;
+}
+/** While the on-screen keyboard is up, keep the whole-screen mountain list inside the visible part of the screen. */
+function fitStartToKeyboard() {
+  const p = $('#start-panel'), vv = window.visualViewport;
+  const typing = !!vv && document.activeElement === $('#f-resort') && !COLUMN.matches;
+  const kb = typing && window.innerHeight - vv.height > 120;   // a keyboard, not just the browser's bars moving
+  p.classList.toggle('kb', kb);
+  if (kb) {
+    p.style.setProperty('--kb-top', Math.max(0, Math.round(vv.offsetTop)) + 'px');
+    p.style.setProperty('--kb-h', Math.round(vv.height) + 'px');
+  } else { p.style.removeProperty('--kb-top'); p.style.removeProperty('--kb-h'); }
+}
+if (window.visualViewport) {
+  const onVV = () => { if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard(); };
+  window.visualViewport.addEventListener('resize', onVV);
+  window.visualViewport.addEventListener('scroll', onVV);
+}
+window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort')) unscrollPage(); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
@@ -2382,7 +2458,7 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
+    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
     case 'near-me': S.histOnly = false; nearMe(); break;

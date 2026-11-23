@@ -100,7 +100,9 @@ jobs:
         run: npx wrangler deploy -c wrangler.jsonc --dry-run --outdir "$RUNNER_TEMP/worker-plain"
 
   # Opens the built app in a real (headless) Chrome at phone size: accepts the first-run agreement, opens Jay Peak
-  # and waits for the 3D map to draw. Fails on any error in the page (about 3 minutes).
+  # and waits for the 3D map to draw; then tests/smoke/start.mjs checks the start screen's search field (with an
+  # imitated keyboard) and that picking a mountain does not build its map while the globe turns. Fails on any error
+  # in the page (about 3 minutes).
   smoke-test:
     runs-on: ubuntu-latest
     timeout-minutes: 15
