@@ -2,16 +2,16 @@
  "id": "blue-mountain-ontario",
  "reachable": [
   65,
-  71
+  65
  ],
- "auto_joins": 8,
+ "auto_joins": 4,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 0,
  "raised": 0,
  "official": [
   56,
-  78,
+  80,
   0
  ],
  "terrain_res": 1,
@@ -19,11 +19,10 @@
   "1m": 98.3,
   "30m": 1.7
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): V-Hill"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 86,
- "rebuild_seconds": 16
+ "rebuild_seconds": 16,
+ "seconds": 14
 }

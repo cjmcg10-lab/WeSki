@@ -38,5 +38,13 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "11 dead-end runs"
+ "hold": "11 dead-end runs",
+ "rename": {
+  "Chisolm Trail": "Chisholm Trail",
+  "Noth Fork": "North Fork",
+  "Skudder": "Scudder",
+  "West Gullly": "West Gully",
+  "Bailey Brothers": "Bailey Bros.",
+  "Cabin Glades": "Cabins Glades"
+ }
 }
