@@ -101,7 +101,10 @@ blocks on any listed chair or gondola missing from the map. Palisades had lost i
 Silver Creek area before this. The search never crosses into a neighbour: it passes a lift outside the outline only
 when the lift is on the resort's list. `tools/whole_check.py <ids>` checks built maps without rebuilding (run on all
 50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). Lift lists were added to 35
-more official jsons on 2026-11-22 (#79); still without one: Zermatt, Pizol, Magic Mountain and the five big French resorts (#59).
+more official jsons on 2026-11-22 (#79) and to the last eight on 2026-11-23 (#59: Zermatt, Pizol, Magic Mountain, Les
+Contamines, La Plagne, Les Arcs, Tignes – Val d'Isère, Val Thorens), so every official json now has one. That check found
+Tignes – Val d'Isère's two underground funiculars (Funival, Perce-Neige) missing: OSM tags them `railway=funicular`,
+which the build only takes from the config's `extra_lifts` (as Zermatt's Sunnegga Express and Les Arcs' Express).
 See "Getting the whole resort" in `docs/ADDING_MOUNTAINS.md`.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
