@@ -1,0 +1,28 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Fools Gold": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Paydirt": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Gold Digger": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Copper Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Slag Heap": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Hot Shots": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Tailings": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "(unnamed run 123)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "D1 Trees": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "dead_end": {
+  "Boomerang": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Billabong": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "(unnamed run 122)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "West Basin": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Lower O'Henry ~ Lower O'Henry": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Harry's Trees ~ Harry's Trees": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ }
+}

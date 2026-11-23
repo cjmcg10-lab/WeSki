@@ -1,0 +1,42 @@
+{
+ "id": "mount-sunapee",
+ "name": "Mount Sunapee",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1230199887",
+ "include_ways": [
+  205154240,
+  205154242,
+  205154243,
+  205154245,
+  205154248,
+  242371283,
+  242371284,
+  242371285,
+  242371286,
+  242371287
+ ],
+ "osm_bbox": [
+  -72.0948,
+  43.3082,
+  -72.0543,
+  43.3433
+ ],
+ "openskimap": {
+  "id": "8107ea0d4b45b275d05b6566e2cf37be111e1ff7",
+  "cc": "US",
+  "runs": 77,
+  "lifts": 10,
+  "rated": 0.974,
+  "skimap": 357,
+  "web": "https://www.mountsunapee.com/"
+ },
+ "area_name": "Mount Sunapee",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

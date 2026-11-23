@@ -1,0 +1,43 @@
+{
+ "id": "wolf-creek",
+ "name": "Wolf Creek",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/530503256",
+ "include_ways": [
+  17096076,
+  17096079,
+  138622382,
+  138622384,
+  258649229,
+  258649230,
+  258650172,
+  685996699,
+  685996703,
+  900528149,
+  1208418880
+ ],
+ "osm_bbox": [
+  -106.8116,
+  37.4463,
+  -106.7564,
+  37.4816
+ ],
+ "openskimap": {
+  "id": "0509d7d69847b7f5da4850cc299a909099d5382f",
+  "cc": "US",
+  "runs": 89,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 505,
+  "web": "https://wolfcreekski.com/"
+ },
+ "area_name": "Wolf Creek Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

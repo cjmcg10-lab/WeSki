@@ -1,0 +1,40 @@
+{
+ "id": "bromley-mountain-bromley-mountain",
+ "name": "Bromley Mountain Ski Resort;Bromley Mountain",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1096045891",
+ "include_ways": [
+  171655467,
+  171655468,
+  171655469,
+  171655470,
+  171655471,
+  171655472,
+  235726126,
+  235726133
+ ],
+ "osm_bbox": [
+  -72.9482,
+  43.2088,
+  -72.9273,
+  43.2323
+ ],
+ "openskimap": {
+  "id": "fa16a61731235c3921ea61bc374d44f3f8fd8f78",
+  "cc": "US",
+  "runs": 67,
+  "lifts": 8,
+  "rated": 0.746,
+  "skimap": 217,
+  "web": "https://www.bromley.com/"
+ },
+ "area_name": "Bromley Mountain Ski Resort;Bromley Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

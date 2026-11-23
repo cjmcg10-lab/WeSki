@@ -1,0 +1,39 @@
+{
+ "id": "homewood",
+ "name": "Homewood",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/8391726",
+ "include_ways": [
+  258140909,
+  258140910,
+  258140911,
+  258141131,
+  258141697,
+  258141698,
+  258142253
+ ],
+ "osm_bbox": [
+  -120.1917,
+  39.064,
+  -120.1551,
+  39.0907
+ ],
+ "openskimap": {
+  "id": "f3545b1a07aba1aff23c5cb645c24225d9eea12a",
+  "cc": "US",
+  "runs": 70,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 545,
+  "web": "https://www.skihomewood.com/"
+ },
+ "area_name": "Homewood Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

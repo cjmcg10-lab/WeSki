@@ -1,0 +1,62 @@
+{
+ "id": "aspen-snowmass",
+ "name": "Aspen Snowmass",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1144096092",
+ "include_ways": [
+  17117578,
+  17117775,
+  17117822,
+  17117918,
+  17117920,
+  17118232,
+  17118605,
+  17118727,
+  135480768,
+  135480769,
+  135480770,
+  232074914,
+  233059990,
+  233059992,
+  258700714,
+  556749646,
+  1210150814,
+  1210150815,
+  1211520822
+ ],
+ "osm_bbox": [
+  -106.9885,
+  39.1562,
+  -106.9105,
+  39.2157
+ ],
+ "ratings_feed": {
+  "mtnpowder": 51
+ },
+ "openskimap": {
+  "id": "03b56bd47b26c384d82474a2fb4b3fbc3a0c4a31",
+  "cc": "US",
+  "runs": 107,
+  "lifts": 19,
+  "rated": 1.0,
+  "skimap": 15705,
+  "web": "https://www.aspensnowmass.com/four-mountains/snowmass"
+ },
+ "area_name": "Aspen Snowmass",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Pines Lower",
+  "Pines Upper"
+ ],
+ "isolated_notes": {
+  "Pines Lower": "rule: not joined to the rest of the lifts on the map",
+  "Pines Upper": "rule: not joined to the rest of the lifts on the map"
+ }
+}

@@ -1,0 +1,47 @@
+{
+ "id": "fernie-alpine",
+ "name": "Fernie Alpine",
+ "region": "British Columbia, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/1388612283",
+ "include_ways": [
+  31363804,
+  31363844,
+  31363883,
+  31363886,
+  31364072,
+  35034836,
+  35035190,
+  35035513,
+  258234539,
+  258234541
+ ],
+ "osm_bbox": [
+  -115.1378,
+  49.4295,
+  -115.0745,
+  49.4846
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "ecea3ea316650e534c05c56dca021977818dc214",
+  "cc": "CA",
+  "runs": 120,
+  "lifts": 10,
+  "rated": 0.983,
+  "skimap": 30,
+  "web": "https://www.skifernie.com"
+ },
+ "area_name": "Fernie Alpine Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 81%, 30 m 19%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 80.9,
+  "30m": 19.1
+ },
+ "hold": "6 runs climb more than 12 m"
+}

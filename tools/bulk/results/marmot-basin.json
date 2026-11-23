@@ -1,0 +1,23 @@
+{
+ "id": "marmot-basin",
+ "reachable": [
+  134,
+  136
+ ],
+ "auto_joins": 42,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 24.6,
+  "30m": 75.4
+ },
+ "notes": [],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 75,
+ "rebuild_seconds": 16
+}

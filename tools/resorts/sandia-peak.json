@@ -1,0 +1,44 @@
+{
+ "id": "sandia-peak",
+ "name": "Sandia Peak",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "relation/4644818",
+ "include_ways": [
+  14410532,
+  151810726,
+  151810727,
+  151810731,
+  199295489,
+  199295490
+ ],
+ "osm_bbox": [
+  -106.4827,
+  35.188,
+  -106.4107,
+  35.2103
+ ],
+ "openskimap": {
+  "id": "c3bdf2365be8731aa6cb20ce76de31e246dfab57",
+  "cc": "US",
+  "runs": 67,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 332,
+  "web": "https://www.sandia.ski/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 68%, 1 m lidar 32%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "1m": 32.4,
+  "10m": 67.6
+ },
+ "isolated_lifts": [
+  "Sandia Peak Aerial Tramway"
+ ],
+ "isolated_notes": {
+  "Sandia Peak Aerial Tramway": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway"
+}

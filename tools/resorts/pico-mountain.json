@@ -1,0 +1,39 @@
+{
+ "id": "pico-mountain",
+ "name": "Pico Mountain",
+ "region": "Vermont, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1094586461",
+ "include_ways": [
+  159736787,
+  159736788,
+  159736792,
+  159736793,
+  255729081,
+  255729082,
+  1582405405
+ ],
+ "osm_bbox": [
+  -72.8532,
+  43.6363,
+  -72.8286,
+  43.6673
+ ],
+ "openskimap": {
+  "id": "5263141e47dd13bf5e7529ecdeb1d1f61aecb0ae",
+  "cc": "US",
+  "runs": 68,
+  "lifts": 7,
+  "rated": 0.971,
+  "skimap": 1091,
+  "web": "https://www.picomountain.com/"
+ },
+ "area_name": "Pico Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

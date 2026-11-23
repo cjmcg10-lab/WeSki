@@ -1,0 +1,43 @@
+{
+ "id": "brighton",
+ "name": "Brighton",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/682230007",
+ "include_ways": [
+  10125436,
+  44478908,
+  137706709,
+  137706711,
+  137706712,
+  137706713,
+  137706718,
+  1304551701
+ ],
+ "osm_bbox": [
+  -111.6097,
+  40.5759,
+  -111.5519,
+  40.6214
+ ],
+ "ratings_feed": {
+  "mtnpowder": 66
+ },
+ "openskimap": {
+  "id": "ab2b5807422f8a412c013e32e73b521f76a65d98",
+  "cc": "US",
+  "runs": 90,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 222,
+  "web": "https://brightonresort.com/"
+ },
+ "area_name": "Brighton Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

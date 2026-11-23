@@ -1,0 +1,47 @@
+{
+ "id": "powder-mountain",
+ "name": "Powder Mountain",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1124250244",
+ "include_ways": [
+  194711785,
+  194711786,
+  194711787,
+  194711789,
+  194711790,
+  194711791,
+  194794108,
+  766578648,
+  766578649,
+  1230727230,
+  1290313435,
+  1442776087,
+  1442776089,
+  1458191127
+ ],
+ "osm_bbox": [
+  -111.8175,
+  41.3476,
+  -111.7098,
+  41.4202
+ ],
+ "openskimap": {
+  "id": "e15b214ba75941c2a0150d22cd5e75584bf9c068",
+  "cc": "US",
+  "runs": 155,
+  "lifts": 14,
+  "rated": 0.994,
+  "skimap": 228,
+  "web": "https://powdermountain.com/"
+ },
+ "area_name": "Powder Mountain Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "12 runs no lift reaches; 17 dead-end runs; 10 runs climb more than 12 m"
+}

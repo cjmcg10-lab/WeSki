@@ -1,0 +1,43 @@
+{
+ "id": "cypress-mountain",
+ "name": "Cypress Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "relation/15317924",
+ "include_ways": [
+  37895749,
+  37895750,
+  37928827,
+  40040374,
+  40040629,
+  40040634,
+  258201046
+ ],
+ "osm_bbox": [
+  -123.2188,
+  49.371,
+  -123.1646,
+  49.4133
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "7599cb6e98e206b310f1be3d95fe1e27fa08f307",
+  "cc": "CA",
+  "runs": 79,
+  "lifts": 7,
+  "rated": 0.861,
+  "skimap": 50,
+  "web": "https://cypressmountain.com/"
+ },
+ "area_name": "Cypress Mountain",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 61%, 1 m lidar 39%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 39.2,
+  "30m": 60.8
+ }
+}

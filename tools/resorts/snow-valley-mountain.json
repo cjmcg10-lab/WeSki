@@ -1,0 +1,43 @@
+{
+ "id": "snow-valley-mountain",
+ "name": "Snow Valley Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/10534510",
+ "include_ways": [
+  7077209,
+  7153966,
+  104596000,
+  104596011,
+  104596018,
+  104596019,
+  257999884,
+  258003288,
+  258003289,
+  258004025,
+  330951556,
+  777214258,
+  1020039931
+ ],
+ "osm_bbox": [
+  -117.0501,
+  34.1942,
+  -117.0233,
+  34.2317
+ ],
+ "openskimap": {
+  "id": "11f2099ea10957844765b5bea3bbb1f13fd592b7",
+  "cc": "US",
+  "runs": 42,
+  "lifts": 13,
+  "rated": 0.929,
+  "skimap": 539,
+  "web": "https://snow-valley.com"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

@@ -1,0 +1,38 @@
+{
+ "id": "grand-targhee",
+ "name": "Grand Targhee",
+ "region": "Wyoming, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/952802401",
+ "include_ways": [
+  15777783,
+  15778916,
+  206279599,
+  206280596,
+  257374320,
+  933071628
+ ],
+ "osm_bbox": [
+  -110.9669,
+  43.762,
+  -110.9184,
+  43.8079
+ ],
+ "openskimap": {
+  "id": "84ddf46f67c0fca577dc969188dc189f1c7a040f",
+  "cc": "US",
+  "runs": 93,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 150,
+  "web": "https://www.grandtarghee.com/"
+ },
+ "area_name": "Grand Targhee Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

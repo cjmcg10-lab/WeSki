@@ -1,0 +1,51 @@
+{
+ "id": "sugar-bowl",
+ "name": "Sugar Bowl",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/10326057",
+ "include_ways": [
+  10476799,
+  10481255,
+  38805677,
+  38805859,
+  38805860,
+  51939106,
+  51939354,
+  258161905,
+  258162119,
+  258162121,
+  271959657,
+  1197723308,
+  1570571115
+ ],
+ "osm_bbox": [
+  -120.3646,
+  39.2793,
+  -120.3067,
+  39.3289
+ ],
+ "openskimap": {
+  "id": "fa95641c38a689ebebd96aa62b6ee049115fbeee",
+  "cc": "US",
+  "runs": 94,
+  "lifts": 13,
+  "rated": 0.989,
+  "skimap": 543,
+  "web": "https://www.sugarbowl.com/"
+ },
+ "area_name": "Sugar Bowl Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ }
+}

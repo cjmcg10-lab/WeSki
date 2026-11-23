@@ -1,0 +1,55 @@
+{
+ "id": "schweitzer-mountain",
+ "name": "Schweitzer Mountain",
+ "region": "Idaho, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1388583977",
+ "include_ways": [
+  13737296,
+  13739800,
+  129602926,
+  129602927,
+  129602929,
+  129602930,
+  129602931,
+  771419509,
+  771419510,
+  1103573843
+ ],
+ "osm_bbox": [
+  -116.65,
+  48.3556,
+  -116.5863,
+  48.4007
+ ],
+ "openskimap": {
+  "id": "13b3d7f0eedbbdcdfc35e91a0bd55523e2d448ad",
+  "cc": "US",
+  "runs": 104,
+  "lifts": 10,
+  "rated": 0.933,
+  "skimap": 476,
+  "web": "https://www.schweitzer.com/"
+ },
+ "area_name": "Schweitzer Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Cedar Park Express",
+  "Colburn Triple",
+  "Idyle Our T-Bar",
+  "Stella"
+ ],
+ "isolated_notes": {
+  "Cedar Park Express": "rule: not joined to the rest of the lifts on the map",
+  "Colburn Triple": "rule: not joined to the rest of the lifts on the map",
+  "Idyle Our T-Bar": "rule: not joined to the rest of the lifts on the map",
+  "Stella": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple"
+}

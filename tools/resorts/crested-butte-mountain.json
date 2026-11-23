@@ -1,0 +1,48 @@
+{
+ "id": "crested-butte-mountain",
+ "name": "Crested Butte Mountain",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/530521512",
+ "include_ways": [
+  17057615,
+  17058121,
+  17060861,
+  17063449,
+  17065569,
+  139860353,
+  139860357,
+  139860358,
+  139860361,
+  139862062,
+  139943658,
+  258658749,
+  258658750,
+  546375318,
+  771419035
+ ],
+ "osm_bbox": [
+  -106.971,
+  38.8756,
+  -106.9154,
+  38.9184
+ ],
+ "openskimap": {
+  "id": "c7ba44969ddc615ea94968125fc96d9b584c388f",
+  "cc": "US",
+  "runs": 93,
+  "lifts": 15,
+  "rated": 1.0,
+  "skimap": 514,
+  "web": "https://www.skicb.com/"
+ },
+ "area_name": "Crested Butte Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "16 dead-end runs"
+}

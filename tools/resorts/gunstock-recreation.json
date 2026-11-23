@@ -1,0 +1,38 @@
+{
+ "id": "gunstock-recreation",
+ "name": "Gunstock Recreation Area",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/47798396",
+ "include_ways": [
+  18796615,
+  18796617,
+  18805701,
+  219686231,
+  219687928,
+  242367011
+ ],
+ "osm_bbox": [
+  -71.3911,
+  43.5151,
+  -71.3444,
+  43.5549
+ ],
+ "openskimap": {
+  "id": "cefd1da1b8fdb384a00984e693f0726d403ddbf1",
+  "cc": "US",
+  "runs": 73,
+  "lifts": 6,
+  "rated": 0.849,
+  "skimap": 342,
+  "web": "https://www.gunstock.com/"
+ },
+ "area_name": "Gunstock Recreation Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

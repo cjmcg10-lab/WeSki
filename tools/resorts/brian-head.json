@@ -1,0 +1,58 @@
+{
+ "id": "brian-head",
+ "name": "Brian Head",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1230308747",
+ "include_ways": [
+  27185099,
+  27185113,
+  127684384,
+  127684385,
+  127684386,
+  153261048,
+  256976506,
+  257797050,
+  257797051,
+  1107153527,
+  1464505488,
+  1464505494,
+  1464505495
+ ],
+ "osm_bbox": [
+  -112.8684,
+  37.6769,
+  -112.8256,
+  37.7053
+ ],
+ "openskimap": {
+  "id": "d17554e2aaa5a02bbc98023dd1f5cf4e17c6107e",
+  "cc": "US",
+  "runs": 69,
+  "lifts": 13,
+  "rated": 1.0,
+  "skimap": 227,
+  "web": "https://www.brianhead.com"
+ },
+ "area_name": "Brian Head Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet",
+  "Navajo Express",
+  "Pioneer",
+  "Surface lift"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map",
+  "Navajo Express": "rule: not joined to the rest of the lifts on the map",
+  "Pioneer": "rule: not joined to the rest of the lifts on the map",
+  "Surface lift": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Navajo Express, Pioneer"
+}

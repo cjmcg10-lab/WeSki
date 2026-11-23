@@ -1,0 +1,54 @@
+{
+ "id": "seven-springs-mountain",
+ "name": "Seven Springs Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/256580493",
+ "include_ways": [
+  191518857,
+  248393995,
+  248396949,
+  248396950,
+  248396951,
+  248396952,
+  248396953,
+  248396954,
+  248396955,
+  248396956,
+  248396957,
+  248396958,
+  248396959,
+  248396960,
+  784106978,
+  1565570999
+ ],
+ "osm_bbox": [
+  -79.3203,
+  40.0049,
+  -79.2809,
+  40.0371
+ ],
+ "openskimap": {
+  "id": "58ebc9836ec25e4498e8608b3a078c918ed1ce69",
+  "cc": "US",
+  "runs": 54,
+  "lifts": 16,
+  "rated": 1.0,
+  "skimap": 240,
+  "web": "https://www.7springs.com/"
+ },
+ "area_name": "Seven Springs Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ }
+}

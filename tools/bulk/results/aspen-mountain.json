@@ -1,0 +1,24 @@
+{
+ "id": "aspen-mountain",
+ "reachable": [
+  174,
+  174
+ ],
+ "auto_joins": 16,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 1,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [
+  "resort feed mtnpowder 52 gave no trail list: KeyError: 'MountainAreas'"
+ ],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 87,
+ "rebuild_seconds": 27
+}

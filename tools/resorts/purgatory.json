@@ -1,0 +1,57 @@
+{
+ "id": "purgatory",
+ "name": "Purgatory",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/529997955",
+ "include_ways": [
+  17083245,
+  17083326,
+  17087870,
+  52041987,
+  52042043,
+  52042093,
+  52042183,
+  52042186,
+  52042216,
+  52042227,
+  775615166,
+  775615167,
+  1212635145,
+  1341325281
+ ],
+ "osm_bbox": [
+  -107.8672,
+  37.6118,
+  -107.8063,
+  37.638
+ ],
+ "openskimap": {
+  "id": "66ebd7d72089d0697f49126b4fe6bfadbb08f9e0",
+  "cc": "US",
+  "runs": 92,
+  "lifts": 14,
+  "rated": 0.978,
+  "skimap": 518,
+  "web": "https://www.purgatory.ski/"
+ },
+ "area_name": "Purgatory Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Columbine Lift #9",
+  "Graduate Lift #7",
+  "Ski School Magic Carpet #10"
+ ],
+ "isolated_notes": {
+  "Columbine Lift #9": "rule: not joined to the rest of the lifts on the map",
+  "Graduate Lift #7": "rule: not joined to the rest of the lifts on the map",
+  "Ski School Magic Carpet #10": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7"
+}

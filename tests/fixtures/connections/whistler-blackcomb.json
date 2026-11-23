@@ -1,0 +1,44 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Encore Ridge": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Flute Shoulder": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Flute Chutes": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Flute North Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "North Bowl Cornice": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Big O": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Lesser Flute Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Moraine": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Pig's Fancy": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Search Ski Areas, Lifts, and Runs Stuie's Slope": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Main Flute Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "DOA (Down, Over, and Around)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Poop Chutes": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Husume": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Corona Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Asian Pussy (AP)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "dead_end": {
+  "The Bite": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Sapphire Chutes": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Bad Attitude": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Playland": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Cafe Chute": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Everglades ~ Everglades Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "School Yard ~ School Yard Training Area": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Zudrell's ~ Zurdell's Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Wolverine Trees ~ Wolverine Trees Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Coyote Trees ~ Coyote Trees Glades Area": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Catskinner Traverse ~ Stoker Bumps": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Showcase ~ Showcase Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Arthur's Choice ~ Arthur's Choice Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Outer Limits ~ Outer Limits Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Upper Feather Tree Glades ~ Upper Feathertree": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ }
+}

@@ -1,0 +1,46 @@
+{
+ "id": "stevens-pass",
+ "name": "Stevens Pass",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1564558952",
+ "include_ways": [
+  6363087,
+  6389411,
+  6432372,
+  6518841,
+  6521234,
+  26982638,
+  26982784,
+  26982800,
+  26982809,
+  26982833,
+  257777875,
+  1020119689,
+  1350043174,
+  1350043175
+ ],
+ "osm_bbox": [
+  -121.1153,
+  47.7222,
+  -121.0633,
+  47.7488
+ ],
+ "openskimap": {
+  "id": "53a4f73effb0655bdb69989c1fb297c8206d04dc",
+  "cc": "US",
+  "runs": 79,
+  "lifts": 14,
+  "rated": 0.937,
+  "skimap": 190,
+  "web": "https://www.stevenspass.com/site"
+ },
+ "area_name": "Stevens Pass",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

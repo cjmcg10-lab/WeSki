@@ -59,9 +59,24 @@
     "label": "Fire and ambulance",
     "tel": "119"
    }
+  ],
+  "CA": [
+   {
+    "phone": "911",
+    "label": "Emergency services (police, fire, ambulance)",
+    "tel": "911"
+   }
   ]
  },
  "resorts": {
+  "49-north-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "afton-alps": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "alta": {
    "country": "US",
    "phone": "385-449-8633",
@@ -69,6 +84,38 @@
    "label": "Alta Ski Patrol",
    "hours": "Winter only, 8 am to 4:30 pm",
    "source": "https://www.alta.com/contact",
+   "checked": "2026-11-23"
+  },
+  "alyeska": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "angel-fire": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "apex-mountain": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "aspen-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "aspen-snowmass": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "attitash-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "banff-sunshine-village": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "beaver-creek-arrowhead-mountain": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "berkshire-east": {
@@ -88,6 +135,22 @@
    "source": "https://www.bigskyresort.com/policies/safety",
    "checked": "2026-11-23"
   },
+  "big-white": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "blue-mountain-ontario": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "blue-mountain-pennsylvania": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "bogus-basin-mountain-recreation": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "bolton-valley": {
    "country": "US",
    "phone": "802-434-6823",
@@ -95,6 +158,10 @@
    "label": "Bolton Valley Ski Patrol",
    "hours": "Only while the lifts are running",
    "source": "https://www.boltonvalley.com/the-resort/contact-us/",
+   "checked": "2026-11-23"
+  },
+  "boyne-mountain": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "breckenridge": {
@@ -111,6 +178,18 @@
    "tel": "+16032788876",
    "label": "Bretton Woods Ski Patrol / First Aid",
    "source": "https://www.brettonwoods.com/alpine-map-signage/",
+   "checked": "2026-11-23"
+  },
+  "brighton": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "bromley-mountain-bromley-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "bromont-montagne-d-experience": {
+   "country": "CA",
    "checked": "2026-11-23"
   },
   "brundage": {
@@ -131,12 +210,24 @@
    "source": "https://skiburke.com/plan-your-trip/contact-us",
    "checked": "2026-11-23"
   },
+  "camelback-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "cannon-mountain": {
    "country": "US",
    "phone": "603-823-9811",
    "tel": "+16038239811",
    "label": "Cannon Ski Patrol",
    "source": "https://www.cannonmt.com/policies",
+   "checked": "2026-11-23"
+  },
+  "cascade-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "castle-mountain": {
+   "country": "CA",
    "checked": "2026-11-23"
   },
   "catamount": {
@@ -148,12 +239,20 @@
    "source": "https://catamountski.com/winter/the-mountain/uphill",
    "checked": "2026-11-23"
   },
+  "china-peak-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "copper-mountain": {
    "country": "US",
    "phone": "970-968-3311",
    "tel": "+19709683311",
    "label": "Copper Ski Patrol",
    "source": "https://www.coppercolorado.com/the-mountain/mountain-safety-stats/general-safety-information/",
+   "checked": "2026-11-23"
+  },
+  "cranmore-mountain": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "crystal-mountain": {
@@ -164,6 +263,10 @@
    "source": "https://www.crystalmountainresort.com/about/contact-us-and-faqs",
    "checked": "2026-11-23"
   },
+  "cypress-mountain": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
   "deer-valley": {
    "country": "US",
    "phone": "435-645-6804",
@@ -172,8 +275,32 @@
    "source": "https://www.deervalley.com/explore-the-mountain/safety-and-conduct",
    "checked": "2026-11-23"
   },
+  "dodge-ridge": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "eldora": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "geto-kogen": {
    "country": "JP",
+   "checked": "2026-11-23"
+  },
+  "gore-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "grand-targhee": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "great-divide": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "gunstock-recreation": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "heavenly": {
@@ -182,6 +309,14 @@
    "tel": "+15305426944",
    "label": "Heavenly Ski Patrol (emergency)",
    "source": "https://skiheavenly.com/explore-the-resort/about-the-resort/guest-services",
+   "checked": "2026-11-23"
+  },
+  "holiday-valley": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "homewood": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "hunter-mountain": {
@@ -224,12 +359,24 @@
    "source": "https://killington.com/contact-us",
    "checked": "2026-11-23"
   },
+  "kimberley-alpine": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "kirkwood-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "la-plagne": {
    "country": "FR",
    "phone": "+33 4 79 09 67 60",
    "tel": "+33479096760",
    "label": "La Plagne slope rescue",
    "source": "https://www.skipass-laplagne.com/en/good-practice",
+   "checked": "2026-11-23"
+  },
+  "lake-louise": {
+   "country": "CA",
    "checked": "2026-11-23"
   },
   "les-arcs": {
@@ -256,6 +403,18 @@
    "source": "https://help.loonmtn.com/s/article/How-to-contact-First-Aid",
    "checked": "2026-11-23"
   },
+  "lost-trail": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "lutsen-mountains": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mad-river-glen": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "magic-mountain": {
    "country": "US",
    "phone": "802-428-3301",
@@ -272,12 +431,36 @@
    "source": "https://www.mammothmountain.com/on-the-mountain/safety",
    "checked": "2026-11-23"
   },
+  "marmot-basin": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
   "mohawk-mountain": {
    "country": "US",
    "phone": "860-672-6100 ext. 134",
    "tel": "+18606726100,134",
    "label": "Mohawk Mountain Ski Patrol",
    "source": "https://www.mohawkmtn.com/mountain-services/ski-patrol/",
+   "checked": "2026-11-23"
+  },
+  "mont-sainte-anne": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "mont-sutton": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "mont-tremblant-mont-tremblant": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "montana-snowbowl": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mount-rose-tahoe": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "mount-snow": {
@@ -293,6 +476,42 @@
    "country": "US",
    "checked": "2026-11-23"
   },
+  "mount-sunapee": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mount-washington-alpine": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "mt-bachelor": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mt-hood-meadows": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mt-hood-skibowl": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mt-norquay": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "mt-seymour": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "mt-spokane": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "northstar-at-tahoe": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "okemo": {
    "country": "US",
    "phone": "802-228-1498",
@@ -300,6 +519,10 @@
    "label": "Okemo Ski Patrol",
    "hours": "8 am to 4 pm",
    "source": "https://www.okemo.com/the-mountain/about-the-mountain/mountain-safety.aspx",
+   "checked": "2026-11-23"
+  },
+  "pajarito-mountain": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "palisades-tahoe": {
@@ -333,6 +556,10 @@
    "source": "https://patspeak.com/?p=3375",
    "checked": "2026-11-23"
   },
+  "pico-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "pizol": {
    "country": "CH",
    "note": "The resort asks guests to alert its slope rescue through the free EchoSOS app.",
@@ -354,6 +581,18 @@
    "source": "https://www.raggedmountainresort.com/winter-sports-safety-act/",
    "checked": "2026-11-23"
   },
+  "red-mountain": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "red-river": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "revelstoke-mountain": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
   "saalbach": {
    "country": "AT",
    "note": "The resort says to report accidents at the nearest lift station; its lift companies’ numbers are printed on the piste map.",
@@ -365,6 +604,26 @@
    "tel": "+12078645671,214",
    "label": "Saddleback Ski Patrol",
    "source": "https://www.saddlebackmaine.com/about-us/ski-patrol/",
+   "checked": "2026-11-23"
+  },
+  "santa-fe-santa-fe-q38555": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "seven-springs-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "sierra-at-tahoe": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "silver-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "silver-star-mountain": {
+   "country": "CA",
    "checked": "2026-11-23"
   },
   "ski-sundown": {
@@ -382,6 +641,18 @@
    "label": "Smugglers’ Notch Ski Patrol",
    "hours": "8 am to 4:30 pm",
    "source": "https://smuggs.com/wp-content/uploads/2024/11/trailmap_2425.pdf",
+   "checked": "2026-11-23"
+  },
+  "snow-summit": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "snow-valley-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "snowbasin": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "snowbird": {
@@ -415,12 +686,20 @@
    "source": "https://www.solitudemountain.com/mountain-and-village/mountain-information/mountain-safety",
    "checked": "2026-11-23"
   },
+  "sommet-saint-sauveur": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
   "steamboat": {
    "country": "US",
    "phone": "970-871-5911",
    "tel": "+19708715911",
    "label": "Steamboat Ski Patrol",
    "source": "https://www.steamboat.com/the-mountain/safety-and-responsibility",
+   "checked": "2026-11-23"
+  },
+  "stevens-pass": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "stowe": {
@@ -439,6 +718,10 @@
    "source": "https://www.stratton.com/the-mountain/safety-and-responsibility/ski-patrol",
    "checked": "2026-11-23"
   },
+  "sugar-bowl": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "sugarbush": {
    "country": "US",
    "phone": "802-583-6567",
@@ -455,6 +738,18 @@
    "source": "https://www.sugarloaf.com/ski-patrol",
    "checked": "2026-11-23"
   },
+  "sun-peaks": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
+  "sun-valley-bald-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "sundance": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "sunday-river": {
    "country": "US",
    "phone": "207-824-5350",
@@ -463,12 +758,20 @@
    "source": "https://www.sundayriver.com/contact",
    "checked": "2026-11-23"
   },
+  "tamarack": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "telluride": {
    "country": "US",
    "phone": "970-728-7585",
    "tel": "+19707287585",
    "label": "Telluride Ski Patrol",
    "source": "https://tellurideskiresort.com/safety/",
+   "checked": "2026-11-23"
+  },
+  "three-summits": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "tignes-val-disere": {
@@ -519,6 +822,14 @@
    "source": "https://www.waterville.com/contact-ski-patrol",
    "checked": "2026-11-23"
   },
+  "welch-village": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "whistler-blackcomb": {
+   "country": "CA",
+   "checked": "2026-11-23"
+  },
   "whiteface": {
    "country": "US",
    "phone": "518-946-8111",
@@ -527,6 +838,14 @@
    "hours": "8:30 am to 4 pm",
    "source": "https://whiteface.com/?p=226",
    "note": "From a mountain phone, dial 811.",
+   "checked": "2026-11-23"
+  },
+  "whitefish-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "whitewater": {
+   "country": "CA",
    "checked": "2026-11-23"
   },
   "windham-mountain": {
@@ -543,6 +862,10 @@
    "tel": "+19707261480",
    "label": "Winter Park Ski Patrol",
    "source": "https://www.winterparkresort.com/the-mountain/safety-and-conduct",
+   "checked": "2026-11-23"
+  },
+  "wolf-creek": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "zermatt": {

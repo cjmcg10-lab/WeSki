@@ -1,0 +1,23 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Century Club": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Roller Pass": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Judah Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "South Bowl Road": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Turn Roger": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Duck's Quack": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "dead_end": {
+  "South Bowl Road": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Turn Roger": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Duck's Quack": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "outside_core": {},
+ "lift_end": {
+  "Village Tow (base)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "uphill": {},
+ "doubled": {}
+}

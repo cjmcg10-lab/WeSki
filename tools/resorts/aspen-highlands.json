@@ -1,0 +1,48 @@
+{
+ "id": "aspen-highlands",
+ "name": "Aspen Highlands",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/530531926",
+ "include_ways": [
+  17117676,
+  17117678,
+  17118210,
+  151179408,
+  151179418,
+  1212154522
+ ],
+ "osm_bbox": [
+  -106.8818,
+  39.1233,
+  -106.8439,
+  39.1905
+ ],
+ "ratings_feed": {
+  "mtnpowder": 53
+ },
+ "openskimap": {
+  "id": "0469463129ab65721499780f98a6394662564f32",
+  "cc": "US",
+  "runs": 76,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 1032,
+  "web": "https://www.aspensnowmass.com/four-mountains/aspen-highlands"
+ },
+ "area_name": "Aspen Highlands",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Five Trees"
+ ],
+ "isolated_notes": {
+  "Five Trees": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "only 105 of 129 run pieces reachable from a lift; 23 runs no lift reaches; lifts not joined to the rest of the map (isolated by rule): Five Trees"
+}

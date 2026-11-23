@@ -1,0 +1,48 @@
+{
+ "id": "snow-summit",
+ "name": "Snow Summit",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/4642556",
+ "include_ways": [
+  251838483,
+  257997020,
+  257997021,
+  257997022,
+  257997023,
+  257997024,
+  257997025,
+  257998189,
+  257998190,
+  257998191,
+  257998192,
+  257998194,
+  257998195,
+  1348307563,
+  1348307564
+ ],
+ "osm_bbox": [
+  -116.9018,
+  34.2178,
+  -116.8803,
+  34.2394
+ ],
+ "ratings_feed": {
+  "mtnpowder": 58
+ },
+ "openskimap": {
+  "id": "553e5c0881466894501e5f56ab41ba951300fc75",
+  "cc": "US",
+  "runs": 36,
+  "lifts": 15,
+  "rated": 1.0,
+  "skimap": 546,
+  "web": "https://www.bigbearmountainresort.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

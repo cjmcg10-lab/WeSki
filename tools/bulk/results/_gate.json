@@ -1,0 +1,3693 @@
+[
+ {
+  "id": "49-north-mountain",
+  "name": "49° North Mountain",
+  "region": "Washington, USA",
+  "seconds": 63,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 84,
+  "lifts": 7,
+  "runs": 88,
+  "named": 83,
+  "km": 56.3,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   88,
+   88
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "afton-alps",
+  "name": "Afton Alps",
+  "region": "Minnesota, USA",
+  "seconds": 43,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 20,
+  "osk_runs": 61,
+  "lifts": 20,
+  "runs": 54,
+  "named": 37,
+  "km": 13.1,
+  "osk_lift_ids_on_map": [
+   20,
+   20
+  ],
+  "reachable": [
+   54,
+   54
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 3,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "alyeska",
+  "name": "Alyeska",
+  "region": "Alaska, USA",
+  "seconds": 63,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 73,
+  "lifts": 7,
+  "runs": 100,
+  "named": 92,
+  "km": 38.2,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   97,
+   100
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "publish"
+ },
+ {
+  "id": "angel-fire",
+  "name": "Angel Fire",
+  "region": "New Mexico, USA",
+  "seconds": 63,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 101,
+  "lifts": 8,
+  "runs": 111,
+  "named": 93,
+  "km": 56.1,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   107,
+   111
+  ],
+  "conn": {
+   "unreachable": 4,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "apex-mountain",
+  "name": "Apex Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 79,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 4,
+  "osk_runs": 75,
+  "lifts": 4,
+  "runs": 76,
+  "named": 63,
+  "km": 47.2,
+  "osk_lift_ids_on_map": [
+   4,
+   4
+  ],
+  "reachable": [
+   76,
+   76
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "arapahoe-basin",
+  "name": "Arapahoe Basin",
+  "region": "Colorado, USA",
+  "seconds": 73,
+  "hold": [
+   "11 dead-end runs"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 103,
+  "lifts": 9,
+  "runs": 174,
+  "named": 169,
+  "km": 71.6,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   169,
+   174
+  ],
+  "conn": {
+   "unreachable": 5,
+   "dead_end": 11,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "aspen-highlands",
+  "name": "Aspen Highlands",
+  "region": "Colorado, USA",
+  "seconds": 107,
+  "hold": [
+   "only 105 of 129 run pieces reachable from a lift",
+   "23 runs no lift reaches",
+   "lifts not joined to the rest of the map (isolated by rule): Five Trees"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 76,
+  "lifts": 6,
+  "runs": 129,
+  "named": 111,
+  "km": 68.7,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   105,
+   129
+  ],
+  "conn": {
+   "unreachable": 23,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "aspen-mountain",
+  "name": "Aspen Mountain",
+  "region": "Colorado, USA",
+  "seconds": 87,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 138,
+  "lifts": 6,
+  "runs": 174,
+  "named": 144,
+  "km": 71.6,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   174,
+   174
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 4,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "aspen-snowmass",
+  "name": "Aspen Snowmass",
+  "region": "Colorado, USA",
+  "seconds": 107,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Pines Upper, Pines Lower",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 19,
+  "osk_runs": 107,
+  "lifts": 18,
+  "runs": 146,
+  "named": 130,
+  "km": 143.7,
+  "osk_lift_ids_on_map": [
+   18,
+   19
+  ],
+  "reachable": [
+   146,
+   146
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "attitash-mountain",
+  "name": "Attitash Mountain",
+  "region": "New Hampshire, USA",
+  "seconds": 81,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 87,
+  "lifts": 8,
+  "runs": 91,
+  "named": 72,
+  "km": 40.3,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   91,
+   91
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "banff-sunshine-village",
+  "name": "Banff Sunshine Village",
+  "region": "Alberta, Canada",
+  "seconds": 73,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 155,
+  "lifts": 14,
+  "runs": 200,
+  "named": 160,
+  "km": 94.0,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   195,
+   200
+  ],
+  "conn": {
+   "unreachable": 5,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 2
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "bear-valley",
+  "name": "Bear Valley",
+  "region": "California, USA",
+  "seconds": 54,
+  "hold": [
+   "19 dead-end runs"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 61,
+  "lifts": 9,
+  "runs": 99,
+  "named": 97,
+  "km": 51.9,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   99,
+   99
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 19,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "beaver-creek-arrowhead-mountain",
+  "name": "Beaver Creek (Arrowhead Mountain)",
+  "region": "Colorado, USA",
+  "seconds": 150,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 25,
+  "osk_runs": 247,
+  "lifts": 25,
+  "runs": 286,
+  "named": 163,
+  "km": 175.8,
+  "osk_lift_ids_on_map": [
+   25,
+   25
+  ],
+  "reachable": [
+   286,
+   286
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 3,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "belleayre-mountain-center",
+  "name": "Belleayre Mountain Ski Center",
+  "region": "New York, USA",
+  "seconds": 89,
+  "hold": [
+   "13 dead-end runs"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 66,
+  "lifts": 8,
+  "runs": 90,
+  "named": 63,
+  "km": 41.3,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   95,
+   95
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 13,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 5,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "big-white",
+  "name": "Big White",
+  "region": "British Columbia, Canada",
+  "seconds": 82,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 16,
+  "osk_runs": 114,
+  "lifts": 16,
+  "runs": 128,
+  "named": 106,
+  "km": 99.2,
+  "osk_lift_ids_on_map": [
+   16,
+   16
+  ],
+  "reachable": [
+   128,
+   128
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "blue-mountain-ontario",
+  "name": "Blue Mountain",
+  "region": "Ontario, Canada",
+  "seconds": 86,
+  "hold": [],
+  "soft": [
+   "isolated by rule: V-Hill"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 60,
+  "lifts": 14,
+  "runs": 70,
+  "named": 57,
+  "km": 34.5,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   65,
+   71
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "resort feed (Blue trail report (resort feed, mtnpowde)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "blue-mountain-pennsylvania",
+  "name": "Blue Mountain",
+  "region": "Pennsylvania, USA",
+  "seconds": 59,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 15,
+  "osk_runs": 44,
+  "lifts": 15,
+  "runs": 35,
+  "named": 33,
+  "km": 16.3,
+  "osk_lift_ids_on_map": [
+   15,
+   15
+  ],
+  "reachable": [
+   35,
+   35
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "bogus-basin-mountain-recreation",
+  "name": "Bogus Basin Mountain Recreation Area",
+  "region": "Idaho, USA",
+  "seconds": 76,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 117,
+  "lifts": 11,
+  "runs": 150,
+  "named": 106,
+  "km": 75.9,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   156,
+   156
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "boyne-mountain",
+  "name": "Boyne Mountain",
+  "region": "Michigan, USA",
+  "seconds": 74,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 58,
+  "lifts": 10,
+  "runs": 63,
+  "named": 62,
+  "km": 26.4,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   63,
+   63
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "brian-head",
+  "name": "Brian Head",
+  "region": "Utah, USA",
+  "seconds": 65,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Navajo Express, Pioneer"
+  ],
+  "soft": [
+   "ratings not checked against the resort",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 69,
+  "lifts": 13,
+  "runs": 72,
+  "named": 59,
+  "km": 38.3,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   72,
+   72
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "bridger-bowl",
+  "name": "Bridger Bowl",
+  "region": "Montana, USA",
+  "seconds": 65,
+  "hold": [
+   "4 dead-end runs"
+  ],
+  "soft": [
+   "isolated by rule: Schlasman's",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 12,
+  "osk_runs": 64,
+  "lifts": 12,
+  "runs": 77,
+  "named": 59,
+  "km": 42.9,
+  "osk_lift_ids_on_map": [
+   12,
+   12
+  ],
+  "reachable": [
+   77,
+   79
+  ],
+  "conn": {
+   "unreachable": 2,
+   "dead_end": 4,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "brighton",
+  "name": "Brighton",
+  "region": "Utah, USA",
+  "seconds": 147,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 90,
+  "lifts": 8,
+  "runs": 90,
+  "named": 63,
+  "km": 47.8,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   88,
+   90
+  ],
+  "conn": {
+   "unreachable": 2,
+   "dead_end": 2,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "bromley-mountain-bromley-mountain",
+  "name": "Bromley Mountain Ski Resort;Bromley Mountain",
+  "region": "Vermont, USA",
+  "seconds": 67,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 67,
+  "lifts": 8,
+  "runs": 76,
+  "named": 47,
+  "km": 23.7,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   76,
+   76
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 5,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "bromont-montagne-d-experience",
+  "name": "Bromont Montagne d'Expérience",
+  "region": "Quebec, Canada",
+  "seconds": 67,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 92,
+  "lifts": 11,
+  "runs": 117,
+  "named": 110,
+  "km": 49.0,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   117,
+   117
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "camelback-mountain",
+  "name": "Camelback Mountain",
+  "region": "Pennsylvania, USA",
+  "seconds": 42,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "3 lift ends joined by rule"
+  ],
+  "osk_lifts": 15,
+  "osk_runs": 37,
+  "lifts": 15,
+  "runs": 36,
+  "named": 35,
+  "km": 14.2,
+  "osk_lift_ids_on_map": [
+   15,
+   15
+  ],
+  "reachable": [
+   36,
+   36
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "cascade-mountain",
+  "name": "Cascade Mountain",
+  "region": "Wisconsin, USA",
+  "seconds": 41,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 48,
+  "lifts": 11,
+  "runs": 49,
+  "named": 47,
+  "km": 16.0,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   60,
+   60
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "castle-mountain",
+  "name": "Castle Mountain",
+  "region": "Alberta, Canada",
+  "seconds": 97,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain",
+   "1 runs raised by the steepness check"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 104,
+  "lifts": 7,
+  "runs": 167,
+  "named": 153,
+  "km": 77.7,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   167,
+   167
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 6,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "china-peak-mountain",
+  "name": "China Peak Mountain",
+  "region": "California, USA",
+  "seconds": 46,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 104,
+  "lifts": 11,
+  "runs": 92,
+  "named": 45,
+  "km": 35.8,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   92,
+   92
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "cranmore-mountain",
+  "name": "Cranmore Mountain",
+  "region": "New Hampshire, USA",
+  "seconds": 51,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Magic carpet",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 60,
+  "lifts": 8,
+  "runs": 63,
+  "named": 55,
+  "km": 24.4,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   63,
+   63
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "crested-butte-mountain",
+  "name": "Crested Butte Mountain",
+  "region": "Colorado, USA",
+  "seconds": 83,
+  "hold": [
+   "16 dead-end runs"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 15,
+  "osk_runs": 93,
+  "lifts": 15,
+  "runs": 269,
+  "named": 244,
+  "km": 95.4,
+  "osk_lift_ids_on_map": [
+   15,
+   15
+  ],
+  "reachable": [
+   269,
+   270
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 16,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "cypress-mountain",
+  "name": "Cypress Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 105,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 79,
+  "lifts": 7,
+  "runs": 103,
+  "named": 63,
+  "km": 31.3,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   103,
+   103
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "dodge-ridge",
+  "name": "Dodge Ridge",
+  "region": "California, USA",
+  "seconds": 49,
+  "hold": [],
+  "soft": [
+   "isolated by rule: T-Bar 643",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 61,
+  "lifts": 11,
+  "runs": 67,
+  "named": 67,
+  "km": 35.7,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   67,
+   67
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "eldora",
+  "name": "Eldora",
+  "region": "Colorado, USA",
+  "seconds": 51,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 67,
+  "lifts": 10,
+  "runs": 73,
+  "named": 62,
+  "km": 35.3,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   73,
+   73
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "fernie-alpine",
+  "name": "Fernie Alpine",
+  "region": "British Columbia, Canada",
+  "seconds": 136,
+  "hold": [
+   "6 runs climb more than 12 m"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 120,
+  "lifts": 10,
+  "runs": 157,
+  "named": 133,
+  "km": 93.4,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   157,
+   157
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "gore-mountain",
+  "name": "Gore Mountain",
+  "region": "New York, USA",
+  "seconds": 73,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 104,
+  "lifts": 14,
+  "runs": 118,
+  "named": 112,
+  "km": 65.9,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   118,
+   118
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "grand-targhee",
+  "name": "Grand Targhee",
+  "region": "Wyoming, USA",
+  "seconds": 63,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 93,
+  "lifts": 6,
+  "runs": 121,
+  "named": 94,
+  "km": 70.2,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   121,
+   125
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "great-divide",
+  "name": "Great Divide",
+  "region": "Montana, USA",
+  "seconds": 62,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 109,
+  "lifts": 6,
+  "runs": 127,
+  "named": 125,
+  "km": 50.5,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   127,
+   127
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "gunstock-recreation",
+  "name": "Gunstock Recreation Area",
+  "region": "New Hampshire, USA",
+  "seconds": 93,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 73,
+  "lifts": 6,
+  "runs": 76,
+  "named": 51,
+  "km": 25.9,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   76,
+   76
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "holiday-valley",
+  "name": "Holiday Valley",
+  "region": "New York, USA",
+  "seconds": 160,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 79,
+  "lifts": 13,
+  "runs": 69,
+  "named": 69,
+  "km": 30.6,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   69,
+   69
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "homewood",
+  "name": "Homewood",
+  "region": "California, USA",
+  "seconds": 49,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 70,
+  "lifts": 7,
+  "runs": 97,
+  "named": 65,
+  "km": 35.5,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   98,
+   98
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "kimberley-alpine",
+  "name": "Kimberley Alpine",
+  "region": "British Columbia, Canada",
+  "seconds": 81,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Owl T-Bar",
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 70,
+  "lifts": 5,
+  "runs": 72,
+  "named": 62,
+  "km": 60.9,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   72,
+   72
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "kirkwood-mountain",
+  "name": "Kirkwood Mountain",
+  "region": "California, USA",
+  "seconds": 60,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 58,
+  "lifts": 13,
+  "runs": 74,
+  "named": 74,
+  "km": 48.2,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   71,
+   74
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "lake-louise",
+  "name": "Lake Louise",
+  "region": "Alberta, Canada",
+  "seconds": 61,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 120,
+  "lifts": 13,
+  "runs": 178,
+  "named": 161,
+  "km": 104.1,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   178,
+   178
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "le-massif",
+  "name": "Le Massif",
+  "region": "Quebec, Canada",
+  "seconds": 144,
+  "hold": [
+   "7 runs no lift reaches",
+   "19% of the run length has no rating in OpenStreetMap"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 84,
+  "lifts": 9,
+  "runs": 94,
+  "named": 66,
+  "km": 58.7,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   85,
+   94
+  ],
+  "conn": {
+   "unreachable": 7,
+   "dead_end": 2,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 19,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "lost-trail",
+  "name": "Lost Trail",
+  "region": "Idaho, USA",
+  "seconds": 78,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 56,
+  "lifts": 8,
+  "runs": 80,
+  "named": 69,
+  "km": 43.4,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   80,
+   80
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "loveland-basin",
+  "name": "Loveland Basin",
+  "region": "Colorado, USA",
+  "seconds": 64,
+  "hold": [
+   "only 106 of 118 run pieces reachable from a lift",
+   "8 runs no lift reaches"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 97,
+  "lifts": 7,
+  "runs": 118,
+  "named": 86,
+  "km": 57.1,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   106,
+   118
+  ],
+  "conn": {
+   "unreachable": 8,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "lutsen-mountains",
+  "name": "Lutsen Mountains",
+  "region": "Minnesota, USA",
+  "seconds": 67,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 76,
+  "lifts": 7,
+  "runs": 110,
+  "named": 90,
+  "km": 35.4,
+  "osk_lift_ids_on_map": [
+   7,
+   8
+  ],
+  "reachable": [
+   110,
+   110
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mad-river-glen",
+  "name": "Mad River Glen",
+  "region": "Vermont, USA",
+  "seconds": 107,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 77,
+  "lifts": 5,
+  "runs": 85,
+  "named": 60,
+  "km": 27.4,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   85,
+   85
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 4,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "marmot-basin",
+  "name": "Marmot Basin",
+  "region": "Alberta, Canada",
+  "seconds": 75,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 76,
+  "lifts": 6,
+  "runs": 136,
+  "named": 91,
+  "km": 43.9,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   134,
+   136
+  ],
+  "conn": {
+   "unreachable": 2,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "monarch-mountain",
+  "name": "Monarch Mountain",
+  "region": "Colorado, USA",
+  "seconds": 52,
+  "hold": [
+   "7 runs no lift reaches"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 78,
+  "lifts": 9,
+  "runs": 86,
+  "named": 77,
+  "km": 41.1,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   79,
+   86
+  ],
+  "conn": {
+   "unreachable": 7,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "mont-sainte-anne",
+  "name": "Mont-Sainte-Anne",
+  "region": "Quebec, Canada",
+  "seconds": 73,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 67,
+  "lifts": 9,
+  "runs": 80,
+  "named": 70,
+  "km": 70.4,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   80,
+   80
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mont-sutton",
+  "name": "Mont Sutton",
+  "region": "Quebec, Canada",
+  "seconds": 62,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 87,
+  "lifts": 9,
+  "runs": 89,
+  "named": 60,
+  "km": 42.7,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   89,
+   89
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 3,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mont-tremblant-mont-tremblant",
+  "name": "Mont Tremblant Resort, Station Mont Tremblant",
+  "region": "Quebec, Canada",
+  "seconds": 125,
+  "hold": [],
+  "soft": [
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 12,
+  "osk_runs": 152,
+  "lifts": 16,
+  "runs": 146,
+  "named": 114,
+  "km": 84.7,
+  "osk_lift_ids_on_map": [
+   12,
+   12
+  ],
+  "reachable": [
+   152,
+   152
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Tremblant trail report (resort feed, mtn)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "montana-snowbowl",
+  "name": "Montana Snowbowl",
+  "region": "Montana, USA",
+  "seconds": 64,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 64,
+  "lifts": 6,
+  "runs": 67,
+  "named": 60,
+  "km": 45.3,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   67,
+   67
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mount-ashland",
+  "name": "Mount Ashland",
+  "region": "Oregon, USA",
+  "seconds": 43,
+  "hold": [
+   "24% of the run length has no rating in OpenStreetMap"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 64,
+  "lifts": 6,
+  "runs": 55,
+  "named": 52,
+  "km": 19.9,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   55,
+   55
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 24,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "hold"
+ },
+ {
+  "id": "mount-rose-tahoe",
+  "name": "Mount Rose Ski Tahoe",
+  "region": "Nevada, USA",
+  "seconds": 56,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 60,
+  "lifts": 8,
+  "runs": 75,
+  "named": 69,
+  "km": 31.2,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   78,
+   78
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mount-sunapee",
+  "name": "Mount Sunapee",
+  "region": "New Hampshire, USA",
+  "seconds": 66,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 77,
+  "lifts": 10,
+  "runs": 92,
+  "named": 75,
+  "km": 36.1,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   93,
+   93
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "mount-washington-alpine",
+  "name": "Mount Washington Alpine",
+  "region": "British Columbia, Canada",
+  "seconds": 22,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 196,
+  "lifts": 10,
+  "runs": 199,
+  "named": 100,
+  "km": 59.4,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   217,
+   217
+  ],
+  "conn": {
+   "unreachable": 9,
+   "dead_end": 4,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 2
+  },
+  "guess_pct": 13,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-bachelor",
+  "name": "Mt. Bachelor",
+  "region": "Oregon, USA",
+  "seconds": 77,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 15,
+  "osk_runs": 128,
+  "lifts": 15,
+  "runs": 135,
+  "named": 106,
+  "km": 101.6,
+  "osk_lift_ids_on_map": [
+   15,
+   15
+  ],
+  "reachable": [
+   128,
+   135
+  ],
+  "conn": {
+   "unreachable": 4,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-hood-meadows",
+  "name": "Mt. Hood Meadows",
+  "region": "Oregon, USA",
+  "seconds": 62,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 94,
+  "lifts": 11,
+  "runs": 138,
+  "named": 126,
+  "km": 80.2,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   138,
+   140
+  ],
+  "conn": {
+   "unreachable": 4,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-hood-skibowl",
+  "name": "Mt. Hood Skibowl",
+  "region": "Oregon, USA",
+  "seconds": 46,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "2 lift ends joined by rule"
+  ],
+  "osk_lifts": 9,
+  "osk_runs": 62,
+  "lifts": 9,
+  "runs": 73,
+  "named": 70,
+  "km": 29.2,
+  "osk_lift_ids_on_map": [
+   9,
+   9
+  ],
+  "reachable": [
+   73,
+   73
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-norquay",
+  "name": "Mt Norquay",
+  "region": "Alberta, Canada",
+  "seconds": 59,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 68,
+  "lifts": 7,
+  "runs": 88,
+  "named": 74,
+  "km": 30.2,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   88,
+   88
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-seymour",
+  "name": "Mt Seymour",
+  "region": "British Columbia, Canada",
+  "seconds": 66,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 71,
+  "lifts": 5,
+  "runs": 66,
+  "named": 44,
+  "km": 17.1,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   66,
+   66
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 7,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "mt-spokane",
+  "name": "Mt. Spokane",
+  "region": "Washington, USA",
+  "seconds": 59,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 61,
+  "lifts": 8,
+  "runs": 71,
+  "named": 65,
+  "km": 41.8,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   71,
+   71
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "northstar-at-tahoe",
+  "name": "Northstar at Tahoe",
+  "region": "California, USA",
+  "seconds": 77,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 20,
+  "osk_runs": 130,
+  "lifts": 20,
+  "runs": 147,
+  "named": 92,
+  "km": 84.3,
+  "osk_lift_ids_on_map": [
+   20,
+   20
+  ],
+  "reachable": [
+   147,
+   147
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "pajarito-mountain",
+  "name": "Pajarito Mountain",
+  "region": "New Mexico, USA",
+  "seconds": 40,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 62,
+  "lifts": 6,
+  "runs": 64,
+  "named": 42,
+  "km": 33.5,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   64,
+   64
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 7,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "panorama-mountain",
+  "name": "Panorama Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 105,
+  "hold": [
+   "11 runs no lift reaches"
+  ],
+  "soft": [
+   "lift ends: 0 outside the network, 1 with no run",
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 127,
+  "lifts": 10,
+  "runs": 174,
+  "named": 132,
+  "km": 105.2,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   164,
+   175
+  ],
+  "conn": {
+   "unreachable": 11,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 1,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "hold"
+ },
+ {
+  "id": "pico-mountain",
+  "name": "Pico Mountain",
+  "region": "Vermont, USA",
+  "seconds": 48,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 68,
+  "lifts": 7,
+  "runs": 86,
+  "named": 57,
+  "km": 34.5,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   86,
+   86
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "powder-mountain",
+  "name": "Powder Mountain",
+  "region": "Utah, USA",
+  "seconds": 206,
+  "hold": [
+   "12 runs no lift reaches",
+   "17 dead-end runs",
+   "10 runs climb more than 12 m"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 155,
+  "lifts": 14,
+  "runs": 226,
+  "named": 205,
+  "km": 189.2,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   214,
+   226
+  ],
+  "conn": {
+   "unreachable": 12,
+   "dead_end": 17,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "purgatory",
+  "name": "Purgatory",
+  "region": "Colorado, USA",
+  "seconds": 151,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 92,
+  "lifts": 12,
+  "runs": 113,
+  "named": 103,
+  "km": 80.5,
+  "osk_lift_ids_on_map": [
+   12,
+   14
+  ],
+  "reachable": [
+   113,
+   113
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "red-mountain",
+  "name": "Red Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 68,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 8,
+  "osk_runs": 84,
+  "lifts": 8,
+  "runs": 111,
+  "named": 106,
+  "km": 86.9,
+  "osk_lift_ids_on_map": [
+   8,
+   8
+  ],
+  "reachable": [
+   109,
+   112
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "red-river",
+  "name": "Red River",
+  "region": "New Mexico, USA",
+  "seconds": 47,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 85,
+  "lifts": 7,
+  "runs": 84,
+  "named": 68,
+  "km": 28.4,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   84,
+   84
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "revelstoke-mountain",
+  "name": "Revelstoke Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 230,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 83,
+  "lifts": 7,
+  "runs": 95,
+  "named": 71,
+  "km": 93.6,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   104,
+   113
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sandia-peak",
+  "name": "Sandia Peak",
+  "region": "New Mexico, USA",
+  "seconds": 63,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 6,
+  "osk_runs": 67,
+  "lifts": 6,
+  "runs": 63,
+  "named": 63,
+  "km": 25.2,
+  "osk_lift_ids_on_map": [
+   6,
+   6
+  ],
+  "reachable": [
+   63,
+   63
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "hold"
+ },
+ {
+  "id": "santa-fe-santa-fe-q38555",
+  "name": "Ski Santa Fe, Santa Fe, Q38555",
+  "region": "New Mexico, USA",
+  "seconds": 43,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 88,
+  "lifts": 7,
+  "runs": 98,
+  "named": 79,
+  "km": 32.4,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   98,
+   98
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 3,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "schweitzer-mountain",
+  "name": "Schweitzer Mountain",
+  "region": "Idaho, USA",
+  "seconds": 80,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 104,
+  "lifts": 10,
+  "runs": 112,
+  "named": 93,
+  "km": 69.6,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   112,
+   112
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "seven-springs-mountain",
+  "name": "Seven Springs Mountain",
+  "region": "Pennsylvania, USA",
+  "seconds": 47,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Magic carpet, Magic carpet",
+   "ratings not checked against the resort",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 16,
+  "osk_runs": 54,
+  "lifts": 16,
+  "runs": 57,
+  "named": 43,
+  "km": 27.1,
+  "osk_lift_ids_on_map": [
+   16,
+   16
+  ],
+  "reachable": [
+   57,
+   57
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sierra-at-tahoe",
+  "name": "Sierra-at-Tahoe",
+  "region": "California, USA",
+  "seconds": 59,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 41,
+  "lifts": 13,
+  "runs": 53,
+  "named": 50,
+  "km": 33.3,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   52,
+   53
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "silver-mountain",
+  "name": "Silver Mountain",
+  "region": "Idaho, USA",
+  "seconds": 89,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 79,
+  "lifts": 7,
+  "runs": 94,
+  "named": 75,
+  "km": 45.4,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   98,
+   98
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "silver-star-mountain",
+  "name": "Silver Star Mountain",
+  "region": "British Columbia, Canada",
+  "seconds": 127,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 192,
+  "lifts": 11,
+  "runs": 206,
+  "named": 148,
+  "km": 117.0,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   197,
+   206
+  ],
+  "conn": {
+   "unreachable": 6,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "snow-summit",
+  "name": "Snow Summit",
+  "region": "California, USA",
+  "seconds": 53,
+  "hold": [],
+  "soft": [
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 15,
+  "osk_runs": 36,
+  "lifts": 15,
+  "runs": 37,
+  "named": 30,
+  "km": 19.9,
+  "osk_lift_ids_on_map": [
+   15,
+   15
+  ],
+  "reachable": [
+   37,
+   37
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Snow Summit trail report (resort feed, m)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "snow-valley-mountain",
+  "name": "Snow Valley Mountain",
+  "region": "California, USA",
+  "seconds": 64,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 42,
+  "lifts": 13,
+  "runs": 41,
+  "named": 28,
+  "km": 12.4,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   41,
+   41
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "snowbasin",
+  "name": "Snowbasin",
+  "region": "Utah, USA",
+  "seconds": 38,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 157,
+  "lifts": 13,
+  "runs": 185,
+  "named": 137,
+  "km": 98.7,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   182,
+   185
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sommet-saint-sauveur",
+  "name": "Sommet Saint-Sauveur",
+  "region": "Quebec, Canada",
+  "seconds": 66,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Télérafting, Surface lift, Tapis roulant versant Bobsleigh + Vortex360, Télésiège",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 17,
+  "osk_runs": 63,
+  "lifts": 17,
+  "runs": 55,
+  "named": 39,
+  "km": 25.7,
+  "osk_lift_ids_on_map": [
+   17,
+   17
+  ],
+  "reachable": [
+   55,
+   55
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "stevens-pass",
+  "name": "Stevens Pass",
+  "region": "Washington, USA",
+  "seconds": 73,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 79,
+  "lifts": 14,
+  "runs": 116,
+  "named": 75,
+  "km": 45.2,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   119,
+   120
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sugar-bowl",
+  "name": "Sugar Bowl",
+  "region": "California, USA",
+  "seconds": 115,
+  "hold": [],
+  "soft": [
+   "lift ends: 0 outside the network, 1 with no run",
+   "isolated by rule: Magic carpet",
+   "ratings not checked against the resort",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 94,
+  "lifts": 13,
+  "runs": 123,
+  "named": 114,
+  "km": 50.9,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   117,
+   123
+  ],
+  "conn": {
+   "unreachable": 6,
+   "dead_end": 3,
+   "outside_core": 0,
+   "lift_end": 1,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sun-peaks",
+  "name": "Sun Peaks",
+  "region": "British Columbia, Canada",
+  "seconds": 63,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 260,
+  "lifts": 13,
+  "runs": 251,
+  "named": 174,
+  "km": 161.1,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   251,
+   251
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 2
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "sun-valley-bald-mountain",
+  "name": "Sun Valley - Bald Mountain",
+  "region": "Idaho, USA",
+  "seconds": 93,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 12,
+  "osk_runs": 143,
+  "lifts": 12,
+  "runs": 160,
+  "named": 101,
+  "km": 89.0,
+  "osk_lift_ids_on_map": [
+   12,
+   12
+  ],
+  "reachable": [
+   161,
+   161
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sundance",
+  "name": "Sundance",
+  "region": "Utah, USA",
+  "seconds": 49,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 80,
+  "lifts": 10,
+  "runs": 94,
+  "named": 71,
+  "km": 34.7,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   95,
+   95
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "tamarack",
+  "name": "Tamarack",
+  "region": "Idaho, USA",
+  "seconds": 109,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 7,
+  "osk_runs": 87,
+  "lifts": 7,
+  "runs": 103,
+  "named": 75,
+  "km": 72.1,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   102,
+   104
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 1,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "taos-valley",
+  "name": "Taos Ski Valley",
+  "region": "New Mexico, USA",
+  "seconds": 59,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Lift 2, Lift 7A, Lift 7, Lift 8, Lift 4, Kachina Peak Lift"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 14,
+  "osk_runs": 105,
+  "lifts": 14,
+  "runs": 176,
+  "named": 111,
+  "km": 60.4,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   176,
+   176
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 3,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "the-hermitage-club-at-haystack-mountain",
+  "name": "The Hermitage Club at Haystack Mountain",
+  "region": "Vermont, USA",
+  "seconds": 41,
+  "hold": [
+   "the name says club: it may be private (members only); check before publishing"
+  ],
+  "soft": [
+   "lift ends: 2 outside the network, 0 with no run",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 65,
+  "lifts": 5,
+  "runs": 68,
+  "named": 49,
+  "km": 22.0,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   73,
+   73
+  ],
+  "conn": {
+   "unreachable": 3,
+   "dead_end": 1,
+   "outside_core": 2,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 10,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ },
+ {
+  "id": "three-summits",
+  "name": "Three Summits",
+  "region": "Washington, USA",
+  "seconds": 86,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Magic carpet",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 20,
+  "osk_runs": 106,
+  "lifts": 20,
+  "runs": 104,
+  "named": 72,
+  "km": 43.9,
+  "osk_lift_ids_on_map": [
+   20,
+   20
+  ],
+  "reachable": [
+   105,
+   105
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "timberline-lodge",
+  "name": "Timberline Lodge",
+  "region": "Oregon, USA",
+  "seconds": 111,
+  "hold": [
+   "4 runs no lift reaches"
+  ],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 12,
+  "osk_runs": 62,
+  "lifts": 12,
+  "runs": 72,
+  "named": 56,
+  "km": 63.4,
+  "osk_lift_ids_on_map": [
+   12,
+   12
+  ],
+  "reachable": [
+   68,
+   72
+  ],
+  "conn": {
+   "unreachable": 4,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 10,
+  "gate": "hold"
+ },
+ {
+  "id": "welch-village",
+  "name": "Welch Village",
+  "region": "Minnesota, USA",
+  "seconds": 40,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 10,
+  "osk_runs": 54,
+  "lifts": 10,
+  "runs": 57,
+  "named": 48,
+  "km": 14.8,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   57,
+   57
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 2,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "whistler-blackcomb",
+  "name": "Whistler Blackcomb",
+  "region": "British Columbia, Canada",
+  "seconds": 259,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain",
+   "1 runs raised by the steepness check"
+  ],
+  "osk_lifts": 36,
+  "osk_runs": 618,
+  "lifts": 36,
+  "runs": 747,
+  "named": 529,
+  "km": 349.9,
+  "osk_lift_ids_on_map": [
+   36,
+   36
+  ],
+  "reachable": [
+   734,
+   753
+  ],
+  "conn": {
+   "unreachable": 16,
+   "dead_end": 5,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 10
+  },
+  "guess_pct": 4,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "whitefish-mountain",
+  "name": "Whitefish Mountain",
+  "region": "Montana, USA",
+  "seconds": 93,
+  "hold": [],
+  "soft": [
+   "lift ends: 0 outside the network, 1 with no run",
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 16,
+  "osk_runs": 137,
+  "lifts": 16,
+  "runs": 140,
+  "named": 113,
+  "km": 85.3,
+  "osk_lift_ids_on_map": [
+   16,
+   16
+  ],
+  "reachable": [
+   141,
+   141
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 1,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "whitewater",
+  "name": "Whitewater",
+  "region": "British Columbia, Canada",
+  "seconds": 80,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort",
+   "30 m terrain",
+   "1 runs raised by the steepness check"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 88,
+  "lifts": 5,
+  "runs": 106,
+  "named": 96,
+  "km": 62.8,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   105,
+   106
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 1,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 30,
+  "gate": "publish"
+ },
+ {
+  "id": "wolf-creek",
+  "name": "Wolf Creek",
+  "region": "Colorado, USA",
+  "seconds": 73,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 11,
+  "osk_runs": 89,
+  "lifts": 11,
+  "runs": 185,
+  "named": 170,
+  "km": 77.3,
+  "osk_lift_ids_on_map": [
+   11,
+   11
+  ],
+  "reachable": [
+   181,
+   185
+  ],
+  "conn": {
+   "unreachable": 4,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "yellowstone-club",
+  "name": "Yellowstone Club",
+  "region": "Montana, USA",
+  "seconds": 142,
+  "hold": [
+   "lifts not joined to the rest of the map (isolated by rule): Great Bear, Silver Tip - High SPeed, Eglise Gondola Stage 1, Eglise Gondola Stage 2, Little Dipper Triple, Alpine Greens",
+   "the name says club: it may be private (members only); check before publishing"
+  ],
+  "soft": [
+   "ratings not checked against the resort",
+   "1 runs raised by the steepness check"
+  ],
+  "osk_lifts": 17,
+  "osk_runs": 99,
+  "lifts": 21,
+  "runs": 120,
+  "named": 94,
+  "km": 107.3,
+  "osk_lift_ids_on_map": [
+   16,
+   17
+  ],
+  "reachable": [
+   120,
+   120
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "hold"
+ }
+]

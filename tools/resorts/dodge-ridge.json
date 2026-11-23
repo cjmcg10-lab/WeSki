@@ -1,0 +1,47 @@
+{
+ "id": "dodge-ridge",
+ "name": "Dodge Ridge",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/3139919",
+ "include_ways": [
+  10682536,
+  10682537,
+  10682538,
+  38563516,
+  38563519,
+  222400791,
+  233426933,
+  233426934,
+  233426935,
+  1159567536,
+  1159567538
+ ],
+ "osm_bbox": [
+  -119.9608,
+  38.179,
+  -119.9168,
+  38.2054
+ ],
+ "openskimap": {
+  "id": "162525ff9a2a65810a602b74f338303d1bb9ea38",
+  "cc": "US",
+  "runs": 61,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 533,
+  "web": "https://www.dodgeridge.com/site/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "T-Bar 643"
+ ],
+ "isolated_notes": {
+  "T-Bar 643": "rule: not joined to the rest of the lifts on the map"
+ }
+}

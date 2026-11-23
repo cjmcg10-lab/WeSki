@@ -1,0 +1,41 @@
+{
+ "id": "belleayre-mountain-center",
+ "name": "Belleayre Mountain Ski Center",
+ "region": "New York, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "relation/6373343",
+ "include_ways": [
+  158017197,
+  158022243,
+  158089780,
+  158099560,
+  256330905,
+  751412810,
+  1337599613,
+  1337599614
+ ],
+ "osm_bbox": [
+  -74.5348,
+  42.1113,
+  -74.4696,
+  42.1494
+ ],
+ "openskimap": {
+  "id": "f16be64558f5124a26f4797260671c96ad2fde8b",
+  "cc": "US",
+  "runs": 66,
+  "lifts": 8,
+  "rated": 0.909,
+  "skimap": 4972,
+  "web": "https://www.belleayre.com/"
+ },
+ "area_name": "Belleayre Mountain Ski Center",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "13 dead-end runs"
+}

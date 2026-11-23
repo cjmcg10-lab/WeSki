@@ -1,0 +1,43 @@
+{
+ "id": "mt-hood-meadows",
+ "name": "Mt. Hood Meadows",
+ "region": "Oregon, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/866496711",
+ "include_ways": [
+  5039422,
+  5039502,
+  5039713,
+  5039814,
+  5040048,
+  5040192,
+  28476046,
+  45230041,
+  45230042,
+  94499130,
+  132505248
+ ],
+ "osm_bbox": [
+  -121.6987,
+  45.3172,
+  -121.6247,
+  45.3701
+ ],
+ "openskimap": {
+  "id": "effda1f2db54d33bc3770670cd4335bd56a41eec",
+  "cc": "US",
+  "runs": 94,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 271,
+  "web": "https://www.skihood.com/"
+ },
+ "area_name": "Mt. Hood Meadows Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 100%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ }
+}

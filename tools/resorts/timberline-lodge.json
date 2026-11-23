@@ -1,0 +1,45 @@
+{
+ "id": "timberline-lodge",
+ "name": "Timberline Lodge",
+ "region": "Oregon, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/679189584",
+ "include_ways": [
+  5275472,
+  5275481,
+  5280949,
+  5282193,
+  44164310,
+  45230418,
+  48948146,
+  50427222,
+  257542070,
+  1378401128,
+  1378401129,
+  1378401130
+ ],
+ "osm_bbox": [
+  -121.7631,
+  45.2961,
+  -121.6877,
+  45.3807
+ ],
+ "openskimap": {
+  "id": "482cba0a21d6f161d1e96582ae9274b1fb0f6740",
+  "cc": "US",
+  "runs": 62,
+  "lifts": 12,
+  "rated": 1.0,
+  "skimap": 266,
+  "web": "https://www.timberlinelodge.com/"
+ },
+ "area_name": "Timberline Lodge Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 100%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ },
+ "hold": "4 runs no lift reaches"
+}

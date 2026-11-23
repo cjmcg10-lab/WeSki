@@ -1,0 +1,55 @@
+{
+ "id": "camelback-mountain",
+ "name": "Camelback Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/52067284",
+ "include_ways": [
+  52067303,
+  256638605,
+  256638606,
+  256639308,
+  256639310,
+  256639317,
+  256639320,
+  256640263,
+  256640265,
+  256640267,
+  256642832,
+  1211959657,
+  1211959658,
+  1211959659,
+  1211959660
+ ],
+ "osm_bbox": [
+  -75.3668,
+  41.0406,
+  -75.3374,
+  41.0572
+ ],
+ "openskimap": {
+  "id": "f34b05b63db9dcbcc7e3ba106a82072ec6a197f9",
+  "cc": "US",
+  "runs": 37,
+  "lifts": 15,
+  "rated": 1.0,
+  "skimap": 13602,
+  "web": "https://www.skicamelback.com/"
+ },
+ "area_name": "Camelback Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing I",
+  "Tubing II"
+ ],
+ "isolated_notes": {
+  "Tubing I": "rule: tubing or sledding lift",
+  "Tubing II": "rule: tubing or sledding lift"
+ }
+}

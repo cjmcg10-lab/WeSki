@@ -1,0 +1,42 @@
+{
+ "id": "monarch-mountain",
+ "name": "Monarch Mountain",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/308152532",
+ "include_ways": [
+  17015343,
+  17015346,
+  17015352,
+  96514206,
+  96514207,
+  258660533,
+  258660534,
+  543696695,
+  1211718147
+ ],
+ "osm_bbox": [
+  -106.3604,
+  38.498,
+  -106.3253,
+  38.5303
+ ],
+ "openskimap": {
+  "id": "cbf5bcc5f265cec9368d353e2ab6ecb6c9e41a4c",
+  "cc": "US",
+  "runs": 78,
+  "lifts": 9,
+  "rated": 0.974,
+  "skimap": 511,
+  "web": "https://skimonarch.com/"
+ },
+ "area_name": "Monarch Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "7 runs no lift reaches"
+}

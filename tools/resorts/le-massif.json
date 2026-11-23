@@ -1,0 +1,46 @@
+{
+ "id": "le-massif",
+ "name": "Le Massif",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "relation/8027590",
+ "include_ways": [
+  50766717,
+  50766720,
+  50766723,
+  191007841,
+  198548298,
+  198548302,
+  1373769130,
+  1373769131,
+  1373769132
+ ],
+ "osm_bbox": [
+  -70.6264,
+  47.2638,
+  -70.5626,
+  47.3084
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "ef6c8dc160b9330d799cf95bf76ae29b58d33c5c",
+  "cc": "CA",
+  "runs": 84,
+  "lifts": 9,
+  "rated": 0.786,
+  "skimap": 96,
+  "web": "https://www.lemassif.com/"
+ },
+ "area_name": "Le Massif",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 91%, 30 m 9%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 90.6,
+  "30m": 9.4
+ },
+ "hold": "7 runs no lift reaches; 19% of the run length has no rating in OpenStreetMap"
+}

@@ -1,0 +1,52 @@
+{
+ "id": "mount-washington-alpine",
+ "name": "Mount Washington Alpine",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "relation/10664978",
+ "include_ways": [
+  66339680,
+  66339684,
+  66339688,
+  66339693,
+  66339695,
+  66339704,
+  258227602,
+  258227603,
+  258227604,
+  760881077
+ ],
+ "osm_bbox": [
+  -125.3161,
+  49.7326,
+  -125.2803,
+  49.7686
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "26d2df5f88caa4a30012e6c865526ce3040b6388",
+  "cc": "CA",
+  "runs": 196,
+  "lifts": 10,
+  "rated": 0.832,
+  "skimap": 29,
+  "web": "https://www.mountwashington.ca"
+ },
+ "area_name": "Mount Washington Alpine Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Tube Carpet"
+ ],
+ "isolated_notes": {
+  "Tube Carpet": "rule: tubing or sledding lift"
+ }
+}

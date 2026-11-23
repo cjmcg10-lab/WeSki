@@ -1,0 +1,46 @@
+{
+ "id": "revelstoke-mountain",
+ "name": "Revelstoke Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/475720359",
+ "include_ways": [
+  101303245,
+  101303264,
+  101303267,
+  481720772,
+  876357454,
+  1221046154,
+  1361895818
+ ],
+ "osm_bbox": [
+  -118.1749,
+  50.9405,
+  -118.0594,
+  50.9958
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 77
+ },
+ "openskimap": {
+  "id": "f2df72ab0a583e1183c56c0a84810bf686d2eb9c",
+  "cc": "CA",
+  "runs": 83,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 32,
+  "web": "https://www.revelstokemountainresort.com/"
+ },
+ "area_name": "Revelstoke Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 97%, 30 m 3%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 96.7,
+  "30m": 3.3
+ }
+}

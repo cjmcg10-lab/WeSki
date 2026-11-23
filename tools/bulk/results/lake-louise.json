@@ -1,0 +1,25 @@
+{
+ "id": "lake-louise",
+ "reachable": [
+  178,
+  178
+ ],
+ "auto_joins": 34,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 1,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "notes": [
+  "resort feed mtnpowder 74 gave no trail list: KeyError: 'MountainAreas'"
+ ],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 61,
+ "rebuild_seconds": 40
+}

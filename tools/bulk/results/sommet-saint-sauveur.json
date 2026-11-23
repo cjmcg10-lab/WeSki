@@ -1,0 +1,25 @@
+{
+ "id": "sommet-saint-sauveur",
+ "reachable": [
+  55,
+  55
+ ],
+ "auto_joins": 1,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [
+  "the resort's outline relation/5365963 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)",
+  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Surface lift, Tapis roulant versant Bobsleigh + Vortex360, Tapis roulant versant Tube, Télérafting, Télésiège"
+ ],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 66,
+ "rebuild_seconds": 19
+}

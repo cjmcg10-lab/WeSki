@@ -181,6 +181,11 @@ Connections (2026-11-23): `tools/check_connections.py` (see "Connections" in `do
 marked "connections checked" have an allow-list in `tests/fixtures/connections/` that the tests hold them to.
 
 
+Automatic builds (2026-11-23): the 100 mountains of the first automatic batch are not in the table above. Their state
+is in `tools/bulk/batch-1.md` (gate result, why held, numbers) and each one's card in `tools/cards/<id>.md`. They meet
+this checklist only in part: ratings are OpenStreetMap's (not checked against the resort, and the app says so), no
+photo, no browser close-ups, and no person has looked at their joins.
+
 ## Runs on the resort's list but not yet on the map (2026-11-19)
 
 `python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 11 remain (2026-11-20). The rest

@@ -1,0 +1,38 @@
+{
+ "id": "great-divide",
+ "name": "Great Divide",
+ "region": "Montana, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/147037315",
+ "include_ways": [
+  352828058,
+  352828059,
+  352828060,
+  352828061,
+  1133008774,
+  1213976934
+ ],
+ "osm_bbox": [
+  -112.3461,
+  46.7358,
+  -112.3057,
+  46.7671
+ ],
+ "openskimap": {
+  "id": "30c18ba69d27fcd201067270535c9e43075a79e3",
+  "cc": "US",
+  "runs": 109,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 371,
+  "web": "https://www.skigd.com/"
+ },
+ "area_name": "Great Divide Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

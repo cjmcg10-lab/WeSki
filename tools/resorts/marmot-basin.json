@@ -1,0 +1,42 @@
+{
+ "id": "marmot-basin",
+ "name": "Marmot Basin",
+ "region": "Alberta, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/1518302265",
+ "include_ways": [
+  157780576,
+  157780577,
+  191532777,
+  191532778,
+  681055054,
+  1228892495
+ ],
+ "osm_bbox": [
+  -118.1326,
+  52.7822,
+  -118.0772,
+  52.8087
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "5e819ebcf0e2f7b4cee8123304ed019d6eff2e59",
+  "cc": "CA",
+  "runs": 76,
+  "lifts": 6,
+  "rated": 0.987,
+  "skimap": 8,
+  "web": "https://www.skimarmot.com"
+ },
+ "area_name": "Marmot Basin",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 75%, 1 m lidar 25%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 24.6,
+  "30m": 75.4
+ }
+}

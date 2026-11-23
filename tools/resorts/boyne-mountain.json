@@ -1,0 +1,42 @@
+{
+ "id": "boyne-mountain",
+ "name": "Boyne Mountain",
+ "region": "Michigan, USA",
+ "tz": "America/Detroit",
+ "auto": true,
+ "area_osm": "way/1351013953",
+ "include_ways": [
+  130101418,
+  130101419,
+  130101420,
+  130101421,
+  130101422,
+  130101423,
+  130101452,
+  256977006,
+  1212404348,
+  1266201132
+ ],
+ "osm_bbox": [
+  -84.9719,
+  45.1521,
+  -84.9212,
+  45.1786
+ ],
+ "openskimap": {
+  "id": "449aa402eafd646e49025b6afbcd4962c77096e3",
+  "cc": "US",
+  "runs": 58,
+  "lifts": 10,
+  "rated": 1.0,
+  "skimap": 421,
+  "web": "https://www.boyne.com/BoyneMountain/"
+ },
+ "area_name": "Boyne Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

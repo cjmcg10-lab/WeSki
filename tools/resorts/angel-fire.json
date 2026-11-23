@@ -1,0 +1,40 @@
+{
+ "id": "angel-fire",
+ "name": "Angel Fire",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1263733614",
+ "include_ways": [
+  14447568,
+  63707920,
+  63708337,
+  257379455,
+  257379456,
+  257379457,
+  257380092,
+  1381817999
+ ],
+ "osm_bbox": [
+  -105.2809,
+  36.3675,
+  -105.2131,
+  36.3915
+ ],
+ "openskimap": {
+  "id": "34ac08b56aded0d8451d6ca515d06a2f6dbb0b59",
+  "cc": "US",
+  "runs": 101,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 331,
+  "web": "https://www.angelfireresort.com/"
+ },
+ "area_name": "Angel Fire Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

@@ -1,0 +1,50 @@
+{
+ "id": "mont-tremblant-mont-tremblant",
+ "name": "Mont Tremblant Resort, Station Mont Tremblant",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/671144531",
+ "include_ways": [
+  30734563,
+  30734564,
+  30734565,
+  30747751,
+  30794016,
+  30794017,
+  30794224,
+  31534915,
+  258788001,
+  258788002,
+  1007186790,
+  1359660371
+ ],
+ "osm_bbox": [
+  -74.5964,
+  46.1951,
+  -74.516,
+  46.2548
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 4
+ },
+ "openskimap": {
+  "id": "b7cad93e857de92335debf15f4d0bfe9a04f4d1b",
+  "cc": "CA",
+  "runs": 152,
+  "lifts": 12,
+  "rated": 0.974,
+  "skimap": 101,
+  "web": "https://www.tremblant.ca"
+ },
+ "area_name": "Mont Tremblant Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

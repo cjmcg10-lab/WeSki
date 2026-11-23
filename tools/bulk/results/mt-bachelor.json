@@ -1,0 +1,24 @@
+{
+ "id": "mt-bachelor",
+ "reachable": [
+  128,
+  135
+ ],
+ "auto_joins": 24,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 3,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ },
+ "notes": [
+  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Lava Tube Carpet"
+ ],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 77,
+ "rebuild_seconds": 29
+}

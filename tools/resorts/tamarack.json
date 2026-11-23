@@ -1,0 +1,39 @@
+{
+ "id": "tamarack",
+ "name": "Tamarack",
+ "region": "Idaho, USA",
+ "tz": "America/Boise",
+ "auto": true,
+ "area_osm": "way/1232164006",
+ "include_ways": [
+  257183858,
+  257183859,
+  257183860,
+  257183861,
+  257183862,
+  257183863,
+  776095153
+ ],
+ "osm_bbox": [
+  -116.1751,
+  44.66,
+  -116.1108,
+  44.7158
+ ],
+ "openskimap": {
+  "id": "063937ba03fcc9ee00d5a60da62d664623841eec",
+  "cc": "US",
+  "runs": 87,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 488,
+  "web": "https://tamarackidaho.com"
+ },
+ "area_name": "Tamarack Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

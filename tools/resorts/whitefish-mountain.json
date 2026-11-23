@@ -1,0 +1,49 @@
+{
+ "id": "whitefish-mountain",
+ "name": "Whitefish Mountain",
+ "region": "Montana, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1388573249",
+ "include_ways": [
+  5535592,
+  5728340,
+  51721100,
+  51721121,
+  51721122,
+  51721130,
+  51721161,
+  257012624,
+  257012625,
+  257013120,
+  257014978,
+  320737212,
+  541918112,
+  895075820,
+  926908764,
+  1244662563
+ ],
+ "osm_bbox": [
+  -114.3792,
+  48.4654,
+  -114.3149,
+  48.5222
+ ],
+ "openskimap": {
+  "id": "a9b9ab0ad6bb668e32b74a1745baa5974cdef3ec",
+  "cc": "US",
+  "runs": 137,
+  "lifts": 16,
+  "rated": 1.0,
+  "skimap": 367,
+  "web": "https://skiwhitefish.com"
+ },
+ "area_name": "Whitefish Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%, 10 m national model 0%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0,
+  "10m": 0.0
+ }
+}

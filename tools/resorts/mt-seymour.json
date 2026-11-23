@@ -1,0 +1,48 @@
+{
+ "id": "mt-seymour",
+ "name": "Mt Seymour",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/1052361696",
+ "include_ways": [
+  40044497,
+  40044498,
+  60314751,
+  258200000,
+  397372366
+ ],
+ "osm_bbox": [
+  -122.9568,
+  49.3574,
+  -122.9346,
+  49.3841
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "be8cd62a82ece0c8de28787217191d54c221bb97",
+  "cc": "CA",
+  "runs": 71,
+  "lifts": 5,
+  "rated": 0.93,
+  "skimap": 43,
+  "web": "https://www.mountseymour.com/"
+ },
+ "area_name": "Mt Seymour",
+ "area_buffer": 300,
+ "area_access": "customers",
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 69%, 1 m lidar 31%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 31.2,
+  "30m": 68.8
+ },
+ "isolated_lifts": [
+  "Enquist Tube Park Lift"
+ ],
+ "isolated_notes": {
+  "Enquist Tube Park Lift": "rule: tubing or sledding lift"
+ }
+}

@@ -1,0 +1,39 @@
+{
+ "id": "alyeska",
+ "name": "Alyeska",
+ "region": "Alaska, USA",
+ "tz": "America/Anchorage",
+ "auto": true,
+ "area_osm": "way/934351306",
+ "include_ways": [
+  153320086,
+  184077717,
+  257383114,
+  257384252,
+  257384253,
+  257384523,
+  257384863
+ ],
+ "osm_bbox": [
+  -149.1188,
+  60.9465,
+  -149.0505,
+  60.9775
+ ],
+ "openskimap": {
+  "id": "aacaa8c57fc9318da09e9d03947887fa1c4d1ee1",
+  "cc": "US",
+  "runs": 73,
+  "lifts": 7,
+  "rated": 0.959,
+  "skimap": 552,
+  "web": "https://www.alyeskaresort.com/"
+ },
+ "area_name": "Alyeska Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 100%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ }
+}

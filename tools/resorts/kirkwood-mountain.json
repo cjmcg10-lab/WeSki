@@ -1,0 +1,45 @@
+{
+ "id": "kirkwood-mountain",
+ "name": "Kirkwood Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/319472357",
+ "include_ways": [
+  10281875,
+  10281878,
+  10281940,
+  10281941,
+  10282087,
+  10282120,
+  32437279,
+  32437282,
+  32437286,
+  125433277,
+  130100679,
+  130101297,
+  258132361
+ ],
+ "osm_bbox": [
+  -120.0925,
+  38.6543,
+  -120.0394,
+  38.6972
+ ],
+ "openskimap": {
+  "id": "718db266e6e9ec76a5003a404aec69a657b3ab33",
+  "cc": "US",
+  "runs": 58,
+  "lifts": 13,
+  "rated": 1.0,
+  "skimap": 537,
+  "web": "https://www.kirkwood.com/"
+ },
+ "area_name": "Kirkwood Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}
