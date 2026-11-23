@@ -38,10 +38,16 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "isolated_lifts": [
-  "T-Bar 643"
+ "rename": {
+  "Head Wall": "Headwall"
+ },
+ "links": [
+  [
+   "Boulder Creek (top)",
+   "T-Bar 643 (base)"
+  ]
  ],
- "isolated_notes": {
-  "T-Bar 643": "rule: not joined to the rest of the lifts on the map"
+ "links_notes": {
+  "Boulder Creek (top) -> T-Bar 643 (base)": "2026-11-23: the trail map draws T-Bar 643 starting beside the summit patrol hut at the top of Boulder Creek; the 300 m along the ridge between them has no run in OpenStreetMap"
  }
 }
