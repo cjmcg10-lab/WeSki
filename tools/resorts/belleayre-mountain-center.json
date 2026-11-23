@@ -37,5 +37,13 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "13 dead-end runs"
+ "hold": "13 dead-end runs",
+ "rename": {
+  "Chippewa Glade": "Chippewa Glades",
+  "Dreamcatcher Glade": "Dreamcatcher Glades",
+  "Lift Line Glade": "Lift Line Glades",
+  "Papoose Landing Learning Area": "Papoose Flats Learning Area",
+  "Winnisook Glade": "Winisook Glades",
+  "Winnisook": "Winisook"
+ }
 }
