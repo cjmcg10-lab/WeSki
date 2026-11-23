@@ -389,7 +389,8 @@ function dayBody(resort, forecast, day) {
 }
 
 export function sheetDay(arg) {
-  const resort = fc.list.find((r) => r.id === arg?.id);
+  // the mountain you're at opens like any on your list, without having to keep it first
+  const resort = fc.list.find((r) => r.id === arg?.id) ?? (fc.here?.id === arg?.id ? fc.here : null);
   if (!resort) return sheetCalendar();
   start();
   const e = current(resort);
