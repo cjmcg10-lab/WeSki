@@ -1,0 +1,11 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "The Slides": "hike-to expert terrain; two of its lines run out into the valley away from the lifts, as on the resort map (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}

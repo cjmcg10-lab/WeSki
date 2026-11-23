@@ -111,11 +111,11 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | --- | --- | --- | --- | --- |
 | Breckenridge | yes | yes | yes | |
 | Brundage Mountain | yes | yes (four trail maps from brundage.com, read by hand, 2026-11-18) | no | |
-| Cannon Mountain | yes | yes | yes | |
+| Cannon Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes | yes | |
 | Copper Mountain | yes | yes (2026-27 trail map and the Copper Bowl and Spaulding insets, read by hand, 2026-11-18) | yes | six runs OpenStreetMap lacks are drawn by hand (approximate) |
 | Geto Kogen | yes | yes (course map and course page on getokogen.com, colours read by hand, 2026-11-18) | no | |
 | Heavenly | yes | yes | yes | |
-| Jay Peak | yes | yes (2025-26 trail map; symbols read automatically next to each printed name, 2026-11-18) | yes | |
+| Jay Peak | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025-26 trail map; symbols read automatically next to each printed name, 2026-11-18) | yes | Full Moon's run-out now joins Interstate (config link) |
 | Keystone | yes | yes | yes | |
 | La Plagne | yes | yes (La Plagne piste map 2026 from la-plagne.com, line colours read by hand, 2026-11-18) | yes | |
 | Les Arcs | yes | yes (Paradiski piste map 2026, Les Arcs and Peisey-Vallandry side, read by hand, 2026-11-18) | yes | loose "Droset" piece |
@@ -124,41 +124,41 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 | Park City | yes | yes | yes | |
 | Pizol | yes | yes (the resort's piste report on infosnow.ch: number, name and colour, 2026-11-18) | yes | |
 | Saalbach Hinterglemm | yes | yes (the resort's interactive map data, 155 numbered runs matched by piste number, 2026-11-18) | yes | two pieces of "Zwölferkogel - Nordabfahrt" and one of "Sonnenmulde" carry a run number in OpenStreetMap that would make them easier; left at the map rating |
-| Saddleback | yes | yes | yes | "Morning Glory" not reachable from the base |
+| Saddleback | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes | yes | |
 | SkiWelt | yes | yes (the resort's interactive map data, matched by run name, 2026-11-18) | yes | |
-| Smugglers' Notch | yes | yes | no | |
+| Smugglers' Notch | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes | no | |
 | Steamboat | yes | yes | yes | |
-| Stowe | yes | yes (2026-27 winter trail map the owner uploaded, read by hand, 2026-11-18) | no | glades carry no rating on the resort's map and keep the OpenStreetMap rating |
-| Sugarbush | yes | yes | yes | |
+| Stowe | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2026-27 winter trail map the owner uploaded, read by hand, 2026-11-18) | no | glades carry no rating on the resort's map and keep the OpenStreetMap rating; Home Run is a ski-home trail with no lift at its foot (left as is) |
+| Sugarbush | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes | yes | F.I.S. and Lower Exterminator now join the runs their ends lie on; lifts Easy Up and Schoolhouse Lift from the resort's list are not on the map |
 | Tignes – Val d'Isère | yes | yes (Tignes – Val d'Isère piste map from tignes.net, read by hand, 2026-11-18) | yes | |
 | Vail | yes | yes (2026-27 Front Side, Back Bowls and Blue Sky Basin maps from vail.com, read by hand, 2026-11-18) | yes | |
 | Val Thorens | yes | yes (Val Thorens piste map from les3vallees.com, read by hand, and the Orelle piste map for the Orelle side, 2026-11-18) | yes | |
 | Winter Park | yes | yes | yes | 25 to 40 official runs missing or named differently |
 | Zermatt – Cervinia | yes | yes (Cervino Ski Paradise map 2026-27 from cervinia.it, colour badges read and checked against its printed list, 2026-11-18) | yes | planned Breitboden–Rosenritz chair left out until it opens |
-| Killington | yes (2026-11-18) | yes (trail map, read by hand) | yes | a few old runs OpenStreetMap still lists (Hawkeye, Horn, Old Vagabond) are not reachable |
-| Sunday River | yes (2026-11-18) | yes (trail map, read by hand) | yes | |
-| Sugarloaf | yes (2026-11-18) | yes (trail map, read by hand; Snowfields, Burnt Mountain and Brackett Basin glades take the area's experts-only rating) | yes | Snowfields reached by a short walk from the Timberline lift top (added by hand) |
-| Okemo | yes (2026-11-18) | yes (trail map, read by hand) | yes | "Hot Dog Hill" (beginner run at the base) not joined to a lift |
-| Mount Snow | yes (2026-11-18) | yes (trail map, read by hand) | yes | |
-| Stratton | yes (2026-11-18) | yes (resort feed, mtnpowder id 1) | yes | |
-| Loon Mountain | yes (2026-11-18) | yes (trail map, read by hand) | no (no usable free photo found yet) | "Wildwood" glade and "Brookway Extension" not joined |
-| Whiteface | yes (2026-11-18) | yes (trail map, read by hand) | yes | parts of "The Slides" (hike-to expert terrain) are not joined to a lift |
-| Waterville Valley | yes (2026-11-18) | yes (2025-26 trail map from skimap.org, read by hand) | yes | Old Tecumseh joined to Terry's Trail by hand |
-| Bolton Valley | yes (2026-11-18) | yes (2024-25 trail map from skimap.org, read by hand) | yes | Showtime, Spellbinder and Twice as Nice Woods joined to Intro (Timberline midstation) by hand |
-| Burke Mountain | yes (2026-11-18) | yes (2025 trail map from skimap.org, read by hand) | yes | |
-| Magic Mountain | yes (2026-11-18) | yes (2026 trail map from skimap.org, read by hand) | yes | Pitch Black and Black Magic joined to Upper Wizard at the summit by hand |
-| Berkshire East | yes (2026-11-18) | yes (2024 and 2026 trail maps from skimap.org, read by hand) | no (no free winter photo found) | Gronk Glades and Horace's Grove missing from OpenStreetMap |
-| Catamount | yes (2026-11-18) | yes (2024-25 and 2025-26 trail maps from skimap.org, read by hand) | no (no free photo found) | Birch Glades East and West missing from OpenStreetMap |
-| Ragged Mountain | yes (2026-11-18) | yes (2023 trail map from skimap.org, read by hand) | yes (distant view) | Triple Take and Double Take missing from OpenStreetMap |
-| Pats Peak | yes (2026-11-18) | yes (2026 trail map's printed trail list) | no (no free photo found) | |
-| Mohawk Mountain | yes (2026-11-18) | yes (2025 trail map) | yes | Back Bowl, Indian Crossing and Ridge Run are not in OpenStreetMap: traced by hand (`extra_trails`) |
-| Powder Ridge | yes (2026-11-18) | yes (2026 trail map's numbered list; parks left out) | yes | Gun Powder Run and Powder Keg are not in OpenStreetMap: traced by hand |
-| Ski Sundown | yes (2026-11-18) | yes (2024-25 trail map) | no (no free photo found) | Loop is not in OpenStreetMap: traced by hand |
-| Mount Southington | yes (2026-11-18) | yes (2025 trail map) | yes (night) | OpenStreetMap maps only 9 of 14 runs; Avalanche, Liftline, Northstar, The Glacier, Thunderbolt and Whoopee traced by hand; links join Turkey Turn and the Thunderbolt top |
-| Bretton Woods | yes (2026-11-18) | yes (2025-26 trail map; glades from its printed glade lists) | yes | Black Fly, Mom Said No, Old Man, Peppersass, Stinger and Think Pink are not in OpenStreetMap: traced by hand from the map's glade codes (RN to RT, ZF, WI) |
-| Hunter Mountain | yes (2026-11-18) | yes (trail map, 400 dpi render) | no (only a snowless spring photo) | HP Poma lift added by hand (`extra_lifts`); twelve runs not in OpenStreetMap traced by hand (Macombs, Park Avenue, Park Avenue West, Bucky's Run, Gramercy Park, Madison Square, KMC Drive, Milky Way, The Milky Glades, Belt Parkway Bypass, Mad Box, Woodstock Glades); KMC Drive starts at the Kaatskill Mountain Club, which no run reaches |
-| Windham Mountain | yes (2026-11-18) | yes (trail map; "advanced" blue recorded as blue-black) | yes | What, Wooly Bear and a line through Whataride Glades traced by hand |
-| Wachusett | yes (2026-11-18) | yes (trail map) | yes | Polar Kids traced by hand; Lower Conifer renamed from OpenStreetMap's Lower Conifer Connection |
+| Killington | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | yes | a few old runs OpenStreetMap still lists (Hawkeye, Horn, Old Vagabond) are not reachable; nine old trails OpenStreetMap added in 2026 as freeride lines (Hawkeye, Nor'easter, Thunderball, Old Sundog, Old Sunrise Trail, Gold Dust...) are hidden: not on the resort's map |
+| Sunday River | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | yes | |
+| Sugarloaf | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand; Snowfields, Burnt Mountain and Brackett Basin glades take the area's experts-only rating) | yes | Snowfields reached by a short walk from the Timberline lift top (added by hand) |
+| Okemo | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | yes | Snow Trak ends among the slopeside homes, away from every lift (left as is) |
+| Mount Snow | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | yes | |
+| Stratton | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (resort feed, mtnpowder id 1) | yes | Tree Top Way is a ski-home trail to the Tree Top homes (left as is) |
+| Loon Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | no (no usable free photo found yet) | |
+| Whiteface | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, read by hand) | yes | parts of "The Slides" (hike-to expert terrain) are not joined to a lift |
+| Waterville Valley | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025-26 trail map from skimap.org, read by hand) | yes | Old Tecumseh joined to Terry's Trail by hand |
+| Bolton Valley | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2024-25 trail map from skimap.org, read by hand) | yes | Showtime, Spellbinder and Twice as Nice Woods joined to Intro (Timberline midstation) by hand |
+| Burke Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025 trail map from skimap.org, read by hand) | yes | |
+| Magic Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2026 trail map from skimap.org, read by hand) | yes | Pitch Black and Black Magic joined to Upper Wizard at the summit by hand; no lift list from the resort yet |
+| Berkshire East | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2024 and 2026 trail maps from skimap.org, read by hand) | no (no free winter photo found) | Gronk Glades and Horace's Grove missing from OpenStreetMap |
+| Catamount | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2024-25 and 2025-26 trail maps from skimap.org, read by hand) | no (no free photo found) | Birch Glades East and West missing from OpenStreetMap |
+| Ragged Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2023 trail map from skimap.org, read by hand) | yes (distant view) | Triple Take and Double Take missing from OpenStreetMap |
+| Pats Peak | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2026 trail map's printed trail list) | no (no free photo found) | |
+| Mohawk Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025 trail map) | yes | Back Bowl, Indian Crossing and Ridge Run are not in OpenStreetMap: traced by hand (`extra_trails`) |
+| Powder Ridge | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2026 trail map's numbered list; parks left out) | yes | Gun Powder Run and Powder Keg are not in OpenStreetMap: traced by hand |
+| Ski Sundown | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2024-25 trail map) | no (no free photo found) | Loop is not in OpenStreetMap: traced by hand |
+| Mount Southington | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025 trail map) | yes (night) | OpenStreetMap maps only 9 of 14 runs; Avalanche, Liftline, Northstar, The Glacier, Thunderbolt and Whoopee traced by hand; links join Turkey Turn and the Thunderbolt top |
+| Bretton Woods | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (2025-26 trail map; glades from its printed glade lists) | yes | Black Fly, Mom Said No, Old Man, Peppersass, Stinger and Think Pink are not in OpenStreetMap: traced by hand from the map's glade codes (RN to RT, ZF, WI) |
+| Hunter Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map, 400 dpi render) | no (only a snowless spring photo) | HP Poma lift added by hand (`extra_lifts`); twelve runs not in OpenStreetMap traced by hand (Macombs, Park Avenue, Park Avenue West, Bucky's Run, Gramercy Park, Madison Square, KMC Drive, Milky Way, The Milky Glades, Belt Parkway Bypass, Mad Box, Woodstock Glades); KMC Drive starts at the Kaatskill Mountain Club, which no run reaches |
+| Windham Mountain | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map; "advanced" blue recorded as blue-black) | yes | What, Wooly Bear and a line through Whataride Glades traced by hand; a hand-made link that sent skiers 104 m uphill into Whataride Glades was removed (the glade is reached from Windfall) |
+| Wachusett | yes (rebuilt 2026-11-23, `pipeline.py`, connections checked) | yes (trail map) | yes | Polar Kids traced by hand; Lower Conifer renamed from OpenStreetMap's Lower Conifer Connection |
 | Jackson Hole | yes (2026-11-21, `pipeline.py`) | yes (trail map, skimap.org 37233: label colours only, so a black label is black, or double where OpenStreetMap says double) | yes | 6 listed runs not on the map |
 | Palisades Tahoe | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 61)) | no | 114 feed entries not on the map (gates, cliffs, named lines inside bowls: to sort into `not_runs`/`same_as`); Alpine Meadows' Beaver and Estelle bowls joined to Summit Six as walks (approximate); Base to Base Gondola two-way |
 | Deer Valley | yes (2026-11-21, `pipeline.py`) | yes (resort feed (mtnpowder 49)) | no | 10 listed runs not on the map; upper/mid/lower parts rated as whole runs |
@@ -177,6 +177,8 @@ as a whole, so one pass at any mountain covers the app; the per-mountain part is
 Not yet tracked per mountain (do these as each mountain is next worked on): the lift-list check, the
 directions check to every lift top, place names, and the browser close-ups in sections 4 and 5. Several
 mountains also have a few dead-end runs listed in their build's connectivity report.
+Connections (2026-11-23): `tools/check_connections.py` (see "Connections" in `docs/ADDING_MOUNTAINS.md`); the 30 rows
+marked "connections checked" have an allow-list in `tests/fixtures/connections/` that the tests hold them to.
 
 
 ## Runs on the resort's list but not yet on the map (2026-11-19)

@@ -1,16 +1,20 @@
 # Stowe (stowe)
 
-Built 2026-11-21 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
+Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**154 runs (130 named, 72.3 km), 12 lifts. 1 things to look at.**
+**154 runs (130 named, 72.3 km), 12 lifts. Ready.**
 
-- **LOOK**: 1 lifts to review (no listed run at the top, or no listed terrain at the bottom)  
-  Over Easy Transfer Gondola (46351339, gondola, 462 m): no run on the resort's list starts at its top
+- info: 3 joins made automatically (look at the longest ones on the map)  
+  Lower Switchback bottom ski 41 m; Crossover bottom walk 143 m; Stowe Derby Trail bottom ski 240 m
 - info: 2 run pieces hidden (not on the resort's list and not a link)  
   (no name) (1025559968, 468 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (1241796983, 26 m): unnamed piece, not on the resort's list, leads nowhere on it
+- info: 1 lifts flagged for review were already on the previous build (checked then)
 - info: audit: flat black: 1, no rating: 2
 - info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   117 on the list, 164 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 12 of 12 on the map
 - pass: 0 shown runs rated by guess
+- pass: reachable from the base: 156 of 156 run pieces
+- pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m

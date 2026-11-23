@@ -1,0 +1,11 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Snow Trak": "ends among the slopeside homes about 450 m from the nearest run or lift in OpenStreetMap; no evidence of where it rejoins (2026-11-23)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {}
+}
