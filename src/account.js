@@ -58,6 +58,14 @@ export const signOutAll = async () => { const r = await post('/api/auth/signout-
 export const deleteAccount = async () => { const r = await post('/api/account/delete'); if (r.ok) me = { signedIn: false, paywall: config().paywall }; return r; };
 export const startTrial = async () => { const r = await post('/api/trial'); await refreshMe(); return r; };
 export const setCrew = async (emails) => { const r = await post('/api/crew', { emails }); await refreshMe(); return r; };
+/** Website Season Pass to Crew: Paddle switches the subscription and charges the difference; the Crew Pass arrives by
+ *  Paddle's signed message a few seconds later, so wait for it. Returns {ok} or {error}. */
+export async function upgradeToCrew() {
+  const r = await post('/api/pass/upgrade');
+  if (!r.ok) return r;
+  for (let i = 0; i < 10 && me?.pass?.plan !== 'crew'; i++) { await new Promise((ok) => setTimeout(ok, 2000)); await refreshMe(); }
+  return { ok: true, done: me?.pass?.plan === 'crew' };
+}
 
 let paddleP = null;
 /** Load Paddle's checkout (only when someone opens it) and open it for one plan. */

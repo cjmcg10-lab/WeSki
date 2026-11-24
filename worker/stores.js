@@ -1,7 +1,7 @@
 // Durable Objects for accounts (one instance, SQLite) and for each resort's map evidence (one per resort).
 import { DurableObject } from 'cloudflare:workers';
 import {
-  sha256, randomToken, entitlement, PLANS, TRIAL_HOURS, MAX_SESSIONS, LOGIN_TTL_MS, SESSION_TTL_MS, REVOKE_TTL_MS, normEmail, deviceName,
+  sha256, randomToken, entitlement, PLANS, ONE_OFF, TRIAL_HOURS, MAX_SESSIONS, LOGIN_TTL_MS, SESSION_TTL_MS, REVOKE_TTL_MS, normEmail, deviceName,
 } from './accounts.js';
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
 import { HistoryStore } from './history.js';
@@ -200,7 +200,8 @@ export class Accounts extends DurableObject {
         : this.rows('SELECT a.email FROM crew c JOIN accounts a ON a.id = c.owner WHERE c.email = ?', acc.email).some((r) => this.isComp(r.email))
           ? { active: true, plan: 'crew', until: 4102444800000, member: true, trial: false }
           : entitlement(own, crewOf, acc.trial_until),
-      purchases: own.map((p) => ({ plan: p.plan, status: p.status, ends: p.ends, renews: PLANS[p.plan]?.renews })),
+      purchases: own.map((p) => ({ plan: p.plan, status: p.status, starts: p.starts, ends: p.ends, renews: PLANS[p.plan]?.renews,
+        store: /^(sub|txn)_/.test(p.id) ? 'paddle' : 'apple' })),
       crew: this.rows('SELECT email FROM crew WHERE owner = ?', id).map((r) => r.email),
       devices: this.rows('SELECT hash, created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id)
         .map((d) => ({ created: d.created, seen: d.seen, name: deviceName(d.device), current: d.hash === mine })),
@@ -228,10 +229,28 @@ export class Accounts extends DurableObject {
     if (this.one('SELECT id FROM events WHERE id = ?', eventId)) return false;
     this.sql.exec('INSERT INTO events VALUES (?, ?)', eventId, Date.now());
     const before = p && this.one('SELECT account FROM purchases WHERE id = ?', p.id);
+    const oneOff = p && ONE_OFF.includes(p.plan);
+    if (oneOff && before) return true; // a Day or Week Pass is recorded once; a repeat message must not restart it
+    if (oneOff) {
+      // a Day or Week Pass bought while another is running starts when that one ends (owner, 2026-11-24)
+      const prev = this.one(`SELECT MAX(ends) AS e FROM purchases WHERE account = ? AND plan IN (${ONE_OFF.map(() => '?').join(', ')}) AND ends > ?`,
+        p.account, ...ONE_OFF, p.starts);
+      if (prev?.e) p = { ...p, starts: prev.e, ends: prev.e + (p.ends - p.starts) };
+    }
     if (p && (!before || before.account === p.account)) {
       this.sql.exec('INSERT OR REPLACE INTO purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?)', p.id, p.account, p.plan, p.status, p.starts, p.ends, p.sub, Date.now());
     }
     return true;
+  }
+
+  /** The website Season Pass subscription this account can upgrade to Crew: {sub} or {error}. */
+  async seasonToUpgrade(session) {
+    const id = await this.accountFor(session);
+    if (!id) return { error: 'signed_out' };
+    const now = Date.now();
+    if (this.one(`SELECT id FROM purchases WHERE account = ? AND plan = 'crew' AND starts <= ? AND ends > ?`, id, now, now)) return { error: 'has_crew' };
+    const s = this.one(`SELECT sub FROM purchases WHERE account = ? AND plan = 'season' AND starts <= ? AND ends > ? AND sub LIKE 'sub\\_%' ESCAPE '\\' ORDER BY ends DESC LIMIT 1`, id, now, now);
+    return s ? { sub: s.sub } : { error: 'no_season' };
   }
 
   async setCrew(session, emails) {

@@ -171,6 +171,22 @@ async function api(request, env, url, ctx) {
     const r = await accounts(env).setCrew(session(request), Array.isArray(b?.emails) ? b.emails.map(String) : []);
     return json(r, r.ok ? 200 : 403);
   }
+  if (path === '/api/pass/upgrade' && method === 'POST') {
+    // Season to Crew on the website: Paddle switches the same subscription and charges only the difference for the
+    // rest of the year; the change then arrives by the signed webhook like any other. Needs the PADDLE_API_KEY secret.
+    const r = await accounts(env).seasonToUpgrade(session(request));
+    if (r.error) return json(r, r.error === 'signed_out' ? 401 : 409);
+    const crewPrice = Object.entries(priceMap(env)).find(([, plan]) => plan === 'crew')?.[0];
+    if (!env.PADDLE_API_KEY || !crewPrice) return json({ error: 'not_open' }, 503);
+    const base = env.PADDLE_ENV === 'production' ? 'https://api.paddle.com' : 'https://sandbox-api.paddle.com';
+    const res = await fetch(`${base}/subscriptions/${encodeURIComponent(r.sub)}`, {
+      method: 'PATCH',
+      headers: { authorization: `Bearer ${env.PADDLE_API_KEY}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ items: [{ price_id: crewPrice, quantity: 1 }], proration_billing_mode: 'prorated_immediately', on_payment_failure: 'prevent_change' }),
+    }).catch(() => null);
+    if (!res?.ok) return json({ error: 'paddle', status: res?.status || 0 }, 502);
+    return json({ ok: true });
+  }
   if (path === '/api/paddle/webhook' && method === 'POST') {
     const raw = await request.text();
     if (!(await verifyPaddle(request.headers.get('paddle-signature'), raw, env.PADDLE_WEBHOOK_SECRET))) return json({ error: 'Bad signature' }, 401);

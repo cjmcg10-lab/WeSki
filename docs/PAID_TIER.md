@@ -49,11 +49,21 @@ How each gate behaves without a pass (rules in `src/passrules.js`, tested in `te
 
 | Plan | Price | Length | Notes |
 | --- | --- | --- | --- |
-| Day Pass | $2.99 | 24 hours from purchase | one-time |
-| Week Pass | $5.99 | 7 days from purchase | one-time, the ski-trip pass |
+| Day Pass | $2.99 | 24 hours from purchase* | one-time |
+| Week Pass | $5.99 | 7 days from purchase* | one-time, the ski-trip pass |
 | Season Pass | $24.99 / year | one year, renews | the main plan |
 | Crew Season Pass | $44.99 / year | one year, renews | buyer plus 3 friends' emails |
 | Free day | $0 | 24 hours | once per account |
+
+\* Passes add up (owner, 2026-11-24): a Day or Week Pass bought while one of the account's Day or Week Passes runs starts
+when that one ends (`applyPurchase` in `worker/stores.js`), and the pass sheet says when. While a yearly pass is on (own
+Season or Crew, a crew seat, the owner pass) the Day and Week buttons are not shown (`planChoices` in `src/passrules.js`).
+A website Season Pass shows "Upgrade" on the Crew Pass: `POST /api/pass/upgrade` asks Paddle to switch the same
+subscription to the Crew price, charging the difference for the rest of the year at once (`prorated_immediately`;
+nothing changes if the payment fails); Paddle's `subscription.updated` webhook then records it as Crew. This needs the
+Cloudflare secret `PADDLE_API_KEY` (Paddle → Developer tools → Authentication → API key with permission to write
+subscriptions); without it the button says to write to us. A Season Pass bought in the iPhone app is upgraded there
+(Apple prorates within the "SkiWithMe Pass" group), so no button. Day or Week time is never credited toward a yearly pass.
 
 Set by the owner on 2026-11-23 (before: $2.99, $3.99, $19.99, $34.99) and may still change. No monthly plan: skiing
 is seasonal.

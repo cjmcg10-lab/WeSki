@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import {
   FREE_FORECAST_DAYS, localDay, forecastAccess, forecastActionPaid, tasteResort, tasteDates, forecastDayOpen,
-  historyView, dayOpen, canDownload, mountainFiles, mountainOfPath, staleMountains,
+  historyView, dayOpen, canDownload, mountainFiles, mountainOfPath, staleMountains, planChoices,
 } from '../src/passrules.js';
 import * as acct from '../src/account.js';
 
@@ -117,5 +117,44 @@ describe('offline maps', () => {
     expect(staleMountains({ ...base, pass: false, keep: ['vail'] })).toEqual(['stowe']);
     expect(staleMountains({ ...base, pass: true })).toEqual([]);
     expect(staleMountains({ ...base, pass: false, known: false })).toEqual([]);
+  });
+});
+
+describe('what the Plans list offers (owner, 2026-11-24)', () => {
+  const now = Date.UTC(2026, 11, 1);
+  const D = 864e5;
+  const buy = (plan, starts, ends, store = 'paddle') => ({ plan, starts, ends, renews: plan === 'season' || plan === 'crew', store });
+  const choices = (purchases, pass = { active: true }) => planChoices({ signedIn: true, pass, purchases }, now);
+
+  it('signed out or no pass: everything can be bought', () => {
+    expect(planChoices(null, now).action).toEqual({ day: 'buy', week: 'buy', season: 'buy', crew: 'buy' });
+    expect(choices([], { active: false }).yearly).toBeNull();
+  });
+
+  it('a website Season Pass hides Day and Week and offers Crew as an upgrade', () => {
+    const c = choices([buy('season', now - D, now + 200 * D)]);
+    expect(c.action).toEqual({ day: 'none', week: 'none', season: 'have', crew: 'upgrade' });
+    expect(c.yearly).toMatchObject({ plan: 'season', until: now + 200 * D });
+  });
+
+  it('a Season Pass from the iPhone app is upgraded in the app, not here', () => {
+    expect(choices([buy('season', now - D, now + 200 * D, 'apple')]).action.crew).toBe('none');
+  });
+
+  it('a Crew Pass, a crew seat or the owner pass hide Day and Week', () => {
+    expect(choices([buy('crew', now - D, now + 9 * D)]).action).toEqual({ day: 'none', week: 'none', season: 'none', crew: 'have' });
+    expect(choices([], { active: true, member: true, plan: 'crew', until: now + D }).action).toMatchObject({ day: 'none', week: 'none', season: 'buy' });
+    expect(Object.values(choices([], { active: true, comp: true }).action).every((a) => a === 'none')).toBe(true);
+  });
+
+  it('while a Week Pass runs, says when a new one would start', () => {
+    const c = choices([buy('week', now - D, now + 6 * D), buy('day', now + 6 * D, now + 7 * D)]);
+    expect(c.action.week).toBe('buy');
+    expect(c.shortUntil).toBe(now + 7 * D);
+    expect(choices([buy('week', now - 9 * D, now - 2 * D)], { active: false }).shortUntil).toBe(0);
+  });
+
+  it('an expired Season Pass offers everything again', () => {
+    expect(choices([buy('season', now - 400 * D, now - D)], { active: false }).action.day).toBe('buy');
   });
 });

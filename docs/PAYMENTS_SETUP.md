@@ -102,6 +102,13 @@ Paying needs an account, and accounts need sign-in emails.
   Tax category: **Standard digital goods** (or "SaaS").
 - Send to Claude: the four **price ids** (they start with `pri_`; open each price to see it).
 
+**B5b. API key for upgrades (Season to Crew on the website).**
+- Do: Paddle → Developer tools → Authentication → **API keys** → New API key. Name it "SkiWithMe upgrades"; give it
+  permission to **read and write subscriptions** only (if Paddle asks for permissions).
+- Put it in Cloudflare, never in the chat: Workers & Pages → skiwithme → Settings → Variables and Secrets → Add →
+  type **Secret**, name `PADDLE_API_KEY`, value the key.
+- Without it, everything else works; the Upgrade button then says to write to hello@builtbyroger.app.
+
 **B6. Get the checkout token.**
 - Do: Paddle → Developer tools → Authentication → Client-side tokens → New token (name it "SkiWithMe app").
 - Send to Claude: the token (it starts with `live_`; it is public, made to sit in the app).

@@ -20,6 +20,8 @@ export const PLANS = {
   season: { name: 'Season Pass', price: 24.99, days: null, seats: 1, renews: true },
   crew: { name: 'Crew Season Pass', price: 44.99, days: null, seats: 4, renews: true },
 };
+/** Plans bought once (Day, Week): a new one starts when the account's current one ends, so passes add up. */
+export const ONE_OFF = Object.keys(PLANS).filter((k) => !PLANS[k].renews);
 export const TRIAL_HOURS = 24;               // one free day per account
 export const MAX_SESSIONS = 2;               // signed-in devices per account; signing in on another signs out the one used longest ago
 export const REVOKE_TTL_MS = 7 * 24 * 3600 * 1000; // the "sign out everywhere" link in a new-sign-in email works for 7 days, once
@@ -95,7 +97,15 @@ export function entitlement(purchases, crewOf = [], trialUntil = 0, now = Date.n
   for (const p of [...purchases, ...crewOf.map((p) => ({ ...p, member: true }))]) {
     if (p.starts <= now && p.ends > now && (!best || p.ends > best.ends)) best = p;
   }
-  if (best) return { active: true, plan: best.plan, until: best.ends, member: !!best.member, trial: false };
+  if (best) {
+    // passes bought back to back (a second Week Pass starts when the first ends) count as one stretch
+    let until = best.ends;
+    for (let more = true; more;) {
+      more = false;
+      for (const p of purchases) if (p.starts <= until && p.ends > until) { until = p.ends; more = true; }
+    }
+    return { active: true, plan: best.plan, until, member: !!best.member, trial: false };
+  }
   if (trialUntil > now) return { active: true, plan: 'trial', until: trialUntil, trial: true };
   return { active: false, plan: null, until: 0, trial: false };
 }

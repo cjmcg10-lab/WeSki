@@ -155,3 +155,68 @@ describe('one purchase, one account', () => {
     expect(a.applyPurchase('evt_1', null)).toBe(false);
   });
 });
+
+describe('Day and Week passes add up; Season upgrades to Crew (owner, 2026-11-24)', () => {
+  const H = 3600e3, D = 24 * H;
+  const week = (id, account, at) => ({ id, account, plan: 'week', status: 'active', starts: at, ends: at + 7 * D, sub: null });
+
+  it('a second Week Pass bought during the first starts when the first ends', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t0 = Date.now();
+    a.applyPurchase('evt_1', week('txn_1', s.account, t0));
+    a.applyPurchase('evt_2', week('txn_2', s.account, t0 + 3 * D));
+    const me = await a.me(s.session);
+    const second = me.purchases.find((p) => p.ends > t0 + 8 * D);
+    expect(second.starts).toBe(t0 + 7 * D);
+    expect(second.ends).toBe(t0 + 14 * D);
+    expect(me.pass.until).toBe(t0 + 14 * D);          // the pass shows the whole stretch
+  });
+
+  it('a repeated payment message never restarts or moves a Day or Week Pass', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t0 = Date.now();
+    a.applyPurchase('evt_1', week('txn_1', s.account, t0));
+    a.applyPurchase('evt_1b', week('txn_1', s.account, t0 + 2 * D)); // same purchase, new message
+    const me = await a.me(s.session);
+    expect(me.purchases).toHaveLength(1);
+    expect(me.purchases[0].ends).toBe(t0 + 7 * D);
+  });
+
+  it('a pass bought after the last one ended starts at once', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t0 = Date.now() - 10 * D;
+    a.applyPurchase('evt_1', week('txn_1', s.account, t0));
+    const now = Date.now();
+    a.applyPurchase('evt_2', { ...week('txn_2', s.account, now), plan: 'day', ends: now + D });
+    const me = await a.me(s.session);
+    expect(me.purchases.find((p) => p.plan === 'day').starts).toBe(now);
+  });
+
+  it('another account\'s passes do not delay yours', async () => {
+    const a = store();
+    const one = await a.openSession('one@example.com', UA.iphone);
+    const two = await a.openSession('two@example.com', UA.iphone);
+    const t0 = Date.now();
+    a.applyPurchase('evt_1', week('txn_1', one.account, t0));
+    a.applyPurchase('evt_2', week('txn_2', two.account, t0 + H));
+    expect((await a.me(two.session)).purchases[0].starts).toBe(t0 + H);
+  });
+
+  it('finds the website Season Pass to upgrade, and not when there is none or a Crew Pass already', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    expect(await a.seasonToUpgrade(s.session)).toEqual({ error: 'no_season' });
+    const now = Date.now();
+    a.applyPurchase('evt_1', { id: 'sub_9', account: s.account, plan: 'season', status: 'active', starts: now - D, ends: now + 300 * D, sub: 'sub_9' });
+    expect(await a.seasonToUpgrade(s.session)).toEqual({ sub: 'sub_9' });
+    expect((await a.me(s.session)).purchases[0].store).toBe('paddle');
+    // Paddle's message after the upgrade: the same subscription, now the Crew price
+    a.applyPurchase('evt_2', { id: 'sub_9', account: s.account, plan: 'crew', status: 'active', starts: now - D, ends: now + 300 * D, sub: 'sub_9' });
+    expect((await a.me(s.session)).pass.plan).toBe('crew');
+    expect(await a.seasonToUpgrade(s.session)).toEqual({ error: 'has_crew' });
+    expect(await a.seasonToUpgrade('0'.repeat(64))).toEqual({ error: 'signed_out' });
+  });
+});
