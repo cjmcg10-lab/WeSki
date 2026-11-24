@@ -1,0 +1,33 @@
+{
+ "source": "Big Boulder trail map (JFBB), skimap.org map 33861 (2024), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Boulder": 2,
+  "Carbon Way": 0,
+  "Coal Chute": 0,
+  "Der Schuss": 1,
+  "Draufganger": 2,
+  "Edelweiss": 0,
+  "Little Boulder": 0,
+  "Lower Sitzmark": 0,
+  "Merry Widow": 1,
+  "Midway": 2,
+  "Mineshaft": 2,
+  "Ski School Slopes": 0,
+  "Snowdrift": 2,
+  "The Elbow": 1,
+  "Upper Sitzmark": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Tannenbaum": "freestyle terrain (orange park symbol, no trail rating)",
+  "Central Park": "freestyle terrain (orange park symbol, no trail rating)"
+ },
+ "lifts": [
+  "Big Boulder",
+  "Blue Heron",
+  "Carpet Lift",
+  "Harmony",
+  "Tannenbaum"
+ ]
+}

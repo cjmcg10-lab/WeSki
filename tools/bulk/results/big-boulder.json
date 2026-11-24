@@ -9,15 +9,17 @@
  "stuck_lift_ends": [],
  "climbing_runs": 0,
  "raised": 0,
- "official": null,
+ "official": [
+  15,
+  24,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Tubing Only Carpet"
- ],
- "seconds": 38,
+ "notes": [],
+ "seconds": 18,
  "failed": null,
  "built": "2026-11-24"
 }
