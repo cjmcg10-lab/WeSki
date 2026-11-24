@@ -1501,7 +1501,7 @@
   "trails": 97,
   "lifts": 63,
   "zones": true,
-  "bytes": 4213516,
+  "bytes": 4213149,
   "checked": true,
   "coarse": true
  },
@@ -2958,7 +2958,7 @@
   "trails": 112,
   "lifts": 40,
   "zones": true,
-  "bytes": 2285676,
+  "bytes": 2284129,
   "checked": true,
   "coarse": true
  },
@@ -3302,6 +3302,24 @@
   "zones": false,
   "bytes": 3024662,
   "checked": true
+ },
+ {
+  "id": "val-gardena-groden-gherdeina",
+  "name": "Val Gardena",
+  "region": "Bolzano/Bozen, Italy",
+  "tz": "Europe/Rome",
+  "lat": 46.51449,
+  "lon": 11.73948,
+  "baseLat": 46.54021,
+  "baseLon": 11.56374,
+  "top": 2708,
+  "base": 1010,
+  "trails": 169,
+  "lifts": 84,
+  "zones": true,
+  "bytes": 3469242,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "val-thorens",

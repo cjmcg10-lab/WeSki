@@ -964,6 +964,11 @@
   "runs": 212,
   "lifts": 32
  },
+ "val-gardena-groden-gherdeina": {
+  "made": "2026-11-24",
+  "runs": 169,
+  "lifts": 84
+ },
  "val-thorens": {
   "made": "2026-11-24",
   "runs": 103,
