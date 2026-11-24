@@ -360,6 +360,23 @@
   "checked": true
  },
  {
+  "id": "bridger-bowl",
+  "name": "Bridger Bowl",
+  "region": "Montana, USA",
+  "tz": "America/Denver",
+  "lat": 45.80408,
+  "lon": -110.93398,
+  "baseLat": 45.81812,
+  "baseLon": -110.898,
+  "top": 2678,
+  "base": 1865,
+  "trails": 61,
+  "lifts": 12,
+  "zones": false,
+  "bytes": 709372,
+  "checked": true
+ },
+ {
   "id": "brighton",
   "name": "Brighton",
   "region": "Utah, USA",
@@ -373,12 +390,12 @@
   "trails": 63,
   "lifts": 8,
   "zones": false,
-  "bytes": 800672,
-  "checked": false
+  "bytes": 799941,
+  "checked": true
  },
  {
   "id": "bromley-mountain-bromley-mountain",
-  "name": "Bromley Mountain Ski Resort;Bromley Mountain",
+  "name": "Bromley Mountain",
   "region": "Vermont, USA",
   "tz": "America/New_York",
   "lat": 43.22754,
@@ -390,8 +407,8 @@
   "trails": 47,
   "lifts": 8,
   "zones": false,
-  "bytes": 312912,
-  "checked": false
+  "bytes": 307590,
+  "checked": true
  },
  {
   "id": "bromont-montagne-d-experience",
@@ -407,8 +424,8 @@
   "trails": 110,
   "lifts": 11,
   "zones": false,
-  "bytes": 679242,
-  "checked": false
+  "bytes": 680811,
+  "checked": true
  },
  {
   "id": "brundage",
@@ -458,8 +475,8 @@
   "trails": 35,
   "lifts": 15,
   "zones": true,
-  "bytes": 339476,
-  "checked": false
+  "bytes": 339892,
+  "checked": true
  },
  {
   "id": "cannon-mountain",
@@ -492,8 +509,8 @@
   "trails": 47,
   "lifts": 11,
   "zones": false,
-  "bytes": 292729,
-  "checked": false
+  "bytes": 291215,
+  "checked": true
  },
  {
   "id": "castle-mountain",
@@ -506,11 +523,11 @@
   "baseLon": -114.41534,
   "top": 2260,
   "base": 1409,
-  "trails": 153,
+  "trails": 151,
   "lifts": 7,
   "zones": false,
-  "bytes": 795698,
-  "checked": false,
+  "bytes": 797213,
+  "checked": true,
   "coarse": true
  },
  {
@@ -544,8 +561,8 @@
   "trails": 45,
   "lifts": 11,
   "zones": false,
-  "bytes": 480764,
-  "checked": false
+  "bytes": 478341,
+  "checked": true
  },
  {
   "id": "copper-mountain",
@@ -578,8 +595,25 @@
   "trails": 55,
   "lifts": 8,
   "zones": false,
-  "bytes": 351671,
-  "checked": false
+  "bytes": 352399,
+  "checked": true
+ },
+ {
+  "id": "crested-butte-mountain",
+  "name": "Crested Butte Mountain",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 38.88343,
+  "lon": -106.94342,
+  "baseLat": 38.90593,
+  "baseLon": -106.92666,
+  "top": 3688,
+  "base": 2782,
+  "trails": 243,
+  "lifts": 15,
+  "zones": true,
+  "bytes": 1203830,
+  "checked": true
  },
  {
   "id": "crystal-mountain",
@@ -610,10 +644,10 @@
   "top": 1426,
   "base": 824,
   "trails": 63,
-  "lifts": 7,
-  "zones": false,
-  "bytes": 509200,
-  "checked": false,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 1411849,
+  "checked": true,
   "coarse": true
  },
  {
@@ -647,8 +681,8 @@
   "trails": 67,
   "lifts": 11,
   "zones": false,
-  "bytes": 659890,
-  "checked": false
+  "bytes": 660731,
+  "checked": true
  },
  {
   "id": "eldora",
@@ -661,11 +695,28 @@
   "baseLon": -105.59926,
   "top": 3232,
   "base": 2821,
-  "trails": 62,
+  "trails": 61,
   "lifts": 10,
   "zones": false,
-  "bytes": 499771,
-  "checked": false
+  "bytes": 500583,
+  "checked": true
+ },
+ {
+  "id": "fernie-alpine",
+  "name": "Fernie Alpine",
+  "region": "British Columbia, Canada",
+  "tz": "America/Edmonton",
+  "lat": 49.45118,
+  "lon": -115.11908,
+  "baseLat": 49.46516,
+  "baseLon": -115.08703,
+  "top": 2097,
+  "base": 1059,
+  "trails": 133,
+  "lifts": 10,
+  "zones": false,
+  "bytes": 1020919,
+  "checked": true
  },
  {
   "id": "geto-kogen",
@@ -695,11 +746,11 @@
   "baseLon": -73.99222,
   "top": 1091,
   "base": 321,
-  "trails": 112,
+  "trails": 111,
   "lifts": 14,
   "zones": false,
-  "bytes": 916496,
-  "checked": false
+  "bytes": 917726,
+  "checked": true
  },
  {
   "id": "grand-targhee",
@@ -715,8 +766,8 @@
   "trails": 94,
   "lifts": 6,
   "zones": false,
-  "bytes": 783846,
-  "checked": false
+  "bytes": 775427,
+  "checked": true
  },
  {
   "id": "great-divide",
@@ -732,8 +783,8 @@
   "trails": 125,
   "lifts": 6,
   "zones": false,
-  "bytes": 584491,
-  "checked": false
+  "bytes": 585852,
+  "checked": true
  },
  {
   "id": "gunstock-recreation",
@@ -749,8 +800,8 @@
   "trails": 51,
   "lifts": 6,
   "zones": true,
-  "bytes": 427925,
-  "checked": false
+  "bytes": 422701,
+  "checked": true
  },
  {
   "id": "heavenly",
@@ -783,8 +834,8 @@
   "trails": 69,
   "lifts": 13,
   "zones": true,
-  "bytes": 474300,
-  "checked": false
+  "bytes": 475064,
+  "checked": true
  },
  {
   "id": "homewood",
@@ -800,8 +851,8 @@
   "trails": 65,
   "lifts": 7,
   "zones": false,
-  "bytes": 597045,
-  "checked": false
+  "bytes": 598060,
+  "checked": true
  },
  {
   "id": "hunter-mountain",

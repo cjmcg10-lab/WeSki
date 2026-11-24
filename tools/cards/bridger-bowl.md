@@ -1,6 +1,6 @@
 # Bridger Bowl (bridger-bowl)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **72 runs (61 named, 44.8 km), 11 lifts. 2 things to look at.**
 
@@ -13,7 +13,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
 - info: 4 run pieces hidden (not on the resort's list and not a link)  
   (no name) (810030254, 145 m): OpenStreetMap: private; (no name) (809976817, 102 m): unnamed piece, not on the resort's list, not joined to it; (no name) (810027774, 46 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (810027779, 28 m): unnamed piece, not on the resort's list, leads nowhere on it
 - info: audit: no rating: 1, run climbs: 1
-- info: change from the previous build: named 60 -> 61
+- info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   77 on the list, 100 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 11 of 11 on the map

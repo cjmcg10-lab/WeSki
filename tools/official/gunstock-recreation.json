@@ -67,5 +67,8 @@
  "confirm": {
   "Blundersmoke": "terrain park run (orange) under the Pistol lift on the trail map"
  },
- "lifts_source": "Gunstock alpine trail map (skimap.org map 32450): lift names printed on the map; the tubing hill carpet is not a ski lift"
+ "lifts_source": "Gunstock alpine trail map (skimap.org map 32450): lift names printed on the map; the tubing hill carpet is not a ski lift",
+ "lifts_explained": {
+  "EZ Carpet": "small beginner carpet on the trail map; not in OpenStreetMap"
+ }
 }

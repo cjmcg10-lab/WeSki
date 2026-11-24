@@ -1,7 +1,7 @@
 {
  "id": "brighton",
  "reachable": [
-  87,
+  89,
   89
  ],
  "auto_joins": 1,
@@ -20,8 +20,8 @@
  },
  "notes": [],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 147,
  "rebuild_seconds": 26,
- "seconds": 26
+ "seconds": 23
 }

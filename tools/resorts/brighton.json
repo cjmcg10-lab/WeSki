@@ -43,5 +43,15 @@
  "rename": {
   "Devil's Drop": "Devil's Dip",
   "My oh My": "My-O-My"
+ },
+ "links": [
+  [
+   "Milly Express (top)",
+   "trail:Solbright",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Milly Express (top) -> trail:Solbright": "2026-11-24: Sol-Bright leaves from the top of the Milly Express towards Solitude (the trail map draws it from the Milly summit); OpenStreetMap's line starts a few hundred metres west of the lift top"
  }
 }

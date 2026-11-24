@@ -41,13 +41,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "isolated_lifts": [
-  "Schlasman's"
- ],
- "isolated_notes": {
-  "Schlasman's": "rule: not joined to the rest of the lifts on the map"
- },
- "hold": "4 dead-end runs",
  "rename": {
   "Montagne Meadow": "Montagne's Meadow"
  },
@@ -66,12 +59,22 @@
    "Bridger (top)",
    "trail:Upper Sluice Box",
    "hike"
+  ],
+  [
+   "trail:Southbound (bottom)",
+   "Schlasman's (base)"
+  ],
+  [
+   "trail:Southern Drawl (bottom)",
+   "Schlasman's (base)"
   ]
  ],
  "links_notes": {
   "Bridger (top) -> trail:Bridger Gully": "2026-11-23: ridge terrain north of North Bowl, reached on foot from the top of the Bridger lift through the ridge access gate (trail map: Ridge Terrain Access symbol at the Bridger top)",
   "Bridger (top) -> trail:Apron": "2026-11-23: as Bridger Gully: ridge terrain reached on foot from the top of the Bridger lift",
-  "Bridger (top) -> trail:Upper Sluice Box": "2026-11-23: Sluice Box starts on the ridge at the top of the private ski patrol poma; skiers hike up to it from the top of the Bridger lift (Ridge Terrain Access on the trail map)"
+  "Bridger (top) -> trail:Upper Sluice Box": "2026-11-23: Sluice Box starts on the ridge at the top of the private ski patrol poma; skiers hike up to it from the top of the Bridger lift (Ridge Terrain Access on the trail map)",
+  "trail:Southbound (bottom) -> Schlasman's (base)": "2026-11-24: the trail map draws Southbound running down to the Schlasman's base; OpenStreetMap's line stops about 300 m short (the terrain falls 7 m to the base)",
+  "trail:Southern Drawl (bottom) -> Schlasman's (base)": "2026-11-24: the trail map draws Southern Drawl running down to the Schlasman's base; OpenStreetMap's line stops about 370 m short"
  },
  "way_names": {
   "810027784": "Upper Sluice Box"

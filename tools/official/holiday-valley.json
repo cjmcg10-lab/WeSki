@@ -98,5 +98,8 @@
   "School Haus West": "School Haus"
  },
  "same_as_note": "The trail map shows two green School Haus slopes (East and West) side by side; OpenStreetMap maps one School Haus. Wall Top and Wall Bottom are OpenStreetMap pieces of The Wall and take its rating.",
- "lifts_source": "Holiday Valley 2026 winter trail map (skimap.org map 45693): lift names printed on the map; the Ski School Tow in OpenStreetMap is the Slippery Streets Carpet area"
+ "lifts_source": "Holiday Valley 2026 winter trail map (skimap.org map 45693): lift names printed on the map; the Ski School Tow in OpenStreetMap is the Slippery Streets Carpet area",
+ "lifts_explained": {
+  "Slippery Streets Carpet": "beginner carpet on the trail map; OpenStreetMap maps it as 'Ski School Tow'"
+ }
 }
