@@ -59,7 +59,7 @@ try {
   await context.route('**/api/config', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ paywall: false, signIn: true, paddle: null, plans: {} }) }));
   await context.addInitScript(() => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-21', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
     localStorage.setItem('weski:trackNoteOff', 'true');
     const real = window.visualViewport;
     const fake = new EventTarget();
