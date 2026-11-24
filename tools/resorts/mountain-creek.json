@@ -41,14 +41,33 @@
   "1m": 100.0
  },
  "isolated_lifts": [
-  "Bear Peak Express",
-  "South Peak Express",
   "Surface lift"
  ],
  "isolated_notes": {
-  "Bear Peak Express": "rule: not joined to the rest of the lifts on the map",
-  "South Peak Express": "rule: not joined to the rest of the lifts on the map",
   "Surface lift": "rule: not joined to the rest of the lifts on the map"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): South Peak Express, Bear Peak Express"
+ "rename": {
+  "Graden State": "Garden State",
+  "GrandPrix": "Grand Prix",
+  "Sliver Fox": "Silver Fox",
+  "Tail Spin": "Tailspin"
+ },
+ "as_runs": [
+  "80572295",
+  "80572296",
+  "80572316",
+  "80572300",
+  "206006368",
+  "206006374",
+  "206006377",
+  "206006383",
+  "1253121892"
+ ],
+ "as_runs_note": "South Peak's freestyle trails are mapped in OpenStreetMap as snow_park lines; the trail map draws each as a blue trail with park features, and they are the only way down from the South Peak Express",
+ "links": [
+  [
+   "trail:Southern Sojourn (bottom)",
+   "trail:Gorge Run"
+  ]
+ ]
 }
