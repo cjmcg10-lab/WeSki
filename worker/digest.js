@@ -20,6 +20,10 @@ export const MAX_PROBLEMS_PER_MOUNTAIN = 10;
 
 const NAMES = new Map(places.map((p) => [p.id, p.name]));
 export const resortName = (id) => NAMES.get(id) || id;
+/** Only mountains in the app's index can be reported on, so made-up ids cannot fill the daily email. */
+/** At most this many mountains per email; the rest wait for the next day (keeps one run within Cloudflare's limits). */
+export const DIGEST_MAX_MOUNTAINS = 60;
+export const isKnownResort = (id) => NAMES.has(id);
 
 const day = (ms) => new Date(ms).toISOString().slice(0, 10);
 const when = (ms) => new Date(ms).toISOString().slice(0, 16).replace('T', ' ') + ' UTC';
@@ -123,15 +127,21 @@ export async function runDigest(env, log, now = Date.now(), send = sendMail) {
   const cfg = digestConfig(env);
   if (!cfg) return { sent: false, why: 'switched off (no RESEND_API_KEY, MAIL_FROM or REPORT_DIGEST_TO)' };
   const index = log(env, DIGEST_INDEX);
-  const state = await index.digestDue(day(now));
+  // digestDue claims the day in the same call (a Durable Object runs one call at a time), so if Cloudflare fires the
+  // job twice at once, only one run goes on to send
+  const state = await index.digestDue(day(now), now);
   if (state.sentToday) return { sent: false, why: 'already sent today' };
-  if (!state.resorts.length) return { sent: false, why: 'nothing new' };
+  if (state.busy) return { sent: false, why: 'another run is sending' };
+  const unknown = state.resorts.filter((id) => !isKnownResort(id));
+  const known = state.resorts.filter(isKnownResort).slice(0, DIGEST_MAX_MOUNTAINS);
+  if (unknown.length) await index.digestDone(unknown, null, now);
+  if (!known.length) { await index.digestRelease(); return { sent: false, why: 'nothing new' }; }
   const parts = [];
-  for (const id of state.resorts) parts.push({ resort: id, ...(await log(env, id).digestPart(now)) });
+  for (const id of known) parts.push({ resort: id, ...(await log(env, id).digestPart(now)) });
   const mail = buildDigest(parts, now);
-  if (!mail) { await index.digestDone(state.resorts, null, now); return { sent: false, why: 'nothing new' }; }
-  await send(env, cfg, mail, now);
+  if (!mail) { await index.digestDone(known, null, now); await index.digestRelease(); return { sent: false, why: 'nothing new' }; }
+  try { await send(env, cfg, mail, now); } catch (e) { await index.digestRelease(); throw e; }
   for (const p of parts) if (p.reports.length) await log(env, p.resort).digestSent(p.maxId);
-  await index.digestDone(state.resorts, day(now), now);
+  await index.digestDone(known, day(now), now);
   return { sent: true, mountains: parts.filter((p) => p.reports.length).length, reports: parts.reduce((s, p) => s + p.reports.length, 0) };
 }

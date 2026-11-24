@@ -10,7 +10,7 @@ import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
-import { runDigest, DIGEST_INDEX } from './digest.js';
+import { runDigest, DIGEST_INDEX, isKnownResort } from './digest.js';
 
 /** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
 export const DIGEST_CRON = '23 11 * * *';
@@ -144,6 +144,7 @@ async function api(request, env, url, ctx) {
   if (path === '/api/reports' && method === 'POST') {
     const r = cleanReport(await readJson(request, 4000));
     if (r.error) return json({ error: r.error }, 400);
+    if (!isKnownResort(r.report.resort)) return json({ error: 'unknown mountain' }, 400);
     // the install id is stored only as a hash made with the mountain's id, so one phone cannot be followed across mountains
     if (r.report.dev) r.report.dev = (await sha256(`${r.report.resort}:${r.report.dev}`)).slice(0, 16);
     const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request, env));

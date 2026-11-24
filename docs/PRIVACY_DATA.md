@@ -87,10 +87,13 @@ Added 2026-11-24 for the confidence scores (#112), kept on the server and never 
   another, and the id itself is never stored. It is used only to count separate phones per problem.
 - **Distance to the spot.** How far the phone's own GPS fix (under 10 minutes old) was from the reported spot, rounded
   to 10 m. Only the distance is sent, never the phone's position. When no pin is dropped the spot is where the person
-  stands, as before (distance 0).
+  stands, as before (distance 0). Not sent while "Simulated location" is on.
 - **Run number** on that map build, to compare with the map-help counts.
 - Reports older than 60 days no longer count; the scores (`GET /api/reports/<id>/problems`) show counts and reasons only:
   report ids, number of phones, number sent from near the spot, map-help counts of 5 or more.
+- The hashed id and the distance stay with the report row (not published). The distance also appears in the owner's
+  daily email (worker/digest.js), which goes only to the owner's inbox. Reports are accepted only for mountains in
+  the app's index.
 
 ## Offline maps and locked days (on the phone only, 2026-11-23)
 

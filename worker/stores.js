@@ -330,7 +330,9 @@ export class ResortLog extends DurableObject {
   // ---- daily digest (worker/digest.js). On a mountain's object: the reports not yet emailed.
   digestPart(now = Date.now()) {
     const sent = Number(this.kvGet('digestSent') || 0);
-    const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon, should, scale FROM reports WHERE id > ? ORDER BY id', sent)];
+    // the first digest for a mountain sends only the last two days, not every report made before the email existed
+    const since = this.kvGet('digestSent') == null ? now - 2 * 86400e3 : 0;
+    const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon, should, scale FROM reports WHERE id > ? AND at >= ? ORDER BY id', sent, since)];
     const p = this.problems(now);
     return { reports, problems: p.problems, days: p.days, maxId: reports.length ? reports[reports.length - 1].id : sent };
   }
@@ -344,16 +346,21 @@ export class ResortLog extends DurableObject {
     this.sql.exec('INSERT OR REPLACE INTO digest_due VALUES (?, ?)', resort, at);
   }
 
-  digestDue(today) {
-    return {
-      sentToday: this.kvGet('lastDigestDay') === today,
-      resorts: [...this.sql.exec('SELECT resort FROM digest_due ORDER BY resort')].map((r) => r.resort),
-    };
+  digestDue(today, now = Date.now()) {
+    if (this.kvGet('lastDigestDay') === today) return { sentToday: true, resorts: [] };
+    // a claim younger than 10 minutes means another run is sending right now
+    const claim = Number(this.kvGet('digestClaim') || 0);
+    if (claim && now - claim < 600000) return { sentToday: false, busy: true, resorts: [] };
+    this.kvSet('digestClaim', now);
+    return { sentToday: false, resorts: [...this.sql.exec('SELECT resort FROM digest_due ORDER BY at')].map((r) => r.resort) };
   }
+
+  digestRelease() { this.kvSet('digestClaim', 0); }
 
   /** Clears the mountains just handled (only reports noted before `before`), and records the day when one was sent. */
   digestDone(resorts, sentDay, before) {
     for (const r of resorts) this.sql.exec('DELETE FROM digest_due WHERE resort = ? AND at <= ?', r, before);
     if (sentDay) this.kvSet('lastDigestDay', sentDay);
+    this.kvSet('digestClaim', 0);
   }
 }

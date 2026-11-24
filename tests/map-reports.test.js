@@ -1,7 +1,7 @@
 // Map-mistake reports: confidence scores and the daily email (issue #112, steps 1 and 2). No real email is sent here.
 import { describe, it, expect } from 'vitest';
 import { CONFIDENCE, scoreProblems, groupReports, ageWeight, offRunNear, thingKeys, ratingVotes, votesText } from '../worker/confidence.js';
-import { buildDigest, sendMail, runDigest, digestConfig, DIGEST_INDEX, appLink, RESEND_URL } from '../worker/digest.js';
+import { isKnownResort, buildDigest, sendMail, runDigest, digestConfig, DIGEST_INDEX, appLink, RESEND_URL } from '../worker/digest.js';
 import { cleanReport, publicTotals } from '../worker/evidence.js';
 
 const DAY = 86400e3;
@@ -253,8 +253,15 @@ describe('daily digest job', () => {
     const state = { due: new Map([['stowe', NOW - DAY]]), lastDay: null, sent: { stowe: 0 }, reports: { stowe: part() } };
     function part() { return [rep({ id: 1, dev: 'a' }), rep({ id: 2, dev: 'b' })]; }
     const index = {
-      digestDue: async (today) => ({ sentToday: state.lastDay === today, resorts: [...state.due.keys()] }),
-      digestDone: async (resorts, day, before) => { for (const r of resorts) if (state.due.get(r) <= before) state.due.delete(r); if (day) state.lastDay = day; },
+      // same rules as ResortLog.digestDue: a claim younger than 10 minutes means another run is sending
+      digestDue: async (today, now) => {
+        if (state.lastDay === today) return { sentToday: true, resorts: [] };
+        if (state.claim && now - state.claim < 600000) return { sentToday: false, busy: true, resorts: [] };
+        state.claim = now;
+        return { sentToday: false, resorts: [...state.due.keys()] };
+      },
+      digestRelease: async () => { state.claim = 0; },
+      digestDone: async (resorts, day, before) => { for (const r of resorts) if (state.due.get(r) <= before) state.due.delete(r); if (day) state.lastDay = day; state.claim = 0; },
     };
     const mountain = (id) => ({
       digestPart: async (now) => {
@@ -307,6 +314,32 @@ describe('daily digest job', () => {
     expect(state.sent.stowe).toBe(0);
     expect(state.due.size).toBe(1);
     expect(state.lastDay).toBeNull();
+    expect(state.claim).toBe(0);             // the next run may try again
+  });
+
+  it('two runs at the same moment send one email', async () => {
+    const { env, state, log } = fakeEnv();
+    const sent = [];
+    let release;
+    const slow = (_e, _c, mail) => new Promise((ok) => { sent.push(mail); release = ok; });
+    const first = runDigest(env, log, NOW, slow);
+    await new Promise((r) => setTimeout(r, 0));
+    expect((await runDigest(env, log, NOW + 1000, slow)).why).toBe('another run is sending');
+    release();
+    expect((await first).sent).toBe(true);
+    expect(sent).toHaveLength(1);
+    expect(state.lastDay).not.toBeNull();
+  });
+
+  it('ignores mountains that are not in the app', async () => {
+    const { env, state, log } = fakeEnv();
+    state.due = new Map([['no-such-mountain', NOW - DAY]]);
+    const sent = [];
+    expect((await runDigest(env, log, NOW, async (...a) => sent.push(a))).why).toBe('nothing new');
+    expect(sent).toHaveLength(0);
+    expect(state.due.size).toBe(0);
+    expect(isKnownResort('stowe')).toBe(true);
+    expect(isKnownResort('no-such-mountain')).toBe(false);
   });
 });
 

@@ -2091,7 +2091,8 @@ function reportExtras(p, on) {
   }
   const out = { dev };
   const me = S.me;
-  if (me && me.inBounds && Number.isFinite(me.x) && Date.now() - (me.t || 0) < 600000) out.near = Math.round(Math.hypot(me.x - p.x, me.y - p.y) / 10) * 10;
+  // a simulated position (Appearance & advanced) says nothing about where the reporter is
+  if (me && !S.testMode && me.inBounds && Number.isFinite(me.x) && Date.now() - (me.t || 0) < 600000) out.near = Math.round(Math.hypot(me.x - p.x, me.y - p.y) / 10) * 10;
   if (on && Number.isInteger(on.t.id)) out.run = on.t.id;
   try { const [lat, lon] = S.geo.toLatLon(p.x, p.y); if (Number.isFinite(lat) && Number.isFinite(lon)) Object.assign(out, { lat, lon }); } catch { /* no projection */ }
   return out;
@@ -2104,7 +2105,7 @@ const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'Thi
 function reportTarget(p) {
   const on = trailAt(S.resort, p.x, p.y);
   const lift = nearestLift(S.resort, p.x, p.y, 25);
-  if (lift && (!on || lift.d < on.d)) return { lift, ref: `lift:${lift.osm || lift.name}`, name: lift.name };
+  if (lift && (!on || lift.d < (on.edge ?? on.d))) return { lift, ref: `lift:${lift.osm || lift.name}`, name: lift.name };
   if (on) return { on, ref: on.t.osm ? String(on.t.osm) : '', name: on.t.name || '' };
   return { ref: '', name: '' };
 }
