@@ -49,7 +49,7 @@ try {
   await page.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   page.on('pageerror', (e) => problems.push(`page error: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error' && !(m.location().url && isIgnorable(m.location().url))) problems.push(`console.error: ${m.text()}`); });
-  await context.addInitScript(() => { localStorage.setItem('weski:installSeen', 'true'); localStorage.setItem('weski:simFree', 'true'); });
+  await context.addInitScript(() => { localStorage.setItem('weski:installSeen', 'true'); sessionStorage.setItem('weski:simFree', '1'); });
 
   await page.goto(ORIGIN);
   // three saved days at Jay Peak: today, three days ago, last month
@@ -144,6 +144,14 @@ try {
   await page.locator('#sheet [data-act="open-sheet"][data-s="pass"]').click();
   await page.locator('#sheet', { hasText: 'Download mountains for offline use' }).waitFor({ state: 'visible', timeout: 10000 });
   await shot('pass-sheet');
+
+  // the simulation is never silent: a marker in the header and a Turn off button in the pass sheet, which end it
+  if (!(await page.locator('#free-pill.sim').count())) throw new Error('the header should show "Free tier simulation" while it is on');
+  await page.locator('#sheet .sim-note [data-act="simfree-off"]').click();
+  await page.locator('#sheet .sim-note').waitFor({ state: 'detached', timeout: 5000 });
+  if (!(await page.locator('#free-pill.hidden').count())) throw new Error('the header marker should go when the simulation is turned off');
+  const left = await page.locator('.pass-badge').evaluateAll((els) => els.map((e) => (e.closest('[id]')?.id || '?') + ': ' + (e.parentElement?.textContent || '').slice(0, 60)));
+  if (left.length) throw new Error(left.join(' | ') + ' : Pass badges should go once the simulation is off (the paywall is off in this build)');
 } catch (e) {
   problems.push(`free-tier smoke test stopped: ${e.message}`);
   if (page) await page.screenshot({ path: `${SHOT_DIR}/failure.png` }).catch(() => {});

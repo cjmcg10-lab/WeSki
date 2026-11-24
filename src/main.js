@@ -62,6 +62,8 @@ screen.orientation?.lock?.('portrait').catch(() => {});
 fitScreen();
 window.addEventListener('resize', fitScreen);
 window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));
+// kept for this visit only (a reload keeps it, closing the app ends it)
+function simFreeSaved() { try { return sessionStorage.getItem('weski:simFree') === '1'; } catch { return false; } }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const STALE_S = 120;          // a friend's location older than this is "stale"
 const PALETTE = ['#ff3b30', '#ff9f0a', '#ffd60a', '#34c759', '#00c7be', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff2d92', '#8e6e53'];
@@ -80,7 +82,7 @@ const S = {
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
-  simFree: prefs.get('simFree', false),
+  simFree: simFreeSaved(),   // "Simulate free tier": lasts until the app is closed, so a pass never stays hidden by mistake
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
   smooth: prefs.get('smoothEdges', null),   // antialiasing: null = the default (on)
@@ -286,8 +288,18 @@ async function needRouter(kind) {
 }
 
 /** After signing in or out, or buying: ask the server again and reload what the pass unlocks. */
+function setSimFree(on) {
+  S.simFree = !!on; acct.setSimFree(S.simFree);
+  try { if (S.simFree) sessionStorage.setItem('weski:simFree', '1'); else sessionStorage.removeItem('weski:simFree'); } catch { /* private mode */ }
+  if (S.simFree && S.nav && !['meet', 'friend'].includes(S.nav.target.type)) endNav();
+  const rc = $('#resort-card'), rp = rc?.dataset.id && placeById(rc.dataset.id);
+  if (rp) rc.innerHTML = resortCard(rp);   // its Download button carries the Pass badge
+  renderChrome(); renderAcctChip(); renderSheet();
+}
+
 async function afterPassChange() {
   await acct.refreshMe();
+  if (S.simFree && acct.account()?.pass?.active) setSimFree(false);   // a pass just bought or redeemed is never hidden
   if (S.resort && (!S.router || !acct.hasPass())) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.nav && !S.router) endNav();
 }
@@ -343,6 +355,7 @@ function showConsent() {
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   if (!consentOk()) { hideSplash(); await showConsent(); }
+  prefs.set('simFree', false);   // older versions kept the simulation on between launches
   acct.setSimFree(S.simFree);
   const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); tidyMaps(); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
@@ -1609,6 +1622,8 @@ function renderChrome() {
   else if (S.me && Date.now() - S.me.t < 20000) { gp.textContent = S.lift ? '● On lift' : S.tracker ? ['● Tracking', '● Skiing', '● On lift'][S.tracker.state] : `GPS ±${Math.round(S.me.acc)} m`; gp.className = 'pill ok'; }
   else if (S.loc?.active) { gp.textContent = 'Finding GPS…'; gp.className = 'pill warn'; }
   else { gp.textContent = 'GPS off'; gp.className = 'pill hidden'; }
+  const fp = $('#free-pill');
+  if (fp) { fp.innerHTML = S.simFree ? ICON.ticket + esc(t('Free tier simulation')) : ''; fp.className = S.simFree ? 'pill sim' : 'pill hidden'; }
   const g = $('#group-pill');
   if (S.group) {
     const n = S.group.state?.members.length || 1;
@@ -2062,6 +2077,8 @@ async function buyPlan(plan) {
   catch (err) { toast(err.message); }
 }
 
+const simNote = () => (acct.simulatingFree() ? `<div class="sim-note"><p class="sub">${esc(t('Free tier simulation is on, so this phone acts as if it had no pass. Your pass is not affected.'))}</p><button class="btn alt" data-act="simfree-off">${esc(t('Turn off'))}</button></div>` : '');
+
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
   const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: t('Your saved ski days, stats and replays open with the SkiWithMe Pass, including days recorded before you buy it.'), forecast: t('The full ski forecast is part of the SkiWithMe Pass. Today and tomorrow at one mountain stay free.'), offline: t('Downloading mountains for offline use is part of the SkiWithMe Pass. The map you open stays on your phone that day, free.') }[why];
@@ -2086,6 +2103,7 @@ function sheetPass(why) {
       <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
+  who = simNote() + who;
   const canBuy = !!c.paddle;
   const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">$${p.price.toFixed(2)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
     ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div></div>`).join('');
@@ -2716,10 +2734,8 @@ function onInput(e) {
   else if (t.id === 'f-smooth' && e.type === 'change') { S.smooth = t.checked; prefs.set('smoothEdges', S.smooth); toast('Applies the next time you open a mountain.'); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
   else if (t.id === 'f-simfree' && e.type === 'change') {
-    S.simFree = t.checked; prefs.set('simFree', S.simFree); acct.setSimFree(S.simFree);
-    if (S.simFree && S.nav && !['meet', 'friend'].includes(S.nav.target.type)) endNav();
-    toast(S.simFree ? 'Free tier simulation on: paid features now show the pass pop-up.' : 'Free tier simulation off.');
-    renderChrome(); renderSheet();
+    setSimFree(t.checked);
+    toast(S.simFree ? t('Free tier simulation on until you close the app: paid features now show the pass pop-up.') : 'Free tier simulation off.');
   } else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -2814,6 +2830,9 @@ async function onClick(e) {
       if (S.sheet === 'privacy') renderSheet();
       break;
     }
+    case 'simfree-off':
+      setSimFree(false); toast('Free tier simulation off.');
+      break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();

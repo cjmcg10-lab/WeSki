@@ -616,4 +616,8 @@ export default {
   1613: "Aggiungi anche la mia segnalazione",
   1614: "Già segnalato, grazie",
   1615: "Grazie. È già nella nostra lista.",
+  1616: "Simulazione versione gratuita",
+  1617: "La simulazione della versione gratuita è attiva: questo telefono si comporta come se non avesse il pass. Il tuo pass non cambia.",
+  1618: "Disattiva",
+  1619: "Simulazione della versione gratuita attiva finché non chiudi l’app: le funzioni a pagamento ora mostrano la finestra del pass.",
 };
