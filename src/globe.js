@@ -178,8 +178,7 @@ export class Globe {
     lines(['states'], '#12303f', 0.35);
     lines(['borders', 'hiBorders'], '#12303f', 0.6);
     lines(['coast', 'hiCoast'], '#ffffff', 1);
-    // soft atmosphere rim
-    this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
+    // (no atmosphere rim: its haze broke up the mountains as they came round the edge)
     // Each resort is a little snow-capped peak standing on the globe; its height shows the vertical drop.
     // Mountains with a map are teal; mountains not added yet (coming soon, and the Forecast-only ones) are muted slate.
     this.pins = resorts.filter((rs) => rs.available).map((rs) => ({ rs, at: ll(rs.lat, rs.lon, 1), h: peakHeight(dropOf(rs)), visible: true }));
