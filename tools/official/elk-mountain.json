@@ -1,0 +1,48 @@
+{
+ "source": "Elk Mountain trail map, skimap.org map 20069 (printed trail list), read by hand; lift names from OpenStreetMap, letters A-G as printed on the map",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Beginner's Slope": 0,
+  "Chippewa": 3,
+  "Delaware": 1,
+  "Delaware Chute": 1,
+  "East Slope": 0,
+  "Hiawatha": 0,
+  "Iroquois": 2,
+  "Kickapoo": 1,
+  "Lackawanna": 2,
+  "Lackawanna Spur": 1,
+  "Lehigh": 0,
+  "Lenape": 1,
+  "Lower Tunkhannock": 1,
+  "Mahican": 1,
+  "Mohawk": 2,
+  "Schuylkill": 1,
+  "Seneca": 2,
+  "Slalom": 2,
+  "Snow Bowl": 1,
+  "Susquehanna": 2,
+  "Tecumseh": 3,
+  "Tioga": 0,
+  "Tioga Spur": 1,
+  "Tunkhannock": 3,
+  "Tuscarora": 2,
+  "West Slope": 0,
+  "Wissahickon": 1,
+  "Wyalusing": 3
+ },
+ "blue_black": [],
+ "lifts": [
+  "Lift A Beginner's Chair",
+  "Lift B East Chair",
+  "Lift C East Chair",
+  "Lift D Middle Chair",
+  "Lift E North Chair",
+  "Lift F North Chair",
+  "Lift G Cable Tow"
+ ],
+ "confirm": {
+  "Stomping Grounds Terrain Park": "terrain park drawn on the resort's trail map (orange hatching), no trail rating",
+  "Little Foot Terrain Park": "progression park drawn on the resort's trail map (orange hatching), no trail rating"
+ }
+}
