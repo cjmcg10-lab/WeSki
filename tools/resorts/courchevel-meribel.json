@@ -8,6 +8,8 @@
   23454752,
   23454755,
   23454756,
+  23454759,
+  23454947,
   23455192,
   23455193,
   23455194,
@@ -23,6 +25,7 @@
   24803960,
   24803963,
   24896385,
+  24896388,
   24896392,
   24897257,
   24897260,
@@ -51,9 +54,12 @@
   33445807,
   37718800,
   43859682,
+  46723629,
   46735745,
   47266027,
+  73408772,
   73410826,
+  92449426,
   94157939,
   98031316,
   98135553,
@@ -67,6 +73,8 @@
   103061555,
   103076326,
   103077907,
+  105214518,
+  105214520,
   105224952,
   107110280,
   107110291,
@@ -78,6 +86,7 @@
   141822393,
   141845204,
   141917124,
+  141929037,
   143740341,
   220924376,
   231938918,
@@ -89,6 +98,7 @@
   329191816,
   340073298,
   397352041,
+  561378567,
   614806445,
   614815758,
   655035712,
@@ -98,6 +108,7 @@
   720876409,
   720876410,
   1028640559,
+  1028752061,
   1030749604,
   1049443522,
   1049443523,
@@ -106,7 +117,9 @@
   1231054490,
   1231054491,
   1315599743,
+  1387750589,
   1437086012,
+  1468545130,
   1469595888,
   1512540587
  ],
@@ -142,18 +155,16 @@
   "Olympe 1"
  ],
  "isolated_lifts": [
-  "Bouquetin",
-  "Côte Brune",
-  "Magic carpet",
-  "Roc de Tougne",
-  "Tougnète 2"
+  "Magic carpet"
  ],
  "isolated_notes": {
-  "Bouquetin": "rule: not joined to the rest of the lifts on the map",
-  "Côte Brune": "rule: not joined to the rest of the lifts on the map",
-  "Magic carpet": "rule: not joined to the rest of the lifts on the map",
-  "Roc de Tougne": "rule: not joined to the rest of the lifts on the map",
-  "Tougnète 2": "rule: not joined to the rest of the lifts on the map"
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Roc de Tougne, Tougnète 2, Bouquetin, Côte Brune"
+ "way_names": {
+  "23454947": "Lac de la Chambre Bleue",
+  "561378567": "Lac de la Chambre Rouge"
+ },
+ "link_note": "2026-11-24: the Méribel runs from the tops of Roc de Tougne, Tougnète 2, Bouquetin and Côte Brune (Bartavelle, Dahu, Combe de Tougnète, Mouflon, Alouette, Venturon, Lac de la Chambre) are tagged in OpenStreetMap but were outside the OpenSkiMap area, so those chairs had no runs; their way ids are added to include_ways. Lac de la Chambre is two OSM ways, the resort's blue and red variants (way_names). The upper parts of Crêtes, Jérusalem, Blaireau and Faon from the Tougnète ridge (ways 92449426, 1387750589, 24896388, 1028752061, 105214518) are on the resort's list but sit beside the Saint Martin Express (a Les Menuires lift), so the search skipped them; added too.",
+ "_lifts": [],
+ "_lifts_note": "2026-11-24: the whole-resort search (tools/extent.py) is told not to use the official lift list. Every lift of this map is already in include_ways by OpenStreetMap id. With the list, loose name matches (Doron, Granges, Stade, Biollay~Biolley, Roc Merlet~Roc 1) made 64% of the Les 3 Vallées outline's lifts count as ours, so the search took the outline as this resort's and pulled in Les Menuires and Saint-Martin (40 more lifts). Remove this once extent.py matches lift names exactly."
 }

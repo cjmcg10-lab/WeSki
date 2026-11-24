@@ -1,0 +1,20 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Roches Grises": "Courchevel freeride area once served by the Creux Noirs chair, demolished in 2019 and not replaced (OSM comment; the build leaves the lift out); now the ungroomed Freeride Lab, reached on foot or off-piste",
+  "Freeride Lab": "same as Roches Grises: the Creux Noirs chair that served it was demolished in 2019"
+ },
+ "dead_end": {
+  "Verdet": "runs down to Saint-Martin-de-Belleville, where the lifts back up (Saint Martin 1 and Express) belong to Les Menuires, which is not part of this map",
+  "Jérusalem": "runs down to Saint-Martin-de-Belleville, where the lifts back up (Saint Martin 1 and Express) belong to Les Menuires, which is not part of this map",
+  "Cherferie": "runs down to Saint-Martin-de-Belleville, where the lifts back up (Saint Martin 1 and Express) belong to Les Menuires, which is not part of this map",
+  "Saint-Bon": "run down to the village of Saint-Bon below Courchevel, which has no lift back up (road access only)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Stade Courchevel 1850 ~ Stade de Slalom Emile Allais": "OpenStreetMap maps Courchevel 1850's race stadium twice under two names; neither is on the resort's run list and both are shown only as the stadium"
+ }
+}
