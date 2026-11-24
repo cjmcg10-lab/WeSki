@@ -82,5 +82,18 @@
  ],
  "isolated_notes": {
   "Übungslift Mathon": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "80-41": "Neue rote Piste (80-41)",
+  "Übungspisten Samnaun - Dorf": "Übungspisten Samnaun Dorf - Musella",
+  "Palinkopf - Palinkopfbahn valley": "22",
+  "Samnaun valley – valley station Ravaisch": "Samnaun Dorf – Talstation Ravaisch"
+ },
+ "dead_end_notes": {
+  "Skiweg Laret-West": "Samnaun Laret: a hamlet at the bottom of runs 60 and 61 with no lift of its own; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts",
+  "60 Alp Trida-Samnaun Laret": "Samnaun Laret: a hamlet at the bottom of runs 60 and 61 with no lift of its own; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts",
+  "61": "Samnaun Laret: a hamlet at the bottom of runs 60 and 61 with no lift of its own; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts",
+  "(unnamed run 301)": "Samnaun Laret: a hamlet at the bottom of runs 60 and 61 with no lift of its own; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts",
+  "Skiweg Compatsch": "Samnaun Laret: a hamlet at the bottom of runs 60 and 61 with no lift of its own; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts"
  }
 }
