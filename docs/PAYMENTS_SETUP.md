@@ -197,7 +197,8 @@ Do these once Part C is done. Claude builds the app side at the same time.
 - Group display name (localization): "SkiWithMe Pass".
 
 **D4. Links Apple requires for yearly subscriptions.**
-- Do: App Store Connect → SkiWithMe → App Information → **Privacy Policy URL**:
+- Do: App Store Connect → SkiWithMe → **App Privacy** (left sidebar, under General) → Privacy Policy → Edit →
+  **Privacy Policy URL**:
   `https://skiwithme.builtbyroger.app/legal/privacy`. In the app's version page, put the terms link in the
   description: "Terms of use: https://skiwithme.builtbyroger.app/legal/terms".
 
