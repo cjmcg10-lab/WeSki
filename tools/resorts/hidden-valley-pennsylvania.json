@@ -35,5 +35,11 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {},
+ "way_names": {
+  "391691632": "Upper Comet",
+  "391691633": "Lower Comet",
+  "1223674706": "Lower Comet"
  }
 }
