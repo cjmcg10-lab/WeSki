@@ -104,6 +104,21 @@ Added 2026-11-24 for the confidence scores (#112), kept on the server and never 
   daily email (worker/digest.js), which goes only to the owner's inbox. Reports are accepted only for mountains in
   the app's index.
 
+Added 2026-11-24 for the phone side of #112 (step 5); nothing new about the person is sent:
+- **Replies** "This spot is fine" and "It's been fixed, thanks" (kinds `fine`, `fixed`) are reports like the others,
+  with one more field, `about` (the kind of problem they answer), and with *less* than a report: no note and no run
+  number. They carry the install id (required: each phone counts once), the distance to the spot (not while
+  "Simulated location" is on), the place and the run or lift at it. They are listed in `GET /api/reports/<id>` like
+  any report.
+- The problem list now also says, per problem, how many skiers reported it (`people`: phones plus older reports
+  without an id), what it is about (`keys`: the OSM ids and names already public in the report list), the radius of
+  a problem about a spot, and how many phones replied. Still nothing that identifies a phone.
+- **On the phone only, never sent:** `myReports` and `myReplies` in local storage, the last 40 reports and replies this
+  phone sent at that mountain (kind, place, run or lift, time; 60 days), so the phone does not count itself as
+  "another skier" and does not ask the same person twice.
+- Map help is unchanged. Issue #112 also proposed sending short simplified lines of the off-run squares; that was
+  **not** built: the off-run squares already sent are enough.
+
 ## Offline maps and locked days (on the phone only, 2026-11-23)
 
 Two small lists in the phone's settings, never sent: `openedMaps` {mountain id: local date it was opened today} and

@@ -18,6 +18,10 @@ export const MAX_ON_CELLS = 20000;
 // Per-day totals ("how much of the skiing was on the drawn runs") are kept for this many days.
 export const DAILY_KEEP = 400;
 export const REPORT_KINDS = ['missing', 'not_real', 'wrong_rating', 'wrong_place', 'closed_for_good', 'wrong_name', 'no_connection', 'other'];
+// Replies to a known problem (#112, step 5): "This spot is fine" and "It's been fixed, thanks". Each carries `about`,
+// the kind of problem it answers, and lowers that problem's confidence (worker/confidence.js). A reply is never a
+// problem of its own and carries no note, rating or run number: only what is needed to find its problem.
+export const COUNTER_KINDS = ['fine', 'fixed'];
 // "It should be:" on a wrong-rating report. 'us': the four North American levels (resort.json `d`); 'colour': the
 // European and Japanese piste colours (resort.json `c`). The phone says which scale its resort uses.
 export const RATING_SCALES = {
@@ -103,10 +107,14 @@ const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f<>]/g, ' ').repla
 export function cleanReport(b, now = Date.now()) {
   if (!b || typeof b !== 'object') return { error: 'bad body' };
   if (!RESORT_RE.test(b.resort || '')) return { error: 'bad resort' };
-  if (!REPORT_KINDS.includes(b.kind)) return { error: 'bad kind' };
+  // a reply to a known problem ("fine", "fixed") must say which kind of problem it answers; nothing else may carry `about`
+  const counter = COUNTER_KINDS.includes(b.kind);
+  if (!counter && !REPORT_KINDS.includes(b.kind)) return { error: 'bad kind' };
+  if (counter ? !REPORT_KINDS.includes(b.about) : b.about != null) return { error: 'bad about' };
   const x = Math.round(Number(b.x)), y = Math.round(Number(b.y));
   if (!isInt(x, -100000, 100000) || !isInt(y, -100000, 100000)) return { error: 'bad place' };
-  const text = clean(b.text, 500);
+  // a reply has no note (it is one tap) and no run number (it is matched to its problem by the OSM id, name or spot)
+  const text = counter ? '' : clean(b.text, 500);
   // leave out anything that looks like an email address or phone number: reports are public
   const safe = text.replace(/[^\s@]+@[^\s@]+/g, '[removed]').replace(/\+?\d[\d\s().-]{7,}\d/g, '[removed]');
   // Optional, sent by newer phones (#112). None of these is published in the report list:
@@ -116,8 +124,10 @@ export function cleanReport(b, now = Date.now()) {
   // ref: the run's OpenStreetMap way id, or "lift:<OSM id or name>" for a lift (not the run number, which changes
   // between map builds); worker/confidence.js groups reports about one run or lift by it.
   const dev = /^[0-9a-f]{32}$/.test(b.dev || '') ? b.dev : '';
+  // a reply must come with an install id: it counts once per phone, so one person cannot cancel several reports
+  if (counter && !dev) return { error: 'bad dev' };
   const near = Math.round(Number(b.near));
-  const run = Number(b.run);
+  const run = counter ? NaN : Number(b.run);
   const lat = Number(b.lat), lon = Number(b.lon);
   // should + scale: the rating a wrong-rating report says the run should have. Required for that kind from newer
   // phones; older phones sent none, so a wrong-rating report without it is still taken (should stays null).
@@ -134,7 +144,7 @@ export function cleanReport(b, now = Date.now()) {
       resort: b.resort, kind: b.kind, x, y, ref: clean(b.ref, 60), name: clean(b.name, 80), text: safe, at: now,
       dev, near: b.near != null && isInt(near, 0, 100000) ? near : null, run: b.run != null && isInt(run, 0, 100000) ? run : null,
       lat: placed ? Math.round(lat * 1e5) / 1e5 : null, lon: placed ? Math.round(lon * 1e5) / 1e5 : null,
-      should, scale,
+      should, scale, about: counter ? b.about : null,
     },
   };
 }

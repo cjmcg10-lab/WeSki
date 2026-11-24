@@ -24,7 +24,8 @@ SERVER = "https://skiwithme.builtbyroger.app"
 MARKER = os.path.join(ROOT, "tools", ".reports_seen.json")
 KINDS = {"missing": "Run or lift missing", "not_real": "Not real / does not exist", "wrong_rating": "Wrong rating",
          "wrong_place": "In the wrong place", "closed_for_good": "Closed for good", "wrong_name": "Wrong name",
-         "no_connection": "Runs or lifts do not connect", "other": "Other"}
+         "no_connection": "Runs or lifts do not connect", "other": "Other",
+         "fine": "Reply: this spot is fine", "fixed": "Reply: it has been fixed"}
 
 
 # ---------------------------------------------------------------- pure helpers (tested in tools/test_reports.py)
@@ -132,7 +133,8 @@ def find_feature(resort, ref, x=None, y=None, reach=60):
 def describe(report, resort=None):
     """One report -> dict of plain fields for printing."""
     out = {"id": report.get("id"), "when": fmt_time(report.get("at") or 0),
-           "kind": KINDS.get(report.get("kind"), report.get("kind") or "?"), "note": report.get("text") or "",
+           "kind": KINDS.get(report.get("kind"), report.get("kind") or "?") + (f" (about: {KINDS.get(report['about'], report['about'])})" if report.get("about") else ""),
+           "note": report.get("text") or "",
            "status": report.get("status") or "open", "what": report.get("name") or "", "link": None}
     if resort:
         x, y = report.get("x"), report.get("y")

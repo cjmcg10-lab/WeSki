@@ -369,3 +369,126 @@ describe('daily email schedule', () => {
     }
   });
 });
+
+describe('replies to a known problem: "this spot is fine" and "it\'s been fixed" (#112, step 5)', () => {
+  const D = (c) => c.repeat(32);
+  const reply = (o) => rep({ kind: 'fine', about: 'not_real', ref: '300000001', name: 'Lower Lord', at: NOW, dev: 'z', ...o });
+  const problem = (n, o = {}) => Array.from({ length: n }, (_, i) => rep({ kind: 'not_real', ref: '300000001', name: 'Lower Lord', dev: 'p' + i, ...o }));
+
+  it('the server takes a reply only with the kind of problem it answers and an install id, and keeps no note or run', () => {
+    const base = { resort: 'stowe', kind: 'fine', about: 'wrong_rating', x: 1, y: 2, dev: D('a') };
+    expect(cleanReport(base).report).toMatchObject({ kind: 'fine', about: 'wrong_rating', dev: D('a') });
+    expect(cleanReport({ ...base, kind: 'fixed', text: 'call me 555 123 4567', run: 7, should: 2 }).report).toMatchObject({ text: '', run: null, should: null, about: 'wrong_rating' });
+    expect(cleanReport({ ...base, about: undefined }).error).toBe('bad about');
+    expect(cleanReport({ ...base, about: 'fine' }).error).toBe('bad about');      // a reply cannot answer a reply
+    expect(cleanReport({ ...base, about: 'made_up' }).error).toBe('bad about');
+    expect(cleanReport({ ...base, dev: '' }).error).toBe('bad dev');              // counted per phone, so an id is needed
+    expect(cleanReport({ ...base, kind: 'missing' }).error).toBe('bad about');    // only replies carry `about`
+    expect(cleanReport({ ...base, kind: 'missing', about: null }).report.about).toBeNull();
+    expect(cleanReport({ ...base, kind: 'nice' }).error).toBe('bad kind');
+  });
+
+  it('lowers the confidence of the problem it answers, and is never a problem itself', () => {
+    const before = scoreProblems(problem(3), null, NOW)[0];
+    const list = scoreProblems([...problem(3), reply({ dev: 'z1' }), reply({ dev: 'z2', kind: 'fixed' })], null, NOW);
+    expect(list).toHaveLength(1);
+    const after = list[0];
+    expect(after.score).toBeCloseTo(before.score - 2, 1);
+    expect(after.parts.replies).toBe(-2);
+    expect(after.replies).toMatchObject({ fine: 1, fixed: 1 });
+    expect(after.why.join(' ')).toContain('1 phone says the spot is fine, 1 phone says it has been fixed (-2)');
+    expect(scoreProblems([reply({})], null, NOW)).toEqual([]);                // a reply with no problem is not listed
+  });
+
+  it('counts each phone once, so one person cannot cancel several reports', () => {
+    const many = [1, 2, 3, 4, 5].map((i) => reply({ at: NOW - i * 1000 }));      // one phone, five taps
+    const p = scoreProblems([...problem(3), ...many], null, NOW)[0];
+    expect(p.parts.replies).toBe(-1);
+    expect(p.score).toBeGreaterThan(1);
+    // from the spot it counts like a report from the spot (1.5), still once
+    expect(scoreProblems([...problem(3), reply({ near: 20 })], null, NOW)[0].parts.replies).toBe(-CONFIDENCE.nearFactor);
+  });
+
+  it('fades like a report, and only answers the same kind and the same run, or a spot problem nearby', () => {
+    const old = scoreProblems([...problem(2), reply({ at: NOW - 30 * DAY })], null, NOW)[0];
+    expect(old.parts.replies).toBeCloseTo(-0.5, 2);
+    const other = scoreProblems([...problem(2), reply({ about: 'wrong_rating' }), reply({ ref: '300000099', name: 'Upper Lord', dev: 'y' })], null, NOW)[0];
+    expect(other.parts.replies).toBe(0);
+    const spot = [rep({ kind: 'missing', x: 0, y: 0, dev: 'a' }), rep({ kind: 'missing', x: 30, y: 0, dev: 'b' })];
+    expect(scoreProblems([...spot, reply({ about: 'missing', ref: '', name: '', x: 100, y: 0 })], null, NOW)[0].parts.replies).toBe(-1);
+    expect(scoreProblems([...spot, reply({ about: 'missing', ref: '', name: '', x: 900, y: 0 })], null, NOW)[0].parts.replies).toBe(0);
+  });
+
+  it('a phone that replies after its own report has changed its mind: its report stops counting', () => {
+    const p = scoreProblems([rep({ kind: 'not_real', ref: '300000001', dev: 'a', at: NOW - DAY }), ...problem(2), reply({ dev: 'a' })], null, NOW)[0];
+    expect(p.phones).toBe(2);
+    // ...but a report newer than the same phone's reply wins over it
+    const q = scoreProblems([reply({ dev: 'a', at: NOW - DAY }), rep({ kind: 'not_real', ref: '300000001', dev: 'a', at: NOW })], null, NOW)[0];
+    expect(q).toMatchObject({ phones: 1, parts: { replies: 0 } });
+  });
+
+  it('the public problem list says how many skiers reported it and what it is about, never which phone', () => {
+    const p = scoreProblems([...problem(2), rep({ kind: 'not_real', ref: '300000001', dev: null })], null, NOW)[0];
+    expect(p).toMatchObject({ people: 3, radius: null });
+    expect(p.keys).toEqual(expect.arrayContaining(['osm:300000001', 'name:lower lord']));
+    expect(JSON.stringify(p)).not.toMatch(/"p0"|"p1"/);
+    const s = scoreProblems([rep({ kind: 'missing', dev: 'a' })], null, NOW)[0];
+    expect(s).toMatchObject({ by: 'spot', radius: CONFIDENCE.missingM, keys: [] });
+  });
+
+  it('the daily email shows a reply with the problem it answers', () => {
+    const reports = [...problem(2).map((r, i) => ({ ...r, id: 900 + i })), reply({ id: 950, dev: 'z' })];
+    const mail = buildDigest([{ resort: 'stowe', reports, problems: scoreProblems(reports, null, NOW), days: 0, maxId: 950 }], NOW);
+    expect(mail.text).toContain('3. Reply: this spot is fine, about "Run does not exist": Lower Lord  [report #950');
+    expect(mail.text).toMatch(/Answers the problem with reports #900, #901, now (LOW|MEDIUM) \(score [\d.]+\)/);
+    expect(mail.text).toContain('1 phone says the spot is fine (-1)');
+  });
+});
+
+describe('the phone: "N other skiers reported this" and quick replies (src/reportmatch.js)', async () => {
+  const { matchProblem, problemsAt, sentByMe, joins } = await import('../src/reportmatch.js');
+  const reports = [
+    rep({ kind: 'wrong_rating', ref: '300000001', name: 'Lower Lord', dev: 'a', should: 2 }),
+    rep({ kind: 'wrong_rating', ref: '300000002', name: 'Lower Lord', dev: 'b', should: 2, x: 900 }),
+    rep({ kind: 'missing', x: 5000, y: 5000, dev: 'c' }), rep({ kind: 'missing', x: 5100, y: 5000, dev: 'd' }),
+  ];
+  const problems = scoreProblems(reports, null, NOW);
+
+  it('finds the problem a new report would join, exactly as the server groups it', () => {
+    const p = matchProblem(problems, { kind: 'wrong_rating', ref: '300000002', name: 'Lower Lord', x: 0, y: 0 });
+    expect(p).toMatchObject({ kind: 'wrong_rating', people: 2 });
+    expect(matchProblem(problems, { kind: 'wrong_rating', ref: '', name: 'lower lord', x: 3000, y: 0 })).toBe(p);   // by name
+    expect(matchProblem(problems, { kind: 'not_real', ref: '300000001', name: 'Lower Lord', x: 0, y: 0 })).toBeNull();
+    expect(matchProblem(problems, { kind: 'missing', ref: '300000001', name: 'Lower Lord', x: 5050, y: 5040 })).toMatchObject({ kind: 'missing', people: 2 });
+    expect(matchProblem(problems, { kind: 'missing', ref: '', name: '', x: 5600, y: 5000 })).toBeNull();
+    // and the server agrees: a report the phone matched joins that problem
+    const joined = scoreProblems([...reports, rep({ kind: 'wrong_rating', ref: '', name: 'lower lord', x: 3000, dev: 'e', should: 2 })], null, NOW);
+    expect(joined.find((q) => q.kind === 'wrong_rating').people).toBe(3);
+  });
+
+  it('lists every known problem a reply from the pin would answer, and the server counts those replies', () => {
+    const at = problemsAt(problems, { ref: '300000001', name: 'Lower Lord', x: 0, y: 0 });
+    expect(at.map((q) => q.kind)).toEqual(['wrong_rating']);
+    expect(problemsAt(problems, { ref: '', name: '', x: 5050, y: 5000 }).map((q) => q.kind)).toEqual(['missing']);
+    expect(problemsAt(problems, { ref: '', name: '', x: 0, y: 9000 })).toEqual([]);
+    const after = scoreProblems([...reports, rep({ kind: 'fixed', about: 'wrong_rating', ref: '300000001', name: 'Lower Lord', at: NOW, dev: 'f' })], null, NOW);
+    expect(after.find((q) => q.kind === 'wrong_rating').parts.replies).toBe(-1);
+  });
+
+  it('does not count this phone as "another skier" when it sent the report itself', () => {
+    const p = problems.find((q) => q.kind === 'wrong_rating');
+    expect(sentByMe([{ kind: 'wrong_rating', ref: '300000001', name: 'Lower Lord', x: 0, y: 0, at: NOW - DAY }], p, undefined, NOW)).toBe(true);
+    expect(sentByMe([{ kind: 'wrong_rating', ref: '300000001', name: 'Lower Lord', x: 0, y: 0, at: NOW - 70 * DAY }], p, undefined, NOW)).toBe(false);
+    expect(sentByMe([], p, undefined, NOW)).toBe(false);
+    expect(joins(null, { kind: 'missing' })).toBe(false);
+  });
+
+  it('a reply from a simulated location carries no distance (the same reportExtras as a report)', async () => {
+    const { readFileSync } = await import('node:fs');
+    const src = readFileSync('src/main.js', 'utf8');
+    expect(src).toMatch(/if \(me && !S\.testMode && me\.inBounds/);
+    const replyCase = src.slice(src.indexOf("case 'report-reply'"), src.indexOf("case 'safety-ok'"));
+    expect(replyCase).toContain('reportExtras(p, tg.on)');
+    expect(replyCase).not.toMatch(/near:/);
+  });
+});
