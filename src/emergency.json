@@ -749,7 +749,7 @@
   },
   "mont-orford": {
    "country": "CA",
-   "phone": "819 843-6548 p. 8448",
+   "phone": "819-843-6548 ext. 8448",
    "tel": "+18198436548,8448",
    "label": "Patrouille (ski patrol)",
    "source": "https://skimap.org/skimaps/view/44295",
@@ -1130,7 +1130,7 @@
    "checked": "2026-11-23"
   },
   "solden": {
-   "country": "US",
+   "country": "AT",
    "phone": "+43 5254 508 825",
    "tel": "+435254508825",
    "label": "Ski patrol (alarm centre, Gaislachkoglbahn middle station)",
@@ -1150,7 +1150,7 @@
    "checked": "2026-11-23"
   },
   "st-anton-st-christoph-stuben": {
-   "country": "US",
+   "country": "AT",
    "phone": "+43 5446 2352 223",
    "tel": "+4354462352223",
    "label": "Ski patrol (Pistenrettung St. Anton, St. Christoph)",
@@ -1349,7 +1349,7 @@
    "phone": "717-328-6644",
    "tel": "+17173286644",
    "label": "Whitetail Ski Patrol",
-   "source": "https://WWW.SKIWHITETAIL.COM/-/aemasset/sitecore/whitetail/maps/WT_TrailMap_WithSafety_202223_20221205.pdf",
+   "source": "https://www.skiwhitetail.com/-/aemasset/sitecore/whitetail/maps/WT_TrailMap_WithSafety_202223_20221205.pdf",
    "checked": "2026-11-24"
   },
   "whitewater": {

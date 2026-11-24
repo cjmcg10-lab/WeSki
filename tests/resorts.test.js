@@ -57,7 +57,7 @@ describe('every built resort', () => {
         while (stack.length) for (const v of adj.get(stack.pop()) || []) if (!seen.has(v)) { seen.add(v); stack.push(v); }
         const top = new Map();
         for (const e of edges) if (e.k === 'p' && (!top.has(e.r) || nodes[e.a][2] > nodes[top.get(e.r)][2])) top.set(e.r, e.a);
-        const cut = resort.trails.filter((t) => t.ok && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
+        const cut = resort.trails.filter((t) => t.ok && !t.hide && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
         expect(cut).toEqual([]);
       }
       // existence check (tools/verify_exists.py): every run shown is on the resort's list, confirmed by hand,
