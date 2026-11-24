@@ -11,7 +11,6 @@
   24310616,
   24310618,
   24310619,
-  25514987,
   26480774,
   28461148,
   28461149,
@@ -24,7 +23,6 @@
   30131759,
   30131760,
   30136264,
-  30213571,
   30425559,
   30426078,
   30426085,
@@ -42,24 +40,6 @@
   52330698,
   52330699,
   52330701,
-  84032968,
-  84032970,
-  84032972,
-  84032973,
-  84032975,
-  84032976,
-  84032978,
-  84032983,
-  84032985,
-  84032987,
-  84032989,
-  84032991,
-  84032992,
-  84032994,
-  84032996,
-  84032997,
-  84032999,
-  84033001,
   149029241,
   151160050,
   208723184,
@@ -69,13 +49,6 @@
   245618870,
   245618871,
   326169687,
-  361573963,
-  361573967,
-  361573970,
-  386837388,
-  386837389,
-  386837390,
-  386837391,
   402323719,
   428982792,
   688623161,
@@ -84,13 +57,35 @@
   1210291744,
   1250591099,
   1279691625,
-  1442785158
+  1442785158,
+  41876669,
+  49247557,
+  49247558,
+  24895171,
+  26480927,
+  41876001,
+  41876002,
+  41876003,
+  49247555,
+  52330697,
+  102698942,
+  152014848,
+  35091658,
+  41876668,
+  35091657,
+  40395217,
+  41877349,
+  41877350,
+  211927614,
+  35091509,
+  245617422,
+  245617423
  ],
  "osm_bbox": [
-  11.6666,
-  46.5033,
-  11.8129,
-  46.6036
+  11.5533,
+  46.4979,
+  11.8181,
+  46.6077
  ],
  "dem": {
   "source": "copernicus"
@@ -111,5 +106,62 @@
  "terrain_shares": {
   "30m": 100.0
  },
- "hold": "lifts 55 of OpenSkiMap's 79; only 52 of the 79 lifts OpenSkiMap assigns are on the map"
+ "include_note": "Seiser Alm (Alpe di Siusi) lifts and the Ortisei lifts (Mont Sëuc gondola, Furdenan, Palmer) added: the resort's map and ski pass are Val Gardena - Seiser Alm, joined by the Mont Sëuc gondola from Ortisei",
+ "extra_lifts": [
+  {
+   "name": "Resciesa - Raschötz",
+   "kind": "funicular",
+   "rail": true,
+   "pts": [
+    [11.6721639, 46.5780002],
+    [11.6793831, 46.5979096]
+   ],
+   "why": "the Raschötz funicular (map lift 4), mapped in OpenStreetMap as a railway"
+  },
+  {
+   "name": "Gherdëina Ronda Express",
+   "kind": "train",
+   "rail": true,
+   "both": true,
+   "pts": [
+    [11.7367864, 46.5655827],
+    [11.7314225, 46.5572752]
+   ],
+   "why": "the underground train in S. Cristina between the Col Raiser and Saslong lifts (map lift 11), mapped as a railway"
+  }
+ ],
+ "drop_ways": {
+  "1240699922": "OpenStreetMap's piste outline 'Saslong A' lies on the Saslong line for its whole length (the same World Cup run drawn twice)"
+ },
+ "rail_ways": [
+  25514987,
+  30213571,
+  84032968,
+  84032970,
+  84032972,
+  84032973,
+  84032975,
+  84032976,
+  84032978,
+  84032983,
+  84032985,
+  84032987,
+  84032989,
+  84032991,
+  84032992,
+  84032994,
+  84032996,
+  84032997,
+  84032999,
+  84033001,
+  361573963,
+  361573967,
+  361573970,
+  386837388,
+  386837389,
+  386837390,
+  386837391
+ ],
+ "rail_ways_note": "OpenSkiMap's railway pieces of the Raschötz funicular and the Ronda Express: build_data.py never takes railways as lifts, so they are drawn by extra_lifts (rail: true) along these tracks instead",
+ "hold": "ratings not checked: the resort's typed slope lists (valgardena.it, dolomitisuperski.com) are not reachable from the build network, and the 2024-25 trail map (skimap.org 37723) names and numbers only its lifts and the 'Legendary 8', not the runs; OpenStreetMap ratings are shown until a list is read"
 }
