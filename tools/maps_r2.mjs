@@ -26,7 +26,7 @@ const DATA = 'public/data';
 const LIST = join(DATA, 'r2.json');
 const KEEP = ['jay-peak']; // the unit tests load it: stays in git
 const FILES = ['resort.json', 'graph.json', 'terrain.bin', 'surround.bin'];
-const OPTIONAL = ['canopy.z8']; // real tree cover (tools/build_canopy.py): uploaded when the folder has one, fetched when R2 has one
+const OPTIONAL = ['canopy.z8', 'landcover.z8']; // real tree cover (tools/build_canopy.py): uploaded when the folder has one, fetched when R2 has one
 const PACKED = ['terrain.z16', 'surround.z16']; // made from the .bin files on push (src/heights.js)
 const md5 = (buf) => createHash('md5').update(buf).digest('hex');
 // stored as terrain.<first 12 of the .bin's md5>.z16, so the Worker serves one only for the .bin it was made from

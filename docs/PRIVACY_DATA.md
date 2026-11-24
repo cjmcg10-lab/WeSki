@@ -73,8 +73,9 @@ sets the secret with `npx wrangler secret put ARCHIVE_ADMIN_SECRET -c wrangler.a
 
 ## Map-mistake reports
 
-Public notes: mountain, place (map grid metres, and its lat/lon since 2026-11-24), run at that place, kind, text
-(contact details stripped), time. No account or address is stored with them. 10 a day per network. Listed at
+Public notes: mountain, place (map grid metres, and its lat/lon since 2026-11-24), run or lift at that place (its
+OpenStreetMap id or `lift:<id or name>`, and its name), kind, for a wrong rating the rating it should be (`should`,
+`scale`, since 2026-11-24), text (contact details stripped), time. No account or address is stored with them. 10 a day per network. Listed at
 `GET /api/reports/<id>`. To review: the daily email and `tools/reports.py` (see `docs/MAP_REPORTS.md`), check each
 against the trail map and photos, fix, then mark it done (status column).
 

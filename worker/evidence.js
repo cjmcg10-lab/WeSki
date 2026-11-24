@@ -12,7 +12,13 @@ export const K_ANON = 5;
 export const CELL_M = 20;
 export const MAX_CELLS = 6000;
 export const MAX_RUNS = 400;
-export const REPORT_KINDS = ['missing', 'not_real', 'wrong_rating', 'wrong_place', 'closed_for_good', 'other'];
+export const REPORT_KINDS = ['missing', 'not_real', 'wrong_rating', 'wrong_place', 'closed_for_good', 'wrong_name', 'no_connection', 'other'];
+// "It should be:" on a wrong-rating report. 'us': the four North American levels (resort.json `d`); 'colour': the
+// European and Japanese piste colours (resort.json `c`). The phone says which scale its resort uses.
+export const RATING_SCALES = {
+  us: ['Green', 'Blue', 'Black', 'Double black'],
+  colour: ['Green', 'Blue', 'Red', 'Black', 'Freeride / ski route'],
+};
 
 const isInt = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
 export const RESORT_RE = /^[a-z0-9-]{2,40}$/;
@@ -60,10 +66,20 @@ export function cleanReport(b, now = Date.now()) {
   // dev: a random id made once per app install (never tied to an account); the server keeps only a per-mountain hash.
   // near: how far, in metres, the phone's own GPS was from the reported spot when the report was sent (not the position).
   // run: the run's number on that map build, to compare with map-help counts. lat/lon: the reported spot itself.
+  // ref: the run's OpenStreetMap way id, or "lift:<OSM id or name>" for a lift (not the run number, which changes
+  // between map builds); worker/confidence.js groups reports about one run or lift by it.
   const dev = /^[0-9a-f]{32}$/.test(b.dev || '') ? b.dev : '';
   const near = Math.round(Number(b.near));
   const run = Number(b.run);
   const lat = Number(b.lat), lon = Number(b.lon);
+  // should + scale: the rating a wrong-rating report says the run should have. Required for that kind from newer
+  // phones; older phones sent none, so a wrong-rating report without it is still taken (should stays null).
+  let should = null, scale = null;
+  if (b.kind === 'wrong_rating' && b.should != null) {
+    scale = b.scale == null ? 'us' : b.scale;
+    if (!RATING_SCALES[scale] || !isInt(b.should, 0, RATING_SCALES[scale].length - 1)) return { error: 'bad rating' };
+    should = b.should;
+  }
   const placed = b.lat != null && b.lon != null && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
   return {
     ok: true,
@@ -71,6 +87,7 @@ export function cleanReport(b, now = Date.now()) {
       resort: b.resort, kind: b.kind, x, y, ref: clean(b.ref, 60), name: clean(b.name, 80), text: safe, at: now,
       dev, near: b.near != null && isInt(near, 0, 100000) ? near : null, run: b.run != null && isInt(run, 0, 100000) ? run : null,
       lat: placed ? Math.round(lat * 1e5) / 1e5 : null, lon: placed ? Math.round(lon * 1e5) / 1e5 : null,
+      should, scale,
     },
   };
 }

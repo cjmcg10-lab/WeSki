@@ -10,7 +10,7 @@
 //   node tools/preview/maps.mjs fetch <resort id> [...]
 //
 // The other way, read-only: downloads preview/data/<id>/ back into public/data/<id> (resort.json with its graph put
-// back, terrain.bin, surround.bin, canopy.z8), so a later session can push a map the owner approved on the preview
+// back, terrain.bin, surround.bin, canopy.z8, landcover.z8), so a later session can push a map the owner approved on the preview
 // with `node tools/maps_r2.mjs push <id>` without rebuilding it (nothing outside the repository survives a session).
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -47,7 +47,7 @@ if (FETCH) {
     R.graph = JSON.parse(readFileSync(`${dir}/graph.tmp.json`, 'utf8'));
     writeFileSync(`${dir}/resort.json`, JSON.stringify(R));
     rmSync(`${dir}/graph.tmp.json`);
-    const n = ['terrain.bin', 'surround.bin', 'canopy.z8'].filter((f) => get(f, `${dir}/${f}`)).length;
+    const n = ['terrain.bin', 'surround.bin', 'canopy.z8', 'landcover.z8'].filter((f) => get(f, `${dir}/${f}`)).length;
     console.log(`${id}: fetched from the preview into ${dir} (resort.json and ${n} more files)`);
   }
   process.exit(0);
@@ -63,7 +63,7 @@ for (const id of ids) {
   writeFileSync(join(tmp, 'resort.json'), JSON.stringify(R));
   for (const [name, buf] of Object.entries(packResort(dir, R))) writeFileSync(join(tmp, name), buf);
   const send = ['resort.json', 'graph.json', 'terrain.z16', 'surround.z16'].map((f) => [f, join(tmp, f)])
-    .concat(['terrain.bin', 'surround.bin', 'canopy.z8'].map((f) => [f, join(dir, f)]));
+    .concat(['terrain.bin', 'surround.bin', 'canopy.z8', 'landcover.z8'].map((f) => [f, join(dir, f)]));
   let n = 0;
   for (const [f, file] of send) if (existsSync(file)) { put(`preview/data/${id}/${f}`, file, f.endsWith('.json') ? 'application/json' : 'application/octet-stream'); n++; }
   console.log(`${id}: ${n} map files uploaded to preview/data/${id}/`);
