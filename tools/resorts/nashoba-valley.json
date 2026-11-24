@@ -47,5 +47,8 @@
  ],
  "isolated_notes": {
   "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Dogleg": "Dog Leg"
  }
 }
