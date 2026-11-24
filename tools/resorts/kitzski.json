@@ -47,6 +47,7 @@
   305386920,
   306018804,
   306018805,
+  307618278,
   325289727,
   325289729,
   330691226,
@@ -71,10 +72,10 @@
   1354487329
  ],
  "osm_bbox": [
-  12.2948,
-  47.2776,
-  12.4735,
-  47.4802
+  12.2894,
+  47.2737,
+  12.5912,
+  47.4913
  ],
  "dem": {
   "source": "copernicus"
@@ -102,21 +103,30 @@
   "Bichlalmlift",
   "Gaisberg",
   "Schatzerlift",
-  "Silberstube",
   "Sun Cord Reith",
   "Sun Kid Aschau",
   "Übungslift Aschau",
   "Übungslift Reith"
  ],
  "isolated_notes": {
-  "Bichlalmlift": "rule: not joined to the rest of the lifts on the map",
-  "Gaisberg": "rule: not joined to the rest of the lifts on the map",
-  "Schatzerlift": "rule: not joined to the rest of the lifts on the map",
-  "Silberstube": "rule: tubing or sledding lift",
-  "Sun Cord Reith": "rule: not joined to the rest of the lifts on the map",
-  "Sun Kid Aschau": "rule: not joined to the rest of the lifts on the map",
-  "Übungslift Aschau": "rule: not joined to the rest of the lifts on the map",
-  "Übungslift Reith": "rule: not joined to the rest of the lifts on the map"
+  "Bichlalmlift": "looked at 2026-11-24: Bichlalm is a separate small KitzSki area north of Kitzbühel (runs 50 Bichlalm-Standard, 50a Bichlalm-Süd, 52 Stuckkogel), reached by road or ski bus; no run joins it to the rest",
+  "Gaisberg": "looked at 2026-11-24: Gaisberg at Kirchberg is a separate small KitzSki area (runs 41 Gaisberg, 42 Rennstrecke Gaisberg), reached by road or ski bus; no run joins it to the rest",
+  "Übungslift Aschau": "looked at 2026-11-24: a practice lift in the village of Aschau; runs come down to it (ski routes from the Pengelstein end nearby) but no run leads from it back to the other lifts; skiers return by ski bus",
+  "Sun Kid Aschau": "looked at 2026-11-24: a moving carpet in the Aschau village practice area; no run leads from it back to the other lifts (ski bus)",
+  "Schatzerlift": "looked at 2026-11-24: a small valley drag lift (resort's list: E2/E7 Schatzerlift, Reith side); no run leads from it back to the other lifts",
+  "Übungslift Reith": "looked at 2026-11-24: a practice lift in the village of Reith, not joined to the ski area by any run; skiers come by road",
+  "Sun Cord Reith": "looked at 2026-11-24: a moving carpet in the Reith village practice area, not joined to the ski area by any run"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Gaisberg, Bichlalmlift"
+ "rename": {
+  "Larchenhang": "Lärchenhang",
+  "Skiroute Giggling": "Giggling",
+  "Selboden": "Sedlboden"
+ },
+ "dead_end_notes": {
+  "Obwiesen": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
+  "Pengelstein Süd": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
+  "Giggling": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
+  "Skiroute Alte Wacht": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
+  "Golf": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus"
+ }
 }
