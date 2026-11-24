@@ -261,7 +261,7 @@ describe('daily digest job', () => {
         return { sentToday: false, resorts: [...state.due.keys()] };
       },
       digestRelease: async () => { state.claim = 0; },
-      digestDone: async (resorts, day, before) => { for (const r of resorts) if (state.due.get(r) <= before) state.due.delete(r); if (day) state.lastDay = day; state.claim = 0; },
+      digestDone: async (resorts, day, before) => { for (const r of resorts) if (state.due.get(r) <= before) state.due.delete(r); if (day) { state.lastDay = day; state.claim = 0; } },
     };
     const mountain = (id) => ({
       digestPart: async (now) => {
@@ -329,6 +329,20 @@ describe('daily digest job', () => {
     expect((await first).sent).toBe(true);
     expect(sent).toHaveLength(1);
     expect(state.lastDay).not.toBeNull();
+  });
+
+  it('two runs at the same moment send one email, even while clearing an unknown mountain', async () => {
+    const { env, state, log } = fakeEnv();
+    state.due.set('no-such-mountain', NOW - DAY);
+    const sent = [];
+    let release;
+    const slow = (_e, _c, mail) => new Promise((ok) => { sent.push(mail); release = ok; });
+    const first = runDigest(env, log, NOW, slow);
+    await new Promise((r) => setTimeout(r, 0));
+    expect((await runDigest(env, log, NOW + 1000, slow)).why).toBe('another run is sending');
+    release();
+    expect((await first).sent).toBe(true);
+    expect(sent).toHaveLength(1);
   });
 
   it('ignores mountains that are not in the app', async () => {
