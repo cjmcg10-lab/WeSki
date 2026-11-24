@@ -551,4 +551,5 @@ export default {
   1491: "Difficoltà non ancora verificata con l’elenco del comprensorio",
   1492: "Le difficoltà delle piste non sono ancora verificate con l’elenco del comprensorio: provengono da OpenStreetMap. La segnaletica in montagna ha sempre la precedenza.",
   1493: "Terreno meno dettagliato per questa montagna (30 m): i pendii in 3D sembrano più dolci di quanto siano.",
+  1494: "Cancella il testo",
 };

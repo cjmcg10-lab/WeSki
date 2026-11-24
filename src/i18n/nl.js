@@ -551,4 +551,5 @@ export default {
   1491: "Moeilijkheid nog niet gecontroleerd met de lijst van het skigebied",
   1492: "De moeilijkheidsgraden van de pistes zijn nog niet gecontroleerd met de lijst van het skigebied: ze komen uit OpenStreetMap. De borden op de berg gaan altijd voor.",
   1493: "Minder gedetailleerd terrein voor deze berg (30 m): de hellingen lijken in 3D vlakker dan ze zijn.",
+  1494: "Tekst wissen",
 };

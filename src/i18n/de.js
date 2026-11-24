@@ -551,4 +551,5 @@ export default {
   1491: "Schwierigkeit noch nicht mit der Liste des Skigebiets abgeglichen",
   1492: "Die Schwierigkeitsgrade der Pisten sind noch nicht mit der Liste des Skigebiets abgeglichen: Sie stammen aus OpenStreetMap. Die Beschilderung am Berg gilt immer.",
   1493: "Weniger detailliertes Gelände für diesen Berg (30 m): Die Hänge wirken in 3D flacher, als sie sind.",
+  1494: "Text löschen",
 };

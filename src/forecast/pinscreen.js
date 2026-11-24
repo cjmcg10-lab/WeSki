@@ -2,6 +2,7 @@ import { t } from '../i18n.js';
 import { esc } from './text.js';
 import { MATCH_KM, TZ_MAX_KM, draftFrom, draftProblem, fetchElevation, makePin, newPinId, parseCoordinate, parseHeight, pointAt, zoneFor } from './pin.js';
 import { mountMap } from './pinmap.js';
+import { syncClear } from '../clearfield.js';
 
 const WORLD_VIEW = { lat: 30, lon: 10, zoom: 1.5 };
 const REGION_ZOOM = 9;
@@ -74,6 +75,7 @@ export function createPinScreen(ctx) {
     if (lo && document.activeElement !== lo && d.base) lo.value = d.base.lon;
     if (tla && document.activeElement !== tla && d.top) tla.value = d.top.lat;
     if (tlo && document.activeElement !== tlo && d.top) tlo.value = d.top.lon;
+    for (const f of [hb, ht, la, lo, tla, tlo]) syncClear(f);   // the clear (X) buttons follow values set here
     show('#fc-terrain-one', !d.top);
     show('#fc-terrain-two', !!d.top);
     const near = match();
@@ -182,6 +184,7 @@ export function createPinScreen(ctx) {
       refresh();
       $('#fc-lat').value = pointAt(latitude, longitude).lat;
       $('#fc-lon').value = pointAt(latitude, longitude).lon;
+      syncClear($('#fc-lat')); syncClear($('#fc-lon'));
       H().announce(t('Your location is in the coordinate fields. Check it, then choose “Set pins from coordinates”.'));
     }, () => { ui.locNote = true; refresh(); });
   }

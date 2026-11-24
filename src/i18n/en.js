@@ -1057,4 +1057,5 @@ export default {
   1491: "Rating not yet checked against the resort’s own list",
   1492: "Trail ratings not yet checked against the resort’s own list: they come from OpenStreetMap. Signs on the mountain always win.",
   1493: "Lower-detail terrain for this mountain (30 m): the 3D slopes look smoother than they are.",
+  1494: "Clear the text",
 };

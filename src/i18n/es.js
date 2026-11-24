@@ -551,4 +551,5 @@ export default {
   1491: "Dificultad aún no comprobada con la lista de la estación",
   1492: "Las dificultades de las pistas aún no se han comprobado con la lista de la estación: vienen de OpenStreetMap. Las señales en la montaña siempre mandan.",
   1493: "Terreno con menos detalle en esta montaña (30 m): las pendientes en 3D parecen más suaves de lo que son.",
+  1494: "Borrar el texto",
 };

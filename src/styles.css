@@ -848,15 +848,16 @@ textarea.field { resize: vertical; font: inherit; }
 #start.full .start-top { opacity: 0; transform: translateY(-28px); transition-duration: .3s, .4s; }
 #start.full .start-sky { opacity: 0; transition-duration: .4s; }
 #start.full .globe-out { opacity: 0; pointer-events: none; }
-/* searching with the on-screen keyboard up: main.js (fitStartToKeyboard) pins the whole-screen list to the part of the
-   screen the keyboard leaves visible, so its top (the title and search field) never ends up above the screen */
-#start-panel.full.kb:not(.dragging) { top: var(--kb-top, 0px); bottom: auto; height: var(--kb-h, 100%); transition: none; }
+/* searching with the on-screen keyboard up: the list keeps its whole-screen size and the keyboard covers its lower part;
+   the results get room at the bottom to scroll clear of it (main.js fitStartToKeyboard) */
+#start-panel.kb #resort-list { padding-bottom: calc(var(--kb-cover, 0px) + 8px); }
+/* the title, search field and buttons never give up height: only the mountain list does (a squeezed search field popped
+   back to full height whenever the list was dragged, owner 2026-11-24) */
+#start-panel > :not(#resort-list) { flex-shrink: 0; }
 /* Join Group / Forecast sit close to the bottom so more mountains fit (owner, 2026-11-23): the gap under them is about
    half the iPhone's home-bar area, which keeps the swipe-up to leave the app clear of the buttons. With the keyboard up
-   there is no home bar under them, so they sit right on top of the keyboard. */
+   */
 #start-panel { padding-bottom: max(8px, calc(var(--sab) * .55)); }
-#start-panel.full.kb:not(.dragging) { padding-bottom: 6px; }
-#start-panel.full.kb .join-btn { margin-top: 4px; padding: 10px; }
 
 /* ---------- home screen title: the app's name in a display font over the night-sky backdrop (2026-11-23) */
 /* Bowlby One (SIL Open Font License, public/fonts/OFL-bowlby-one.txt): snow-white letters standing on a teal block,
@@ -881,3 +882,33 @@ textarea.field { resize: vertical; font: inherit; }
 .sos-coords { margin: 4px 0; font: 700 19px/1.3 ui-monospace, Menlo, monospace; letter-spacing: .2px; }
 .sos-intro p { margin: 4px 0; }
 .sos-row .ico { color: #ff6b6e; }
+
+/* ---------- typing in a panel with the keyboard up (2026-11-23, issue #113) */
+/* Panels that list results as you type keep one height, the tallest a panel can be, so the list does not shrink and
+   drop under the keyboard as fewer results match; results sit at the top with empty space below. */
+#sheet.fill { height: calc(var(--app-h) - var(--tabs) - var(--sat) - 24px); max-height: calc(var(--app-h) - var(--tabs) - var(--sat) - 24px); }
+/* While the keyboard is up the panel keeps its full size and place: the keyboard simply covers its lower part
+   (owner, 2026-11-24: cutting the panel off at the keyboard let the mountain show through around the keyboard).
+   main.js (fitSheetToKeyboard) sets --kb-cover, how much of the panel the keyboard hides, so the panel's content can
+   scroll clear of the keyboard, and scrolls the field being typed in into view. */
+#sheet.kb:not(.dragging) { transition: none; }
+#sheet.kb #sheet-body { padding-bottom: calc(var(--kb-cover, 0px) + 22px); }
+
+/* ---------- clear (X) button in text fields (src/clearfield.js) */
+.clr { position: relative; display: block; }
+.clr > .field, .clr > input { padding-right: 46px; }
+.clr > .field.code { padding-left: 46px; }    /* centred codes stay centred */
+.clr-x { position: absolute; top: 50%; right: 0; transform: translateY(-50%); width: 44px; height: 44px; display: none; place-items: center; padding: 0; margin: 0;
+  border: 0; background: none; color: var(--muted); cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.clr.has-val > .clr-x { display: grid; }
+.clr-x i { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: rgba(150, 185, 220, .22); border: 1px solid var(--edge2); color: #dce8f3; }
+:root[data-theme="light"] .clr-x i { background: #e3e9f0; color: var(--ink); }
+.clr-x:active i { background: var(--teal); color: var(--teal-ink); border-color: var(--teal); }
+.clr.area > .clr-x { top: 2px; transform: none; }
+/* inside the round search bars: the field takes the free width and the X reaches into the bar's own right padding */
+.clr.in-search { flex: 1; min-width: 0; align-self: stretch; display: flex; align-items: center; }
+.clr.in-search > input { width: 100%; height: 100%; padding-right: 34px; }
+.clr.in-search > .clr-x { right: -12px; }
+#start-panel .clr-x i { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .22); color: #fff; }
+/* the browser's own clear button on search fields: hidden, so there are never two */
+input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
