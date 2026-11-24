@@ -47,7 +47,7 @@
   // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
   // worker/meteoswiss.js). Most steps find nothing to do; a new run takes about 13 steps every 6 hours.
   // The daily report email (worker/digest.js, docs/MAP_REPORTS.md) runs at 11:23 UTC (6:23 in Connecticut in winter):
-  // DIGEST_CRON in worker/index.js must match the second entry.
+  // DIGEST_CRON in worker/digest.js must match the second entry.
   "triggers": { "crons": ["*/5 * * * *", "23 11 * * *"] },
   // The report email is sent through Resend from MAIL_FROM to REPORT_DIGEST_TO, with the sign-in mail account
   // (RESEND_API_KEY secret). Without the key or MAIL_FROM it sends nothing; it never sends on days without new reports.
