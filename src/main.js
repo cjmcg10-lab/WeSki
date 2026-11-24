@@ -2066,6 +2066,23 @@ function sheetPrivacy() {
     <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
 }
 
+/** What a report adds to help the server judge it (#112, docs/PRIVACY_DATA.md): a random id made once per install
+ *  (never tied to an account, gone when the app is removed), how far this phone's own GPS fix was from the spot (a
+ *  distance only, and only from a fix under 10 minutes old), the run's number on this map, and the spot's lat/lon. */
+function reportExtras(p, on) {
+  let dev = prefs.get('installId', null);
+  if (!/^[0-9a-f]{32}$/.test(dev || '')) {
+    dev = [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
+    prefs.set('installId', dev);
+  }
+  const out = { dev };
+  const me = S.me;
+  if (me && me.inBounds && Number.isFinite(me.x) && Date.now() - (me.t || 0) < 600000) out.near = Math.round(Math.hypot(me.x - p.x, me.y - p.y) / 10) * 10;
+  if (on && Number.isInteger(on.t.id)) out.run = on.t.id;
+  try { const [lat, lon] = S.geo.toLatLon(p.x, p.y); if (Number.isFinite(lat) && Number.isFinite(lon)) Object.assign(out, { lat, lon }); } catch { /* no projection */ }
+  return out;
+}
+
 const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'This run does not exist'], ['wrong_rating', 'Wrong rating'], ['wrong_place', 'Drawn in the wrong place'], ['closed_for_good', 'Closed for good'], ['other', 'Something else']];
 function sheetReport() {
   const p = S.pin || S.me;
@@ -2679,7 +2696,7 @@ async function onClick(e) {
       const p = S.pin || S.me, on = p && trailAt(S.resort, p.x, p.y);
       if (!p) break;
       b.disabled = true;
-      const body = { resort: S.place.id, kind: S.reportKind || 'wrong_place', x: p.x, y: p.y, ref: on ? String(on.t.osm || on.t.id) : '', name: on?.t.name || '', text: $('#f-report').value || '' };
+      const body = { resort: S.place.id, kind: S.reportKind || 'wrong_place', x: p.x, y: p.y, ref: on ? String(on.t.osm || on.t.id) : '', name: on?.t.name || '', text: $('#f-report').value || '', ...reportExtras(p, on) };
       const r = await fetch('/api/reports', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
       toast(r?.ok ? 'Thank you. The report was sent.' : r?.status === 429 ? 'Too many reports today. Try again tomorrow.' : 'Could not send. Check your connection.');
       if (r?.ok) closeSheet(); else b.disabled = false;

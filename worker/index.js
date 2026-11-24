@@ -10,6 +10,7 @@ import { weatherResponse, historyResponse } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
+import { runDigest, DIGEST_INDEX } from './digest.js';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -140,15 +141,27 @@ async function api(request, env, url, ctx) {
   if (path === '/api/reports' && method === 'POST') {
     const r = cleanReport(await readJson(request, 4000));
     if (r.error) return json({ error: r.error }, 400);
+    // the install id is stored only as a hash made with the mountain's id, so one phone cannot be followed across mountains
+    if (r.report.dev) r.report.dev = (await sha256(`${r.report.resort}:${r.report.dev}`)).slice(0, 16);
     const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request, env));
+    if (out.ok) ctx.waitUntil(resortLog(env, DIGEST_INDEX).digestNote(r.report.resort, r.report.at).catch(() => {}));
     return json(out, out.ok ? 200 : 429);
   }
   const reps = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})$/);
   if (reps && method === 'GET') return json(await resortLog(env, reps[1]).reports());
+  const probs = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})\/problems$/);
+  if (probs && method === 'GET') return json(await resortLog(env, probs[1]).problems());
   return null;
 }
 
 export default {
+  // Cron Trigger (wrangler.assets.jsonc "triggers"): the daily email of new map-mistake reports (worker/digest.js)
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(runDigest(env, resortLog, controller.scheduledTime || Date.now())
+      .then((r) => console.log('report digest', JSON.stringify(r)))
+      .catch((e) => console.error('report digest failed', e?.message || e)));
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // directions data is part of the paid tier: served only with a pass when the paywall is on

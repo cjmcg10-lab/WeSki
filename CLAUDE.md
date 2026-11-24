@@ -525,7 +525,10 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   law requires that) and in More → Privacy & map help, sends the day after each ski day a summary: run ids and 20 m
   squares off the shown runs, only from stretches that look like skiing (not lifts, standing, lodges, car parks), no
   time or identity; server keeps counts, publishes only >= 5
-  ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
+  ski days (`/api/heat/<id>`). Reports get a confidence score (`worker/confidence.js`, all thresholds in `CONFIDENCE`;
+  `/api/reports/<id>/problems`) and a daily email to hello@builtbyroger.app (`worker/digest.js`, Cron Trigger; off until
+  the owner verifies the address and the `send_email` line in the wrangler configs is uncommented): `docs/MAP_REPORTS.md`
+  (#112 steps 1-2, 2026-11-24). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
   at `/api/reports/<id>`. `tools/reports.py <id>|--all` lists new reports (marker in `tools/.reports_seen.json`,
   not in git); `tools/evidence.py <id>` also shows the `/api/heat` ski days per run and squares skied off the runs
   (`--heat-only` skips the GPS download). See "The final check" in `docs/ADDING_MOUNTAINS.md`.

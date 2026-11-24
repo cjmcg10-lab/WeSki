@@ -56,5 +56,21 @@ export function cleanReport(b, now = Date.now()) {
   const text = clean(b.text, 500);
   // leave out anything that looks like an email address or phone number: reports are public
   const safe = text.replace(/[^\s@]+@[^\s@]+/g, '[removed]').replace(/\+?\d[\d\s().-]{7,}\d/g, '[removed]');
-  return { ok: true, report: { resort: b.resort, kind: b.kind, x, y, ref: clean(b.ref, 60), name: clean(b.name, 80), text: safe, at: now } };
+  // Optional, sent by newer phones (#112). None of these is published in the report list:
+  // dev: a random id made once per app install (never tied to an account); the server keeps only a per-mountain hash.
+  // near: how far, in metres, the phone's own GPS was from the reported spot when the report was sent (not the position).
+  // run: the run's number on that map build, to compare with map-help counts. lat/lon: the reported spot itself.
+  const dev = /^[0-9a-f]{32}$/.test(b.dev || '') ? b.dev : '';
+  const near = Math.round(Number(b.near));
+  const run = Number(b.run);
+  const lat = Number(b.lat), lon = Number(b.lon);
+  const placed = b.lat != null && b.lon != null && Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
+  return {
+    ok: true,
+    report: {
+      resort: b.resort, kind: b.kind, x, y, ref: clean(b.ref, 60), name: clean(b.name, 80), text: safe, at: now,
+      dev, near: b.near != null && isInt(near, 0, 100000) ? near : null, run: b.run != null && isInt(run, 0, 100000) ? run : null,
+      lat: placed ? Math.round(lat * 1e5) / 1e5 : null, lon: placed ? Math.round(lon * 1e5) / 1e5 : null,
+    },
+  };
 }

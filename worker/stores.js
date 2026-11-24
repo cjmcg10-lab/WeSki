@@ -6,6 +6,7 @@ import {
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
 import { HistoryStore } from './history.js';
 import { addFeedbackCounts, FEEDBACK_PER_NETWORK_PER_DAY } from './calibration.js';
+import { CONFIDENCE, scoreProblems } from './confidence.js';
 
 /** One per watched resort: 72 hours of weather history, the last good forecast and the forecast archive (see docs/FORECAST_HISTORY.md). */
 export class ForecastHistory extends DurableObject {
@@ -212,8 +213,18 @@ export class ResortLog extends DurableObject {
       CREATE TABLE IF NOT EXISTS reports (id INTEGER PRIMARY KEY AUTOINCREMENT, at INTEGER, kind TEXT, x INTEGER, y INTEGER, ref TEXT, name TEXT, text TEXT, status TEXT DEFAULT 'open');
       CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER, until INTEGER);
       CREATE TABLE IF NOT EXISTS feedback (day TEXT PRIMARY KEY, ratings TEXT, tags TEXT);
+      CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT);
+      CREATE TABLE IF NOT EXISTS digest_due (resort TEXT PRIMARY KEY, at INTEGER);
     `);
+    // columns added for #112 (older objects have the first version of the table)
+    const cols = new Set([...this.sql.exec('PRAGMA table_info(reports)')].map((r) => r.name));
+    for (const [c, type] of [['dev', 'TEXT'], ['near', 'INTEGER'], ['run', 'INTEGER'], ['lat', 'REAL'], ['lon', 'REAL']]) {
+      if (!cols.has(c)) this.sql.exec(`ALTER TABLE reports ADD COLUMN ${c} ${type}`);
+    }
   }
+
+  kvGet(k) { return [...this.sql.exec('SELECT v FROM kv WHERE k = ?', k)][0]?.v ?? null; }
+  kvSet(k, v) { this.sql.exec('INSERT OR REPLACE INTO kv VALUES (?, ?)', k, String(v)); }
 
   /** "How was it?" answers as counts per local date. No identity is stored; the network key only feeds the rate limit. */
   addFeedback(f, ipKey) {
@@ -286,13 +297,58 @@ export class ResortLog extends DurableObject {
     return publicTotals(t);
   }
 
+  /** `r.dev` must already be the per-mountain hash of the phone's install id (see worker/index.js), or ''. */
   addReport(r, ipKey) {
     if (!this.allow('rep:' + ipKey, 10, 86400e3)) return { error: 'too_many' };
-    this.sql.exec('INSERT INTO reports (at, kind, x, y, ref, name, text) VALUES (?, ?, ?, ?, ?, ?, ?)', r.at, r.kind, r.x, r.y, r.ref, r.name, r.text);
+    this.sql.exec('INSERT INTO reports (at, kind, x, y, ref, name, text, dev, near, run, lat, lon) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      r.at, r.kind, r.x, r.y, r.ref, r.name, r.text, r.dev || null, r.near ?? null, r.run ?? null, r.lat ?? null, r.lon ?? null);
     return { ok: true };
   }
 
+  /** The public list: never the install-id hash or the reporter's distance from the spot. */
   reports() {
-    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status FROM reports ORDER BY id DESC LIMIT 500')];
+    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, lat, lon FROM reports ORDER BY id DESC LIMIT 500')];
+  }
+
+  /** Reports young enough to count towards a confidence score, with the fields scoring needs (kept inside the server). */
+  scoringReports(now) {
+    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, dev, near, run, lat, lon FROM reports WHERE at >= ? ORDER BY id LIMIT 5000',
+      now - CONFIDENCE.fadeDays * 86400e3)];
+  }
+
+  /** The scored problem list (worker/confidence.js). Public: counts and reasons only, nothing that identifies a phone. */
+  problems(now = Date.now()) {
+    const heat = this.heat();
+    return { days: heat.days, k: heat.k, confidence: CONFIDENCE, problems: scoreProblems(this.scoringReports(now), heat, now) };
+  }
+
+  // ---- daily digest (worker/digest.js). On a mountain's object: the reports not yet emailed.
+  digestPart(now = Date.now()) {
+    const sent = Number(this.kvGet('digestSent') || 0);
+    const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon FROM reports WHERE id > ? ORDER BY id', sent)];
+    const p = this.problems(now);
+    return { reports, problems: p.problems, days: p.days, maxId: reports.length ? reports[reports.length - 1].id : sent };
+  }
+
+  digestSent(maxId) {
+    if (maxId > Number(this.kvGet('digestSent') || 0)) this.kvSet('digestSent', maxId);
+  }
+
+  // ---- on the DIGEST_INDEX object only: which mountains have reports waiting, and the day of the last digest
+  digestNote(resort, at) {
+    this.sql.exec('INSERT OR REPLACE INTO digest_due VALUES (?, ?)', resort, at);
+  }
+
+  digestDue(today) {
+    return {
+      sentToday: this.kvGet('lastDigestDay') === today,
+      resorts: [...this.sql.exec('SELECT resort FROM digest_due ORDER BY resort')].map((r) => r.resort),
+    };
+  }
+
+  /** Clears the mountains just handled (only reports noted before `before`), and records the day when one was sent. */
+  digestDone(resorts, sentDay, before) {
+    for (const r of resorts) this.sql.exec('DELETE FROM digest_due WHERE resort = ? AND at <= ?', r, before);
+    if (sentDay) this.kvSet('lastDigestDay', sentDay);
   }
 }
