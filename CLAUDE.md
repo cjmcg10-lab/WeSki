@@ -22,6 +22,10 @@ session needs that the README does not: the rules, the state of the work, and wh
 - **Never upload maps to live R2 without the owner's approval.** `tools/pipeline.py` uploads only with `--r2` (since
   2026-11-23; before, it uploaded every R2 resort it rebuilt, which once put five unreviewed maps live). Show rebuilt
   maps on the preview (`tools/preview/deploy.mjs`, R2 `preview/data/<id>/`) and push them with `tools/maps_r2.mjs push` once approved.
+- **The preview follows the live app (#142):** every live deploy also puts main on the preview (`deploy.mjs --main`,
+  clearing preview map copies that have since gone live; maps newer than live stay). `deploy.mjs` refuses a branch that
+  lacks the latest main: `git fetch origin main && git merge origin/main` first. A branch on the preview is replaced by
+  the next release; put it back with `deploy.mjs` after merging main.
 
 ## Starting a new session (read this first)
 
