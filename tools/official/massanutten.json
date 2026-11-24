@@ -1,0 +1,51 @@
+{
+ "source": "Massanutten trail map, skimap.org map 47818 (2026): printed numbered trail list by difficulty",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Boardwalk": 0,
+  "Easy Street": 0,
+  "Lower Diamond Jim": 2,
+  "Lower MAKAttack": 1,
+  "Lower Mass Transit": 1,
+  "Lower ParaDice": 2,
+  "Lower Showtime": 1,
+  "Mass Transit": 1,
+  "Meadow": 0,
+  "Mueller's Mile": 1,
+  "No Hesitation": 3,
+  "ParaDice": 2,
+  "Paul's Way": 0,
+  "Ridgecrest": 1,
+  "Showtime": 1,
+  "Slot": 2,
+  "Southern Comfort": 0,
+  "Upper Diamond Jim": 2,
+  "Upper MAKAttack": 2,
+  "Upper Mass Transit": 1,
+  "Upper Nutten-To-It": 0,
+  "Upper ParaDice": 1,
+  "Upper Showtime": 1,
+  "YeeHa": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Pace Setter": "freestyle terrain (no trail rating)",
+  "Lower Nutten-To-It": "freestyle terrain (no trail rating)"
+ },
+ "lifts": [
+  "Creekside Quad",
+  "Easy Rider Quad",
+  "Flying Carpet Conveyor",
+  "Magic Carpet Conveyor",
+  "Peak Express Quad",
+  "Ridge Triple",
+  "Sunkid Conveyor"
+ ],
+ "same_as": {
+  "Lower Mass Transit": "Mass Transit",
+  "Upper Mass Transit": "Mass Transit",
+  "Lower ParaDice": "ParaDice",
+  "Upper ParaDice": "ParaDice",
+  "Upper Showtime": "Showtime"
+ }
+}

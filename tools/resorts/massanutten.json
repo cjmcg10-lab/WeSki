@@ -41,5 +41,11 @@
  ],
  "isolated_notes": {
   "Lift 1": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Lower Mak Attack": "Lower MAKAttack",
+  "No Hessitation": "No Hesitation",
+  "Upper Mak Attack": "Upper MAKAttack",
+  "Yee Ha": "YeeHa"
  }
 }
