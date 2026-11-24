@@ -140,15 +140,21 @@ try {
     await page.addStyleTag({ content: ':root { --sat: 47px !important; }' });
     await page.waitForTimeout(100);
     const g = await page.locator('#start-panel .grab').boundingBox();
-    await page.evaluate(() => { window.__nt = []; const h = document.querySelector('#start-panel h2'), b = document.querySelector('#start-panel .grab'), t0 = performance.now(), f = () => { window.__nt.push([Math.round(h.getBoundingClientRect().top), Math.round(b.getBoundingClientRect().top)]); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
+    await page.evaluate(() => { window.__nt = []; const h = document.querySelector('#start-panel h2'), b = document.querySelector('#start-panel .grab'), t0 = performance.now(), f = () => { const pn = document.querySelector('#start-panel'); window.__nt.push([Math.round(h.getBoundingClientRect().top), Math.round(b.getBoundingClientRect().top), Math.round(pn.getBoundingClientRect().top), Math.round(pn.getBoundingClientRect().height)]); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
     await page.evaluate(async ({ x, y }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
-      ev('pointerdown', y); for (let i = 1; i <= 6; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 40 * i); } ev('pointerup', y - 240); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
+      ev('pointerdown', y); for (let i = 1; i <= 6; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 40 * i); } window.__rel = window.__nt.length; ev('pointerup', y - 240); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
     await page.waitForTimeout(1500);
-    const nt = await page.evaluate(() => window.__nt);
+    const [nt, rel] = await page.evaluate(() => [window.__nt, window.__rel]);
     if (!(await page.locator('#start-panel.full').count())) fail('a quick slide up did not open the list to the whole screen');
     const under = nt.filter(([h, b]) => h < 47 || b < 47);
     if (under.length) fail(`with a notch, the list's title or grab bar went under it while gliding up (highest title ${Math.min(...nt.map((r) => r[0]))}, grab bar ${Math.min(...nt.map((r) => r[1]))})`);
     const end = nt[nt.length - 1];
+    // it glides up as one piece, the same way it slides down to its bar: whole height from the first frame after letting
+    // go, and at least one frame between where the finger left it and the top (measuring it used to stop the glide dead)
+    const before = nt[rel - 1][2], after = nt.slice(rel);
+    const glide = after.filter(([, , t]) => t > 2 && t < before - 2);
+    if (new Set(after.map((r) => r[3])).size > 1) fail(`the list changed its height while gliding up (${[...new Set(after.map((r) => r[3]))].join(', ')} px): it should slide as one piece`);
+    if (!glide.length) fail('the list jumped to the top instead of gliding there');
     if (nt.some(([h]) => h < end[0] - 4)) fail(`the title went above its final place and came back down (lowest ${Math.min(...nt.map((r) => r[0]))}, final ${end[0]})`);
     await page.locator('#start-panel .grab').tap();
     await page.waitForTimeout(600);
