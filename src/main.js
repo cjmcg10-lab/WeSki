@@ -443,12 +443,27 @@ function startState() {
   return p.classList.contains('full') ? 'full' : p.classList.contains('mini') ? 'mini' : 'normal';
 }
 /** The list's sizes, measured as it would sit in its normal place, and the top of the panel in each place. */
+/** The height of the notch (the safe area at the top of the screen), read from a still probe element. It used to be read
+ *  from the panel's own padding, which is mid-animation when a drag is let go: it then read 0, so the list glided up
+ *  with its title under the camera and dropped back down once the glide ended (#140). */
+function notchHeight() {
+  let el = document.getElementById('sat-probe');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sat-probe';
+    el.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:var(--sat)';
+    document.body.append(el);
+  }
+  return parseFloat(getComputedStyle(el).paddingTop) || 0;
+}
 function startGeom() {
   const p = $('#start-panel'), H = $('#start').clientHeight;
-  const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full') };
+  const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full'), drag: p.classList.contains('dragging') };
+  const sat = notchHeight();
+  // measure with the glide switched off: otherwise the brief changes below start glides of their own, and on letting go
+  // of a drag the list jumped to the whole screen and then slid its title down out of the notch (#140)
+  p.classList.add('dragging');
   p.style.removeProperty('--padt');
-  p.classList.add('full');
-  const sat = Math.max(0, parseFloat(getComputedStyle(p).paddingTop) - START_PAD) || 0;   // the notch
   p.classList.remove('full');
   p.style.height = ''; p.style.maxHeight = '';
   const h = p.offsetHeight, hd = p.querySelector('h2');
@@ -456,6 +471,7 @@ function startGeom() {
   p.classList.toggle('full', keep.full);
   p.style.height = keep.h; p.style.maxHeight = keep.mh;
   if (keep.pt) p.style.setProperty('--padt', keep.pt);
+  if (!keep.drag) { void p.offsetHeight; p.classList.remove('dragging'); }
   return { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
 }
 /** Put the top of the list at p (px from the top of the screen): above its normal place it grows, below it slides down. */
@@ -463,7 +479,7 @@ function placeStart(g, p) {
   const el = $('#start-panel');
   el.style.maxHeight = 'none';
   if (p >= g.pos.normal) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
-  else { el.style.height = Math.round(g.H - Math.max(p, -40)) + 'px'; el.style.transform = 'translateY(0px)'; }
+  else { el.style.height = Math.round(g.H - Math.max(p, 0)) + 'px'; el.style.transform = 'translateY(0px)'; }
   // near the top the title moves down out of the notch, and the rounded corners square off
   el.style.setProperty('--padt', START_PAD + Math.max(0, g.sat - Math.max(0, p)) + 'px');
   const r = Math.max(0, Math.min(26, p / 2));

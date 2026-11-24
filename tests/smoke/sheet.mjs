@@ -12,7 +12,7 @@
 // SHOT_DIR=<folder> keeps screenshots of the search with many results, with one, and fields showing the X.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 
 const PORT = await new Promise((res) => { const s = createServer().listen(0, '127.0.0.1', () => { const { port } = s.address(); s.close(() => res(port)); }); });
@@ -57,9 +57,11 @@ try {
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   // sign-in switched on, so the pass panel shows its email field
   await context.route('**/api/config', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ paywall: false, signIn: true, paddle: null, plans: {} }) }));
-  await context.addInitScript(() => {
+  // the terms version the app asks for, read from the app, so a terms change does not stop this test
+  const termsV = readFileSync('src/main.js', 'utf8').match(/TERMS_V = '([^']+)'/)[1];
+  await context.addInitScript((termsV) => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: termsV, at: Date.now() }));
     localStorage.setItem('weski:trackNoteOff', 'true');
     const real = window.visualViewport;
     const fake = new EventTarget();
@@ -69,7 +71,7 @@ try {
     }
     Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => fake });
     window.__kbSet = (kb) => { window.__kb = kb; fake.dispatchEvent(new Event('resize')); fake.dispatchEvent(new Event('scroll')); };
-  });
+  }, termsV);
   page = await context.newPage();
   page.on('pageerror', (e) => fail(`page error: ${e.message}`));
   await page.addLocatorHandler(page.locator('#modal:not(.hidden) .modal-box [data-act="modal-cancel"]').first(), async () => {
