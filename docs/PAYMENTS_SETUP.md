@@ -7,25 +7,21 @@ before you start, where to click, and what to send back to Claude.
 
 - **The website sells through Paddle. The iPhone app sells through Apple.** Paddle cannot sell inside the iPhone app
   (Apple's rules), and Apple cannot sell to Android phones or computers, so both are needed.
-- **The website is a little cheaper for Season and Crew** (it shares about half of Paddle's lower fee). Day and Week
-  cost the same everywhere.
+- **Same prices everywhere** (owner, 2026-11-24): the website and the iPhone app charge the same. Paddle is entered
+  at these prices.
 
-  | Pass | iPhone app (Apple) | Website (Paddle) | How it is charged |
-  | --- | --- | --- | --- |
-  | Day Pass | $2.99 | $2.99 | once, lasts 24 hours |
-  | Week Pass | $5.99 | $5.99 | once, lasts 7 days |
-  | Season Pass | $24.99 a year | $23.99 a year | renews every year until the person cancels |
-  | Crew Season Pass | $44.99 a year, 4 people | $42.99 a year, 4 people | renews every year until the person cancels |
+  | Pass | iPhone app (Apple) and website (Paddle) | How it is charged |
+  | --- | --- | --- |
+  | Day Pass | $2.99 | once, lasts 24 hours |
+  | Week Pass | $5.99 | once, lasts 7 days |
+  | Season Pass | $24.99 a year | renews every year until the person cancels |
+  | Crew Season Pass | $44.99 a year, 4 people | renews every year until the person cancels |
 
-  Next season the prices go up: Season $29.99 and Crew $49.99 in the app, with matching web prices.
-- **"Also on the web" line (US only).** In the iPhone app, a quiet grey line under Season and Crew: "Also on the web:
-  $23.99 · save $1 ↗". Only for people whose App Store country is the US, and only while a switch on our server
-  (`WEB_LINK_US`) is on, so it can be turned off at once if Apple starts charging for links to the web. No banners or
-  pop-ups.
+- **No Paddle inside the iPhone app**, and no line pointing iPhone buyers to the website.
 
 - **One account for both.** A pass bought on the website works in the app and the other way round, because it is
   stored on the SkiWithMe account (the email you sign in with), not on the phone.
-- **Order:** Paddle on the website first (most of it is built already), then Apple when the app goes into the App Store.
+- **Order:** the website (Paddle) and the iPhone app (Apple) launch at the same time.
 - **Taxes:** Paddle and Apple are each the seller to the customer. They collect and pay sales tax and VAT and send you
   what is left. You get two monthly payout reports (one from each); book each as income with its fees. Check with
   whoever does your taxes; this is not tax advice.
@@ -98,10 +94,10 @@ Paying needs an account, and accounts need sign-in emails.
   | --- | --- | --- | --- |
   | Day Pass | 2.99 USD | One-time | — |
   | Week Pass | 5.99 USD | One-time | — |
-  | Season Pass | 23.99 USD | Recurring | every 1 year, no trial |
-  | Crew Season Pass | 42.99 USD | Recurring | every 1 year, no trial |
+  | Season Pass | 24.99 USD | Recurring | every 1 year, no trial |
+  | Crew Season Pass | 44.99 USD | Recurring | every 1 year, no trial |
 
-  (If the sandbox products still show $24.99 and $44.99, change them to these too.)
+  (Done 2026-11-24: the owner entered these amounts.)
 
   Tax category: **Standard digital goods** (or "SaaS").
 - Send to Claude: the four **price ids** (they start with `pri_`; open each price to see it).
@@ -230,8 +226,7 @@ Do these once Part C is done. Claude builds the app side at the same time.
 
 ## What Claude builds (for reference)
 
-1. Two price lists: the app's prices for Apple and the web prices for Paddle (`PLANS` in `worker/accounts.js`, the
-   about page and the legal pages show the web prices), plus the US-only "Also on the web" line and its switch.
+1. One price list for both (`PLANS` in `worker/accounts.js`); the Apple products are set to the same amounts.
 2. Website: Paddle switched to live once Part B is done.
 3. Server: receives and checks Apple's signed messages (`/api/apple/notifications`) and records the pass on the
    account, as it does for Paddle; a reminder email before a yearly renewal.
