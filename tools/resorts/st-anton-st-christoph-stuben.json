@@ -1,0 +1,135 @@
+{
+ "id": "st-anton-st-christoph-stuben",
+ "name": "St. Anton am Arlberg",
+ "region": "Tyrol, Austria",
+ "tz": "Europe/Vienna",
+ "auto": true,
+ "area_osm": "relation/3505029",
+ "include_ways": [
+  23102910,
+  23102912,
+  23102914,
+  23103020,
+  23103021,
+  23103022,
+  29709804,
+  29710065,
+  29710083,
+  29710303,
+  29710364,
+  29710452,
+  29710484,
+  29710812,
+  29710874,
+  29711434,
+  29712600,
+  29713679,
+  29713957,
+  29713960,
+  29713972,
+  30765708,
+  48199766,
+  51530389,
+  67902052,
+  67902054,
+  67933586,
+  89863295,
+  89863314,
+  92734978,
+  100874744,
+  110063198,
+  110063211,
+  110135640,
+  110299703,
+  152546243,
+  152546250,
+  152546265,
+  457900532,
+  458106194
+ ],
+ "osm_bbox": [
+  10.1413,
+  47.0766,
+  10.3116,
+  47.1859
+ ],
+ "dem": {
+  "source": "copernicus"
+ },
+ "openskimap": {
+  "id": "66e672470add74c3e6a2bd8d4c1bb07cc4721728",
+  "cc": "AT",
+  "runs": 189,
+  "lifts": 40,
+  "rated": 1.0,
+  "skimap": null,
+  "web": null
+ },
+ "terrain_source": "Copernicus DEM GLO-30, 30 m (produced using Copernicus WorldDEM-30, DLR e.V. and Airbus, provided under COPERNICUS by the European Union and ESA) (30 m 100%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "30m": 100.0
+ },
+ "rename": {
+  "Skiroute - Pfannenköpfe": "Pfannenköpfe",
+  "Skiroute - Arlbergpassroute": "Arlbergpassroute",
+  "Skiroute - Schindlerkar": "Schindlerkar",
+  "Skiroute - Schindlerkar Steilhang": "Schindlerkar Steilhang",
+  "Skiroute - Mattunjoch": "Mattunjoch",
+  "Skiroute - Osthang": "Osthang",
+  "Skiroute - Schindlerhänge": "Schindlerhänge",
+  "Skiroute - Mattun": "Mattun",
+  "Skiroute - Arlbergfilmrinne": "Arlbergfilmrinne",
+  "Skiroute - Untere Schweinströge": "Untere Schweinströge",
+  "Skiroute - Knoppenkar": "Knoppenkar",
+  "Skiroute - Maass": "Maass",
+  "Skiroute - Restauranthang": "Restauranthang",
+  "Skiroute - Wannele": "Wannele",
+  "Skiroute - Tobelroute": "Tobelroute",
+  "Skiroute - Eisfall (nur während Rennen präpariert)": "Eisfall",
+  "Skiroute - Kapall": "Kapall",
+  "Skiroute - Kandahar-Kapall (nur während Rennen präpariert)": "Kandahar-Kapall",
+  "Skiroute - Riffelscharte": "Riffelscharte",
+  "Steißbachtal": "Steissbachtal",
+  "Steißbachtal Zufahrt": "Steissbachtal Zufahrt",
+  "Steißbachtal Arlenrain": "Steissbachtal Arlenrain",
+  "Hoppelweg": "Hopplweg",
+  "Piste Übungslift Gampen I + II": "Piste Übungslifte Gampen I + II",
+  "Grün": "Grün - St. Anton",
+  "Riffel": "Riffel 1"
+ },
+ "two_way_lifts": [
+  "Flexenbahn",
+  "Vallugabahn II"
+ ],
+ "two_way_note": "Flexenbahn: from Alpe Rauz up to the Trittalp on the Zürs side, which is not drawn on this map; skiers ride it back down. Vallugabahn II: the small cable car to the Valluga summit has no run down (skiers only with a guide); everyone rides it back down",
+ "links": [
+  [
+   "trail:Skiroute 51 - Osthang (bottom)",
+   "trail:Zammermoos - St. Anton"
+  ]
+ ],
+ "shared_runs": [
+  [
+   "Fang",
+   "Nasserein"
+  ],
+  [
+   "Stallmähder-Fang",
+   "Hopplweg"
+  ]
+ ],
+ "split_ways": {
+  "54255149": [
+   [
+    10.2218249,
+    47.1528181
+   ],
+   "",
+   ""
+  ]
+ },
+ "drop_ways": {
+  "54255149": "top 324 m of OpenStreetMap's run 85 Valfagehrjoch, south up the ridge above where the run from the Schindlergratbahn top joins it: no lift or run reaches it (cut off with split_ways; the run below the junction is kept)"
+ }
+}

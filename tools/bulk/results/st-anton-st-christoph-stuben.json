@@ -1,0 +1,24 @@
+{
+ "id": "st-anton-st-christoph-stuben",
+ "reachable": null,
+ "auto_joins": 0,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 1,
+ "raised": 0,
+ "official": [
+  202,
+  128,
+  0
+ ],
+ "terrain_res": 30,
+ "terrain_shares": {
+  "30m": 100.0
+ },
+ "notes": [
+  "the resort's outline relation/3505029 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)"
+ ],
+ "seconds": 21,
+ "failed": null,
+ "built": "2026-11-24"
+}

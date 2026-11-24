@@ -1,0 +1,48 @@
+{
+ "id": "les-grands-montets",
+ "name": "Chamonix: Grands Montets",
+ "region": "Haute-Savoie, France",
+ "tz": "Europe/Paris",
+ "auto": true,
+ "area_osm": "way/642251577",
+ "include_ways": [
+  23266365,
+  23266367,
+  23266370,
+  305162724,
+  319928657,
+  624174241,
+  1150889370,
+  1447077066,
+  1483322424
+ ],
+ "osm_bbox": [
+  6.9129,
+  45.9363,
+  6.976,
+  45.9866
+ ],
+ "dem": {
+  "source": "ign"
+ },
+ "openskimap": {
+  "id": "529fcab6ce37f59505fcbd53b7904688bc4b635f",
+  "cc": "FR",
+  "runs": 40,
+  "lifts": 9,
+  "rated": 1.0,
+  "skimap": 795,
+  "web": "https://www.chamonix.com/grands-montets-ski-area,285,en.html"
+ },
+ "area_name": "Les Grands Montets",
+ "area_buffer": 300,
+ "terrain_source": "IGN RGE ALTI 1 m (other 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "other": 100.0
+ },
+ "dead_end_notes": {
+  "Couloir de Poubelle": "freeride itinerary from the top of the Bochard / La Herse lifts; OpenStreetMap ends its line on the open slope above the groomed runs, so it joins nothing at its bottom (left as mapped)",
+  "Italian Bowl": "freeride itinerary from the top of the Bochard / La Herse lifts; OpenStreetMap ends its line on the open slope above the groomed runs, so it joins nothing at its bottom (left as mapped)"
+ }
+}

@@ -450,6 +450,9 @@ label.lbl { color: var(--ink); font-size: 15px; font-weight: 700; margin: 12px 0
 #start-panel { height: auto; max-height: calc(var(--app-h) * .54); top: auto; padding: 22px 14px calc(var(--sab) + 12px); gap: 0;
   background: linear-gradient(180deg, rgba(22, 44, 68, .96), rgba(9, 24, 40, .98)); border: 1px solid var(--edge2); border-bottom: 0; border-radius: 26px 26px 0 0; }
 #start-panel .grab { top: 8px; }
+/* the panel is all but opaque here, so the blur behind it showed nothing, yet the phone redrew it over the moving globe on
+   every frame of a slide (it made the slide up to the whole screen feel slow, owner 2026-11-24) */
+#start-panel { backdrop-filter: none; -webkit-backdrop-filter: none; }
 #start-panel h2 { margin: 2px 4px 12px; font-size: 27px; font-weight: 800; letter-spacing: -.4px; }
 .search { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 46px; border-radius: 13px; border: 1.5px solid var(--edge2); background: rgba(5, 16, 28, .5); color: #dce8f3; }
 .search input { flex: 1; min-width: 0; border: 0; background: none; outline: none; font-size: 16px; color: #fff; -webkit-user-select: text; user-select: text; }
@@ -935,3 +938,6 @@ input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webki
 .known-prob .sub { margin: 4px 0; }
 .known-prob .cols2 { margin-top: 8px; gap: 8px; }
 .known-prob .cols2 .btn { margin: 0; }
+/* "Simulate free tier" is on: say so where a pass would otherwise show */
+.sim-note { margin: 8px 0; padding: 8px 10px; border: 1.5px solid #e9a21a; border-radius: 10px; background: rgba(60, 40, 6, .35); }
+.sim-note .sub { color: #ffc94a; margin: 0 0 6px; }

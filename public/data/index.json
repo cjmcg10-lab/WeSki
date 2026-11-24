@@ -1,7 +1,24 @@
 [
  {
+  "id": "4-vallees-verbier-la-tzoumaz-nendaz-veys",
+  "name": "Verbier \u2013 4 Vall\u00e9es",
+  "region": "Valais, Switzerland",
+  "tz": "Europe/Zurich",
+  "lat": 46.08006,
+  "lon": 7.31836,
+  "baseLat": 46.07852,
+  "baseLon": 7.21454,
+  "top": 3296,
+  "base": 820,
+  "trails": 96,
+  "lifts": 75,
+  "zones": true,
+  "bytes": 4085675,
+  "checked": true
+ },
+ {
   "id": "49-north-mountain",
-  "name": "49° North Mountain",
+  "name": "49\u00b0 North Mountain",
   "region": "Washington, USA",
   "tz": "America/Los_Angeles",
   "lat": 48.28447,
@@ -13,7 +30,7 @@
   "trails": 83,
   "lifts": 7,
   "zones": false,
-  "bytes": 751750,
+  "bytes": 855820,
   "checked": true
  },
  {
@@ -30,7 +47,41 @@
   "trails": 37,
   "lifts": 20,
   "zones": false,
-  "bytes": 273886,
+  "bytes": 319778,
+  "checked": true
+ },
+ {
+  "id": "alpe-d-huez-grand-domaine",
+  "name": "Alpe d'Huez",
+  "region": "Is\u00e8re, France",
+  "tz": "Europe/Paris",
+  "lat": 45.12511,
+  "lon": 6.12776,
+  "baseLat": 45.12602,
+  "baseLon": 6.03813,
+  "top": 3312,
+  "base": 725,
+  "trails": 135,
+  "lifts": 80,
+  "zones": true,
+  "bytes": 2998691,
+  "checked": true
+ },
+ {
+  "id": "alpental",
+  "name": "Alpental",
+  "region": "Washington, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 47.45874,
+  "lon": -121.41664,
+  "baseLat": 47.44488,
+  "baseLon": -121.42636,
+  "top": 1900,
+  "base": 957,
+  "trails": 40,
+  "lifts": 6,
+  "zones": false,
+  "bytes": 523343,
   "checked": true
  },
  {
@@ -47,8 +98,26 @@
   "trails": 143,
   "lifts": 11,
   "zones": false,
-  "bytes": 909903,
+  "bytes": 1130981,
   "checked": true
+ },
+ {
+  "id": "alta-badia",
+  "name": "Alta Badia",
+  "region": "Bolzano/Bozen, Italy",
+  "tz": "Europe/Rome",
+  "lat": 46.5223,
+  "lon": 11.84966,
+  "baseLat": 46.6092,
+  "baseLon": 11.89655,
+  "top": 2520,
+  "base": 1342,
+  "trails": 92,
+  "lifts": 58,
+  "zones": true,
+  "bytes": 2433397,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "alyeska",
@@ -64,7 +133,7 @@
   "trails": 92,
   "lifts": 7,
   "zones": true,
-  "bytes": 563018,
+  "bytes": 653587,
   "checked": true
  },
  {
@@ -81,7 +150,7 @@
   "trails": 94,
   "lifts": 9,
   "zones": false,
-  "bytes": 847584,
+  "bytes": 943422,
   "checked": true
  },
  {
@@ -98,9 +167,43 @@
   "trails": 63,
   "lifts": 4,
   "zones": true,
-  "bytes": 620778,
+  "bytes": 701503,
   "checked": true,
   "coarse": true
+ },
+ {
+  "id": "arapahoe-basin",
+  "name": "Arapahoe Basin",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.62869,
+  "lon": -105.85892,
+  "baseLat": 39.64117,
+  "baseLon": -105.87486,
+  "top": 3943,
+  "base": 3289,
+  "trails": 169,
+  "lifts": 9,
+  "zones": false,
+  "bytes": 824723,
+  "checked": true
+ },
+ {
+  "id": "arizona-snowbowl",
+  "name": "Arizona Snowbowl",
+  "region": "Arizona, USA",
+  "tz": "America/Phoenix",
+  "lat": 35.32742,
+  "lon": -111.68119,
+  "baseLat": 35.33407,
+  "baseLon": -111.71346,
+  "top": 3579,
+  "base": 2791,
+  "trails": 51,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 389480,
+  "checked": true
  },
  {
   "id": "aspen-highlands",
@@ -116,7 +219,7 @@
   "trails": 111,
   "lifts": 6,
   "zones": false,
-  "bytes": 1100930,
+  "bytes": 1266227,
   "checked": true
  },
  {
@@ -133,7 +236,7 @@
   "trails": 143,
   "lifts": 6,
   "zones": false,
-  "bytes": 1014105,
+  "bytes": 1115192,
   "checked": true
  },
  {
@@ -150,7 +253,7 @@
   "trails": 129,
   "lifts": 18,
   "zones": true,
-  "bytes": 1943272,
+  "bytes": 2181819,
   "checked": true
  },
  {
@@ -167,7 +270,24 @@
   "trails": 72,
   "lifts": 8,
   "zones": true,
-  "bytes": 543280,
+  "bytes": 616561,
+  "checked": true
+ },
+ {
+  "id": "balme-vallorcine",
+  "name": "Chamonix: Balme \u2013 Le Tour \u2013 Vallorcine",
+  "region": "Haute-Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 46.03035,
+  "lon": 6.96256,
+  "baseLat": 46.03345,
+  "baseLon": 6.93321,
+  "top": 2253,
+  "base": 1256,
+  "trails": 22,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 750356,
   "checked": true
  },
  {
@@ -184,9 +304,26 @@
   "trails": 160,
   "lifts": 14,
   "zones": true,
-  "bytes": 985470,
+  "bytes": 1108228,
   "checked": false,
   "coarse": true
+ },
+ {
+  "id": "bear-mountain",
+  "name": "Bear Mountain",
+  "region": "California, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 34.21022,
+  "lon": -116.85082,
+  "baseLat": 34.22755,
+  "baseLon": -116.85968,
+  "top": 2679,
+  "base": 2177,
+  "trails": 25,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 380942,
+  "checked": true
  },
  {
   "id": "bear-valley",
@@ -202,7 +339,7 @@
   "trails": 97,
   "lifts": 9,
   "zones": true,
-  "bytes": 707959,
+  "bytes": 822391,
   "checked": true
  },
  {
@@ -219,8 +356,25 @@
   "trails": 163,
   "lifts": 25,
   "zones": false,
-  "bytes": 2675656,
+  "bytes": 2953502,
   "checked": false
+ },
+ {
+  "id": "beech-mountain",
+  "name": "Beech Mountain",
+  "region": "North Carolina, USA",
+  "tz": "America/New_York",
+  "lat": 36.18524,
+  "lon": -81.88065,
+  "baseLat": 36.19373,
+  "baseLon": -81.8775,
+  "top": 1659,
+  "base": 1431,
+  "trails": 11,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 296655,
+  "checked": true
  },
  {
   "id": "belleayre-mountain-center",
@@ -236,7 +390,7 @@
   "trails": 62,
   "lifts": 8,
   "zones": true,
-  "bytes": 542673,
+  "bytes": 617297,
   "checked": true
  },
  {
@@ -253,7 +407,24 @@
   "trails": 41,
   "lifts": 6,
   "zones": false,
-  "bytes": 358841,
+  "bytes": 365995,
+  "checked": true
+ },
+ {
+  "id": "big-boulder",
+  "name": "Big Boulder",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 41.04468,
+  "lon": -75.60219,
+  "baseLat": 41.04993,
+  "baseLon": -75.60032,
+  "top": 663,
+  "base": 549,
+  "trails": 18,
+  "lifts": 7,
+  "zones": false,
+  "bytes": 172587,
   "checked": true
  },
  {
@@ -270,7 +441,7 @@
   "trails": 340,
   "lifts": 43,
   "zones": false,
-  "bytes": 2587700,
+  "bytes": 3527698,
   "checked": true
  },
  {
@@ -287,7 +458,7 @@
   "trails": 106,
   "lifts": 16,
   "zones": true,
-  "bytes": 1397977,
+  "bytes": 1523517,
   "checked": false,
   "coarse": true
  },
@@ -305,7 +476,7 @@
   "trails": 51,
   "lifts": 13,
   "zones": true,
-  "bytes": 585782,
+  "bytes": 649246,
   "checked": true
  },
  {
@@ -322,7 +493,7 @@
   "trails": 33,
   "lifts": 15,
   "zones": true,
-  "bytes": 311724,
+  "bytes": 365294,
   "checked": false
  },
  {
@@ -339,7 +510,7 @@
   "trails": 106,
   "lifts": 11,
   "zones": false,
-  "bytes": 972271,
+  "bytes": 1094395,
   "checked": true
  },
  {
@@ -356,7 +527,41 @@
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 544391,
+  "bytes": 551285,
+  "checked": true
+ },
+ {
+  "id": "boston-mills",
+  "name": "Boston Mills",
+  "region": "Ohio, USA",
+  "tz": "America/New_York",
+  "lat": 41.26345,
+  "lon": -81.56893,
+  "baseLat": 41.26549,
+  "baseLon": -81.56511,
+  "top": 264,
+  "base": 201,
+  "trails": 7,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 154401,
+  "checked": true
+ },
+ {
+  "id": "boyne-highlands",
+  "name": "The Highlands",
+  "region": "Michigan, USA",
+  "tz": "America/Detroit",
+  "lat": 45.48065,
+  "lon": -84.95154,
+  "baseLat": 45.46817,
+  "baseLon": -84.93598,
+  "top": 400,
+  "base": 242,
+  "trails": 54,
+  "lifts": 7,
+  "zones": false,
+  "bytes": 373998,
   "checked": true
  },
  {
@@ -373,7 +578,24 @@
   "trails": 62,
   "lifts": 10,
   "zones": false,
-  "bytes": 428168,
+  "bytes": 486835,
+  "checked": true
+ },
+ {
+  "id": "brandywine",
+  "name": "Brandywine",
+  "region": "Ohio, USA",
+  "tz": "America/New_York",
+  "lat": 41.28201,
+  "lon": -81.55393,
+  "baseLat": 41.28564,
+  "baseLon": -81.55618,
+  "top": 258,
+  "base": 199,
+  "trails": 9,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 138084,
   "checked": true
  },
  {
@@ -390,7 +612,7 @@
   "trails": 213,
   "lifts": 35,
   "zones": true,
-  "bytes": 1586721,
+  "bytes": 2219817,
   "checked": true
  },
  {
@@ -407,7 +629,24 @@
   "trails": 105,
   "lifts": 9,
   "zones": false,
-  "bytes": 608903,
+  "bytes": 612183,
+  "checked": true
+ },
+ {
+  "id": "brevent-flegere-chamonix",
+  "name": "Chamonix: Br\u00e9vent-Fl\u00e9g\u00e8re",
+  "region": "Haute-Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.93354,
+  "lon": 6.83762,
+  "baseLat": 45.94177,
+  "baseLon": 6.88528,
+  "top": 2499,
+  "base": 1060,
+  "trails": 36,
+  "lifts": 18,
+  "zones": true,
+  "bytes": 1351233,
   "checked": true
  },
  {
@@ -424,7 +663,7 @@
   "trails": 59,
   "lifts": 13,
   "zones": false,
-  "bytes": 579535,
+  "bytes": 671977,
   "checked": true
  },
  {
@@ -441,7 +680,7 @@
   "trails": 61,
   "lifts": 12,
   "zones": false,
-  "bytes": 709372,
+  "bytes": 822705,
   "checked": true
  },
  {
@@ -458,7 +697,24 @@
   "trails": 63,
   "lifts": 8,
   "zones": false,
-  "bytes": 799941,
+  "bytes": 923805,
+  "checked": true
+ },
+ {
+  "id": "bristol-mountain",
+  "name": "Bristol Mountain",
+  "region": "New York, USA",
+  "tz": "America/New_York",
+  "lat": 42.74117,
+  "lon": -77.42169,
+  "baseLat": 42.74749,
+  "baseLon": -77.40604,
+  "top": 655,
+  "base": 308,
+  "trails": 39,
+  "lifts": 6,
+  "zones": true,
+  "bytes": 298122,
   "checked": true
  },
  {
@@ -475,12 +731,12 @@
   "trails": 47,
   "lifts": 8,
   "zones": false,
-  "bytes": 307590,
+  "bytes": 355322,
   "checked": true
  },
  {
   "id": "bromont-montagne-d-experience",
-  "name": "Bromont Montagne d'Expérience",
+  "name": "Bromont Montagne d'Exp\u00e9rience",
   "region": "Quebec, Canada",
   "tz": "America/Toronto",
   "lat": 45.28951,
@@ -492,7 +748,7 @@
   "trails": 110,
   "lifts": 11,
   "zones": false,
-  "bytes": 680811,
+  "bytes": 756094,
   "checked": true
  },
  {
@@ -509,7 +765,7 @@
   "trails": 79,
   "lifts": 6,
   "zones": false,
-  "bytes": 840566,
+  "bytes": 854131,
   "checked": true
  },
  {
@@ -526,7 +782,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": true,
-  "bytes": 431332,
+  "bytes": 561704,
   "checked": true
  },
  {
@@ -543,7 +799,7 @@
   "trails": 35,
   "lifts": 15,
   "zones": true,
-  "bytes": 339892,
+  "bytes": 389304,
   "checked": true
  },
  {
@@ -560,7 +816,7 @@
   "trails": 101,
   "lifts": 9,
   "zones": false,
-  "bytes": 593634,
+  "bytes": 598455,
   "checked": true
  },
  {
@@ -577,7 +833,7 @@
   "trails": 47,
   "lifts": 11,
   "zones": false,
-  "bytes": 291215,
+  "bytes": 339841,
   "checked": true
  },
  {
@@ -594,7 +850,7 @@
   "trails": 151,
   "lifts": 7,
   "zones": false,
-  "bytes": 797213,
+  "bytes": 910380,
   "checked": true,
   "coarse": true
  },
@@ -612,7 +868,7 @@
   "trails": 46,
   "lifts": 7,
   "zones": false,
-  "bytes": 328606,
+  "bytes": 339410,
   "checked": true
  },
  {
@@ -629,7 +885,7 @@
   "trails": 45,
   "lifts": 11,
   "zones": false,
-  "bytes": 478341,
+  "bytes": 547394,
   "checked": true
  },
  {
@@ -646,7 +902,24 @@
   "trails": 149,
   "lifts": 23,
   "zones": false,
-  "bytes": 1105455,
+  "bytes": 1489134,
+  "checked": true
+ },
+ {
+  "id": "courchevel-meribel",
+  "name": "Courchevel \u2013 M\u00e9ribel",
+  "region": "Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.3286,
+  "lon": 6.6096,
+  "baseLat": 45.45049,
+  "baseLon": 6.56572,
+  "top": 2910,
+  "base": 610,
+  "trails": 202,
+  "lifts": 102,
+  "zones": true,
+  "bytes": 4213100,
   "checked": true
  },
  {
@@ -663,7 +936,7 @@
   "trails": 55,
   "lifts": 8,
   "zones": false,
-  "bytes": 352399,
+  "bytes": 404698,
   "checked": true
  },
  {
@@ -680,7 +953,24 @@
   "trails": 243,
   "lifts": 15,
   "zones": true,
-  "bytes": 1203830,
+  "bytes": 1340764,
+  "checked": true
+ },
+ {
+  "id": "crotched-mountain-ride",
+  "name": "Crotched Mountain",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 43.00273,
+  "lon": -71.87875,
+  "baseLat": 43.01129,
+  "baseLon": -71.87746,
+  "top": 584,
+  "base": 316,
+  "trails": 25,
+  "lifts": 5,
+  "zones": false,
+  "bytes": 202791,
   "checked": true
  },
  {
@@ -697,7 +987,24 @@
   "trails": 139,
   "lifts": 11,
   "zones": false,
-  "bytes": 829763,
+  "bytes": 1273873,
+  "checked": true
+ },
+ {
+  "id": "crystal-mountain-michigan",
+  "name": "Crystal Mountain",
+  "region": "Michigan, USA",
+  "tz": "America/Detroit",
+  "lat": 44.52368,
+  "lon": -85.99869,
+  "baseLat": 44.51812,
+  "baseLon": -85.9937,
+  "top": 344,
+  "base": 242,
+  "trails": 53,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 352784,
   "checked": true
  },
  {
@@ -714,7 +1021,7 @@
   "trails": 63,
   "lifts": 8,
   "zones": true,
-  "bytes": 1411849,
+  "bytes": 1618352,
   "checked": true,
   "coarse": true
  },
@@ -732,7 +1039,7 @@
   "trails": 236,
   "lifts": 34,
   "zones": false,
-  "bytes": 2208689,
+  "bytes": 2853570,
   "checked": true
  },
  {
@@ -749,7 +1056,7 @@
   "trails": 67,
   "lifts": 11,
   "zones": false,
-  "bytes": 660731,
+  "bytes": 760473,
   "checked": true
  },
  {
@@ -766,7 +1073,24 @@
   "trails": 61,
   "lifts": 10,
   "zones": false,
-  "bytes": 500583,
+  "bytes": 576653,
+  "checked": true
+ },
+ {
+  "id": "elk-mountain",
+  "name": "Elk Mountain",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 41.71578,
+  "lon": -75.56,
+  "baseLat": 41.72462,
+  "baseLon": -75.55745,
+  "top": 813,
+  "base": 533,
+  "trails": 30,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 290740,
   "checked": true
  },
  {
@@ -783,7 +1107,7 @@
   "trails": 133,
   "lifts": 10,
   "zones": false,
-  "bytes": 1020919,
+  "bytes": 1155646,
   "checked": true
  },
  {
@@ -800,7 +1124,7 @@
   "trails": 13,
   "lifts": 5,
   "zones": false,
-  "bytes": 309498,
+  "bytes": 315263,
   "checked": true
  },
  {
@@ -817,7 +1141,7 @@
   "trails": 111,
   "lifts": 14,
   "zones": false,
-  "bytes": 917726,
+  "bytes": 1049172,
   "checked": true
  },
  {
@@ -834,7 +1158,24 @@
   "trails": 94,
   "lifts": 6,
   "zones": false,
-  "bytes": 775427,
+  "bytes": 897821,
+  "checked": true
+ },
+ {
+  "id": "granite-peak",
+  "name": "Granite Peak",
+  "region": "Wisconsin, USA",
+  "tz": "America/Chicago",
+  "lat": 44.92155,
+  "lon": -89.69389,
+  "baseLat": 44.92953,
+  "baseLon": -89.68065,
+  "top": 574,
+  "base": 371,
+  "trails": 59,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 324860,
   "checked": true
  },
  {
@@ -851,8 +1192,26 @@
   "trails": 125,
   "lifts": 6,
   "zones": false,
-  "bytes": 585852,
+  "bytes": 666947,
   "checked": true
+ },
+ {
+  "id": "grouse-mountain",
+  "name": "Grouse Mountain",
+  "region": "British Columbia, Canada",
+  "tz": "America/Vancouver",
+  "lat": 49.38623,
+  "lon": -123.07663,
+  "baseLat": 49.37261,
+  "baseLon": -123.09951,
+  "top": 1203,
+  "base": 291,
+  "trails": 41,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 490519,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "gunstock-recreation",
@@ -868,7 +1227,7 @@
   "trails": 51,
   "lifts": 6,
   "zones": true,
-  "bytes": 422701,
+  "bytes": 479358,
   "checked": true
  },
  {
@@ -885,7 +1244,24 @@
   "trails": 132,
   "lifts": 24,
   "zones": true,
-  "bytes": 1936036,
+  "bytes": 1949578,
+  "checked": true
+ },
+ {
+  "id": "hidden-valley-pennsylvania",
+  "name": "Hidden Valley",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 40.05163,
+  "lon": -79.25758,
+  "baseLat": 40.06275,
+  "baseLon": -79.24959,
+  "top": 881,
+  "base": 733,
+  "trails": 30,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 269823,
   "checked": true
  },
  {
@@ -902,7 +1278,7 @@
   "trails": 69,
   "lifts": 13,
   "zones": true,
-  "bytes": 475064,
+  "bytes": 536332,
   "checked": true
  },
  {
@@ -919,7 +1295,7 @@
   "trails": 65,
   "lifts": 7,
   "zones": false,
-  "bytes": 598060,
+  "bytes": 665709,
   "checked": true
  },
  {
@@ -936,7 +1312,24 @@
   "trails": 65,
   "lifts": 11,
   "zones": true,
-  "bytes": 649539,
+  "bytes": 654553,
+  "checked": true
+ },
+ {
+  "id": "jack-frost-mountain",
+  "name": "Jack Frost Mountain",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 41.10698,
+  "lon": -75.6477,
+  "baseLat": 41.11419,
+  "baseLon": -75.6485,
+  "top": 603,
+  "base": 444,
+  "trails": 21,
+  "lifts": 7,
+  "zones": false,
+  "bytes": 214946,
   "checked": true
  },
  {
@@ -953,7 +1346,7 @@
   "trails": 143,
   "lifts": 17,
   "zones": false,
-  "bytes": 1933988,
+  "bytes": 1956411,
   "checked": true
  },
  {
@@ -970,7 +1363,41 @@
   "trails": 91,
   "lifts": 9,
   "zones": true,
-  "bytes": 560638,
+  "bytes": 569073,
+  "checked": true
+ },
+ {
+  "id": "jiminy-peak",
+  "name": "Jiminy Peak",
+  "region": "Massachusetts, USA",
+  "tz": "America/New_York",
+  "lat": 42.5439,
+  "lon": -73.28776,
+  "baseLat": 42.55513,
+  "baseLon": -73.29118,
+  "top": 724,
+  "base": 380,
+  "trails": 45,
+  "lifts": 8,
+  "zones": false,
+  "bytes": 374672,
+  "checked": true
+ },
+ {
+  "id": "june-mountain",
+  "name": "June Mountain",
+  "region": "California, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 37.74029,
+  "lon": -119.07307,
+  "baseLat": 37.76792,
+  "baseLon": -119.08976,
+  "top": 3087,
+  "base": 2309,
+  "trails": 29,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 663626,
   "checked": true
  },
  {
@@ -987,8 +1414,26 @@
   "trails": 154,
   "lifts": 20,
   "zones": true,
-  "bytes": 2060113,
+  "bytes": 2080756,
   "checked": true
+ },
+ {
+  "id": "kicking-horse",
+  "name": "Kicking Horse",
+  "region": "British Columbia, Canada",
+  "tz": "America/Edmonton",
+  "lat": 51.28337,
+  "lon": -117.09844,
+  "baseLat": 51.29754,
+  "baseLon": -117.04867,
+  "top": 2491,
+  "base": 1262,
+  "trails": 58,
+  "lifts": 5,
+  "zones": true,
+  "bytes": 718774,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "killington",
@@ -1004,7 +1449,7 @@
   "trails": 161,
   "lifts": 22,
   "zones": false,
-  "bytes": 1768941,
+  "bytes": 1775243,
   "checked": true
  },
  {
@@ -1021,7 +1466,7 @@
   "trails": 62,
   "lifts": 5,
   "zones": false,
-  "bytes": 634970,
+  "bytes": 727492,
   "checked": false,
   "coarse": true
  },
@@ -1039,8 +1484,26 @@
   "trails": 74,
   "lifts": 13,
   "zones": false,
-  "bytes": 786328,
+  "bytes": 921591,
   "checked": false
+ },
+ {
+  "id": "kitzski",
+  "name": "Kitzb\u00fchel (KitzSki)",
+  "region": "Tyrol, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 47.32086,
+  "lon": 12.34849,
+  "baseLat": 47.45018,
+  "baseLon": 12.39485,
+  "top": 1991,
+  "base": 766,
+  "trails": 97,
+  "lifts": 63,
+  "zones": true,
+  "bytes": 4213149,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "la-plagne",
@@ -1056,7 +1519,7 @@
   "trails": 158,
   "lifts": 87,
   "zones": true,
-  "bytes": 3142457,
+  "bytes": 3816260,
   "checked": true
  },
  {
@@ -1073,7 +1536,7 @@
   "trails": 161,
   "lifts": 13,
   "zones": false,
-  "bytes": 1129585,
+  "bytes": 1264871,
   "checked": false,
   "coarse": true
  },
@@ -1091,7 +1554,7 @@
   "trails": 59,
   "lifts": 9,
   "zones": true,
-  "bytes": 575483,
+  "bytes": 640028,
   "checked": false
  },
  {
@@ -1108,7 +1571,7 @@
   "trails": 128,
   "lifts": 78,
   "zones": true,
-  "bytes": 3097135,
+  "bytes": 3719155,
   "checked": true
  },
  {
@@ -1125,7 +1588,41 @@
   "trails": 46,
   "lifts": 27,
   "zones": true,
-  "bytes": 1760517,
+  "bytes": 1779672,
+  "checked": true
+ },
+ {
+  "id": "les-grands-montets",
+  "name": "Chamonix: Grands Montets",
+  "region": "Haute-Savoie, France",
+  "tz": "Europe/Paris",
+  "lat": 45.9475,
+  "lon": 6.9605,
+  "baseLat": 45.97857,
+  "baseLon": 6.92658,
+  "top": 3233,
+  "base": 1234,
+  "trails": 26,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 663446,
+  "checked": true
+ },
+ {
+  "id": "liberty-mountain",
+  "name": "Liberty Mountain",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 39.75589,
+  "lon": -77.3694,
+  "baseLat": 39.76232,
+  "baseLon": -77.37487,
+  "top": 355,
+  "base": 178,
+  "trails": 20,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 199377,
   "checked": true
  },
  {
@@ -1142,7 +1639,7 @@
   "trails": 76,
   "lifts": 12,
   "zones": false,
-  "bytes": 780648,
+  "bytes": 784219,
   "checked": true
  },
  {
@@ -1159,7 +1656,7 @@
   "trails": 69,
   "lifts": 8,
   "zones": false,
-  "bytes": 601773,
+  "bytes": 690954,
   "checked": false
  },
  {
@@ -1176,7 +1673,7 @@
   "trails": 86,
   "lifts": 7,
   "zones": false,
-  "bytes": 533107,
+  "bytes": 639232,
   "checked": false
  },
  {
@@ -1193,7 +1690,7 @@
   "trails": 90,
   "lifts": 7,
   "zones": true,
-  "bytes": 530433,
+  "bytes": 588200,
   "checked": false
  },
  {
@@ -1210,7 +1707,24 @@
   "trails": 60,
   "lifts": 5,
   "zones": false,
-  "bytes": 351442,
+  "bytes": 412200,
+  "checked": true
+ },
+ {
+  "id": "mad-river-mountain",
+  "name": "Mad River Mountain",
+  "region": "Ohio, USA",
+  "tz": "America/New_York",
+  "lat": 40.31336,
+  "lon": -83.67531,
+  "baseLat": 40.31639,
+  "baseLon": -83.67904,
+  "top": 443,
+  "base": 355,
+  "trails": 14,
+  "lifts": 11,
+  "zones": false,
+  "bytes": 165609,
   "checked": true
  },
  {
@@ -1227,7 +1741,7 @@
   "trails": 52,
   "lifts": 6,
   "zones": true,
-  "bytes": 379123,
+  "bytes": 386419,
   "checked": true
  },
  {
@@ -1244,7 +1758,7 @@
   "trails": 170,
   "lifts": 28,
   "zones": false,
-  "bytes": 1623866,
+  "bytes": 1646963,
   "checked": true
  },
  {
@@ -1261,9 +1775,43 @@
   "trails": 91,
   "lifts": 6,
   "zones": false,
-  "bytes": 440234,
+  "bytes": 516163,
   "checked": false,
   "coarse": true
+ },
+ {
+  "id": "massanutten",
+  "name": "Massanutten",
+  "region": "Virginia, USA",
+  "tz": "America/New_York",
+  "lat": 38.39284,
+  "lon": -78.76899,
+  "baseLat": 38.40311,
+  "baseLon": -78.75467,
+  "top": 861,
+  "base": 546,
+  "trails": 21,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 328919,
+  "checked": true
+ },
+ {
+  "id": "mission-ridge",
+  "name": "Mission Ridge",
+  "region": "Washington, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 47.27369,
+  "lon": -120.42725,
+  "baseLat": 47.29126,
+  "baseLon": -120.39937,
+  "top": 2066,
+  "base": 1401,
+  "trails": 59,
+  "lifts": 7,
+  "zones": true,
+  "bytes": 539005,
+  "checked": true
  },
  {
   "id": "mohawk-mountain",
@@ -1279,7 +1827,7 @@
   "trails": 27,
   "lifts": 7,
   "zones": false,
-  "bytes": 224773,
+  "bytes": 233607,
   "checked": true
  },
  {
@@ -1296,8 +1844,25 @@
   "trails": 77,
   "lifts": 9,
   "zones": true,
-  "bytes": 467451,
+  "bytes": 550317,
   "checked": false
+ },
+ {
+  "id": "mont-orford",
+  "name": "Mont Orford",
+  "region": "Quebec, Canada",
+  "tz": "America/Toronto",
+  "lat": 45.31277,
+  "lon": -72.23975,
+  "baseLat": 45.311,
+  "baseLon": -72.21005,
+  "top": 837,
+  "base": 316,
+  "trails": 59,
+  "lifts": 8,
+  "zones": false,
+  "bytes": 455483,
+  "checked": true
  },
  {
   "id": "mont-sainte-anne",
@@ -1313,7 +1878,7 @@
   "trails": 70,
   "lifts": 9,
   "zones": false,
-  "bytes": 731017,
+  "bytes": 818059,
   "checked": false
  },
  {
@@ -1330,7 +1895,7 @@
   "trails": 60,
   "lifts": 9,
   "zones": false,
-  "bytes": 544953,
+  "bytes": 612119,
   "checked": true
  },
  {
@@ -1347,7 +1912,7 @@
   "trails": 114,
   "lifts": 16,
   "zones": true,
-  "bytes": 1475695,
+  "bytes": 1623212,
   "checked": true
  },
  {
@@ -1364,7 +1929,7 @@
   "trails": 60,
   "lifts": 6,
   "zones": false,
-  "bytes": 777735,
+  "bytes": 892985,
   "checked": false
  },
  {
@@ -1381,7 +1946,7 @@
   "trails": 52,
   "lifts": 6,
   "zones": true,
-  "bytes": 299573,
+  "bytes": 349950,
   "checked": true
  },
  {
@@ -1398,7 +1963,7 @@
   "trails": 70,
   "lifts": 8,
   "zones": true,
-  "bytes": 440160,
+  "bytes": 513594,
   "checked": false
  },
  {
@@ -1415,7 +1980,7 @@
   "trails": 89,
   "lifts": 19,
   "zones": false,
-  "bytes": 628852,
+  "bytes": 771176,
   "checked": true
  },
  {
@@ -1432,7 +1997,24 @@
   "trails": 14,
   "lifts": 7,
   "zones": true,
-  "bytes": 170105,
+  "bytes": 211507,
+  "checked": true
+ },
+ {
+  "id": "mount-st-louis-moonstone",
+  "name": "Mount St. Louis Moonstone",
+  "region": "Ontario, Canada",
+  "tz": "America/Toronto",
+  "lat": 44.62544,
+  "lon": -79.67482,
+  "baseLat": 44.62893,
+  "baseLon": -79.66356,
+  "top": 371,
+  "base": 216,
+  "trails": 41,
+  "lifts": 10,
+  "zones": false,
+  "bytes": 257467,
   "checked": true
  },
  {
@@ -1446,10 +2028,10 @@
   "baseLon": -72.07721,
   "top": 829,
   "base": 384,
-  "trails": 75,
+  "trails": 74,
   "lifts": 10,
   "zones": false,
-  "bytes": 465095,
+  "bytes": 531588,
   "checked": true
  },
  {
@@ -1466,9 +2048,43 @@
   "trails": 100,
   "lifts": 10,
   "zones": true,
-  "bytes": 732725,
+  "bytes": 809514,
   "checked": false,
   "coarse": true
+ },
+ {
+  "id": "mountain-creek",
+  "name": "Mountain Creek",
+  "region": "New Jersey, USA",
+  "tz": "America/New_York",
+  "lat": 41.1764,
+  "lon": -74.5108,
+  "baseLat": 41.17818,
+  "baseLon": -74.53083,
+  "top": 447,
+  "base": 139,
+  "trails": 41,
+  "lifts": 11,
+  "zones": true,
+  "bytes": 750490,
+  "checked": true
+ },
+ {
+  "id": "mountain-high",
+  "name": "Mountain High",
+  "region": "California, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 34.35791,
+  "lon": -117.68234,
+  "baseLat": 34.37183,
+  "baseLon": -117.67662,
+  "top": 2494,
+  "base": 2007,
+  "trails": 37,
+  "lifts": 12,
+  "zones": false,
+  "bytes": 587064,
+  "checked": true
  },
  {
   "id": "mt-bachelor",
@@ -1484,8 +2100,42 @@
   "trails": 106,
   "lifts": 15,
   "zones": true,
-  "bytes": 1384820,
+  "bytes": 1553183,
   "checked": false
+ },
+ {
+  "id": "mt-baker",
+  "name": "Mt. Baker",
+  "region": "Washington, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 48.84828,
+  "lon": -121.66521,
+  "baseLat": 48.86144,
+  "baseLon": -121.65438,
+  "top": 1555,
+  "base": 1107,
+  "trails": 37,
+  "lifts": 10,
+  "zones": false,
+  "bytes": 434026,
+  "checked": true
+ },
+ {
+  "id": "mt-brighton",
+  "name": "Mt. Brighton",
+  "region": "Michigan, USA",
+  "tz": "America/Detroit",
+  "lat": 42.53736,
+  "lon": -83.80942,
+  "baseLat": 42.53939,
+  "baseLon": -83.80559,
+  "top": 340,
+  "base": 285,
+  "trails": 21,
+  "lifts": 12,
+  "zones": true,
+  "bytes": 190681,
+  "checked": true
  },
  {
   "id": "mt-hood-meadows",
@@ -1501,7 +2151,7 @@
   "trails": 126,
   "lifts": 11,
   "zones": true,
-  "bytes": 922524,
+  "bytes": 1046465,
   "checked": false
  },
  {
@@ -1518,7 +2168,7 @@
   "trails": 70,
   "lifts": 9,
   "zones": false,
-  "bytes": 469789,
+  "bytes": 404760,
   "checked": true
  },
  {
@@ -1535,7 +2185,7 @@
   "trails": 74,
   "lifts": 7,
   "zones": false,
-  "bytes": 504580,
+  "bytes": 419020,
   "checked": true,
   "coarse": true
  },
@@ -1553,7 +2203,7 @@
   "trails": 44,
   "lifts": 5,
   "zones": true,
-  "bytes": 372350,
+  "bytes": 331607,
   "checked": true,
   "coarse": true
  },
@@ -1571,7 +2221,59 @@
   "trails": 65,
   "lifts": 8,
   "zones": false,
-  "bytes": 612733,
+  "bytes": 704362,
+  "checked": true
+ },
+ {
+  "id": "nakiska",
+  "name": "Nakiska",
+  "region": "Alberta, Canada",
+  "tz": "America/Edmonton",
+  "lat": 50.94645,
+  "lon": -115.18885,
+  "baseLat": 50.94529,
+  "baseLon": -115.14752,
+  "top": 2272,
+  "base": 1499,
+  "trails": 72,
+  "lifts": 7,
+  "zones": false,
+  "bytes": 471018,
+  "checked": true,
+  "coarse": true
+ },
+ {
+  "id": "nashoba-valley",
+  "name": "Nashoba Valley",
+  "region": "Massachusetts, USA",
+  "tz": "America/New_York",
+  "lat": 42.54055,
+  "lon": -71.44795,
+  "baseLat": 42.54126,
+  "baseLon": -71.44439,
+  "top": 130,
+  "base": 60,
+  "trails": 17,
+  "lifts": 12,
+  "zones": false,
+  "bytes": 209193,
+  "checked": true
+ },
+ {
+  "id": "niseko-united",
+  "name": "Niseko United",
+  "region": "Hokkaido Prefecture, Japan",
+  "tz": "Asia/Tokyo",
+  "lat": 42.87084,
+  "lon": 140.66236,
+  "baseLat": 42.85834,
+  "baseLon": 140.70201,
+  "top": 1186,
+  "base": 256,
+  "trails": 79,
+  "lifts": 29,
+  "zones": true,
+  "bytes": 1379763,
   "checked": true
  },
  {
@@ -1588,7 +2290,7 @@
   "trails": 92,
   "lifts": 20,
   "zones": false,
-  "bytes": 1326192,
+  "bytes": 944686,
   "checked": true
  },
  {
@@ -1605,7 +2307,7 @@
   "trails": 125,
   "lifts": 21,
   "zones": true,
-  "bytes": 906613,
+  "bytes": 1158172,
   "checked": true
  },
  {
@@ -1622,7 +2324,7 @@
   "trails": 42,
   "lifts": 6,
   "zones": true,
-  "bytes": 412533,
+  "bytes": 488857,
   "checked": true
  },
  {
@@ -1639,7 +2341,7 @@
   "trails": 296,
   "lifts": 44,
   "zones": true,
-  "bytes": 2644354,
+  "bytes": 1898468,
   "checked": true
  },
  {
@@ -1656,7 +2358,7 @@
   "trails": 132,
   "lifts": 10,
   "zones": false,
-  "bytes": 1383978,
+  "bytes": 1528741,
   "checked": true,
   "coarse": true
  },
@@ -1674,7 +2376,7 @@
   "trails": 358,
   "lifts": 41,
   "zones": true,
-  "bytes": 2633227,
+  "bytes": 3444799,
   "checked": true
  },
  {
@@ -1691,7 +2393,24 @@
   "trails": 36,
   "lifts": 11,
   "zones": false,
-  "bytes": 331854,
+  "bytes": 288182,
+  "checked": true
+ },
+ {
+  "id": "perfect-north-slopes",
+  "name": "Perfect North Slopes",
+  "region": "Indiana, USA",
+  "tz": "America/New_York",
+  "lat": 39.14243,
+  "lon": -84.88591,
+  "baseLat": 39.14785,
+  "baseLon": -84.88905,
+  "top": 259,
+  "base": 146,
+  "trails": 24,
+  "lifts": 14,
+  "zones": false,
+  "bytes": 218740,
   "checked": true
  },
  {
@@ -1708,7 +2427,7 @@
   "trails": 57,
   "lifts": 7,
   "zones": false,
-  "bytes": 434793,
+  "bytes": 493590,
   "checked": true
  },
  {
@@ -1725,7 +2444,7 @@
   "trails": 39,
   "lifts": 14,
   "zones": true,
-  "bytes": 1103865,
+  "bytes": 1476008,
   "checked": true
  },
  {
@@ -1742,7 +2461,7 @@
   "trails": 205,
   "lifts": 14,
   "zones": false,
-  "bytes": 2040442,
+  "bytes": 2325344,
   "checked": true
  },
  {
@@ -1759,7 +2478,7 @@
   "trails": 12,
   "lifts": 8,
   "zones": true,
-  "bytes": 150876,
+  "bytes": 192367,
   "checked": true
  },
  {
@@ -1776,7 +2495,7 @@
   "trails": 103,
   "lifts": 12,
   "zones": false,
-  "bytes": 843569,
+  "bytes": 948640,
   "checked": true
  },
  {
@@ -1793,7 +2512,7 @@
   "trails": 56,
   "lifts": 5,
   "zones": false,
-  "bytes": 387968,
+  "bytes": 396595,
   "checked": true
  },
  {
@@ -1810,7 +2529,7 @@
   "trails": 106,
   "lifts": 8,
   "zones": true,
-  "bytes": 1195324,
+  "bytes": 1314183,
   "checked": true,
   "coarse": true
  },
@@ -1828,7 +2547,7 @@
   "trails": 68,
   "lifts": 7,
   "zones": false,
-  "bytes": 469055,
+  "bytes": 527233,
   "checked": true
  },
  {
@@ -1845,7 +2564,24 @@
   "trails": 71,
   "lifts": 7,
   "zones": true,
-  "bytes": 1481653,
+  "bytes": 1176195,
+  "checked": true
+ },
+ {
+  "id": "roundtop-mountain",
+  "name": "Roundtop Mountain",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 40.10326,
+  "lon": -76.92548,
+  "baseLat": 40.1071,
+  "baseLon": -76.9209,
+  "top": 410,
+  "base": 235,
+  "trails": 21,
+  "lifts": 9,
+  "zones": true,
+  "bytes": 232856,
   "checked": true
  },
  {
@@ -1862,7 +2598,7 @@
   "trails": 100,
   "lifts": 82,
   "zones": true,
-  "bytes": 3877564,
+  "bytes": 2910873,
   "checked": true
  },
  {
@@ -1879,7 +2615,7 @@
   "trails": 66,
   "lifts": 5,
   "zones": false,
-  "bytes": 454272,
+  "bytes": 454328,
   "checked": true
  },
  {
@@ -1896,7 +2632,7 @@
   "trails": 62,
   "lifts": 5,
   "zones": false,
-  "bytes": 674917,
+  "bytes": 564975,
   "checked": true
  },
  {
@@ -1913,7 +2649,7 @@
   "trails": 79,
   "lifts": 7,
   "zones": true,
-  "bytes": 444164,
+  "bytes": 384972,
   "checked": true
  },
  {
@@ -1930,7 +2666,7 @@
   "trails": 92,
   "lifts": 10,
   "zones": true,
-  "bytes": 988686,
+  "bytes": 754238,
   "checked": true
  },
  {
@@ -1947,7 +2683,7 @@
   "trails": 41,
   "lifts": 16,
   "zones": true,
-  "bytes": 526753,
+  "bytes": 592775,
   "checked": true
  },
  {
@@ -1964,7 +2700,7 @@
   "trails": 50,
   "lifts": 13,
   "zones": false,
-  "bytes": 669782,
+  "bytes": 482551,
   "checked": true
  },
  {
@@ -1981,7 +2717,7 @@
   "trails": 75,
   "lifts": 7,
   "zones": false,
-  "bytes": 1103613,
+  "bytes": 853714,
   "checked": true
  },
  {
@@ -1998,7 +2734,25 @@
   "trails": 148,
   "lifts": 11,
   "zones": true,
-  "bytes": 1746332,
+  "bytes": 1914415,
+  "checked": true,
+  "coarse": true
+ },
+ {
+  "id": "silvretta-arena-ischgl-samnaun",
+  "name": "Ischgl \u2013 Samnaun (Silvretta Arena)",
+  "region": "Tyrol, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 46.97014,
+  "lon": 10.33422,
+  "baseLat": 47.01014,
+  "baseLon": 10.28801,
+  "top": 2864,
+  "base": 1357,
+  "trails": 85,
+  "lifts": 47,
+  "zones": true,
+  "bytes": 2143855,
   "checked": true,
   "coarse": true
  },
@@ -2016,7 +2770,7 @@
   "trails": 17,
   "lifts": 5,
   "zones": false,
-  "bytes": 162740,
+  "bytes": 202475,
   "checked": true
  },
  {
@@ -2033,7 +2787,7 @@
   "trails": 169,
   "lifts": 80,
   "zones": true,
-  "bytes": 4353787,
+  "bytes": 4384562,
   "checked": true
  },
  {
@@ -2050,7 +2804,7 @@
   "trails": 83,
   "lifts": 9,
   "zones": false,
-  "bytes": 714853,
+  "bytes": 750369,
   "checked": true
  },
  {
@@ -2067,7 +2821,7 @@
   "trails": 30,
   "lifts": 15,
   "zones": false,
-  "bytes": 411384,
+  "bytes": 334103,
   "checked": true
  },
  {
@@ -2084,7 +2838,7 @@
   "trails": 28,
   "lifts": 13,
   "zones": true,
-  "bytes": 279191,
+  "bytes": 334757,
   "checked": true
  },
  {
@@ -2101,7 +2855,7 @@
   "trails": 137,
   "lifts": 13,
   "zones": false,
-  "bytes": 990891,
+  "bytes": 1115052,
   "checked": false
  },
  {
@@ -2118,7 +2872,7 @@
   "trails": 211,
   "lifts": 14,
   "zones": false,
-  "bytes": 1302578,
+  "bytes": 1123070,
   "checked": true
  },
  {
@@ -2135,8 +2889,26 @@
   "trails": 63,
   "lifts": 13,
   "zones": true,
-  "bytes": 684867,
+  "bytes": 715775,
   "checked": true
+ },
+ {
+  "id": "solden",
+  "name": "S\u00f6lden",
+  "region": "Tyrol, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 46.92586,
+  "lon": 10.92951,
+  "baseLat": 46.9725,
+  "baseLon": 11.00868,
+  "top": 3244,
+  "base": 1351,
+  "trails": 61,
+  "lifts": 37,
+  "zones": true,
+  "bytes": 1883361,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "solitude",
@@ -2152,7 +2924,7 @@
   "trails": 87,
   "lifts": 9,
   "zones": true,
-  "bytes": 673457,
+  "bytes": 888280,
   "checked": true
  },
  {
@@ -2169,8 +2941,26 @@
   "trails": 39,
   "lifts": 17,
   "zones": true,
-  "bytes": 447256,
+  "bytes": 506773,
   "checked": false
+ },
+ {
+  "id": "st-anton-st-christoph-stuben",
+  "name": "St. Anton am Arlberg",
+  "region": "Tyrol, Austria",
+  "tz": "Europe/Vienna",
+  "lat": 47.15757,
+  "lon": 10.21301,
+  "baseLat": 47.13474,
+  "baseLon": 10.273,
+  "top": 2792,
+  "base": 1286,
+  "trails": 112,
+  "lifts": 40,
+  "zones": true,
+  "bytes": 2284129,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "steamboat",
@@ -2186,7 +2976,7 @@
   "trails": 195,
   "lifts": 23,
   "zones": true,
-  "bytes": 1316029,
+  "bytes": 1331914,
   "checked": true
  },
  {
@@ -2203,7 +2993,7 @@
   "trails": 75,
   "lifts": 14,
   "zones": false,
-  "bytes": 616670,
+  "bytes": 694385,
   "checked": false
  },
  {
@@ -2220,7 +3010,7 @@
   "trails": 129,
   "lifts": 12,
   "zones": false,
-  "bytes": 1225517,
+  "bytes": 1233992,
   "checked": true
  },
  {
@@ -2237,7 +3027,7 @@
   "trails": 117,
   "lifts": 17,
   "zones": false,
-  "bytes": 1015236,
+  "bytes": 1021778,
   "checked": true
  },
  {
@@ -2254,7 +3044,24 @@
   "trails": 114,
   "lifts": 13,
   "zones": true,
-  "bytes": 881937,
+  "bytes": 990739,
+  "checked": true
+ },
+ {
+  "id": "sugar-mountain",
+  "name": "Sugar Mountain",
+  "region": "North Carolina, USA",
+  "tz": "America/New_York",
+  "lat": 36.1247,
+  "lon": -81.87537,
+  "baseLat": 36.13077,
+  "baseLon": -81.85998,
+  "top": 1594,
+  "base": 1249,
+  "trails": 21,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 279331,
   "checked": true
  },
  {
@@ -2271,7 +3078,7 @@
   "trails": 132,
   "lifts": 18,
   "zones": false,
-  "bytes": 877080,
+  "bytes": 1150498,
   "checked": true
  },
  {
@@ -2288,7 +3095,7 @@
   "trails": 154,
   "lifts": 15,
   "zones": false,
-  "bytes": 1057250,
+  "bytes": 1420110,
   "checked": true
  },
  {
@@ -2305,7 +3112,7 @@
   "trails": 174,
   "lifts": 13,
   "zones": false,
-  "bytes": 2118095,
+  "bytes": 2279500,
   "checked": false,
   "coarse": true
  },
@@ -2323,7 +3130,7 @@
   "trails": 101,
   "lifts": 12,
   "zones": false,
-  "bytes": 972124,
+  "bytes": 1092602,
   "checked": false
  },
  {
@@ -2340,7 +3147,7 @@
   "trails": 71,
   "lifts": 10,
   "zones": true,
-  "bytes": 541604,
+  "bytes": 623858,
   "checked": true
  },
  {
@@ -2357,7 +3164,7 @@
   "trails": 137,
   "lifts": 20,
   "zones": false,
-  "bytes": 1265227,
+  "bytes": 1038696,
   "checked": true
  },
  {
@@ -2374,7 +3181,7 @@
   "trails": 75,
   "lifts": 7,
   "zones": false,
-  "bytes": 996812,
+  "bytes": 1109573,
   "checked": false
  },
  {
@@ -2391,7 +3198,7 @@
   "trails": 111,
   "lifts": 14,
   "zones": false,
-  "bytes": 824370,
+  "bytes": 922242,
   "checked": true
  },
  {
@@ -2408,7 +3215,7 @@
   "trails": 139,
   "lifts": 19,
   "zones": false,
-  "bytes": 1563994,
+  "bytes": 1585400,
   "checked": true
  },
  {
@@ -2425,12 +3232,12 @@
   "trails": 72,
   "lifts": 20,
   "zones": true,
-  "bytes": 931530,
+  "bytes": 730674,
   "checked": false
  },
  {
   "id": "tignes-val-disere",
-  "name": "Tignes – Val d'Isère",
+  "name": "Tignes \u2013 Val d'Is\u00e8re",
   "region": "Savoie, France",
   "tz": "Europe/Paris",
   "lat": 45.41266,
@@ -2442,7 +3249,7 @@
   "trails": 182,
   "lifts": 80,
   "zones": true,
-  "bytes": 3285418,
+  "bytes": 3237340,
   "checked": true
  },
  {
@@ -2459,7 +3266,24 @@
   "trails": 56,
   "lifts": 12,
   "zones": true,
-  "bytes": 1372358,
+  "bytes": 1157032,
+  "checked": true
+ },
+ {
+  "id": "touristique-stoneham",
+  "name": "Stoneham",
+  "region": "Quebec, Canada",
+  "tz": "America/Toronto",
+  "lat": 47.0409,
+  "lon": -71.3915,
+  "baseLat": 47.0263,
+  "baseLon": -71.38383,
+  "top": 592,
+  "base": 247,
+  "trails": 42,
+  "lifts": 6,
+  "zones": false,
+  "bytes": 409501,
   "checked": true
  },
  {
@@ -2476,8 +3300,26 @@
   "trails": 212,
   "lifts": 32,
   "zones": false,
-  "bytes": 2046125,
+  "bytes": 3024662,
   "checked": true
+ },
+ {
+  "id": "val-gardena-groden-gherdeina",
+  "name": "Val Gardena",
+  "region": "Bolzano/Bozen, Italy",
+  "tz": "Europe/Rome",
+  "lat": 46.51449,
+  "lon": 11.73948,
+  "baseLat": 46.54021,
+  "baseLon": 11.56374,
+  "top": 2708,
+  "base": 1010,
+  "trails": 169,
+  "lifts": 84,
+  "zones": true,
+  "bytes": 3469242,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "val-thorens",
@@ -2493,7 +3335,7 @@
   "trails": 103,
   "lifts": 34,
   "zones": true,
-  "bytes": 2384680,
+  "bytes": 2413522,
   "checked": true
  },
  {
@@ -2510,7 +3352,7 @@
   "trails": 27,
   "lifts": 8,
   "zones": false,
-  "bytes": 311479,
+  "bytes": 254133,
   "checked": true
  },
  {
@@ -2527,7 +3369,7 @@
   "trails": 67,
   "lifts": 10,
   "zones": false,
-  "bytes": 382616,
+  "bytes": 462584,
   "checked": true
  },
  {
@@ -2544,7 +3386,7 @@
   "trails": 48,
   "lifts": 10,
   "zones": true,
-  "bytes": 269057,
+  "bytes": 307155,
   "checked": true
  },
  {
@@ -2561,7 +3403,7 @@
   "trails": 529,
   "lifts": 36,
   "zones": false,
-  "bytes": 3684485,
+  "bytes": 3896061,
   "checked": false,
   "coarse": true
  },
@@ -2579,7 +3421,7 @@
   "trails": 100,
   "lifts": 11,
   "zones": false,
-  "bytes": 781635,
+  "bytes": 781691,
   "checked": true
  },
  {
@@ -2596,8 +3438,25 @@
   "trails": 113,
   "lifts": 16,
   "zones": false,
-  "bytes": 1351411,
+  "bytes": 972000,
   "checked": false
+ },
+ {
+  "id": "whitetail",
+  "name": "Whitetail",
+  "region": "Pennsylvania, USA",
+  "tz": "America/New_York",
+  "lat": 39.75036,
+  "lon": -77.94053,
+  "baseLat": 39.73992,
+  "baseLon": -77.93226,
+  "top": 544,
+  "base": 261,
+  "trails": 22,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 281080,
+  "checked": true
  },
  {
   "id": "whitewater",
@@ -2613,9 +3472,43 @@
   "trails": 96,
   "lifts": 5,
   "zones": true,
-  "bytes": 693333,
+  "bytes": 570545,
   "checked": true,
   "coarse": true
+ },
+ {
+  "id": "wildcat-mountain",
+  "name": "Wildcat Mountain",
+  "region": "New Hampshire, USA",
+  "tz": "America/New_York",
+  "lat": 44.24938,
+  "lon": -71.22487,
+  "baseLat": 44.26397,
+  "baseLon": -71.23788,
+  "top": 1210,
+  "base": 589,
+  "trails": 48,
+  "lifts": 4,
+  "zones": false,
+  "bytes": 363363,
+  "checked": true
+ },
+ {
+  "id": "wilmot-mountain",
+  "name": "Wilmot Mountain",
+  "region": "Wisconsin, USA",
+  "tz": "America/Chicago",
+  "lat": 42.49525,
+  "lon": -88.19241,
+  "baseLat": 42.4955,
+  "baseLon": -88.18858,
+  "top": 291,
+  "base": 232,
+  "trails": 23,
+  "lifts": 13,
+  "zones": false,
+  "bytes": 188526,
+  "checked": true
  },
  {
   "id": "windham-mountain",
@@ -2631,7 +3524,7 @@
   "trails": 56,
   "lifts": 10,
   "zones": true,
-  "bytes": 415633,
+  "bytes": 533074,
   "checked": true
  },
  {
@@ -2648,7 +3541,41 @@
   "trails": 185,
   "lifts": 25,
   "zones": true,
-  "bytes": 1261348,
+  "bytes": 1261404,
+  "checked": true
+ },
+ {
+  "id": "wintergreen",
+  "name": "Wintergreen",
+  "region": "Virginia, USA",
+  "tz": "America/New_York",
+  "lat": 37.92095,
+  "lon": -78.94616,
+  "baseLat": 37.92344,
+  "baseLon": -78.93472,
+  "top": 1066,
+  "base": 765,
+  "trails": 24,
+  "lifts": 9,
+  "zones": false,
+  "bytes": 288640,
+  "checked": true
+ },
+ {
+  "id": "wisp",
+  "name": "Wisp",
+  "region": "Maryland, USA",
+  "tz": "America/New_York",
+  "lat": 39.54957,
+  "lon": -79.36964,
+  "baseLat": 39.54757,
+  "baseLon": -79.38769,
+  "top": 945,
+  "base": 750,
+  "trails": 32,
+  "lifts": 12,
+  "zones": true,
+  "bytes": 485932,
   "checked": true
  },
  {
@@ -2665,12 +3592,12 @@
   "trails": 170,
   "lifts": 11,
   "zones": false,
-  "bytes": 903104,
+  "bytes": 1014144,
   "checked": false
  },
  {
   "id": "zermatt",
-  "name": "Zermatt – Cervinia",
+  "name": "Zermatt \u2013 Cervinia",
   "region": "Valais, Switzerland / Aosta Valley, Italy",
   "tz": "Europe/Zurich",
   "lat": 45.92428,
@@ -2682,7 +3609,7 @@
   "trails": 149,
   "lifts": 66,
   "zones": true,
-  "bytes": 3048217,
+  "bytes": 3519139,
   "checked": true
  }
 ]

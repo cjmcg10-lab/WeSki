@@ -58,3 +58,11 @@ jobs:
             sleep $((i * 60))
           done
           exit 1
+      # The preview site follows the live app (#142): main goes on the preview too, and preview map copies that have
+      # since gone live are cleared (maps still waiting for approval stay). A failure here only warns: the live site is
+      # already deployed.
+      - name: Put the live app on the preview
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node tools/preview/deploy.mjs --main || echo "::warning::The preview could not be updated to the live app"

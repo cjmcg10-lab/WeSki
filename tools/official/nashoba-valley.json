@@ -1,0 +1,46 @@
+{
+ "source": "Nashoba Valley trail map, skimap.org map 30402, read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Bow": 1,
+  "Bull Run": 2,
+  "Chief": 2,
+  "Dog Leg": 1,
+  "Indian Run": 1,
+  "Lobo": 2,
+  "Nashoba Glades": 1,
+  "Nashoba Slope": 1,
+  "Nashoba Trail": 1,
+  "Papoose": 0,
+  "Peacepipe": 0,
+  "Pow-Wow": 0,
+  "Sundance": 1,
+  "Tahu": 0,
+  "Tomahawk Trail": 1,
+  "Wardance": 2,
+  "Warrior": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Terrain Park": "terrain park (no trail rating)"
+ },
+ "lifts": [
+  "Chief",
+  "Lil' Hawk",
+  "Papoose",
+  "Peacepipe",
+  "Pow",
+  "Snowdance",
+  "Sundance",
+  "Tahu",
+  "Totem",
+  "Wardance",
+  "Wow"
+ ],
+ "confirm": {
+  "Snowboard Learning Area": "beginner slope beside the Lil' Hawk lift, drawn on the resort's trail map without a label of its own"
+ },
+ "lifts_explained": {
+  "Tahu": "conveyor H on the resort's map, beside Peacepipe; not in OpenStreetMap, so it is not drawn (nor its short green run Tahu)"
+ }
+}

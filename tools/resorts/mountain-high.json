@@ -1,0 +1,56 @@
+{
+ "id": "mountain-high",
+ "name": "Mountain High",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/3185646",
+ "include_ways": [
+  26663212,
+  26663219,
+  178914770,
+  236761767,
+  236761768,
+  236761769,
+  236761770,
+  236761771,
+  258013841,
+  258013844,
+  258016664,
+  258016665
+ ],
+ "osm_bbox": [
+  -117.7012,
+  34.3546,
+  -117.6734,
+  34.3891
+ ],
+ "openskimap": {
+  "id": "d7cc8768ea056dd9a46d954ce7d03d433288ba8a",
+  "cc": "US",
+  "runs": 43,
+  "lifts": 12,
+  "rated": 1.0,
+  "skimap": 521,
+  "web": "https://www.mthigh.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Discovery",
+  "Magic carpet",
+  "Mtn High Express"
+ ],
+ "isolated_notes": {
+  "Discovery": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West",
+  "Mtn High Express": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West",
+  "Magic carpet": "learning carpets at the East and North Resorts, each on its own beginner slope"
+ },
+ "isolated_lifts_note": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West",
+ "separate_areas": {
+  "East Resort": "across Highway 2 from the West Resort, reached by the resort's free shuttle; its runs are reached from its own lifts (Mtn High Express, Discovery)"
+ }
+}

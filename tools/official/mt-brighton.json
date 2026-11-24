@@ -1,0 +1,45 @@
+{
+ "source": "Mt. Brighton trail map 2025-26 (VistaMap; skimap.org map 46038), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Riskey": 2,
+  "Blue Sky": 1,
+  "Bunny": 0,
+  "Challenge": 3,
+  "Cheetah": 2,
+  "Chicken Chute": 1,
+  "Crosscut": 1,
+  "Easy Street": 1,
+  "Flatiron": 0,
+  "Golden Eagle": 2,
+  "Grand River": 2,
+  "Jax Bowl": 1,
+  "Larkspur": 0,
+  "Ore Creek": 2,
+  "Osprey": 2,
+  "Perk's Folly": 3,
+  "Snowshoe": 0,
+  "Snyder's Escape": 2,
+  "Spartan Street": 1,
+  "Spike's Folly": 1,
+  "Thalacker's": 1,
+  "Wolverine Way": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Ryan's Run": "terrain park (orange) on the 2025-26 map",
+  "Gasoline Alley": "terrain park (orange) on the 2025-26 map",
+  "Sawtooth Ridge": "terrain park (orange) on the 2025-26 map"
+ },
+ "left_untraced": {
+  "Chicken Chute": "blue run with terrain-park features on the 2025-26 map; not in OpenStreetMap and not traced"
+ },
+ "lifts": [
+  "Chair 1",
+  "Chair 2",
+  "Chair 3",
+  "Chair 4",
+  "Chair 5"
+ ],
+ "lifts_note": "The map numbers its lifts: chairs 1 to 5 (quad and triple chairs), rope tows and carpets 6 to 13; OpenStreetMap names most of them only 'Lift' or 'Surface lift', so they cannot be matched by name. Five chairs drawn on the map; five chairlifts on our map."
+}

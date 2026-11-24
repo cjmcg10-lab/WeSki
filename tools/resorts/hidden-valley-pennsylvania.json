@@ -1,0 +1,45 @@
+{
+ "id": "hidden-valley-pennsylvania",
+ "name": "Hidden Valley",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/398100052",
+ "include_ways": [
+  256650181,
+  256650182,
+  256650183,
+  256650185,
+  256650186,
+  256650187,
+  391691673
+ ],
+ "osm_bbox": [
+  -79.2643,
+  40.0483,
+  -79.2394,
+  40.0693
+ ],
+ "openskimap": {
+  "id": "04a5001a288a997399f4bca3661a2ee0d26e17e3",
+  "cc": "US",
+  "runs": 35,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 4115,
+  "web": "https://www.hiddenvalleyresort.com/"
+ },
+ "area_name": "Hidden Valley Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {},
+ "way_names": {
+  "391691632": "Upper Comet",
+  "391691633": "Lower Comet",
+  "1223674706": "Lower Comet"
+ }
+}

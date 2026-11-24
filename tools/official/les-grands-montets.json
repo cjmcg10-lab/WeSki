@@ -1,0 +1,47 @@
+{
+ "source": "Chamonix Grands Montets piste map 2026-27 (skimap.org map 46148, the resort's PDF): run labels are real text printed in the run's colour; matched to map runs by script, the rest read by eye",
+ "fetched": "2026-11-24",
+ "scheme": "colour",
+ "runs": {
+  "Arolles": 1,
+  "Blanchots": 3,
+  "Bochard": 2,
+  "Bochard Bas": 2,
+  "Bochard Haut": 2,
+  "Chamois": 3,
+  "Combes": 2,
+  "Coqs": 1,
+  "Croix de Lognan": 0,
+  "La Pierre à Ric": 2,
+  "Pierre à Ric": 2,
+  "Liaison Plan Joran": 1,
+  "Marmottons": 1,
+  "Pylônes Bas": 3,
+  "Pylônes Haut": 3,
+  "Remuaz": 3,
+  "Tabe": 1,
+  "Variante Hotel": 3
+ },
+ "names_note": "Map label 'Bas Bochard' = Bochard Bas (the upper part is labelled Bochard), 'Variante de l'hôtel' = Variante Hotel, 'Tabé' = Tabe. The map's Pylônes under La Herse is OpenStreetMap's Pylônes Haut and Pylônes Bas. Croix de Lognan is green on the map (beginner area inset); OpenStreetMap had blue.",
+ "hide": {
+  "Pylônes": "starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season",
+  "Point de vue": "starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season",
+  "Point de vue (sometimes groomed)": "starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season",
+  "La Face": "starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season",
+  "Pas du Chevre": "starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season"
+ },
+ "confirm": {
+  "Petit Marmotton": "the green beginner run beside the TK Petit Marmotton in the map's 'Espace débutant' inset (its own runs are labelled Le Pré and Les Écuries)"
+ },
+ "lifts": [
+  "La Herse",
+  "Bochard",
+  "Tabé",
+  "Retour Pendant",
+  "Plan Joran",
+  "Lognan",
+  "Petit Marmotton",
+  "Marmotton"
+ ],
+ "lifts_source": "lift names printed on the same map (TSD La Herse, TC Bochard, TSD Tabé, TS Retour Pendant, TC Plan Joran, TC Lognan, TK Petit Marmotton, TK Marmotton); the Grands Montets top cable car is shown as under reconstruction and is not on our map"
+}

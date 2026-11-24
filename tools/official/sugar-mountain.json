@@ -1,0 +1,39 @@
+{
+ "source": "Sugar Mountain winter trail map (James Niehues), skimap.org map 29869 (2024; the newer skimap.org maps are summer maps), read by hand: symbols and label colours",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Birch": 1,
+  "Boulder Dash": 3,
+  "Cake Walk": 1,
+  "Crossover": 0,
+  "Easy Street": 0,
+  "Easy Street Extension": 0,
+  "Gunther's Way": 2,
+  "Laurel Lane": 1,
+  "Little Nell": 0,
+  "Lower Flying Mile": 0,
+  "Magic Carpet Area": 0,
+  "Northridge": 1,
+  "Oma's Meadow": 1,
+  "Play Yard": 0,
+  "Sugar Bear": 1,
+  "Sugar Slalom": 1,
+  "Switchback": 1,
+  "Tiny Tim Connection": 0,
+  "Tom Terrific": 2,
+  "Upper Flying Mile": 1,
+  "Whoopdedoo": 3
+ },
+ "blue_black": [],
+ "lifts": [
+  "Big Birch Lift",
+  "Easy Street Express",
+  "GW Lift",
+  "Little Gray",
+  "Oma's Express",
+  "Summit Express"
+ ],
+ "lifts_explained": {
+  "Big Birch Lift": "OpenStreetMap calls it Green Lift (it rises beside Big Birch and Sugar Bear, where the map draws the Big Birch Lift)"
+ }
+}

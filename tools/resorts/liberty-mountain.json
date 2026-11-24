@@ -1,0 +1,38 @@
+{
+ "id": "liberty-mountain",
+ "name": "Liberty Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "relation/13532755",
+ "include_ways": [
+  256655964,
+  256655965,
+  256655966,
+  256655967,
+  256655968,
+  256656001,
+  256656002,
+  256656003
+ ],
+ "osm_bbox": [
+  -77.3784,
+  39.7533,
+  -77.3591,
+  39.7669
+ ],
+ "openskimap": {
+  "id": "6fab99ca0f48e48b41acc39f35e85a4cc88c672a",
+  "cc": "US",
+  "runs": 25,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 243,
+  "web": "https://www.libertymountainresort.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

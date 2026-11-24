@@ -1,0 +1,22 @@
+{
+ "id": "roundtop-mountain",
+ "reachable": null,
+ "auto_joins": 0,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  19,
+  30,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [],
+ "seconds": 1,
+ "failed": null,
+ "built": "2026-11-24"
+}

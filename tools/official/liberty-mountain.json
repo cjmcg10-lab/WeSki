@@ -1,0 +1,39 @@
+{
+ "source": "Liberty Mountain trail map (James Niehues), skimap.org map 30650 (2024), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Adventure Alley": 0,
+  "Dipsy Doodle": 0,
+  "First Class Area": 0,
+  "Lower Blue Streak": 0,
+  "Lower Eastwind": 1,
+  "Lower Heavenly": 1,
+  "Lower Strata": 1,
+  "Lower Ultra": 1,
+  "Nova": 0,
+  "Sidewinder": 1,
+  "Sneaky Pete": 0,
+  "Upper Blue Streak": 2,
+  "Upper Eastwind": 3,
+  "Upper Heavenly": 1,
+  "Upper Strata": 3,
+  "Upper Ultra": 3,
+  "Vertigo": 0,
+  "White Lightning": 2,
+  "Whitney's Way": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "West Side Park": "terrain park (rated by its park symbol, not a trail rating)",
+  "Snow Tubing": "tubing park, not a ski run"
+ },
+ "lifts": [
+  "Alpine Quad",
+  "Dipsy Quad",
+  "Eastwind Quad",
+  "First Class Carpet",
+  "First Class Quad",
+  "Snow Cat Alley",
+  "Strata Quad"
+ ]
+}

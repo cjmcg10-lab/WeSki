@@ -190,6 +190,24 @@ neighbouring runs, which need the terrain, are not counted.
 - **Missing runs**: trace by hand only runs the resort lists that OpenStreetMap lacks, and only after the
   ratings pass (the list tells you which are really missing).
 
+## Choosing which mountains to add next (owner's rule, 2026-11-24)
+
+Whenever the owner asks for more mountains, pick them with this score (highest first) and show the list with the reasons
+before building:
+
+| Weight | What | How |
+| --- | --- | --- |
+| 35% | Skiers per season | published visit numbers, or lift capacity and size as a stand-in |
+| 25% | People within about a 2.5 hour drive | population of the metro areas in reach |
+| 15% | On a big pass, or a sister of a mountain already built | Epic, Ikon, Indy; same owner or linked area |
+| 15% | How much a map helps | size, number of lifts, linked areas a skier can get lost in |
+| 10% | Ease of an accurate build | OpenStreetMap quality, an official trail list or feed |
+
+No fixed split by region: the score decides. Once the owner approves a list built this way, the batch goes through
+the automatic builder and the AI pass (ratings, held maps, patrol numbers) and is pushed live **without a preview check**
+(owner, 2026-11-24: "No need for me to even check it through preview. I trust the build process."). Every map still has to
+pass the gate and the tests; held maps stay out until fixed.
+
 ## Batching
 
 - Group mountains by source: all Alterra feed resorts together, all skimap.org picture maps together, all
@@ -336,6 +354,12 @@ python3 tools/build_index.py public/data                 # the committed index l
   stay out of the committed index (`build_index.py` without `--with-held`) and have no emergency entry; published ones
   get an emergency entry (country numbers only) and a connections allow-list of the problems the gate accepted.
   Per-mountain numbers are in `tools/bulk/results/<id>.json`; the table in `tools/bulk/batch-<n>.md`.
+- **Umbrella outlines and linked resorts** (batch 2, 2026-11-24): a resort with no outline of its own inside an outline
+  that covers several resorts (Les 3 Vallées, Ski Arlberg, Dolomiti Superski) is searched as if the umbrella were not
+  there (`tools/extent.py`). Two OpenSkiMap areas that share ridge tops (Courchevel and Méribel) cut each other off as
+  separate maps: build them as one config with both lift lists in `include_ways` and a `combined_note`.
+  A candidate under the 10-run minimum (Boston Mills, Brandywine) can be appended to `candidates.json` from a
+  `--min-runs 7` run of `candidates.py`, keeping the other ids as they are.
 - **Going live** after the owner approves the preview: `node tools/preview/maps.mjs fetch <ids>` (only if the maps are
   not on disk: it copies them back from the preview), then `node tools/maps_r2.mjs push <ids>`, then merge.
 

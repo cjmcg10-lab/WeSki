@@ -1,0 +1,73 @@
+{
+ "id": "mountain-creek",
+ "name": "Mountain Creek",
+ "region": "New Jersey, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/972064114",
+ "include_ways": [
+  11761181,
+  11761564,
+  11763135,
+  80373979,
+  80373980,
+  80374423,
+  80568915,
+  80572466,
+  1199291366,
+  1199291367,
+  1199291408
+ ],
+ "osm_bbox": [
+  -74.5404,
+  41.1605,
+  -74.4913,
+  41.1956
+ ],
+ "openskimap": {
+  "id": "1925d141bfd550bffbf608b766ebb3bed43eaa48",
+  "cc": "US",
+  "runs": 44,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 339,
+  "web": "https://www.mountaincreek.com/"
+ },
+ "area_name": "Mountain Creek",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Surface lift"
+ ],
+ "isolated_notes": {
+  "Surface lift": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Graden State": "Garden State",
+  "GrandPrix": "Grand Prix",
+  "Sliver Fox": "Silver Fox",
+  "Tail Spin": "Tailspin"
+ },
+ "as_runs": [
+  "80572295",
+  "80572296",
+  "80572316",
+  "80572300",
+  "206006368",
+  "206006374",
+  "206006377",
+  "206006383",
+  "1253121892"
+ ],
+ "as_runs_note": "South Peak's freestyle trails are mapped in OpenStreetMap as snow_park lines; the trail map draws each as a blue trail with park features, and they are the only way down from the South Peak Express",
+ "links": [
+  [
+   "trail:Southern Sojourn (bottom)",
+   "trail:Gorge Run"
+  ]
+ ]
+}

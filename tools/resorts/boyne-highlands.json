@@ -1,0 +1,45 @@
+{
+ "id": "boyne-highlands",
+ "name": "The Highlands",
+ "region": "Michigan, USA",
+ "tz": "America/Detroit",
+ "auto": true,
+ "area_osm": "way/997160539",
+ "include_ways": [
+  130101581,
+  130101582,
+  130101583,
+  130101585,
+  130101586,
+  130101589,
+  1212433241
+ ],
+ "osm_bbox": [
+  -84.9591,
+  45.4616,
+  -84.9206,
+  45.4927
+ ],
+ "openskimap": {
+  "id": "d70a38efa1745a52727cf449eb7a657610ebab1c",
+  "cc": "US",
+  "runs": 48,
+  "lifts": 7,
+  "rated": 0.979,
+  "skimap": 407,
+  "web": "https://www.boynehighlands.com"
+ },
+ "area_name": "Boyne Highlands Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Black Diamond": "Black Diamond Glade",
+  "Loren's Lollapaloosa Glade": "Loren's Lollapalooza Glade",
+  "Payton's Bypass": "Payson's Bypass",
+  "Tyler's Tangle": "Tyler's Tangle Glade"
+ }
+}

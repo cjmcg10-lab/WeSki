@@ -1,0 +1,43 @@
+{
+ "id": "sugar-mountain",
+ "name": "Sugar Mountain",
+ "region": "North Carolina, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/529342856",
+ "include_ways": [
+  256771700,
+  256771701,
+  256771702,
+  256771703,
+  256771704,
+  565055148,
+  565055164,
+  1335778007
+ ],
+ "osm_bbox": [
+  -81.8797,
+  36.1206,
+  -81.8494,
+  36.1349
+ ],
+ "openskimap": {
+  "id": "125edf155ba3fa26990fab722fd3487b85667346",
+  "cc": "US",
+  "runs": 26,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 290,
+  "web": "https://skisugar.com/"
+ },
+ "area_name": "Sugar Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Tiny Tim": "Tiny Tim Connection"
+ }
+}

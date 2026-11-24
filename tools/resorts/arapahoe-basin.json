@@ -38,7 +38,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "11 dead-end runs",
  "rename": {
   "Chisolm Trail": "Chisholm Trail",
   "Noth Fork": "North Fork",
@@ -46,5 +45,28 @@
   "West Gullly": "West Gully",
   "Bailey Brothers": "Bailey Bros.",
   "Cabin Glades": "Cabins Glades"
- }
+ },
+ "links": [
+  [
+   "trail:Grand Portage (bottom)",
+   "Pallavicini Lift (base)"
+  ],
+  [
+   "trail:Janitors Only (bottom)",
+   "Pallavicini Lift (base)"
+  ],
+  [
+   "trail:Lightning Trees (bottom)",
+   "Zuma Lift (base)"
+  ],
+  [
+   "trail:Crags (bottom)",
+   "Zuma Lift (base)"
+  ],
+  [
+   "trail:Bald Spot (bottom)",
+   "Beavers (base)"
+  ]
+ ],
+ "links_note": "Hike-outs mapped in OpenStreetMap as piste:type=hike (not built as runs): Steep Gullies Hike-Back from the end of Grand Portage to the Pallavicini base (the resort lists 'Steep Gullies Hike Back Trail'), the hike from Lightning Trees/Crags back up to the Zuma base, and 'Hike Back' from Bald Spot to the Beavers base. Walked in directions."
 }

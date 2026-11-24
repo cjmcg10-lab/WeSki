@@ -7,7 +7,7 @@
 //     and Ski Here still opens the mountain.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 
 // any free port (4173 is smoke.mjs's, and another checkout on the same machine may be using a fixed one)
@@ -37,9 +37,11 @@ try {
   browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
-  await context.addInitScript(() => {
+  // the terms version the app asks for, read from the app, so a terms change does not stop this test
+  const termsV = readFileSync('src/main.js', 'utf8').match(/TERMS_V = '([^']+)'/)[1];
+  await context.addInitScript((termsV) => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: termsV, at: Date.now() }));
     // A stand-in for window.visualViewport whose size the test can change, to imitate the on-screen keyboard.
     const real = window.visualViewport;
     const fake = new EventTarget();
@@ -49,7 +51,7 @@ try {
     }
     Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => fake });
     window.__kbSet = (kb) => { window.__kb = kb; fake.dispatchEvent(new Event('resize')); fake.dispatchEvent(new Event('scroll')); };
-  });
+  }, termsV);
   page = await context.newPage();
   page.on('pageerror', (e) => fail(`page error: ${e.message}`));
   await page.goto(ORIGIN);
@@ -118,6 +120,47 @@ try {
   await page.locator('#start-panel .grab').tap();
   await page.waitForTimeout(600);
   if (await page.locator('#start-panel.full').count()) fail('tapping the grab bar did not bring the list back down');
+  // sliding the bar up much further than the screen: the list stops at the top and never goes past it (#138)
+  {
+    const g = await page.locator('#start-panel .grab').boundingBox();
+    await page.evaluate(() => { window.__up = []; const p = document.querySelector('#start-panel'), t0 = performance.now(), f = () => { window.__up.push(p.getBoundingClientRect().top); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
+    await page.evaluate(async ({ x, y }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
+      ev('pointerdown', y); for (let i = 1; i <= 12; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 900 * i / 12); } ev('pointerup', y - 900); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
+    await page.waitForTimeout(1500);
+    const up = await page.evaluate(() => window.__up);
+    if (up.some((t) => t < 0)) fail(`sliding the list up took it past the top of the screen (lowest top ${Math.min(...up)})`);
+    if (!(await page.locator('#start-panel.full').count())) fail('sliding the list up did not open it to the whole screen');
+    await page.locator('#start-panel .grab').tap();
+    await page.waitForTimeout(600);
+  }
+  // with an iPhone notch (imitated: a 47 px safe area at the top), a quick slide up that is let go part-way glides to the
+  // whole screen with the grab bar and title below the notch on every frame: they used to glide up under the camera and
+  // drop back down once the glide ended (#140)
+  {
+    await page.addStyleTag({ content: ':root { --sat: 47px !important; }' });
+    await page.waitForTimeout(100);
+    const g = await page.locator('#start-panel .grab').boundingBox();
+    await page.evaluate(() => { window.__nt = []; const h = document.querySelector('#start-panel h2'), b = document.querySelector('#start-panel .grab'), t0 = performance.now(), f = () => { const pn = document.querySelector('#start-panel'); window.__nt.push([Math.round(h.getBoundingClientRect().top), Math.round(b.getBoundingClientRect().top), Math.round(pn.getBoundingClientRect().top), Math.round(pn.getBoundingClientRect().height)]); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
+    await page.evaluate(async ({ x, y }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
+      ev('pointerdown', y); for (let i = 1; i <= 6; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 40 * i); } window.__rel = window.__nt.length; ev('pointerup', y - 240);
+      // whether the panel's slide animation is running just after letting go (frames alone can miss it on a slow machine)
+      await new Promise((r) => requestAnimationFrame(r)); window.__anim = document.querySelector('#start-panel').getAnimations().some((a) => a.transitionProperty === 'transform'); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
+    await page.waitForTimeout(1500);
+    const [nt, rel, anim] = await page.evaluate(() => [window.__nt, window.__rel, window.__anim]);
+    if (!(await page.locator('#start-panel.full').count())) fail('a quick slide up did not open the list to the whole screen');
+    const under = nt.filter(([h, b]) => h < 47 || b < 47);
+    if (under.length) fail(`with a notch, the list's title or grab bar went under it while gliding up (highest title ${Math.min(...nt.map((r) => r[0]))}, grab bar ${Math.min(...nt.map((r) => r[1]))})`);
+    const end = nt[nt.length - 1];
+    // it glides up as one piece, the same way it slides down to its bar: whole height from the first frame after letting
+    // go, and at least one frame between where the finger left it and the top (measuring it used to stop the glide dead)
+    const before = nt[rel - 1][2], after = nt.slice(rel);
+    const glide = after.filter(([, , t]) => t > 2 && t < before - 2);
+    if (new Set(after.map((r) => r[3])).size > 1) fail(`the list changed its height while gliding up (${[...new Set(after.map((r) => r[3]))].join(', ')} px): it should slide as one piece`);
+    if (!glide.length && !anim) fail('the list jumped to the top instead of gliding there');
+    if (nt.some(([h]) => h < end[0] - 4)) fail(`the title went above its final place and came back down (lowest ${Math.min(...nt.map((r) => r[0]))}, final ${end[0]})`);
+    await page.locator('#start-panel .grab').tap();
+    await page.waitForTimeout(600);
+  }
 
   // ---- 2. picking a mountain: no map building during the globe's turn (1.8 s)
   // its files fetched once first, so they come from the cache and the map could otherwise be built straight away

@@ -1,0 +1,53 @@
+{
+ "id": "wisp",
+ "name": "Wisp",
+ "region": "Maryland, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/980981935",
+ "include_ways": [
+  185225857,
+  185225858,
+  185225860,
+  185225864,
+  185225865,
+  256728185,
+  256728187,
+  256728188,
+  256728189,
+  778117488,
+  778117489,
+  778117490
+ ],
+ "osm_bbox": [
+  -79.395,
+  39.5385,
+  -79.3557,
+  39.5622
+ ],
+ "openskimap": {
+  "id": "474eb18d133632b436ad8ef5adb04b1087dd8d0b",
+  "cc": "US",
+  "runs": 36,
+  "lifts": 12,
+  "rated": 1.0,
+  "skimap": 445,
+  "web": "https://www.wispresort.com/"
+ },
+ "area_name": "Wisp Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing Tow"
+ ],
+ "isolated_notes": {
+  "Tubing Tow": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Longview": "Long View"
+ }
+}

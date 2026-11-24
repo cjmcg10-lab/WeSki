@@ -62,6 +62,8 @@ screen.orientation?.lock?.('portrait').catch(() => {});
 fitScreen();
 window.addEventListener('resize', fitScreen);
 window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));
+// kept for this visit only (a reload keeps it, closing the app ends it)
+function simFreeSaved() { try { return sessionStorage.getItem('weski:simFree') === '1'; } catch { return false; } }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const STALE_S = 120;          // a friend's location older than this is "stale"
 const PALETTE = ['#ff3b30', '#ff9f0a', '#ffd60a', '#34c759', '#00c7be', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff2d92', '#8e6e53'];
@@ -80,7 +82,7 @@ const S = {
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
   testMode: prefs.get('testMode', false),
-  simFree: prefs.get('simFree', false),
+  simFree: simFreeSaved(),   // "Simulate free tier": lasts until the app is closed, so a pass never stays hidden by mistake
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
   smooth: prefs.get('smoothEdges', null),   // antialiasing: null = the default (on)
@@ -286,8 +288,18 @@ async function needRouter(kind) {
 }
 
 /** After signing in or out, or buying: ask the server again and reload what the pass unlocks. */
+function setSimFree(on) {
+  S.simFree = !!on; acct.setSimFree(S.simFree);
+  try { if (S.simFree) sessionStorage.setItem('weski:simFree', '1'); else sessionStorage.removeItem('weski:simFree'); } catch { /* private mode */ }
+  if (S.simFree && S.nav && !['meet', 'friend'].includes(S.nav.target.type)) endNav();
+  const rc = $('#resort-card'), rp = rc?.dataset.id && placeById(rc.dataset.id);
+  if (rp) rc.innerHTML = resortCard(rp);   // its Download button carries the Pass badge
+  renderChrome(); renderAcctChip(); renderSheet();
+}
+
 async function afterPassChange() {
   await acct.refreshMe();
+  if (S.simFree && acct.account()?.pass?.active) setSimFree(false);   // a pass just bought or redeemed is never hidden
   if (S.resort && (!S.router || !acct.hasPass())) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.nav && !S.router) endNav();
 }
@@ -343,6 +355,7 @@ function showConsent() {
 async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   if (!consentOk()) { hideSplash(); await showConsent(); }
+  prefs.set('simFree', false);   // older versions kept the simulation on between launches
   acct.setSimFree(S.simFree);
   const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); tidyMaps(); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
@@ -443,12 +456,31 @@ function startState() {
   return p.classList.contains('full') ? 'full' : p.classList.contains('mini') ? 'mini' : 'normal';
 }
 /** The list's sizes, measured as it would sit in its normal place, and the top of the panel in each place. */
+/** The height of the notch (the safe area at the top of the screen), read from a still probe element. It used to be read
+ *  from the panel's own padding, which is mid-animation when a drag is let go: it then read 0, so the list glided up
+ *  with its title under the camera and dropped back down once the glide ended (#140). */
+function notchHeight() {
+  let el = document.getElementById('sat-probe');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'sat-probe';
+    el.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:var(--sat)';
+    document.body.append(el);
+  }
+  return parseFloat(getComputedStyle(el).paddingTop) || 0;
+}
+let startGeomLast = null;
 function startGeom() {
   const p = $('#start-panel'), H = $('#start').clientHeight;
-  const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full') };
+  // while the list glides, measuring it would stop the glide dead (it switches the glide off for a moment), so the
+  // sizes measured when it started are used: the globe asks for them as the list sets off
+  if (startGeomLast && startGeomLast.H === H && p.getAnimations?.().some((a) => a.transitionProperty)) return startGeomLast;
+  const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full'), drag: p.classList.contains('dragging') };
+  const sat = notchHeight();
+  // measure with the glide switched off: otherwise the brief changes below start glides of their own, and on letting go
+  // of a drag the list jumped to the whole screen and then slid its title down out of the notch (#140)
+  p.classList.add('dragging');
   p.style.removeProperty('--padt');
-  p.classList.add('full');
-  const sat = Math.max(0, parseFloat(getComputedStyle(p).paddingTop) - START_PAD) || 0;   // the notch
   p.classList.remove('full');
   p.style.height = ''; p.style.maxHeight = '';
   const h = p.offsetHeight, hd = p.querySelector('h2');
@@ -456,22 +488,30 @@ function startGeom() {
   p.classList.toggle('full', keep.full);
   p.style.height = keep.h; p.style.maxHeight = keep.mh;
   if (keep.pt) p.style.setProperty('--padt', keep.pt);
-  return { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
+  if (!keep.drag) { void p.offsetHeight; p.classList.remove('dragging'); }
+  startGeomLast = { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
+  return startGeomLast;
 }
-/** Put the top of the list at p (px from the top of the screen): above its normal place it grows, below it slides down. */
+/** Put the top of the list at p (px from the top of the screen). Above its normal place the list is as tall as the
+ *  screen and slides up and down as one piece (g.tall: also for a glide between the whole screen and normal), the same
+ *  way it slides down to its bar: moving it by changing its height made the phone lay out the whole list again on every
+ *  frame, so going up to the whole screen felt heavier than going down (owner, 2026-11-24). */
 function placeStart(g, p) {
   const el = $('#start-panel');
   el.style.maxHeight = 'none';
-  if (p >= g.pos.normal) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
-  else { el.style.height = Math.round(g.H - Math.max(p, -40)) + 'px'; el.style.transform = 'translateY(0px)'; }
+  if (p >= g.pos.normal && !(g.tall && p <= g.pos.normal + 1)) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
+  else { el.style.height = Math.round(g.H) + 'px'; el.style.transform = `translateY(${Math.round(Math.max(p, 0))}px)`; }
   // near the top the title moves down out of the notch, and the rounded corners square off
   el.style.setProperty('--padt', START_PAD + Math.max(0, g.sat - Math.max(0, p)) + 'px');
   const r = Math.max(0, Math.min(26, p / 2));
   el.style.borderRadius = `${r}px ${r}px 0 0`;
 }
+/** Back to the stylesheet's place and size, with no glide (it already sits there). */
 function clearStartPlace() {
-  const el = $('#start-panel');
+  const el = $('#start-panel'), drag = el.classList.contains('dragging');
+  el.classList.add('dragging');
   for (const k of ['height', 'max-height', 'transform', 'border-radius', '--padt']) el.style.removeProperty(k);
+  if (!drag) { void el.offsetHeight; el.classList.remove('dragging'); }
 }
 /** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now.
  *  `snap`: go there at once, with no glide (used when the search is tapped, see the focus handler below). */
@@ -491,6 +531,8 @@ function goStart(state, from = null, g = startGeom(), snap = false) {
     else { globe?.setPaused(false); layoutGlobe(true, state); }
     return;
   }
+  // between the whole screen and normal the list slides at full height (see placeStart)
+  g = { ...g, tall: state === 'full' || prev === 'full' || (from != null && from < g.pos.normal) };
   if (from == null) {
     if (prev === state) return;
     el.classList.add('dragging'); placeStart(g, g.pos[prev]); void el.offsetHeight; el.classList.remove('dragging');
@@ -499,7 +541,9 @@ function goStart(state, from = null, g = startGeom(), snap = false) {
   el.classList.toggle('full', state === 'full');
   el.classList.toggle('mini', state === 'mini');
   start.classList.toggle('full', state === 'full');
-  if (state !== 'full') globe?.setPaused(false);
+  // the globe stops drawing as the list sets off for the whole screen, so the phone only moves the list (it fades out
+  // frozen): drawing it under the gliding list made the slide up feel slower than the others (owner, 2026-11-24)
+  globe?.setPaused(state === 'full');
   if (state !== prev && (state === 'mini' || prev === 'full')) $('#f-resort').blur();
   placeStart(g, g.pos[state]);
   if (state !== 'full') layoutGlobe(true, state);
@@ -1578,6 +1622,8 @@ function renderChrome() {
   else if (S.me && Date.now() - S.me.t < 20000) { gp.textContent = S.lift ? '● On lift' : S.tracker ? ['● Tracking', '● Skiing', '● On lift'][S.tracker.state] : `GPS ±${Math.round(S.me.acc)} m`; gp.className = 'pill ok'; }
   else if (S.loc?.active) { gp.textContent = 'Finding GPS…'; gp.className = 'pill warn'; }
   else { gp.textContent = 'GPS off'; gp.className = 'pill hidden'; }
+  const fp = $('#free-pill');
+  if (fp) { fp.innerHTML = S.simFree ? ICON.ticket + esc(t('Free tier simulation')) : ''; fp.className = S.simFree ? 'pill sim' : 'pill hidden'; }
   const g = $('#group-pill');
   if (S.group) {
     const n = S.group.state?.members.length || 1;
@@ -2039,6 +2085,8 @@ function deviceList(devices) {
   return `<p class="sub">${t('Signed in on: {0}', names.join(', '))}</p>`;
 }
 
+const simNote = () => (acct.simulatingFree() ? `<div class="sim-note"><p class="sub">${esc(t('Free tier simulation is on, so this phone acts as if it had no pass. Your pass is not affected.'))}</p><button class="btn alt" data-act="simfree-off">${esc(t('Turn off'))}</button></div>` : '');
+
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
   const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: t('Your saved ski days, stats and replays open with the SkiWithMe Pass, including days recorded before you buy it.'), forecast: t('The full ski forecast is part of the SkiWithMe Pass. Today and tomorrow at one mountain stay free.'), offline: t('Downloading mountains for offline use is part of the SkiWithMe Pass. The map you open stays on your phone that day, free.') }[why];
@@ -2065,6 +2113,7 @@ function sheetPass(why) {
       <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
+  who = simNote() + who;
   const canBuy = !!c.paddle;
   // what each plan offers this account: no Day or Week while a yearly pass is on, Season to Crew as an upgrade
   const pick = planChoices(me?.signedIn ? me : null);
@@ -2710,10 +2759,8 @@ function onInput(e) {
   else if (t.id === 'f-smooth' && e.type === 'change') { S.smooth = t.checked; prefs.set('smoothEdges', S.smooth); toast('Applies the next time you open a mountain.'); }
   else if (t.id === 'f-fps120' && e.type === 'change') { S.fps120 = t.checked; prefs.set('fps120', S.fps120); if (S.map) S.map.maxFps = S.fps120 ? 120 : 60; }
   else if (t.id === 'f-simfree' && e.type === 'change') {
-    S.simFree = t.checked; prefs.set('simFree', S.simFree); acct.setSimFree(S.simFree);
-    if (S.simFree && S.nav && !['meet', 'friend'].includes(S.nav.target.type)) endNav();
-    toast(S.simFree ? 'Free tier simulation on: paid features now show the pass pop-up.' : 'Free tier simulation off.');
-    renderChrome(); renderSheet();
+    setSimFree(t.checked);
+    toast(S.simFree ? t('Free tier simulation on until you close the app: paid features now show the pass pop-up.') : 'Free tier simulation off.');
   } else if (t.id === 'f-test' && e.type === 'change') {
     S.testMode = t.checked; prefs.set('testMode', S.testMode);
     S.loc.setSim(S.testMode);
@@ -2808,6 +2855,9 @@ async function onClick(e) {
       if (S.sheet === 'privacy') renderSheet();
       break;
     }
+    case 'simfree-off':
+      setSimFree(false); toast('Free tier simulation off.');
+      break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();

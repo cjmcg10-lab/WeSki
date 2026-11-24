@@ -1,0 +1,31 @@
+{
+ "source": "Brandywine trail map 2025-26 (skimap.org map 38728, the resort's PDF), read by hand at 200 dpi",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Champagne": 2,
+  "Downdraft": 1,
+  "Easy Rider": 0,
+  "Frosty": 0,
+  "Grizzly": 2,
+  "J's Way": 0,
+  "Outer Limits": 1,
+  "Regulator Johnston": 2,
+  "Shredder": 1
+ },
+ "blue_black": [],
+ "not_runs": {},
+ "lifts": [
+  "Carpet Lift",
+  "Handle Tow",
+  "Lift 1",
+  "Lift 2",
+  "Lift 4",
+  "Lift 5",
+  "Ram Quad"
+ ],
+ "confirm": {
+  "The Park": "terrain park on the resort's map (freestyle terrain, no rating): shown with OpenStreetMap's rating",
+  "Progression Park": "terrain park on the resort's map (freestyle terrain, no rating): shown with OpenStreetMap's rating"
+ },
+ "note": "Boston Mills and Brandywine are one resort (one ticket, one ski patrol: 800-875-4241) about 1.5 km apart; each has its own map here."
+}

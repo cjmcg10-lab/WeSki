@@ -1,0 +1,44 @@
+{
+ "id": "bear-mountain",
+ "name": "Bear Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/4642684",
+ "include_ways": [
+  257992650,
+  257992653,
+  257995912,
+  257995913,
+  257995914,
+  257995915,
+  257995916,
+  257995919,
+  257995920,
+  1348307561,
+  1348307562
+ ],
+ "osm_bbox": [
+  -116.8708,
+  34.2075,
+  -116.8476,
+  34.2314
+ ],
+ "ratings_feed": {
+  "mtnpowder": 57
+ },
+ "openskimap": {
+  "id": "78bac1237b378a398d712ba2cc962ddf9d1c6479",
+  "cc": "US",
+  "runs": 26,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 536,
+  "web": "https://www.bigbearmountainresort.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

@@ -1,7 +1,7 @@
 // Map-mistake reports: confidence scores and the daily email (issue #112, steps 1 and 2). No real email is sent here.
 import { describe, it, expect } from 'vitest';
 import { CONFIDENCE, scoreProblems, groupReports, ageWeight, offRunNear, thingKeys, ratingVotes, votesText } from '../worker/confidence.js';
-import { isKnownResort, buildDigest, sendMail, runDigest, digestConfig, DIGEST_INDEX, appLink, RESEND_URL } from '../worker/digest.js';
+import { isKnownResort, buildDigest, sendMail, runDigest, digestConfig, DIGEST_INDEX, DIGEST_CRON, appLink, RESEND_URL } from '../worker/digest.js';
 import { cleanReport, publicTotals } from '../worker/evidence.js';
 
 const DAY = 86400e3;
@@ -360,8 +360,10 @@ describe('daily digest job', () => {
 describe('daily email schedule', () => {
   it('both Worker configs run the MeteoSwiss step and the daily email, and the Worker tells them apart', async () => {
     const { readFileSync } = await import('node:fs');
-    const cron = readFileSync('worker/index.js', 'utf8').match(/export const DIGEST_CRON = '([^']+)'/)?.[1];
+    const cron = DIGEST_CRON;
     expect(cron).toBe('23 11 * * *');
+    // a Worker module may only export functions, classes or handlers: wrangler dev refuses a string export
+    expect(readFileSync('worker/index.js', 'utf8')).not.toMatch(/export const DIGEST_CRON/);
     for (const f of ['wrangler.jsonc', 'wrangler.assets.jsonc']) {
       const crons = JSON.parse(readFileSync(f, 'utf8').match(/"crons":\s*(\[[^\]]*\])/)[1]);
       expect(crons).toContain('*/5 * * * *');

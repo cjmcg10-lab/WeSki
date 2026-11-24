@@ -1,0 +1,56 @@
+{
+ "id": "brevent-flegere-chamonix",
+ "name": "Chamonix: Brévent-Flégère",
+ "region": "Haute-Savoie, France",
+ "tz": "Europe/Paris",
+ "auto": true,
+ "area_osm": "way/642247840",
+ "include_ways": [
+  4821092,
+  22876846,
+  22876847,
+  25277191,
+  25283855,
+  187932942,
+  217343492,
+  217804698,
+  217807399,
+  217807403,
+  217807417,
+  231452314,
+  232973541,
+  249196939,
+  435032514,
+  463223838,
+  1110838534,
+  1525842703
+ ],
+ "osm_bbox": [
+  6.831,
+  45.9191,
+  6.901,
+  45.981
+ ],
+ "dem": {
+  "source": "ign"
+ },
+ "openskimap": {
+  "id": "c2fba992cc1711880d5f8d8ffa661f71eab950cf",
+  "cc": "FR",
+  "runs": 65,
+  "lifts": 18,
+  "rated": 0.985,
+  "skimap": 799,
+  "web": "https://en.chamonix.com/activities/winter/skiing-in-chamonix-mont-blanc-valley/list-of-ski-areas/domaine-skiable-brevent-flegere"
+ },
+ "area_name": "Brévent/Flégère (Chamonix)",
+ "area_buffer": 300,
+ "terrain_source": "IGN RGE ALTI 1 m (other 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "other": 100.0
+ },
+ "two_way_lifts": [
+  "Liaison Brévent - Flégère"
+ ]
+}
