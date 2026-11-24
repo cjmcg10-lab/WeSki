@@ -1,17 +1,13 @@
 {
  "checked": "2026-11-24",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
- "unreachable": {
-  "Eagle Tail": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Upper North Axe": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Bearspaw": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
- },
+ "unreachable": {},
  "dead_end": {},
  "outside_core": {},
  "lift_end": {},
  "uphill": {},
  "doubled": {
-  "Cougar ~ North Boundary": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "North Boundary ~ Switchback": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Cougar ~ North Boundary": "Monster Glades: OpenStreetMap draws these neighbouring glade lines very close together; both are separate numbered glades on the resort's trail list (48, 49). Not checked on aerial photos.",
+  "North Boundary ~ Switchback": "Monster Glades: OpenStreetMap draws these neighbouring glade lines very close together; both are separate numbered glades on the resort's trail list (49, 51). Not checked on aerial photos."
  }
 }

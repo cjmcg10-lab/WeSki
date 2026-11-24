@@ -37,5 +37,11 @@
  "terrain_shares": {
   "1m": 0.0,
   "30m": 100.0
- }
+ },
+ "links": [
+  [
+   "Gold Chair (top)",
+   "trail:Eagle Tail"
+  ]
+ ]
 }
