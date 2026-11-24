@@ -73,11 +73,10 @@ function makePeaks(list, order = 11) {
         vec3 nr = vec3(c * normal.x + sn * normal.z, normal.y, -sn * normal.x + c * normal.z);
         vec3 sc = vec3(0.45 + 0.75 * h, h, 0.45 + 0.75 * h);         // a bigger drop: taller and broader
         p *= sc; nr = normalize(nr / sc);
-        // set a hair into the ground so the low-poly globe's flat facets never show a gap under it
         // shrink away toward the edge and on the far side of the globe (the globe does not hide them: see the constructor)
         vec4 a = modelViewMatrix * vec4(anchor, 1.0);
         float s = uScale * smoothstep(0.0, 0.12, dot(normalize(normalMatrix * Y), normalize(-a.xyz)));
-        vec3 w = Y * (1.0 - 0.002) + (X * p.x + Y * p.y + Z * p.z) * uMax * s;
+        vec3 w = Y + (X * p.x + Y * p.y + Z * p.z) * uMax * s;   // foot on the true surface
         vec3 n = normalize(normalMatrix * (X * nr.x + Y * nr.y + Z * nr.z));
         gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 1.0);
         vCol = instanceColor;
@@ -302,6 +301,9 @@ export class Globe {
    */
   tap(cx, cy) {
     const r = this.renderer.domElement.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
+    // a tap on a mountain's drawn shape opens that mountain's card (the one in front where shapes overlap)
+    const hit = this.peakAt(x, y);
+    if (hit) { this.onPick?.(hit); return; }
     const near = this.pinsNear(x, y);
     const hitR = 24, clearR = 30;
     if (near.length && near[0].px < hitR && (near.length < 2 || near[1].px > clearR || this.dist <= MIN_DIST + 0.01)) {
@@ -311,6 +313,49 @@ export class Globe {
     // the page can claim the first tap (the home screen uses it to slide the mountain list down so the globe fills the screen)
     if (this.onTap?.()) return;
     if (!this.zoomAt(x, y)) this.zoomOut();
+  }
+
+  /**
+   * The mountain drawn under a screen point, or null. The graphics card draws just the mountains for a small square
+   * around the point, each in its own hidden colour, and reads back which one is drawn there: exactly the one the person
+   * sees on top, however they overlap. A finger is not a pixel, so the nearest mountain within the square counts.
+   * On the whole globe (not zoomed in), two or more mountains within 6 px of the finger are a crowd: no pick, the tap zooms in.
+   */
+  peakAt(x, y) {
+    const R = 9, N = 2 * R + 1, el = this.renderer.domElement, r = this.renderer;
+    if (!this.pickMat) {
+      this.pickRT = new THREE.WebGLRenderTarget(N, N);
+      this.pickBuf = new Uint8Array(N * N * 4);
+      this.pickMat = new THREE.ShaderMaterial({
+        uniforms: this.peaks.material.uniforms,
+        vertexShader: this.peaks.material.vertexShader.replace('void main() {', 'flat out int vId;\n      void main() {\n        vId = gl_InstanceID;'),
+        fragmentShader: `flat in int vId;
+          void main() { int i = vId + 1; gl_FragColor = vec4(float(i % 256), float((i / 256) % 256), 0.0, 255.0) / 255.0; }`,
+      });
+    }
+    const cam = this.camera, mat = this.peaks.material, clear = r.getClearColor(new THREE.Color()), alpha = r.getClearAlpha();
+    this.globe.updateMatrixWorld();
+    cam.setViewOffset(el.clientWidth, el.clientHeight, x - R, y - R, N, N);
+    this.peaks.material = this.pickMat;
+    r.setRenderTarget(this.pickRT);
+    r.setClearColor(0x000000, 0); r.clear();
+    r.render(this.peaks, cam);
+    r.readRenderTargetPixels(this.pickRT, 0, 0, N, N, this.pickBuf);
+    r.setRenderTarget(null); r.setClearColor(clear, alpha);
+    this.peaks.material = mat;
+    cam.clearViewOffset();
+    let best = -1, bestD = Infinity;
+    const seen = new Set();
+    for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+      const k = (j * N + i) * 4, id = this.pickBuf[k] + this.pickBuf[k + 1] * 256 - 1;
+      if (id < 0) continue;
+      const d = Math.hypot(i - R, j - R);
+      if (d <= 6) seen.add(id);
+      if (d < bestD) { bestD = d; best = id; }
+    }
+    if (best < 0) return null;
+    if (seen.size > 1 && this.dist > 2.2) return null;      // a crowd seen on the whole globe: zoom in first
+    return this.pins[best]?.rs ?? null;
   }
 
   /** Resort peaks on the visible side of the globe, nearest to a screen point first, with their distance in px. */
@@ -391,7 +436,7 @@ export class Globe {
     const a = this.aim(rs);
     let dy = a.y - this.globe.rotation.y;
     dy = Math.atan2(Math.sin(dy), Math.cos(dy)); // shortest way round
-    this.ring.position.copy(ll(rs.lat, rs.lon, 1.006));
+    this.ring.position.copy(ll(rs.lat, rs.lon, 1.0003)); // on the ground, around the mountain's foot (the globe's facets lie below r = 1)
     // lay the ring flat on the sphere: its face normal (+Z) points straight out from the surface
     this.ring.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), this.ring.position.clone().normalize());
     this.ring.visible = true;
@@ -510,7 +555,7 @@ export class Globe {
     // Zoomed in by tapping, the camera tilts to look across the ground from the south, as a 3D map does, so the
     // mountains (which stand straight out from the Earth) show their height instead of being seen from straight above.
     // It turns about the spot in the middle of the screen, which stays where it was. Eased, so zooming never jumps.
-    const want = this.zoomed && !this.diving && !this.focused ? TILT * Math.min(1, Math.max(0, (1.6 - d) / 0.45)) : 0;
+    const want = (this.zoomed || this.focused) && !this.diving ? TILT * Math.min(1, Math.max(0, (1.6 - d) / 0.45)) : 0;
     this.tilt = (this.tilt ?? 0) + (want - (this.tilt ?? 0)) * Math.min(1, dt * 6);
     if (this.tilt > 0.002 && Math.abs(L) < 1) {
       const pz = Math.sqrt(1 - L * L), r = d - pz;               // the spot under the middle of the screen, and how far off
