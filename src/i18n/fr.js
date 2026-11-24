@@ -547,5 +547,9 @@ export default {
   1487: "Sauvetage aérien Rega",
   1488: "Urgence alpine (secours en montagne)",
   1489: "Pompiers et ambulance",
-  1490: "Effacer le texte",
+  1490: "Difficulté relevée : plus raide que son classement OpenStreetMap",
+  1491: "Difficulté pas encore vérifiée avec la liste de la station",
+  1492: "Les difficultés des pistes ne sont pas encore vérifiées avec la liste de la station : elles viennent d’OpenStreetMap. La signalisation sur place prime toujours.",
+  1493: "Relief moins détaillé pour cette montagne (30 m) : les pentes en 3D paraissent plus douces qu’en réalité.",
+  1494: "Effacer le texte",
 };

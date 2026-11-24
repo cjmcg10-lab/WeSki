@@ -1,0 +1,52 @@
+{
+ "id": "cranmore-mountain",
+ "name": "Cranmore Mountain",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/334089267",
+ "include_ways": [
+  242364581,
+  242364582,
+  242364583,
+  242364584,
+  242364585,
+  242364586,
+  260125049,
+  1017192436
+ ],
+ "osm_bbox": [
+  -71.1194,
+  44.0482,
+  -71.0784,
+  44.0734
+ ],
+ "openskimap": {
+  "id": "0ca8f9b88fbe461e372112f839f21ba8d01e27af",
+  "cc": "US",
+  "runs": 60,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 344,
+  "web": "https://www.cranmore.com/"
+ },
+ "area_name": "Cranmore Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Beginner's Basin": "Beginner Basin",
+  "Gibson Chutes": "Gibson Chutes Glades",
+  "Jughandle": "Jughandle Glade",
+  "Roundabout": "Roundabout Glade"
+ }
+}

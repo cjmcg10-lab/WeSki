@@ -547,5 +547,9 @@ export default {
   1487: "Soccorso aereo Rega",
   1488: "Emergenza alpina (soccorso alpino)",
   1489: "Vigili del fuoco e ambulanza",
-  1490: "Cancella il testo",
+  1490: "Difficoltà aumentata: più ripida della sua classificazione su OpenStreetMap",
+  1491: "Difficoltà non ancora verificata con l’elenco del comprensorio",
+  1492: "Le difficoltà delle piste non sono ancora verificate con l’elenco del comprensorio: provengono da OpenStreetMap. La segnaletica in montagna ha sempre la precedenza.",
+  1493: "Terreno meno dettagliato per questa montagna (30 m): i pendii in 3D sembrano più dolci di quanto siano.",
+  1494: "Cancella il testo",
 };

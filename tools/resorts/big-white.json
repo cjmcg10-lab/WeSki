@@ -1,0 +1,58 @@
+{
+ "id": "big-white",
+ "name": "Big White",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/476836855",
+ "include_ways": [
+  94329766,
+  94329767,
+  94329768,
+  94329769,
+  94329770,
+  94329772,
+  94329773,
+  94329774,
+  99370608,
+  99370623,
+  99811005,
+  258640308,
+  258640309,
+  258641986,
+  269444360,
+  1352775912
+ ],
+ "osm_bbox": [
+  -118.986,
+  49.7123,
+  -118.9077,
+  49.7616
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "f3592759a147841bcd9a939f6ce75e8ecf30433c",
+  "cc": "CA",
+  "runs": 114,
+  "lifts": 16,
+  "rated": 0.991,
+  "skimap": 57,
+  "web": "https://www.bigwhite.com/"
+ },
+ "area_name": "Big White Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Mega Snow Coaster Tube Ride"
+ ],
+ "isolated_notes": {
+  "Mega Snow Coaster Tube Ride": "rule: tubing or sledding lift"
+ }
+}

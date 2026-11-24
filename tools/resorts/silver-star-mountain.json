@@ -1,0 +1,59 @@
+{
+ "id": "silver-star-mountain",
+ "name": "Silver Star Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/476840539",
+ "include_ways": [
+  37896456,
+  37896458,
+  66110718,
+  66110720,
+  66110722,
+  66110723,
+  66110725,
+  874484355,
+  874484358,
+  874484359,
+  874484360
+ ],
+ "osm_bbox": [
+  -119.0886,
+  50.3349,
+  -119.0018,
+  50.4113
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "ca99961abe8fc871ad3abe87479e4dbb2875d978",
+  "cc": "CA",
+  "runs": 192,
+  "lifts": 11,
+  "rated": 0.969,
+  "skimap": 44,
+  "web": "https://www.skisilverstar.com/"
+ },
+ "area_name": "Silver Star Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 66%, 1 m lidar 34%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 34.3,
+  "30m": 65.7
+ },
+ "isolated_lifts": [
+  "Tube Town Carpet"
+ ],
+ "isolated_notes": {
+  "Tube Town Carpet": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Abbot's Gulch": "Abbott's Gulch",
+  "Freefall": "Free Fall",
+  "Rusty Whistle": "Russty Whistle",
+  "FIS": "F.I.S."
+ }
+}

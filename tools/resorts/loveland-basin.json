@@ -1,0 +1,72 @@
+{
+ "id": "loveland-basin",
+ "name": "Loveland Basin",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/184326673",
+ "include_ways": [
+  17024012,
+  17024021,
+  17024268,
+  17024533,
+  42646654,
+  42646657,
+  1056532134
+ ],
+ "osm_bbox": [
+  -105.9306,
+  39.6596,
+  -105.8906,
+  39.6972
+ ],
+ "openskimap": {
+  "id": "1dd2321e1ddaeaba8ad3d040cd145bd2ad08c028",
+  "cc": "US",
+  "runs": 97,
+  "lifts": 7,
+  "rated": 0.99,
+  "skimap": 515,
+  "web": "https://www.skiloveland.com/"
+ },
+ "area_name": "Loveland Basin Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "links": [
+  [
+   "Lift 9 (top)",
+   "trail:Wild Child",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Porcupine Saddle",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Marmot",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Field of Dreams",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Velvet Hammer",
+   "hike"
+  ],
+  [
+   "Lift 9 (top)",
+   "trail:Rock Chutes",
+   "hike"
+  ]
+ ],
+ "links_notes": "Ridge terrain along the Continental Divide (2025 trail map, skimap.org 35275): reached from the top of Lift 9 along the ridge through closure gates 1S-5S (Super Bowl, Wild Child, Porcupine Saddle) and 1N-5N (Velvet Hammer, Field of Dreams, Marmot, Rock Chutes; also served by the Ridge snowcat). Drawn as walks from the Lift 9 top."
+}

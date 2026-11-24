@@ -204,6 +204,21 @@ if official:
             T["ok"] = True
 
 count = {}
+# Steepness check (tools/steepness.py, issue #45): a rating from OpenStreetMap alone that is far easier than the
+# measured pitch is shown one level harder and marked "raised" (degrees). North American scheme only for now.
+import steepness
+for T in R["trails"]:
+    T.pop("raised", None)
+if SCHEME == "us" and os.path.exists(f"{out}/terrain.bin"):
+    _H = steepness.heights(R, out)
+    for T in R["trails"]:
+        if T.get("ok") or T.get("glade") or T.get("len", 0) < 60 or T["d"] not in steepness.RAISE:
+            continue
+        a = steepness.pitch(T, _H, G["cell"])
+        if a > steepness.RAISE[T["d"]]:
+            T["d"] += 1
+            T["raised"] = round(a)
+            count["raised by steepness"] = count.get("raised by steepness", 0) + 1
 for T in R["trails"]:
     t = tags.get(T.get("osm"), {})
     z = None

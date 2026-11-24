@@ -1,0 +1,66 @@
+{
+ "id": "panorama-mountain",
+ "name": "Panorama Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/476844342",
+ "include_ways": [
+  31290817,
+  31290836,
+  31290854,
+  31290876,
+  48572355,
+  48572358,
+  48836459,
+  774866309,
+  774866314,
+  819989092
+ ],
+ "osm_bbox": [
+  -116.252,
+  50.4234,
+  -116.174,
+  50.4625
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "7f0f9748509826cf58fa1961ee12560933bbf7ab",
+  "cc": "CA",
+  "runs": 127,
+  "lifts": 10,
+  "rated": 0.898,
+  "skimap": 46,
+  "web": "https://www.panoramaresort.com"
+ },
+ "area_name": "Panorama Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 60%, 1 m lidar 40%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 40.4,
+  "30m": 59.6
+ },
+ "rename": {
+  "Cambell's Canyon": "Campbell's Canyon",
+  "Champagne Surf": "Champagne",
+  "Gunbarrel": "Gun Barrel",
+  "Zone 4": "Zone 2",
+  "Evasion": "Evasion Traverse"
+ },
+ "links": [
+  [
+   "Summit Quad (top)",
+   "trail:Outback Ridge",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Summit Quad (top) -> trail:Outback Ridge (hike)": "2026-11-24: OpenStreetMap draws Outback Ridge from the Summit Quad top along the ridge, climbing about 55 m to where the Taynton Bowl runs (Wild Thing, Spectre and the rest) drop off; the 2024 trail map shows that ridge as the way into the bowl, so it is a walk out the ridge"
+ },
+ "two_way_lifts": [
+  "Village"
+ ]
+}

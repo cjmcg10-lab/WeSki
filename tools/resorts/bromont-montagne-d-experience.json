@@ -1,0 +1,63 @@
+{
+ "id": "bromont-montagne-d-experience",
+ "name": "Bromont Montagne d'Expérience",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/1244097962",
+ "include_ways": [
+  198872993,
+  198872994,
+  198872995,
+  198872996,
+  332075947,
+  332075948,
+  332075949,
+  332075950,
+  332075960,
+  1031494796,
+  1031494797
+ ],
+ "osm_bbox": [
+  -72.6553,
+  45.2754,
+  -72.6162,
+  45.3074
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "a87ccf8c2949bc2ea5db0cf94c7c95fa6da0c874",
+  "cc": "CA",
+  "runs": 92,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 79,
+  "web": "https://www.bromontmontagne.com/"
+ },
+ "area_name": "Bromont Montagne d'Expérience",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Foret des Cantons": "Forêt des Cantons",
+  "Hawksbury": "Hawkesbury",
+  "Max Perrot": "Max Parrot",
+  "Pittsburg": "Pittsburgh",
+  "Saint-Lambert": "St-Lambert",
+  "San Jose": "San José",
+  "Trois-Rivieres": "Trois-Rivières",
+  "Kewlona": "Kelowna",
+  "Lavel": "Laval",
+  "Pitt Prk": "P'tit Prk",
+  "Régina": "Regina",
+  "West Shefford": "Shefford",
+  "Sainte-Hyacinthe": "St-Hyacinthe",
+  "Saint-Tite": "St-Tite",
+  "St. Louis": "St-Louis"
+ }
+}

@@ -1,0 +1,64 @@
+{
+ "id": "apex-mountain",
+ "name": "Apex Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/1138569632",
+ "include_ways": [
+  101303229,
+  101303234,
+  101303241,
+  101303248
+ ],
+ "osm_bbox": [
+  -119.9408,
+  49.3692,
+  -119.885,
+  49.3981
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "5f1f624e6535fdea28612a24b96567a8cf82fa15",
+  "cc": "CA",
+  "runs": 75,
+  "lifts": 4,
+  "rated": 0.973,
+  "skimap": 49,
+  "web": "https://apexresort.com/"
+ },
+ "area_name": "Apex Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 73%, 1 m lidar 27%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 26.7,
+  "30m": 73.3
+ },
+ "rename": {
+  "Dawdler1": "Dawdler 1",
+  "Dawdler2": "Dawdler 2",
+  "Dude ney Trail": "Dude'ney Trail",
+  "Grommit": "Gromit",
+  "Pea Shooter": "Peashooter"
+ },
+ "links": [
+  [
+   "trail:Grandfather's Trail",
+   "trail:Twenty Two"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Gunbarrel"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Peashooter"
+  ]
+ ],
+ "links_notes": {
+  "Twenty Two, Gunbarrel, Peashooter": "the trail map draws these three leaving Grandfather's Trail along the ridge; OpenStreetMap starts them just below it"
+ }
+}

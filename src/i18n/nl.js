@@ -547,5 +547,9 @@ export default {
   1487: "Rega luchtredding",
   1488: "Alpiene noodoproep (bergredding)",
   1489: "Brandweer en ambulance",
-  1490: "Tekst wissen",
+  1490: "Moeilijkheid verhoogd: steiler dan de indeling in OpenStreetMap",
+  1491: "Moeilijkheid nog niet gecontroleerd met de lijst van het skigebied",
+  1492: "De moeilijkheidsgraden van de pistes zijn nog niet gecontroleerd met de lijst van het skigebied: ze komen uit OpenStreetMap. De borden op de berg gaan altijd voor.",
+  1493: "Minder gedetailleerd terrein voor deze berg (30 m): de hellingen lijken in 3D vlakker dan ze zijn.",
+  1494: "Tekst wissen",
 };

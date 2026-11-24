@@ -547,5 +547,9 @@ export default {
   1487: "Resgate aéreo Rega",
   1488: "Emergência alpina (resgate de montanha)",
   1489: "Bombeiros e ambulância",
-  1490: "Apagar o texto",
+  1490: "Dificuldade aumentada: mais íngreme do que a classificação no OpenStreetMap",
+  1491: "Dificuldade ainda não verificada com a lista da estância",
+  1492: "As dificuldades das pistas ainda não foram verificadas com a lista da estância: vêm do OpenStreetMap. A sinalização na montanha prevalece sempre.",
+  1493: "Terreno com menos detalhe nesta montanha (30 m): as encostas em 3D parecem mais suaves do que são.",
+  1494: "Apagar o texto",
 };

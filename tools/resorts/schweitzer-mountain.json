@@ -1,0 +1,62 @@
+{
+ "id": "schweitzer-mountain",
+ "name": "Schweitzer Mountain",
+ "region": "Idaho, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1388583977",
+ "include_ways": [
+  13737296,
+  13739800,
+  129602926,
+  129602927,
+  129602929,
+  129602930,
+  129602931,
+  771419509,
+  771419510,
+  1103573843
+ ],
+ "osm_bbox": [
+  -116.65,
+  48.3556,
+  -116.5863,
+  48.4007
+ ],
+ "openskimap": {
+  "id": "13b3d7f0eedbbdcdfc35e91a0bd55523e2d448ad",
+  "cc": "US",
+  "runs": 104,
+  "lifts": 10,
+  "rated": 0.933,
+  "skimap": 476,
+  "web": "https://www.schweitzer.com/"
+ },
+ "area_name": "Schweitzer Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Scars Spur": "Sars Spur",
+  "Siberia Runout": "Siberia Run Out",
+  "Kohli's Big TImber": "Kohli's Big Timber",
+  "Lakeside": "Lakeside Chutes"
+ },
+ "links": [
+  [
+   "trail:Phineas Forest (bottom)",
+   "trail:Springboard"
+  ],
+  [
+   "Colburn Triple (top)",
+   "Great Escape Quad (top)"
+  ]
+ ],
+ "links_notes": {
+  "trail:Phineas Forest (bottom) -> trail:Springboard": "2026-11-24: Phineas Forest (glade) ends about 500 m short of the run-out the Outback Bowl map shows it flowing into; joined downhill (1289 m to 1262 m) to the bottom of Springboard, which leads to the Outback Inn base",
+  "Colburn Triple (top) -> Great Escape Quad (top)": "2026-11-24: both lifts end at the Sky House on the summit (about 180 m apart); from the Great Escape top the Great Divide leads back to the village, so the Outback Bowl lifts (Colburn, Cedar Park, Stella, Idyle Our T-Bar) are joined to the front side here; before, no way led back from the back side"
+ }
+}
