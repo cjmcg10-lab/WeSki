@@ -1143,7 +1143,7 @@
   "lifts": 5,
   "zones": false,
   "bytes": 351442,
-  "checked": false
+  "checked": true
  },
  {
   "id": "magic-mountain",
@@ -1382,7 +1382,7 @@
   "lifts": 10,
   "zones": false,
   "bytes": 465095,
-  "checked": false
+  "checked": true
  },
  {
   "id": "mount-washington-alpine",
