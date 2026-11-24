@@ -6,16 +6,19 @@
 // - What an account may use is decided only on the server, from payments reported by Paddle's webhook, whose
 //   signature (HMAC-SHA256 with a secret only Paddle and the server know) is checked. Nothing the phone sends can
 //   grant a pass.
-// - Paid features that live on the server (creating groups, directions data, the 7-day forecast) check the pass on
-//   every request. Features that run only on the phone can be unlocked by someone who edits the app's code; they
-//   are kept to conveniences (saved history).
+// - Paid features that live on the server (creating groups, directions data) check the pass on every request.
+//   Features that run only on the phone (saved history, the full Forecast, downloading mountains ahead of time) can
+//   be unlocked by someone who edits the app's code; see "How the pass is enforced" in docs/PAID_TIER.md.
 
+// THE ONE PLACE FOR PRICES (set 2026-11-23; may still change). The app's pass sheet and pop-up read them from
+// /api/config. To change a price: edit it here, change the matching price in Paddle (docs/PAID_TIER.md, "Changing a
+// price"), and run the tests: tests/prices.test.js names every page and document that still shows the old number.
 export const PLANS = {
-  // id: what the pass is called, how long one purchase lasts (null = while the subscription is paid), seats
+  // id: what the pass is called, price in US dollars, how long one purchase lasts (null = while the subscription is paid), seats
   day: { name: 'Day Pass', price: 2.99, days: 1, seats: 1, renews: false },
-  week: { name: 'Week Pass', price: 3.99, days: 7, seats: 1, renews: false },
-  season: { name: 'Season Pass', price: 19.99, days: null, seats: 1, renews: true },
-  crew: { name: 'Crew Season Pass', price: 34.99, days: null, seats: 4, renews: true },
+  week: { name: 'Week Pass', price: 5.99, days: 7, seats: 1, renews: false },
+  season: { name: 'Season Pass', price: 24.99, days: null, seats: 1, renews: true },
+  crew: { name: 'Crew Season Pass', price: 44.99, days: null, seats: 4, renews: true },
 };
 export const TRIAL_HOURS = 24;               // one free day per account
 export const MAX_SESSIONS = 3;               // signed-in phones per account; the oldest is signed out

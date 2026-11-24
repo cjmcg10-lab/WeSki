@@ -71,8 +71,8 @@ session needs that the README does not: the rules, the state of the work, and wh
   trademark registers and found the name clear. The trademark is to be filed as SKIWITHME, one word (owner's decision,
   2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
-- **Price:** free map everywhere; Day $2.99, Week $3.99, Season $19.99 a year, Crew Season $34.99 a year for 4
-  (set 2026-11-21 to undercut Slopes and Ski Tracks; see `docs/PAID_TIER.md`). Owner's company: Built By Roger LLC
+- **Price:** free map everywhere; Day $2.99, Week $5.99, Season $24.99 a year, Crew Season $44.99 a year for 4
+  (set 2026-11-23, may still change; one place: `PLANS` in `worker/accounts.js`, then Paddle; see `docs/PAID_TIER.md`). Owner's company: Built By Roger LLC
   (exact registered name), a Connecticut LLC; the terms use Connecticut law. Contact hello@builtbyroger.app, domain
   builtbyroger.app (registered at Cloudflare). skiwithme.app belongs to someone else. The app's address is
   https://skiwithme.builtbyroger.app (custom domain in `wrangler.assets.jsonc` `routes`, owner's choice 2026-11-20); the
@@ -512,8 +512,12 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 (what skier data is collected and how it is stored). In short:
 - Switch `PAYWALL` in both wrangler configs; `"off"` until the owner's Resend and Paddle accounts exist. With it off,
   everything is free and the pass screen says "free during the preview".
-- Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $3.99, Season $19.99/yr, Crew Season $34.99/yr (4 seats),
-  one free day per account. Paid: directions, creating groups, full history (latest day free). Group meeting points
+- Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $5.99, Season $24.99/yr, Crew Season $44.99/yr (4 seats),
+  one free day per account. Paid (since 2026-11-23, #115; rules in `src/passrules.js`): directions, creating groups,
+  saved days before today (listed locked, never deleted, all open with a pass incl. days recorded before buying), the
+  full Forecast (free taste: today and tomorrow at one mountain; the weather sheet stays free), "Download for offline"
+  (without a pass the map opened today stays on the phone that day; earlier days' maps are removed once the server has
+  answered, `tidyMaps`). Group meeting points
   and directions to them or to friends are free for every group member (owner, 2026-11-21): `graph.json?g=<code>&m=<id>`.
 - Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
   (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
@@ -586,7 +590,7 @@ Calling has not been tried on a real phone or in the TestFlight app.
 
 ## Forecast (built 2026-11-22)
 
-A free Forecast tab (also a button on the start screen): a watchlist of any of 4,792 catalog resorts or map pins, a
+A Forecast tab (also a button on the start screen; behind the pass since 2026-11-23 apart from today and tomorrow at one mountain): a watchlist of any of 4,792 catalog resorts or map pins, a
 calendar of daily ski scores (mountains as rows, days as columns), an hourly day view and a trip planner. **Read
 `docs/FORECAST.md` first**: what it does, how a score is made, sources and licences, what is stored, the files map, how to
 rerun the acceptance check (`node tests/acceptance/acceptance.mjs`, writes screenshots to the git-ignored
@@ -599,7 +603,7 @@ native-checked. Mount Buller in November shows ordinary scores because no season
 
 ## What is next
 
-**Forecast section: built (2026-11-22), free.** Issues #2 to #11, #15, #19 and #34 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
+**Forecast section: built (2026-11-22); full view behind the pass since 2026-11-23 (#115).** Issues #2 to #11, #15, #19 and #34 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
 Left: #17 (allow pinch-zoom, needs a real iPhone and both owners), #42 (Connor: `IP_SALT` secret, R2 `push --all`, optional
 `ARCHIVE_ADMIN_SECRET`), follow-up issues #50 (resorts out of season) and #51 (very cold days), and a season of archived
 forecasts plus skier feedback before the scores can be calibrated for real. Every merge to `main` also uploads a TestFlight

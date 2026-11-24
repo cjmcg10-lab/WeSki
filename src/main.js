@@ -22,7 +22,9 @@ import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
+import { watchClearButtons, syncClear, scan as addClearButtons } from './clearfield.js';
 import * as acct from './account.js';
+import { historyView, dayOpen, canDownload, mountainFiles, mountainOfPath, staleMountains, localDay } from './passrules.js';
 import * as fcUi from './forecast/ui.js';
 import { emergencyFor, mainNumber, telHref, fmtCoords, nearestLift, nearestRun, sourceHost } from './emergency.js';
 import { FEEDBACK_TAGS, FEEDBACK_LABELS, FEEDBACK_MAX_AGE_DAYS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
@@ -43,6 +45,8 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
  */
 // On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
 const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
+/** Panels that list results as you type: they keep one height while typing (see fitSheetToKeyboard). */
+const LIST_SHEETS = new Set(['search', 'fcadd', 'closures']);
 function fitScreen() {
   if (window.visualViewport && window.visualViewport.scale > 1.01) return;
   const portrait = window.innerHeight >= window.innerWidth;
@@ -237,6 +241,7 @@ function initMap(id) {
     S.loc = new Locator(S.geo, onFix, (m) => { S.gpsMsg = m; renderChrome(); if (m.startsWith('Location is blocked')) toast(m, 7000); });
     if (S.testMode) S.loc.setSim(true);
     prefs.set('lastResort', id);
+    markOpened(id);
     try { S.tracksSaved = (await kv.get(pkey('tracks'))) || []; } catch { S.tracksSaved = []; }
     renderChrome();
     S.wx = null; refreshWeather(false).catch(() => {});
@@ -302,7 +307,7 @@ function hideSplash() {
 // ---------- terms and safety agreement
 // Shown before anything else until agreed. Asked again when the terms change (TERMS_V, the date on the legal pages),
 // after a year, or whenever this phone has no record of it (cleared data, new phone, a browser that dropped it).
-const TERMS_V = '2026-11-21', CONSENT_MAX_MS = 365 * 864e5;
+const TERMS_V = '2026-11-23', CONSENT_MAX_MS = 365 * 864e5;
 function consentOk() {
   const c = prefs.get('consent', null);
   return !!c && c.v === TERMS_V && Date.now() - c.at < CONSENT_MAX_MS;
@@ -336,7 +341,7 @@ async function boot() {
   try { await loadPlaces(); } catch (e) { bootFailed(e); return; }
   if (!consentOk()) { hideSplash(); await showConsent(); }
   acct.setSimFree(S.simFree);
-  const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); tidyMaps(); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
     const q = new URLSearchParams(location.search);
     if (q.has('signedin') || q.has('signin')) {
@@ -394,9 +399,10 @@ async function openStart(from = null) {
   showStartPanel();
   $('.start-top').classList.remove('hidden');
   $('#f-resort').value = '';
+  syncClear($('#f-resort'));
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
-  // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
+  // tap a mountain's peak to open its card; tapping elsewhere zooms in (the button top right zooms back out)
   globe.onPick = (rs) => pickResort(rs.id);
   globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
   // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
@@ -544,7 +550,7 @@ async function renderDayList(q) {
   const name = (s) => placeById(resortOf(s))?.name || resortOf(s);
   const days = S.allDays.filter((s) => !q || name(s).toLowerCase().includes(q));
   $('#resort-list').innerHTML = days.length
-    ? days.map((s) => `<button class="mrow day" data-act="start-day" data-id="${s.id}" data-r="${resortOf(s)}">${thumbPic(placeById(resortOf(s)) || { id: resortOf(s), name: name(s), region: '' })}<span class="grow"><span class="nm"><b>${esc(name(s))}</b></span><small>${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}</small><small>${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}</small></span><i>›</i></button>`).join('')
+    ? days.map((s) => `<button class="mrow day${dayOpen(s, acct.hasPass()) ? '' : ' locked'}" data-act="${dayOpen(s, acct.hasPass()) ? 'start-day' : 'day-locked'}" data-id="${s.id}" data-r="${resortOf(s)}">${thumbPic(placeById(resortOf(s)) || { id: resortOf(s), name: name(s), region: '' })}<span class="grow"><span class="nm"><b>${esc(name(s))}</b></span><small>${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}</small>${dayOpen(s, acct.hasPass()) ? `<small>${s.stats.runCount} run${s.stats.runCount === 1 ? '' : 's'} · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}</small>` : `<small class="locked-note">${t('Locked: unlock your ski days with a pass')}</small>`}</span><i>${dayOpen(s, acct.hasPass()) ? '›' : ICON.lock}</i></button>`).join('')
     : `<p class="start-empty">${S.allDays.length ? 'No saved day matches that search.' : 'No saved ski days yet. Start tracking on a mountain and your days will be listed here.'}</p>`;
   if (globe && !$('#start').classList.contains('focus') && !$('#start-panel').classList.contains('hidden')) requestAnimationFrame(() => layoutGlobe(true));
 }
@@ -606,7 +612,8 @@ function resortCard(r) {
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
       ${r.checked === false ? '<p class="note map-note">Trail ratings not yet checked against the resort’s own list: they come from OpenStreetMap. Signs on the mountain always win.</p>' : ''}
       ${r.coarse ? '<p class="note map-note">Lower-detail terrain for this mountain (30 m): the 3D slopes look smoother than they are.</p>' : ''}
-      <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>`
+      <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>
+      <div class="card-offline">${offlineBlock(r.id, r.name, true)}</div>`
     : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
     <button class="btn outline join-btn" data-act="start-join">Join Group</button>`;
 }
@@ -615,6 +622,7 @@ async function pickResort(id) {
   const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
+  S.listWas = $('#start-panel').classList.contains('hidden') ? S.listWas : startState();   // the list comes back there
   hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
@@ -887,6 +895,7 @@ if (updates) {
 persist();
 // Language: translate the page as it changes, starting with the saved choice or the phone's language.
 watchPage();
+watchClearButtons();
 setLang(initialLang(), false).catch(() => {});
 onLangChange(() => {
   if (!$('#sheet').classList.contains('hidden')) renderSheet();
@@ -899,6 +908,8 @@ fcUi.init({
   toast: (msg, ms) => toast(msg, ms),
   announce: (msg) => { const el = $('#fc-live'); if (el) { el.textContent = ''; setTimeout(() => { el.textContent = msg; }, 50); } },
   units: () => S.units,
+  pass: () => acct.hasPass(),
+  upsell: (why) => upsell(why),
 });
 document.addEventListener('click', onClick);
 // Legal pages and the About page open in a viewer over the app (an installed app has no browser Back button),
@@ -942,8 +953,8 @@ dragStops($('#start-panel'), {
 // Starting a search: give the list the whole screen, so more results show above the keyboard.
 // On an iPhone the first tap used to push the search bar off the top of the screen: the phone scrolls the page to keep
 // the field above the keyboard, measuring it where it sat before the list had glided up. So the list now jumps to the
-// whole screen at once (laid out before the phone measures), the page is kept scrolled to the top, and while the
-// keyboard is up the list is pinned to the part of the screen the keyboard leaves visible (visualViewport).
+// whole screen at once (laid out before the phone measures) and the page is kept scrolled to the top; the keyboard then
+// covers the list's lower part (fitStartToKeyboard).
 $('#f-resort').addEventListener('focus', () => {
   if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full', null, startGeom(), true);
   unscrollPage();
@@ -956,23 +967,69 @@ function unscrollPage() {
   const se = document.scrollingElement;
   if (se && se.scrollTop) se.scrollTop = 0;
 }
-/** While the on-screen keyboard is up, keep the whole-screen mountain list inside the visible part of the screen. */
+/** While the on-screen keyboard is up the whole-screen mountain list keeps its size and place, as the panels do: the
+ *  keyboard covers its lower part and the list gets room at its bottom (--kb-cover) to scroll every result clear of it.
+ *  (It used to shrink to the part above the keyboard and grow back when the keyboard closed: a jolt, owner 2026-11-24.) */
 function fitStartToKeyboard() {
   const p = $('#start-panel'), vv = window.visualViewport;
   const typing = !!vv && document.activeElement === $('#f-resort') && !COLUMN.matches;
   const kb = typing && window.innerHeight - vv.height > 120;   // a keyboard, not just the browser's bars moving
   p.classList.toggle('kb', kb);
-  if (kb) {
-    p.style.setProperty('--kb-top', Math.max(0, Math.round(vv.offsetTop)) + 'px');
-    p.style.setProperty('--kb-h', Math.round(vv.height) + 'px');
-  } else { p.style.removeProperty('--kb-top'); p.style.removeProperty('--kb-h'); }
+  if (kb) p.style.setProperty('--kb-cover', Math.max(0, Math.round(p.getBoundingClientRect().bottom - (vv.offsetTop + vv.height))) + 'px');
+  else p.style.removeProperty('--kb-cover');
 }
+// Panels (sheets) with a text field (owner, 2026-11-23, changed 2026-11-24): while the keyboard is up the panel keeps
+// its full size and place and the keyboard covers its lower part (cutting the panel off at the keyboard let the mountain
+// show through around it). The page is kept unscrolled, the panel's content gets room to scroll clear of the keyboard
+// (--kb-cover), and the field being typed in is scrolled into view inside the panel. Panels that list results as you
+// type (search, Forecast "add a mountain", closures) keep one fixed height, the tallest they can be, so the list does
+// not shrink as fewer results match: results sit at the top, under the field (LIST_SHEETS, near the top of this file).
+/** The text field the person is typing in, when it is inside the panel. */
+function sheetField() {
+  const a = document.activeElement;
+  return a && $('#sheet').contains(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'date', 'button'].includes(a.type))) ? a : null;
+}
+/** While the on-screen keyboard is up and a panel field has focus, keep that field and the content above the keyboard. */
+function fitSheetToKeyboard() {
+  const sh = $('#sheet'), vv = window.visualViewport, f = sheetField();
+  const kb = !!vv && !!f && !COLUMN.matches && !sh.classList.contains('hidden') && window.innerHeight - vv.height > 120;
+  sh.classList.toggle('kb', kb);
+  if (!kb) { sh.style.removeProperty('--kb-cover'); return; }
+  const seen = vv.offsetTop + vv.height;                         // bottom of the part of the screen the keyboard leaves
+  sh.style.setProperty('--kb-cover', Math.max(0, Math.round(sh.getBoundingClientRect().bottom - seen)) + 'px');
+  const body = $('#sheet-body'), r = f.getBoundingClientRect(), top = Math.max(body.getBoundingClientRect().top, vv.offsetTop);
+  if (r.bottom > seen - 12) body.scrollTop += r.bottom - (seen - 12);          // field hidden by the keyboard: lift it
+  else if (r.top < top + 4) body.scrollTop -= top + 4 - r.top;                  // above the panel's visible part
+}
+// Tapping a text field (owner, 2026-11-24: "the app jolts down and then back up" as the keyboard comes up): an iPhone
+// scrolls the whole page to bring the field above the keyboard, and unscrollPage then snaps it back. The in-map search
+// never did this because it is focused with preventScroll. So a tap on any text field that is not yet focused focuses it
+// the same way, with the caret at the end; the panel code above keeps the field visible inside its panel instead.
+const TEXT_TYPES = new Set(['text', 'search', 'email', 'tel', 'url', 'password', 'number', '']);
+let tapFrom = null;                 // where the touch began: a touch that moved is a scroll, not a tap
+document.addEventListener('touchstart', (e) => { const t = e.touches[0]; tapFrom = e.touches.length === 1 ? [t.clientX, t.clientY] : null; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const f = e.target;
+  if (!(f instanceof HTMLElement) || f === document.activeElement || f.disabled || f.readOnly) return;
+  if (!(f.tagName === 'TEXTAREA' || (f.tagName === 'INPUT' && TEXT_TYPES.has(f.getAttribute('type') || '')))) return;
+  const t = e.changedTouches[0];
+  if (e.touches.length || e.changedTouches.length !== 1 || !tapFrom || Math.hypot(t.clientX - tapFrom[0], t.clientY - tapFrom[1]) > 10) return;
+  e.preventDefault();               // no native focus, so no page scroll; focusing here still opens the keyboard
+  f.focus({ preventScroll: true });
+  try { const n = f.value.length; f.setSelectionRange(n, n); } catch { /* email and number fields have no caret API */ }
+  unscrollPage();
+}, { passive: false });
+$('#sheet').addEventListener('focusin', () => { if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } });
+$('#sheet').addEventListener('focusout', () => setTimeout(fitSheetToKeyboard, 0));
 if (window.visualViewport) {
-  const onVV = () => { if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard(); };
+  const onVV = () => {
+    if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard();
+    if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } else if ($('#sheet').classList.contains('kb')) fitSheetToKeyboard();
+  };
   window.visualViewport.addEventListener('resize', onVV);
   window.visualViewport.addEventListener('scroll', onVV);
 }
-window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort')) unscrollPage(); });
+window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort') || sheetField()) unscrollPage(); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
@@ -1597,6 +1654,7 @@ function closeSheet() {
   S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
   $('#sheet').classList.add('hidden');
+  fitSheetToKeyboard();
   renderChrome();
 }
 
@@ -1627,6 +1685,7 @@ function renderSheet() {
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
   $('#sheet').classList.toggle('tall', fcUi.isForecastSheet(S.sheet));
+  $('#sheet').classList.toggle('fill', LIST_SHEETS.has(S.sheet));
   $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
@@ -1636,6 +1695,7 @@ function renderSheet() {
   if (same && html === S.sheetHtml) return; // nothing changed: leave the DOM (and any tap in progress) alone
   S.sheetHtml = html;
   body.innerHTML = html;
+  addClearButtons(body);   // before anything focuses a field: wrapping a focused field would drop its focus
   if (same) body.scrollTop = keep;
   if (fcUi.isForecastSheet(S.sheet)) fcUi.afterRender(S.sheet);
   const pv = $('#av-preview');
@@ -1825,11 +1885,14 @@ function sheetHistory() {
       ${S.tracker ? '<button class="btn" data-act="tab" data-tab="track">Tracking now: see live stats</button>' : '<button class="btn" data-act="hist-start">Start tracking</button>'}
       <p class="foot">Saved on this phone • Available offline</p></div>${looseHtml}${elsewhere}`];
   }
-  const locked = !acct.hasPass() && list.length > 1;
-  const shown = locked ? list.slice(0, 1) : list;
-  const lockCard = locked ? `<div class="card"><p style="margin-top:0">${list.length - 1 === 1 ? '1 more ski day is saved on this phone.' : t('{0} more ski days are saved on this phone.', list.length - 1)}</p><p class="sub">The latest day is free. Your full history and replays are part of the SkiWithMe Pass.</p><button class="btn" data-act="up-plans" data-why="history">See the pass</button></div>` : '';
-  return ['Your ski days', `${shown.map((s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`).join('')}
-    ${lockCard}${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
+  // Every day stays saved on the phone. Without a pass, days before today are listed locked (date and mountain
+  // only); with a pass they all open, including the ones recorded before buying (src/passrules.js).
+  const { open: shown, locked } = historyView(list, acct.hasPass());
+  const dayCard = (s) => `<button class="day-card" data-act="open-session" data-id="${s.id}"><div class="grow"><div class="t">${fmtDate(s.start)} <span class="tag ${s.kind}">${s.kind === 'group' ? 'Group ' + esc(s.group || '') : 'Solo'}</span></div><div class="s">${fmtClock(s.start)}–${fmtClock(s.end)} · ${s.stats.runCount} runs · ${fmtVert(s.stats.vert)} · top ${fmtSpeed(s.stats.topSpeed)} ${speedUnit()}${s.routes?.length ? ` · ${s.routes.length} route${s.routes.length > 1 ? 's' : ''}` : ''}</div></div><span class="chev">›</span></button>`;
+  const lockedCard = (s) => `<button class="day-card locked" data-act="day-locked"><div class="grow"><div class="t">${fmtDate(s.start)}</div><div class="s" translate="no">${esc(placeById(resortOf(s))?.name || resortOf(s))}</div></div><span class="lock-ico">${ICON.lock}</span></button>`;
+  const lockHead = locked.length ? `<div class="card lock-head"><p style="margin-top:0"><b>${locked.length === 1 ? t('1 ski day saved — unlock it with a pass') : t('{0} ski days saved — unlock them with a pass', locked.length)}</b></p><p class="sub">${t('Every day you track is kept on this phone. A pass opens all of them, with stats and replays, including days recorded before you bought it.')}</p><button class="btn" data-act="day-locked">${t('Unlock my ski days')}${passBadge()}</button></div>` : '';
+  return ['Your ski days', `${shown.map(dayCard).join('')}
+    ${lockHead}${locked.map(lockedCard).join('')}${looseHtml}${elsewhere}<p class="foot">Saved on this phone • Available offline</p>`];
 }
 async function loadHistory() {
   // History, replay and tracks are per mountain: a recording only makes sense on the map it was made on.
@@ -1847,6 +1910,7 @@ async function loadHistory() {
 function sheetSession(id) {
   const s = (S.history || []).find((x) => x.id === id);
   if (!s) return ['Session', '<p class="sub">Not found.</p>'];
+  if (!dayOpen(s, acct.hasPass())) return [fmtDate(s.start), `<div class="card"><p style="margin-top:0">${t('This ski day is saved on this phone. Open it, with stats and replay, with a pass.')}</p><button class="btn" data-act="day-locked">${t('Unlock my ski days')}${passBadge()}</button><button class="btn alt" data-act="tab" data-tab="history">Back to history</button></div>`];
   const runs = s.stats.runs.map((r, i) => `<button class="list-item" data-act="replay" data-id="${s.id}" data-run="${i}"><div class="grow"><div class="t">Run ${i + 1} · ${fmtClock(r.t0)}</div><div class="s">${fmtDist(r.dist)} · ${fmtVert(r.vert)} · top ${fmtSpeed(r.top)} ${speedUnit()} · ${fmtDur(r.time)}</div></div><span class="chev">▶</span></button>`).join('');
   const routes = (s.routes || []).map((r, i) => routeRow(r, s.id, i)).join('');
   return [`${fmtDate(s.start)} · ${s.kind === 'group' ? 'Group' : 'Solo'}`, `
@@ -1889,7 +1953,7 @@ function routeRow(r, id, i) {
 }
 
 function sheetMore() {
-  const off = prefs.get(pkey('offline'), null), n = closedNames();
+  const n = closedNames();
   const src = S.resort.sources;
   const me = acct.account();
   return ['More', `
@@ -1899,7 +1963,8 @@ function sheetMore() {
     <div class="card"><div class="rowf"><div class="grow"><h4>Spoken directions</h4><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div>
       <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep the screen on for directions.</span></div></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Closures</h4><div class="sub">${n.length ? `${n.length} marked closed: ${esc(n.slice(0, 4).join(', '))}${n.length > 4 ? '…' : ''}` : 'Avoid trails and lifts you mark closed.'}</div></div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
-    <div class="card"><h4>Offline map</h4><div id="offline-box">${off ? `<p class="ok-text" style="font-size:17px;margin:4px 0 2px">✓ ${esc(S.place.name)} saved</p><p class="sub" style="margin:0 0 4px 22px">${(off.bytes / 1048576).toFixed(1)} MB • ${fmtDate(off.at)}</p>` : `<p class="sub">Download the whole ${esc(S.place.name)} map (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal.</p>`}</div><button class="btn ${off ? 'alt' : ''}" data-act="download">${off ? 'Download again' : 'Download resort map'}</button></div>
+    <div class="card"><h4>Offline map</h4>${offlineBlock(S.place.id, S.place.name)}</div>
+    ${offlineListCard()}
     <div class="card"><h4>Language</h4><select class="field" id="f-lang" translate="no" style="margin:6px 0 8px">${LANGS.map(([k, n]) => `<option value="${k}" ${getLang() === k ? 'selected' : ''}>${n}</option>`).join('')}</select><div class="sub">Words in the app, spoken directions, and the meaning of foreign place names on the map (shown in brackets under the real name).</div></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="privacy">${ICON.lock}<div class="grow">Privacy &amp; map help<small>${prefs.get('contrib', null) ? 'Helping improve the maps' : 'Help improve the maps, report a mistake'}</small></div><span class="chev">›</span></button></div>
@@ -1911,8 +1976,8 @@ function sheetMore() {
 
 // ---------- SkiWithMe Pass (paid tier), sign-in, map help, reports, safety notice
 const PLAN_TEXT = { day: '24 hours from when you buy it', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
-const FREE_LIST = ['3D map of every mountain, offline', 'Where you are and which run you are on', 'Search, weather, map legend', 'Join a friend’s group and share locations', 'Group meeting points, with directions there or to friends', 'Track today’s ski day'];
-const PASS_LIST = ['Turn-by-turn and spoken directions anywhere on the mountain', 'Create your own groups', 'Your full history of ski days and replays'];
+const FREE_LIST = ['3D map of every mountain', 'The map you open stays on your phone that day, even without signal', 'Where you are and which run you are on', 'Search, mountain weather, map legend', 'Ski forecast for today and tomorrow at one mountain', 'Join a friend’s group and share locations', 'Group meeting points, with directions there or to friends', 'Track and save every ski day, with today’s stats', 'Emergency numbers, offline'];
+const PASS_LIST = ['Turn-by-turn and spoken directions anywhere on the mountain', 'Create your own groups', 'All your saved ski days, stats and replays, including days recorded before you bought the pass', 'The full ski forecast: week, calendar and trip planner', 'Download mountains for offline use'];
 const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short', day: 'numeric', year: 'numeric' });
 
 function passStatus(me) {
@@ -1929,7 +1994,9 @@ function passStatus(me) {
 const UPSELL = {
   directions: ['Directions anywhere on the mountain', 'Turn-by-turn and spoken directions to any run, lift, lodge or dropped pin, along runs at your level.'],
   group: ['Create your own group', 'Start a group, share the code and see everyone on the map. Friends join free.'],
-  history: ['Your full ski-day history', 'Every ski day you have saved, with replays and stats.'],
+  history: ['Unlock your saved ski days', 'Every ski day you track is kept on this phone. A pass opens all of them, with stats and replays, including days recorded before you bought it.'],
+  forecast: ['The full ski forecast', 'See the full week, calendar and trip planner with a pass: scores for every mountain on your list, hour by hour.'],
+  offline: ['Download mountains for offline', 'Save whole mountains on your phone ahead of time, so the map opens with no signal on any day.'],
 };
 const passBadge = () => (acct.hasPass() ? '' : ` <span class="pass-badge">${ICON.ticket}${t('Pass')}</span>`);
 function upsell(why) {
@@ -1965,7 +2032,7 @@ async function buyPlan(plan) {
 
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
-  const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: 'Your full history and replays are part of the SkiWithMe Pass.' }[why];
+  const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: t('Your saved ski days, stats and replays open with the SkiWithMe Pass, including days recorded before you buy it.'), forecast: t('The full ski forecast is part of the SkiWithMe Pass. Today and tomorrow at one mountain stay free.'), offline: t('Downloading mountains for offline use is part of the SkiWithMe Pass. The map you open stays on your phone that day, free.') }[why];
   const open = !c.paywall && !acct.simulatingFree();
   let who;
   if (me?.signedIn) {
@@ -2413,32 +2480,113 @@ function stopReplay() {
 }
 
 // ---------- offline download
-/** The height-grid files this phone loads (see fetchHeights): compact where it can unzip them, plain otherwise. */
-const heightFiles = () => (typeof DecompressionStream !== 'undefined' ? ['terrain.z16', 'surround.z16'] : ['terrain.bin', 'surround.bin']);
-async function downloadOffline() {
-  const box = $('#offline-box');
+// The map you open stays on the phone for that day, free (the service worker keeps every file it loads). Downloading
+// whole mountains ahead of time, kept for later days, is part of the pass (src/passrules.js).
+const MAP_CACHE = 'weski-map';
+/** Mountains downloaded ahead of time: {id: {at, bytes}} (older builds kept one entry per mountain as offline:<id>). */
+function offlineMaps() {
+  const out = { ...prefs.get('offlineMaps', {}) };
+  for (const r of PLACES) { if (!out[r.id]) { const o = prefs.get(`offline:${r.id}`, null); if (o) out[r.id] = o; } }
+  return out;
+}
+function setOfflineMap(id, v) {
+  const all = offlineMaps();
+  if (v) all[id] = v; else delete all[id];
+  prefs.set('offlineMaps', all);
+  try { localStorage.removeItem(`weski:offline:${id}`); } catch { /* storage blocked */ }
+}
+/** Remember that this mountain was opened today, so its saved map is kept until the day ends. */
+function markOpened(id) {
+  const today = localDay(Date.now()), was = prefs.get('openedMaps', {});
+  prefs.set('openedMaps', { ...Object.fromEntries(Object.entries(was).filter(([, d]) => d === today)), [id]: today });
+}
+/** Without a pass, remove maps opened on earlier days. Only on a sure answer from the server (acct.passKnown). */
+async function tidyMaps() {
+  if (typeof caches === 'undefined') return;
   try {
-    // the app itself plus this mountain's map
-    const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(['resort.json', ...heightFiles(), ...(S.hasCanopy ? ['canopy.z8'] : []), ...(S.hasLandcover ? ['landcover.z8'] : []), ...(acct.hasPass() && !S.resort.graph ? ['graph.json'] : [])].map((f) => `/data/${S.place.id}/${f}`));
-    const cache = await caches.open('weski-map');
+    const cache = await caches.open(MAP_CACHE), keys = await cache.keys();
+    const byId = new Map();
+    for (const req of keys) { const id = mountainOfPath(new URL(req.url).pathname); if (id) (byId.get(id) || byId.set(id, []).get(id)).push(req); }
+    const stale = staleMountains({ cached: [...byId.keys()], opened: prefs.get('openedMaps', {}), today: localDay(Date.now()), pass: acct.hasPass(), keep: S.place ? [S.place.id] : [], known: acct.passKnown() });
+    for (const id of stale) { for (const req of byId.get(id)) await cache.delete(req); if (offlineMaps()[id]) setOfflineMap(id, null); }
+  } catch { /* storage unavailable */ }
+}
+/** Delete one downloaded mountain from the phone. */
+async function deleteOffline(id) {
+  try {
+    const cache = await caches.open(MAP_CACHE);
+    for (const req of await cache.keys()) if (mountainOfPath(new URL(req.url).pathname) === id) await cache.delete(req);
+  } catch { /* storage unavailable */ }
+  setOfflineMap(id, null);
+  S.storage = null;
+  toast(t('{0} removed from this phone.', placeById(id)?.name || id));
+  renderSheet();
+  if (!$('#resort-card').classList.contains('hidden') && $('#resort-card').dataset.id === id) $('#resort-card').innerHTML = resortCard(placeById(id));
+}
+const fmtMB = (b) => `${(b / 1048576).toFixed(1)} MB`;
+/** Storage this site uses on the phone (all of it: maps, saved days, the app), when the browser says. */
+async function storageUsed() {
+  try { const e = await navigator.storage?.estimate?.(); S.storage = e ? { used: e.usage || 0, quota: e.quota || 0 } : { used: null }; } catch { S.storage = { used: null }; }
+  if (S.sheet === 'more') renderSheet();
+}
+/** The whole mountain (the app, the map, terrain, tree cover, and directions with a pass), stored ahead of time. */
+async function downloadMountain(id, box) {
+  if (!canDownload(acct.hasPass())) { upsell('offline'); return false; }
+  const pl = placeById(id);
+  const say = (html) => { if (box()) box().innerHTML = html; };
+  try {
+    const app = await (await fetch('/offline.json', { cache: 'no-store' })).json();
+    const files = mountainFiles(id, { z16: typeof DecompressionStream !== 'undefined', pass: acct.hasPass(), graphInline: !!(S.place?.id === id && S.resort?.graph) });
+    const required = new Set([...app, ...files.required]), list = [...required, ...files.optional];
+    const store = await caches.open(MAP_CACHE);
     let done = 0, bytes = 0;
-    box.innerHTML = `<p class="sub">Downloading… <span id="dl-n">0</span>/${list.length}</p><progress id="dl-p" max="${list.length}" value="0"></progress>`;
+    say(`<p class="sub">${t('Downloading…')} <span class="dl-n">0</span>/${list.length}</p><progress class="dl-p" max="${list.length}" value="0"></progress>`);
     for (const url of list) {
-      let at = url, res = await fetch(at, { cache: 'reload' });
-      if (!res.ok && at.endsWith('.z16')) res = await fetch(at = at.replace(/\.z16$/, '.bin'), { cache: 'reload' });
-      if (!res.ok) throw new Error(url);
-      const blob = await res.clone().blob();
-      bytes += blob.size;
-      await cache.put(at, res);
+      let at = url, res = await fetch(at, { cache: 'reload', credentials: 'same-origin' }).catch(() => null);
+      if (res && !res.ok && at.endsWith('.z16')) res = await fetch(at = at.replace(/\.z16$/, '.bin'), { cache: 'reload' }).catch(() => null);
+      if (res?.ok) {
+        const blob = await res.clone().blob();
+        bytes += blob.size;
+        await store.put(at, res);
+      } else if (required.has(url)) throw new Error(url);   // canopy, the outer terrain and graph.json (402 without a pass) may be missing
       done++;
-      $('#dl-n').textContent = done; $('#dl-p').value = done;
+      const n = box()?.querySelector('.dl-n'), pr = box()?.querySelector('.dl-p');
+      if (n) n.textContent = done;
+      if (pr) pr.value = done;
     }
-    prefs.set(pkey('offline'), { at: Date.now(), bytes });
-    toast(`${S.place.name} is saved for offline use.`);
+    setOfflineMap(id, { at: Date.now(), bytes });
+    S.storage = null;
+    toast(t('{0} is saved on this phone for offline use.', pl?.name || id));
+    return true;
   } catch (e) {
     toast('Download failed. Check your connection and try again.');
+    return false;
   }
-  if (S.sheet === 'more') renderSheet();
+}
+/** The offline part of a mountain's card or the More panel. */
+/** The offline download block. On the start screen's mountain card (compact) it is just the button, plus the size once
+ *  downloaded: the explanations live in More's "Offline map" card and in the pass pop-up (owner, 2026-11-24: the grey
+ *  text took too much room on the card). */
+function offlineBlock(id, name, compact = false) {
+  const off = offlineMaps()[id];
+  if (compact) {
+    const done = off ? `<p class="sub" style="margin:0 0 2px">✓ ${t('Downloaded for offline')} • ${fmtMB(off.bytes)}</p>` : '';
+    return `<div class="dl-box" data-dl="${id}">${done}</div><button class="btn ${off ? 'alt' : ''}" data-act="download" data-id="${id}">${off ? t('Download again') : t('Download for offline')}${passBadge()}</button>`;
+  }
+  const open = S.place?.id === id && S.map;   // inside this mountain: it is on the phone today
+  const free = `<p class="sub">${open ? t('This mountain stays on your phone today, even without signal.') : t('The map you open stays on your phone that day, even without signal')}</p>`;
+  const saved = off ? `<p class="ok-text" style="margin:4px 0 2px">✓ ${t('Downloaded for offline')}</p><p class="sub" style="margin:0 0 4px 22px">${fmtMB(off.bytes)} • ${fmtDate(off.at)}</p>` : `<p class="sub">${t('Download the whole {0} map ahead of time (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal on any day.', esc(name))}</p>`;
+  return `<div class="dl-box" data-dl="${id}">${free}${saved}</div><button class="btn ${off ? 'alt' : ''}" data-act="download" data-id="${id}">${off ? t('Download again') : t('Download for offline')}${passBadge()}</button>`;
+}
+function offlineListCard() {
+  const all = Object.entries(offlineMaps()).sort((a, b) => b[1].at - a[1].at);
+  if (S.storage === undefined || S.storage === null) { S.storage = { used: undefined }; storageUsed(); }
+  const used = S.storage?.used;
+  const rows = all.map(([id, o]) => `<div class="rowf dl-row"><div class="grow"><b translate="no">${esc(placeById(id)?.name || id)}</b><div class="sub">${fmtMB(o.bytes)} • ${fmtDate(o.at)}</div></div><button class="btn sm alt" data-act="offline-delete" data-id="${id}">${t('Delete')}</button></div>`).join('');
+  const total = all.reduce((n, [, o]) => n + (o.bytes || 0), 0);
+  return `<div class="card"><h4>${t('Downloaded mountains')}</h4>${rows || `<p class="sub">${t('No mountains downloaded yet.')}</p>`}
+    <p class="note">${all.length ? t('Downloads: {0}', fmtMB(total)) : ''}${used != null ? `${all.length ? ' · ' : ''}${t('SkiWithMe uses {0} on this phone in all', fmtMB(used))}` : ''}</p>
+    ${acct.hasPass() ? '' : `<p class="note">${t('Downloads stay while you have a pass. Without one, a map is kept for the day you open it.')}</p>`}</div>`;
 }
 
 // ---------- events
@@ -2533,7 +2681,7 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
+    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); if (S.listWas === 'mini') goStart('mini', null, startGeom(), true); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
     case 'near-me': S.histOnly = false; nearMe(); break;
@@ -2550,7 +2698,7 @@ async function onClick(e) {
     case 'modal-cancel': $('#modal').classList.add('hidden'); break;
     case 'update-reload': b.disabled = true; await reloadKeepingPlace(); break;
     case 'update-later': $('#update-bar')?.remove(); break;
-    case 'up-plans': $('#modal').classList.add('hidden'); openSheet('pass', d.why); break;
+    case 'up-plans': $('#modal').classList.add('hidden'); if (!$('#start').classList.contains('hidden')) $('#sheet').classList.add('over-start'); openSheet('pass', d.why); break;
     case 'up-trial': {
       $('#modal').classList.add('hidden');
       const r = await acct.startTrial().catch(() => ({}));
@@ -2655,7 +2803,7 @@ async function onClick(e) {
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
     case 'nav-pin': if (S.pin) startNav({ type: 'pin', name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y }); break;
-    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus(), 60); } break;
+    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus({ preventScroll: true }), 60); } break;
     case 'search-go': $('#f-search')?.blur(); searchGo(d.k, d.v); break;
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
@@ -2685,7 +2833,8 @@ async function onClick(e) {
     case 'fb-send': await answerSkiDayFeedback(d.id, true); break;
     case 'fb-skip': await answerSkiDayFeedback(d.id, false); break;
     case 'delete-session': if (confirm(t('Delete this session from this phone?'))) { await sessions.del(d.id); S.historyLoaded = false; openSheet('history'); } break;
-    case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s) startReplay(s, d.run != null ? +d.run : null); break; }
+    case 'day-locked': upsell('history'); break;
+    case 'replay': { const s = S.history.find((x) => x.id === d.id); if (s && !dayOpen(s, acct.hasPass())) { upsell('history'); break; } if (s) startReplay(s, d.run != null ? +d.run : null); break; }
     case 'show-route': { const r = d.id === 'loose' ? prefs.get(pkey('routes'), [])[+d.i] : S.history.find((x) => x.id === d.id)?.routes[+d.i]; if (r) { S.map.setRoute(r.pts, r.walk); S.map.fit(r.pts); closeSheet(); toast(`Saved route to ${r.to}. Tap the map to dismiss.`); S.savedRouteShown = true; } break; }
     case 'play-toggle': { const P = S.player; if (P.t >= P.pts[P.pts.length - 1][0]) { P.t = P.pts[0][0]; P.i = 0; } P.playing = !P.playing; b.textContent = P.playing ? '❚❚' : '▶'; break; }
     case 'play-rate': { const P = S.player, r = [5, 20, 60, 180]; P.rate = r[(r.indexOf(P.rate) + 1) % r.length]; b.textContent = P.rate + '×'; break; }
@@ -2696,7 +2845,18 @@ async function onClick(e) {
     case 'units': S.units = d.v; prefs.set('units', S.units); S.map.setUnits(S.units); renderSheet(); renderChrome(); break;
     case 'open-closures': S.closureQ = ''; openSheet('closures'); break;
     case 'clear-closures': setClosures(new Set()); renderSheet(); break;
-    case 'download': b.disabled = true; await downloadOffline(); break;
+    case 'download': {
+      const id = d.id || S.place?.id;
+      if (!canDownload(acct.hasPass())) { upsell('offline'); break; }
+      b.disabled = true;
+      const ok = await downloadMountain(id, () => document.querySelector(`[data-dl="${id}"]`));
+      if (S.sheet === 'more') renderSheet();
+      const card = $('#resort-card');
+      if (!card.classList.contains('hidden') && card.dataset.id === id) card.innerHTML = resortCard(placeById(id));
+      else if (!ok) b.disabled = false;
+      break;
+    }
+    case 'offline-delete': await deleteOffline(d.id); break;
   }
 }
 
