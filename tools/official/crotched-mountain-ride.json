@@ -1,0 +1,51 @@
+{
+ "source": "Crotched Mountain trail map, skimap.org map 41917, read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Dipper": 1,
+  "Blastoff": 2,
+  "Comet": 0,
+  "Comet Drop": 1,
+  "Cosmic Blast": 2,
+  "Darkstar": 2,
+  "Eclipse": 2,
+  "Equinox": 2,
+  "Final Frontier Glade": 1,
+  "Galaxy": 0,
+  "Jupiter's Storm": 2,
+  "Kuiper Belt": 2,
+  "Launch Pad": 0,
+  "Magnitude": 1,
+  "Meteor": 1,
+  "Milky Way": 1,
+  "Moon Walk": 1,
+  "Pluto's Plunge": 2,
+  "Re-Entry": 0,
+  "Retro": 2,
+  "Satellite Summit": 2,
+  "Shooting Star": 0,
+  "Solstice Glade": 2,
+  "Supernova": 0,
+  "UFO": 2,
+  "Velocity": 1,
+  "Zero G": 0
+ },
+ "blue_black": [],
+ "lifts": [
+  "Lift Off",
+  "Rocket",
+  "Rover",
+  "Valley",
+  "West"
+ ],
+ "confirm": {
+  "CM Park": "terrain park drawn on the resort's trail map (orange line), no trail rating",
+  "NCC-1701": "terrain park drawn on the resort's trail map (orange line), no trail rating"
+ },
+ "lifts_explained": {
+  "Rover": "OpenStreetMap calls it Park Lift (the short fixed-grip triple ending at Comet)",
+  "Lift Off": "OpenStreetMap calls it Wonder Carpet (surface lift beside Launch Pad)",
+  "Rocket": "OpenStreetMap calls it Crotched Rocket"
+ },
+ "missing_note": "Darkstar, Kuiper Belt, Solstice Glade and Final Frontier Glade are tree areas drawn as hatching on the resort's map; OpenStreetMap does not map them, and they were not traced by hand."
+}

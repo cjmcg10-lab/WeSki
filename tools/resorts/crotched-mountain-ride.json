@@ -33,5 +33,9 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Super Nova": "Supernova",
+  "Zero-G Progression Park": "Zero G"
  }
 }
