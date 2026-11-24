@@ -1,0 +1,58 @@
+{
+ "source": "Snow Valley 2026 trail map (skimap.org map 38368, the resort's own map), read by hand, 2026-11-23",
+ "fetched": "2026-11-23",
+ "runs": {
+  "Big Bowl": 2,
+  "Bobcat Alley": 1,
+  "Bubble Gum": 1,
+  "Coyote Flats": 0,
+  "Eagle Flats": 0,
+  "East Bowl": 1,
+  "East Slide": 2,
+  "Graduation": 1,
+  "Lake Run": 2,
+  "Little Bowl": 2,
+  "Lower Wine Rocks": 1,
+  "Mambo Alley": 1,
+  "Nord Valley": 1,
+  "Pipeline": 2,
+  "Quickie": 2,
+  "Race Peak": 2,
+  "Richard's": 1,
+  "Show Me": 3,
+  "Show Off": 2,
+  "Snake Run": 3,
+  "Snow Bowl": 1,
+  "Suprise Run": 2,
+  "The Chute": 1,
+  "The Edge": 1,
+  "The Face": 2,
+  "The Ladder": 3,
+  "Thunder Mountain": 0,
+  "Upper Wine Rocks": 1,
+  "West Run": 2,
+  "West Slide": 1
+ },
+ "blue_black": [],
+ "lifts": [
+  "Chair 1",
+  "Chair 11",
+  "Chair 12",
+  "Chair 13",
+  "Chair 14",
+  "Chair 2",
+  "Chair 3",
+  "Chair 6",
+  "Chair 7",
+  "Chair 8",
+  "Chair 9"
+ ],
+ "confirm": {
+  "Cat Track": "drawn and named on the 2026 trail map (dashed cat track from the Chair 9 area) with no difficulty symbol"
+ },
+ "lifts_explained": {
+  "Chair 7": "on the 2026 trail map beside Chairs 2 and 6 at the base; OpenStreetMap has no lift by this name (its unnamed \"Lift\" may be it)",
+  "Chair 14": "on the 2026 trail map at the base; not in OpenStreetMap",
+  "Chair 4 and Chair 10": "OpenStreetMap lifts not numbered on the 2026 trail map; kept (lifts are never hidden without a source saying they are gone)"
+ }
+}

@@ -1,0 +1,53 @@
+{
+ "id": "bogus-basin-mountain-recreation",
+ "name": "Bogus Basin Mountain Recreation Area",
+ "region": "Idaho, USA",
+ "tz": "America/Boise",
+ "auto": true,
+ "area_osm": "way/1470441271",
+ "include_ways": [
+  158794847,
+  158794848,
+  158794849,
+  158794851,
+  158794855,
+  319975149,
+  319975150,
+  1237638153,
+  1239002101,
+  1263931355,
+  1263931356
+ ],
+ "osm_bbox": [
+  -116.1281,
+  43.7464,
+  -116.0567,
+  43.7938
+ ],
+ "openskimap": {
+  "id": "f0fca4018306a921928ebc2f04cfd1ac82ba1ef2",
+  "cc": "US",
+  "runs": 117,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 487,
+  "web": "https://bogusbasin.org"
+ },
+ "area_name": "Bogus Basin Mountain Recreation Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing Hill"
+ ],
+ "isolated_notes": {
+  "Tubing Hill": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Ida Bell": "Ida Belle",
+  "Lu Lu": "Lulu"
+ }
+}

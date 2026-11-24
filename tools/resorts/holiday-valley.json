@@ -1,0 +1,53 @@
+{
+ "id": "holiday-valley",
+ "name": "Holiday Valley",
+ "region": "New York, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/136858703",
+ "include_ways": [
+  20036154,
+  20036160,
+  20038338,
+  136858705,
+  136858707,
+  136858710,
+  136858711,
+  136858715,
+  136858716,
+  136858717,
+  136858718,
+  256587367,
+  256639517
+ ],
+ "osm_bbox": [
+  -78.7008,
+  42.2489,
+  -78.6535,
+  42.2654
+ ],
+ "openskimap": {
+  "id": "0869c25a13555a8fab3f820e3556efc28939a558",
+  "cc": "US",
+  "runs": 79,
+  "lifts": 13,
+  "rated": 0.987,
+  "skimap": 318,
+  "web": "https://www.holidayvalley.com/"
+ },
+ "area_name": "Holiday Valley",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Fire Lane": "Firelane",
+  "Fox Fire": "Foxfire",
+  "Mistletow": "Mistletoe",
+  "Northwind Top": "Northwind",
+  "Punchbowl": "Punch Bowl",
+  "Boblsed": "Bobsled"
+ }
+}

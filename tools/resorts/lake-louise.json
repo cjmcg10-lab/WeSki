@@ -1,0 +1,52 @@
+{
+ "id": "lake-louise",
+ "name": "Lake Louise",
+ "region": "Alberta, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/1388611703",
+ "include_ways": [
+  4412028,
+  4412029,
+  23259584,
+  23259586,
+  23259587,
+  23259589,
+  258181309,
+  474516938,
+  843637677,
+  883604038,
+  883604039,
+  883604040,
+  1326513050
+ ],
+ "osm_bbox": [
+  -116.1698,
+  51.4308,
+  -116.0951,
+  51.4796
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 74
+ },
+ "openskimap": {
+  "id": "a29f5a7e7e0f4ce37aa98e1335aa75d994b791f8",
+  "cc": "CA",
+  "runs": 120,
+  "lifts": 13,
+  "rated": 0.975,
+  "skimap": 22,
+  "web": "https://www.skilouise.com/"
+ },
+ "area_name": "Lake Louise Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ }
+}

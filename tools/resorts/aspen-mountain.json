@@ -1,0 +1,55 @@
+{
+ "id": "aspen-mountain",
+ "name": "Aspen Mountain",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/530531925",
+ "include_ways": [
+  17117679,
+  17117689,
+  130102108,
+  451945806,
+  908942216,
+  1414863961
+ ],
+ "osm_bbox": [
+  -106.8346,
+  39.1411,
+  -106.8041,
+  39.1893
+ ],
+ "ratings_feed": {
+  "mtnpowder": 52
+ },
+ "openskimap": {
+  "id": "2a2d5ad1138c3aac0abe644e073bee96589412d4",
+  "cc": "US",
+  "runs": 138,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 1031,
+  "web": "https://www.aspensnowmass.com/four-mountains/aspen-mountain"
+ },
+ "area_name": "Aspen Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Here's Too...": "Here's To...",
+  "International": "International Road",
+  "Kleenex Cornner": "Kleenex Corner",
+  "Lazy8 Gully": "Lazy 8 Gully",
+  "Legel Tender": "Legal Tender",
+  "Niagara": "Niagra",
+  "Powerline I": "Powerline",
+  "Pumphouse Hill": "Pump House Hill",
+  "Star Walk": "Starwalk",
+  "West 5th Ave": "W 5th Ave",
+  "Cutoff": "Buckhorn Cutoff",
+  "Powerline II": "Powerline"
+ }
+}

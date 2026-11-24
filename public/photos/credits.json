@@ -1,8 +1,93 @@
 {
+ "afton-alps": {
+  "artist": "Collin Knopp-Schwyn",
+  "lic": "CC BY 4.0",
+  "title": "File:Afton Alps, January 2014, Sally's Valley.jpg"
+ },
+ "alta": {
+  "artist": "Sbvr6",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:AltaPano.jpg"
+ },
+ "alyeska": {
+  "artist": "Jon Konrath",
+  "lic": "CC BY 2.0",
+  "title": "File:Mount Alpenglow from Alyeska Resort.jpg"
+ },
+ "aspen-highlands": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Aspen Highlands spring skiing.jpg"
+ },
+ "aspen-mountain": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Aspen Mountain spring skiing over Aspen.jpg"
+ },
+ "aspen-snowmass": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Snowmass gondola and Ski area.jpg"
+ },
+ "attitash-mountain": {
+  "artist": "Attitashmountain",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Attitash aerial.jpg"
+ },
+ "banff-sunshine-village": {
+  "artist": "Axel Pettersson",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Sunshine Village, December 2004 12.jpg"
+ },
+ "bear-valley": {
+  "artist": "Maxd1848",
+  "lic": "CC0",
+  "title": "File:Bear Valley overlook.jpg"
+ },
+ "beaver-creek-arrowhead-mountain": {
+  "artist": "Rudi Riet from Washington, DC, United States",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Birds of Prey (ski course), Beaver Creek.jpg"
+ },
+ "berkshire-east": {
+  "artist": "Pi.1415926535",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Berkshire East Ski Resort from Charlemont, September 2022.JPG"
+ },
+ "big-sky": {
+  "artist": "A-Reck",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:On the Lift at Big Sky Resort - panoramio.jpg"
+ },
+ "big-white": {
+  "artist": "Hamedog at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Gem Lake Express.jpg"
+ },
+ "blue-mountain-ontario": {
+  "artist": "Chensiyuan at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Blue Mountain Resort.JPG"
+ },
+ "blue-mountain-pennsylvania": {
+  "artist": "Jkarps",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Blue Mountain Ski Area Feb 2014.JPG"
+ },
+ "bogus-basin-mountain-recreation": {
+  "artist": "cifraser1",
+  "lic": "CC BY 2.0",
+  "title": "File:Bogus Basin ski area (2017).jpg"
+ },
  "bolton-valley": {
   "artist": "Robot psychiatrist",
   "lic": "CC BY-SA 4.0",
   "title": "File:Bolton Valley December 2014.JPG"
+ },
+ "boyne-mountain": {
+  "artist": "American Eagle",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Boyne Mountain.JPG"
  },
  "breckenridge": {
   "artist": "좀비 브렌다",
@@ -14,15 +99,50 @@
   "lic": "CC0",
   "title": "File:Bretton Woods Resort.jpg"
  },
+ "brian-head": {
+  "artist": "DarkNight0917",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Brian Head Dec 2023 03.jpg"
+ },
+ "bridger-bowl": {
+  "artist": "Richard Barley",
+  "lic": "CC BY 2.0",
+  "title": "File:Bridger Bowl.jpg"
+ },
+ "brighton": {
+  "artist": "Darkbowmen",
+  "lic": "CC BY-SA 2.5",
+  "title": "File:Usa Utah Brighton Peaks.jpg"
+ },
+ "bromley-mountain-bromley-mountain": {
+  "artist": "Jared C. Benedict",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Bromley Mountain aerial.jpg"
+ },
+ "bromont-montagne-d-experience": {
+  "artist": "Martin Boyer",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Bromont QC CA.jpg"
+ },
  "burke": {
   "artist": "Patrick McCaffrey",
   "lic": "CC BY-SA 3.0",
   "title": "File:Burke 3899w.JPG"
  },
+ "camelback-mountain": {
+  "artist": "Ekem at English Wikipedia",
+  "lic": "Public domain",
+  "title": "File:Camelbackski1.jpg"
+ },
  "cannon-mountain": {
   "artist": "Ericshawwhite",
   "lic": "CC BY-SA 3.0",
   "title": "File:Mt. Layfayette from Cannon Mountain Ski.JPG"
+ },
+ "catamount": {
+  "artist": "RkummerLandau",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Winter Aerial Shot of Catamount Mountain Resort.jpg"
  },
  "chamonix": {
   "artist": "Webwizzard",
@@ -34,10 +154,75 @@
   "lic": "Public domain",
   "title": "File:Copper Mountain East Village.jpg"
  },
+ "cranmore-mountain": {
+  "artist": "gotjen",
+  "lic": "CC BY 3.0",
+  "title": "File:Cranmore Mountain from parking lot - panoramio.jpg"
+ },
+ "crested-butte-mountain": {
+  "artist": "Peter from Wellesley",
+  "lic": "CC BY 2.0",
+  "title": "File:Silver Queen Chair, CBMR.jpg"
+ },
+ "crystal-mountain": {
+  "artist": "Patrickneil",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Crystal Mountain skiers.jpg"
+ },
+ "cypress-mountain": {
+  "artist": "Shaund (Wikivoyage)",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Cypress mtn.jpg"
+ },
+ "deer-valley": {
+  "artist": "Don Ramey Logan",
+  "lic": "CC BY 4.0",
+  "title": "File:Deer Valley Ski Resort Park City Mogul pistes.jpg"
+ },
+ "eldora": {
+  "artist": "KamenG",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Eldora Mountain Ski Resort at Top of International.jpg"
+ },
+ "fernie-alpine": {
+  "artist": "FJ48",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Fernie alpine resort February 2024 White pass quad.jpg"
+ },
+ "geto-kogen": {
+  "artist": "Sawa-love",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:C1 and installations.jpg"
+ },
+ "gore-mountain": {
+  "artist": "Ian Taylor (Iant333)",
+  "lic": "Public domain",
+  "title": "File:Ski 003.jpg"
+ },
+ "grand-targhee": {
+  "artist": "Ams100272",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Blackfoot-grand-targhee-march-2024.jpg"
+ },
+ "gunstock-recreation": {
+  "artist": "Jenk603",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Gunstock 0152As.jpg"
+ },
  "heavenly": {
   "artist": "JMatazzoni (WMF)",
   "lic": "CC BY-SA 4.0",
   "title": "File:Welcome to California sign, Heavenly resort, Lake Tahoe.jpg"
+ },
+ "homewood": {
+  "artist": "jrtaylor08",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Homewood summit - panoramio.jpg"
+ },
+ "hunter-mountain": {
+  "artist": "CurlingMan13",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Kaatskill Flyer Chairlift at Windham Mountain Resort.jpg"
  },
  "jackson-hole": {
   "artist": "Enricokamasa",
@@ -59,10 +244,30 @@
   "lic": "CC BY-SA 3.0",
   "title": "File:Bear Mountain Killington.jpg"
  },
+ "kimberley-alpine": {
+  "artist": "Connormah",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Kimberley Alpine Resort 2.JPG"
+ },
+ "kirkwood-mountain": {
+  "artist": "glenngould",
+  "lic": "CC BY 2.0",
+  "title": "File:Snowboarder and skier from a ski lift, Kirkwood, California, 2009.jpeg"
+ },
  "la-plagne": {
   "artist": "DimiTalen",
   "lic": "CC0",
   "title": "File:View of Plagne Villages from the Mélèzes skilift, La Plagne, 2009.jpg"
+ },
+ "lake-louise": {
+  "artist": "Pierre5018",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Lake Louise 2018-03 ski.jpg"
+ },
+ "le-massif": {
+  "artist": "4net",
+  "lic": "CC BY 3.0",
+  "title": "File:Le Massif Petite-Rivière-Saint-François - panoramio - 4net.jpg"
  },
  "les-arcs": {
   "artist": "DimiTalen",
@@ -74,6 +279,26 @@
   "lic": "CC0",
   "title": "File:Skiers ready to start skiing, Coins slope, Les Contamines-Montjoie, 2025.jpg"
  },
+ "loon": {
+  "artist": "Luinfana",
+  "lic": "Public domain",
+  "title": "File:Loonmtn northpeak.JPG"
+ },
+ "lost-trail": {
+  "artist": "CaptainEek",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Lost Trail Ski Chair 1.jpg"
+ },
+ "loveland-basin": {
+  "artist": "Xnatedawgx",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Headeduplift8Loveland.jpg"
+ },
+ "lutsen-mountains": {
+  "artist": "Elkman at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Lutsen Mountains.jpg"
+ },
  "magic-mountain": {
   "artist": "Jared C. Benedict",
   "lic": "CC BY-SA 4.0",
@@ -84,10 +309,50 @@
   "lic": "Public domain",
   "title": "File:Mammoth Mountain Ski Area.jpg"
  },
+ "marmot-basin": {
+  "artist": "Marmot.basin",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Mid Mountain at Marmot Basin.jpg"
+ },
  "mohawk-mountain": {
   "artist": "Jrclark",
   "lic": "CC BY-SA 3.0",
   "title": "File:MohawkMountain.jpg"
+ },
+ "monarch-mountain": {
+  "artist": "Zach Dischner",
+  "lic": "CC BY 2.0",
+  "title": "File:Last Chair Ride (4302761168).jpg"
+ },
+ "mont-sainte-anne": {
+  "artist": "Gabriel Picard",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Mont Sainte-Anne - Vue aérienne 1.jpg"
+ },
+ "mont-sutton": {
+  "artist": "Cardinalemile",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Skisutton - top20.JPG"
+ },
+ "mont-tremblant-mont-tremblant": {
+  "artist": "Acarpentier",
+  "lic": "CC BY 3.0",
+  "title": "File:Ski Mont Tremblant.jpg"
+ },
+ "montana-snowbowl": {
+  "artist": "Evan Lovely",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Snowbowl's Bowl.jpg"
+ },
+ "mount-ashland": {
+  "artist": "Alex Lockhart",
+  "lic": "Public domain",
+  "title": "File:Alexlockhart Mt Ashland 06-01-21.jpg"
+ },
+ "mount-rose-tahoe": {
+  "artist": "Patrick Nouhailler",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Mount Rose Ski Tahoe - panoramio (1).jpg"
  },
  "mount-snow": {
   "artist": "Mount Snow",
@@ -99,30 +364,115 @@
   "lic": "CC BY-SA 4.0",
   "title": "File:Mount Southington Ski Area at night.jpg"
  },
+ "mount-sunapee": {
+  "artist": "Josephbrophy",
+  "lic": "Public domain",
+  "title": "File:MountSunapeefromLake.jpg"
+ },
+ "mount-washington-alpine": {
+  "artist": "YubYub41",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Mount Washington Summer.jpg"
+ },
+ "mt-bachelor": {
+  "artist": "Korjarie Matiessa",
+  "lic": "CC BY 2.0",
+  "title": "File:Mt. Bachelor from Tumalo Mtn.jpg"
+ },
+ "mt-hood-meadows": {
+  "artist": "Gary Halvorson, Oregon State Archives",
+  "lic": "CC BY 4.0",
+  "title": "File:Mt. Hood, Mt. Hood Meadows Ski Resort - DPLA - 10fd55b98d6e860e265459a1b3926d08.jpg"
+ },
+ "mt-hood-skibowl": {
+  "artist": "Aaron Linville",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Skibowl peak.jpg"
+ },
+ "mt-norquay": {
+  "artist": "Qyd",
+  "lic": "CC BY-SA 2.5",
+  "title": "File:Norquay2.JPG"
+ },
+ "mt-seymour": {
+  "artist": "Weixi Zeng",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Mt. Seymour cable cars - panoramio.jpg"
+ },
+ "mt-spokane": {
+  "artist": "YeSpud",
+  "lic": "CC BY 4.0",
+  "title": "File:Mount Spokane lodge 2 base area.jpg"
+ },
+ "northstar-at-tahoe": {
+  "artist": "Leijurv",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Northstar California 10.jpg"
+ },
  "okemo": {
   "artist": "Henry P. Gray",
   "lic": "CC BY-SA 3.0",
   "title": "File:Okemo, peak - panoramio.jpg"
+ },
+ "pajarito-mountain": {
+  "artist": "Aaron Zhu",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Ski Slopes of Pajarito Mountain, Los Alamos, NM - panoramio.jpg"
+ },
+ "palisades-tahoe": {
+  "artist": "John M",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Squaw Valley Ski Center (USA) 2007.jpg"
+ },
+ "panorama-mountain": {
+  "artist": "Robert Linsdell from St. Andrews, Canada",
+  "lic": "CC BY 2.0",
+  "title": "File:Panorama Mountain Resort, British Columbia (430016) (9444142478).jpg"
  },
  "park-city": {
   "artist": "Rudi Riet from Washington, DC, United States",
   "lic": "CC BY-SA 2.0",
   "title": "File:Eagle Race Arena at Park City Resort.jpg"
  },
+ "pico-mountain": {
+  "artist": "petersent",
+  "lic": "Public domain",
+  "title": "File:Pico Peak and ski runs seen from Killington.jpg"
+ },
  "pizol": {
   "artist": "karico",
   "lic": "CC BY-SA 3.0",
   "title": "File:Skigebiet Pizol - panoramio.jpg"
+ },
+ "powder-mountain": {
+  "artist": "Baileypalblue",
+  "lic": "Public domain",
+  "title": "File:Powder Mountain Hidden Lake Area.JPG"
  },
  "powder-ridge": {
   "artist": "Morrowlong",
   "lic": "CC BY-SA 4.0",
   "title": "File:Powder Ridge Park. Looking down the Middlefield slope.jpg"
  },
+ "purgatory": {
+  "artist": "Stagefright07",
+  "lic": "CC BY 3.0",
+  "title": "File:DurangoMountainResort.jpg"
+ },
  "ragged": {
   "artist": "MConradWard",
   "lic": "CC BY-SA 4.0",
   "title": "File:Orange Mountain & Ragged Mountain from Cardigan Mountain.jpg"
+ },
+ "red-mountain": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:A short visit to Rossland BC, and the Red Mountain Ski Resort - the upper bowl of Granite Mountain - (19078704613).jpg"
+ },
+ "revelstoke-mountain": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:A day's skiing at spedtacular Mt Revelstoke - Noth Americas biggest vertical drop at 1713m (5620 ft) - the hardy few bootpack over the summit to get even more vertical in the back bowls - (28905441235).jpg"
  },
  "saalbach": {
   "artist": "F30",
@@ -134,20 +484,100 @@
   "lic": "Public domain",
   "title": "File:Saddleback 2009 Kennebago Top Terminal.jpg"
  },
+ "sandia-peak": {
+  "artist": "Skoch3",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Sandia Peak Ski Area, Albuquerque AC, crop1.JPG"
+ },
+ "santa-fe-santa-fe-q38555": {
+  "artist": "USDA Forest Service, Southwestern Region",
+  "lic": "Public domain",
+  "title": "File:Santa Fe Ski Valley (51140291033).jpg"
+ },
+ "seven-springs-mountain": {
+  "artist": "LValleyGirl26",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Seven Springs Winter 1.jpg"
+ },
+ "sierra-at-tahoe": {
+  "artist": "USDA Forest Service, Pacific Southwest Region",
+  "lic": "Public domain",
+  "title": "File:SierraAtTahoeSkiResort-Eldorado-PRW-008 (52707094546).jpg"
+ },
+ "silver-star-mountain": {
+  "artist": "Klauskk",
+  "lic": "CC BY-SA 2.5",
+  "title": "File:SilverStarMountainResort.jpg"
+ },
+ "ski-sundown": {
+  "artist": "UJ at Ski Sundown",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:DJI 0032-ENHC.jpg"
+ },
  "skiwelt": {
   "artist": "Jan Beránek",
   "lic": "CC BY-SA 3.0",
   "title": "File:SkiWelt in March 2022 16.jpg"
+ },
+ "smugglers-notch": {
+  "artist": "Aaron Linville",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Doc Dempsey's Glades-Smuggler's Notch.jpg"
+ },
+ "snow-summit": {
+  "artist": "Doc Searls from Santa Barbara, USA",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Snow Summit Ski Resort.jpg"
+ },
+ "snowbasin": {
+  "artist": "Kinney",
+  "lic": "CC BY 3.0",
+  "title": "File:Snowbasin - panoramio.jpg"
+ },
+ "snowbird": {
+  "artist": "VeggieGarden",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Snowbird Tram at Hidden Peak.jpg"
+ },
+ "snowshoe": {
+  "artist": "VermontPowderKing",
+  "lic": "CC BY 4.0",
+  "title": "File:Top of Snowshoe Western Territory.jpg"
+ },
+ "solitude": {
+  "artist": "Baileypalblue",
+  "lic": "Public domain",
+  "title": "File:Solitude Mountain Resort Black Diamond Territory.JPG"
+ },
+ "sommet-saint-sauveur": {
+  "artist": "Pierre Vanacker",
+  "lic": "CC BY-SA 2.5",
+  "title": "File:St-Sauveur Quebec.jpg"
  },
  "steamboat": {
   "artist": "Murray Foubister",
   "lic": "CC BY-SA 2.0",
   "title": "File:Steamboat Springs Ski Resort (8644072249).jpg"
  },
+ "stevens-pass": {
+  "artist": "Martin Bravenboer",
+  "lic": "CC BY 2.5",
+  "title": "File:Cowboy Mountain, Stevens Pass ski area.jpg"
+ },
+ "stowe": {
+  "artist": "Vermont",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Stowe VT Moguls 2021.jpg"
+ },
  "stratton": {
   "artist": "Erichardson2626",
   "lic": "CC BY-SA 4.0",
   "title": "File:Stratton Mountain.jpg"
+ },
+ "sugar-bowl": {
+  "artist": "FASTILY",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Sugar Bowl Ski Resort 3 2018-02-28.jpg"
  },
  "sugarbush": {
   "artist": "Niranjan Arminius",
@@ -159,15 +589,50 @@
   "lic": "Public domain",
   "title": "File:Sugarloaf10-07 003.jpg"
  },
+ "sun-peaks": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Sun Peaks from the Cross country ski trails (13653254875).jpg"
+ },
+ "sun-valley-bald-mountain": {
+  "artist": "Greg L. Wright - SnapJag",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Baldmountainid.jpg"
+ },
+ "sundance": {
+  "artist": "PunkToad",
+  "lic": "CC BY 2.0",
+  "title": "File:The Slopes (12097505736).jpg"
+ },
  "sunday-river": {
   "artist": "Ams100272",
   "lic": "Public domain",
   "title": "File:Beautiful-sunday-river.jpg"
  },
+ "taos-valley": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Taos Ski Valley, New Mexico (7334017088).jpg"
+ },
+ "telluride": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Telluride Ski Resort, Col. (8644077517).jpg"
+ },
+ "three-summits": {
+  "artist": "SherpardH1239a",
+  "lic": "CC0",
+  "title": "File:Triple 60 Black Diamond run at Summit Central.jpg"
+ },
  "tignes-val-disere": {
   "artist": "Tonkie",
   "lic": "CC BY-SA 3.0",
   "title": "File:Tignes-winter.JPG"
+ },
+ "timberline-lodge": {
+  "artist": "Seattle Skier",
+  "lic": "CC BY 2.5",
+  "title": "File:MtHood-Timberline-MagicMile-Palmer.jpg"
  },
  "tremblant": {
   "artist": "Acarpentier",
@@ -194,15 +659,35 @@
   "lic": "CC BY-SA 4.0",
   "title": "File:Waterville Valley Resort upper mountain.jpg"
  },
+ "welch-village": {
+  "artist": "Darth Stabro",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Welch Village NYE 2020.jpg"
+ },
  "whistler": {
   "artist": "Murray Foubister",
   "lic": "CC BY-SA 2.0",
   "title": "File:2010-4 Whistler-Blackcomb day trip (16127495416).jpg"
  },
+ "whistler-blackcomb": {
+  "artist": "Murray Foubister",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Upper portion of Blackcomb from Whistler (16152555252).jpg"
+ },
  "whiteface": {
   "artist": "Baombaom",
   "lic": "CC BY-SA 4.0",
   "title": "File:Whiteface Mountain Ski Area off the Gondola Lift.jpg"
+ },
+ "whitefish-mountain": {
+  "artist": "W.marsh at English Wikipedia",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:BigMountainWitefish.jpg"
+ },
+ "whitewater": {
+  "artist": "Paul Morgan",
+  "lic": "Public domain",
+  "title": "File:Whitewater Ski Resort Ymir Bowl.JPG"
  },
  "windham-mountain": {
   "artist": "tps12",
@@ -213,6 +698,11 @@
   "artist": "Murray Foubister",
   "lic": "CC BY-SA 2.0",
   "title": "File:Winter Park Ski Resort - Colorado (13843211033).jpg"
+ },
+ "wolf-creek": {
+  "artist": "Doc Searls from Santa Barbara, USA",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:WolfCreekSkiArea, aerialview.jpg"
  },
  "zermatt": {
   "artist": "SteGrifo27",

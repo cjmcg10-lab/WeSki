@@ -1,0 +1,80 @@
+{
+ "id": "sugar-bowl",
+ "name": "Sugar Bowl",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/10326057",
+ "include_ways": [
+  10476799,
+  10481255,
+  38805677,
+  38805859,
+  38805860,
+  51939106,
+  51939354,
+  258161905,
+  258162119,
+  258162121,
+  271959657,
+  1197723308,
+  1570571115
+ ],
+ "osm_bbox": [
+  -120.3646,
+  39.2793,
+  -120.3067,
+  39.3289
+ ],
+ "openskimap": {
+  "id": "fa95641c38a689ebebd96aa62b6ee049115fbeee",
+  "cc": "US",
+  "runs": 94,
+  "lifts": 13,
+  "rated": 0.989,
+  "skimap": 543,
+  "web": "https://www.sugarbowl.com/"
+ },
+ "area_name": "Sugar Bowl Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet",
+  "Village Tow"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map",
+  "Village Tow": "2026-11-23: the village tow beside the Village Gondola (on the trail map); it moves skiers across the village and no run comes down to its base"
+ },
+ "links": [
+  [
+   "Summit Chair (top)",
+   "trail:Century Club",
+   "hike"
+  ],
+  [
+   "Summit Chair (top)",
+   "trail:Roller Pass",
+   "hike"
+  ],
+  [
+   "Summit Chair (top)",
+   "trail:Judah Bowl",
+   "hike"
+  ],
+  [
+   "trail:The Palisades (bottom)",
+   "trail:Hidden Gully"
+  ]
+ ],
+ "links_notes": {
+  "Summit Chair (top) -> trail:Century Club (hike)": "2026-11-23: on the 2025 trail map Century Club, Roller Pass and Judah Bowl drop off the Mt. Judah ridge, reached along the ridge from the Summit Chair top (about 20 m higher); no lift reaches their tops",
+  "Summit Chair (top) -> trail:Roller Pass (hike)": "2026-11-23: see Century Club",
+  "Summit Chair (top) -> trail:Judah Bowl (hike)": "2026-11-23: see Century Club; the map marks Judah Bowl 'open as conditions permit'",
+  "trail:The Palisades (bottom) -> trail:Hidden Gully": "2026-11-23: the Palisades cliffs sit between The '58 and Hidden Gully on Mt. Lincoln's face (2025 trail map); OpenStreetMap's run-out below them is an unnamed piece the resort does not show (hidden), so the bottom is joined to Hidden Gully 130 m away"
+ }
+}

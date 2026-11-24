@@ -1,0 +1,61 @@
+{
+ "id": "castle-mountain",
+ "name": "Castle Mountain",
+ "region": "Alberta, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/766056081",
+ "include_ways": [
+  151401800,
+  151401801,
+  151401805,
+  151402204,
+  151454173,
+  839995174,
+  1248300934
+ ],
+ "osm_bbox": [
+  -114.4544,
+  49.2869,
+  -114.4062,
+  49.3302
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "578c669494c02e675c7ad8d418a14acc5d7d6f68",
+  "cc": "CA",
+  "runs": 104,
+  "lifts": 7,
+  "rated": 0.894,
+  "skimap": 18,
+  "web": "https://www.skicastle.ca"
+ },
+ "area_name": "Castle Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 78%, 30 m 22%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 77.7,
+  "30m": 22.3
+ },
+ "rename": {
+  "Havey's Dream": "Haavy's Dream",
+  "Huckleberry Bowl Lower": "Huckleberry Bowl",
+  "OK Corral Lower": "OK Corral",
+  "OK Coral upper": "OK Corral",
+  "Minus 1": "-1",
+  "Minus 2": "-2",
+  "North Shotgun": "N. Shotgun",
+  "South Shotgun": "S. Shotgun",
+  "North Bowl Access": "Bowl Access",
+  "North Run": "North Road",
+  "Stagecoach Upper": "Stage",
+  "Stagecoach Lower": "Coach",
+  "Syline Traverse": "Skyline Traverse",
+  "Clinch Traverse": "Cinch Traverse",
+  "Ski-Daddle Trail": "Skidaddle Traverse",
+  "Mid Traverse": "Mid-Traverse"
+ }
+}

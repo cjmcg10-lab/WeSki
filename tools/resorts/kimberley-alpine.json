@@ -1,0 +1,47 @@
+{
+ "id": "kimberley-alpine",
+ "name": "Kimberley Alpine",
+ "region": "British Columbia, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/1388616336",
+ "include_ways": [
+  101303224,
+  101303238,
+  101303240,
+  101303244,
+  258236371
+ ],
+ "osm_bbox": [
+  -116.0579,
+  49.6731,
+  -116.0008,
+  49.7032
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "14471d68a332d98392513ac010a190fe8d0ed3f4",
+  "cc": "CA",
+  "runs": 70,
+  "lifts": 5,
+  "rated": 1.0,
+  "skimap": 2904,
+  "web": "https://www.skikimberley.com"
+ },
+ "area_name": "Kimberley Alpine Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 76%, 1 m lidar 24%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 23.7,
+  "30m": 76.3
+ },
+ "isolated_lifts": [
+  "Owl T-Bar"
+ ],
+ "isolated_notes": {
+  "Owl T-Bar": "rule: not joined to the rest of the lifts on the map"
+ }
+}

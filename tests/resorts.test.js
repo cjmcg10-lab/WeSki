@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { loadResort } from './helpers.js';
 import { Router } from '../src/routing.js';
 
@@ -7,7 +7,12 @@ const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
 
 describe('every built resort', () => {
   it('lists the expected mountains', () => {
-    expect(index.map((r) => r.id).sort()).toEqual(['alta', 'berkshire-east', 'big-sky', 'bolton-valley', 'breckenridge', 'bretton-woods', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'crystal-mountain', 'deer-valley', 'geto-kogen', 'heavenly', 'hunter-mountain', 'jackson-hole', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mohawk-mountain', 'mount-snow', 'mount-southington', 'okemo', 'palisades-tahoe', 'park-city', 'pats-peak', 'pizol', 'powder-ridge', 'ragged', 'saalbach', 'saddleback', 'ski-sundown', 'skiwelt', 'smugglers-notch', 'snowbird', 'snowshoe', 'solitude', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'telluride', 'tignes-val-disere', 'vail', 'val-thorens', 'wachusett', 'waterville-valley', 'whiteface', 'windham-mountain', 'winter-park', 'zermatt']);
+    // the 60 mountains built and checked by hand stay listed; every other config is an automatic build
+    // (tools/bulk), listed unless the quality gate held it ("hold" in its config, tools/bulk/gate.py)
+    const ids = index.map((r) => r.id);
+    expect(ids).toEqual(expect.arrayContaining(['alta', 'berkshire-east', 'big-sky', 'bolton-valley', 'breckenridge', 'bretton-woods', 'brundage', 'burke', 'cannon-mountain', 'catamount', 'copper-mountain', 'crystal-mountain', 'deer-valley', 'geto-kogen', 'heavenly', 'hunter-mountain', 'jackson-hole', 'jay-peak', 'keystone', 'killington', 'la-plagne', 'les-arcs', 'les-contamines', 'loon', 'magic-mountain', 'mammoth', 'mohawk-mountain', 'mount-snow', 'mount-southington', 'okemo', 'palisades-tahoe', 'park-city', 'pats-peak', 'pizol', 'powder-ridge', 'ragged', 'saalbach', 'saddleback', 'ski-sundown', 'skiwelt', 'smugglers-notch', 'snowbird', 'snowshoe', 'solitude', 'steamboat', 'stowe', 'stratton', 'sugarbush', 'sugarloaf', 'sunday-river', 'telluride', 'tignes-val-disere', 'vail', 'val-thorens', 'wachusett', 'waterville-valley', 'whiteface', 'windham-mountain', 'winter-park', 'zermatt']));
+    const configs = readdirSync('tools/resorts').filter((f) => f.endsWith('.json')).map((f) => JSON.parse(readFileSync(`tools/resorts/${f}`, 'utf8')));
+    expect([...ids].sort()).toEqual(configs.filter((c) => !c.hold).map((c) => c.id).sort());
   });
   // resorts kept in R2 are only checked where they have been downloaded (node tools/maps_r2.mjs pull --all)
   for (const entry of index.filter((e) => existsSync(`public/data/${e.id}/resort.json`))) {

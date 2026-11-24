@@ -1,0 +1,68 @@
+{
+ "id": "mt-bachelor",
+ "name": "Mt. Bachelor",
+ "region": "Oregon, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1306486693",
+ "include_ways": [
+  40016027,
+  40016031,
+  40016034,
+  40016036,
+  40016037,
+  40016463,
+  40016465,
+  134866490,
+  134866491,
+  134866492,
+  209711988,
+  551301328,
+  910655533,
+  910655534,
+  910655535
+ ],
+ "osm_bbox": [
+  -121.7264,
+  43.9558,
+  -121.6413,
+  44.021
+ ],
+ "openskimap": {
+  "id": "df0ebcea3daf2a4ad2c46e99f043d37d57cf1b9b",
+  "cc": "US",
+  "runs": 128,
+  "lifts": 15,
+  "rated": 1.0,
+  "skimap": 270,
+  "web": "https://www.mtbachelor.com/"
+ },
+ "area_name": "Mt. Bachelor",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 100%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ },
+ "isolated_lifts": [
+  "Lava Tube Carpet"
+ ],
+ "isolated_notes": {
+  "Lava Tube Carpet": "rule: tubing or sledding lift"
+ },
+ "links": [
+  [
+   "Summit Express (top)",
+   "trail:West Catchline"
+  ],
+  [
+   "Summit Express (top)",
+   "trail:East Catchline"
+  ],
+  [
+   "Summit Express (top)",
+   "trail:The Low East"
+  ]
+ ],
+ "links_notes": "the catch lines (West and East Catchline, The Low East, Sunrise Getback) gather skiers who come down the open slopes all round the summit from the top of Summit Express (skied, 1 km and 430 m down); no lift reaches their tops directly"
+}

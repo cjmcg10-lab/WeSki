@@ -1,0 +1,48 @@
+{
+ "id": "red-mountain",
+ "name": "Red Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/397735832",
+ "include_ways": [
+  101303222,
+  101303223,
+  101303226,
+  101303243,
+  101303249,
+  258636368,
+  277944989,
+  770744308
+ ],
+ "osm_bbox": [
+  -117.8815,
+  49.0807,
+  -117.8024,
+  49.1365
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "d43bd0f16a1d4436ace9396379fcdfa999dd8033",
+  "cc": "CA",
+  "runs": 84,
+  "lifts": 8,
+  "rated": 0.988,
+  "skimap": 41,
+  "web": "https://www.redresort.com/"
+ },
+ "area_name": "Red Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "rename": {
+  "High Spirit": "High Spirits",
+  "Mad House": "Madhouse"
+ }
+}

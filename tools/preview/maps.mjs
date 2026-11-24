@@ -6,13 +6,20 @@
 // the same files and packing as tools/preview/deploy.mjs step 2. The preview Worker reads preview/data/<id>/ first,
 // so the preview shows the new maps at once; the app bundled in the preview Worker is left as it is (use deploy.mjs
 // for that). The live data/ files are not touched. Needs the Cloudflare token, as deploy.mjs does.
+//
+//   node tools/preview/maps.mjs fetch <resort id> [...]
+//
+// The other way, read-only: downloads preview/data/<id>/ back into public/data/<id> (resort.json with its graph put
+// back, terrain.bin, surround.bin, canopy.z8), so a later session can push a map the owner approved on the preview
+// with `node tools/maps_r2.mjs push <id>` without rebuilding it (nothing outside the repository survives a session).
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { packResort } from '../heights_pack.mjs';
 
-const ids = process.argv.slice(2);
-if (!ids.length) throw new Error('usage: node tools/preview/maps.mjs <resort id> [...]');
+const FETCH = process.argv[2] === 'fetch';
+const ids = process.argv.slice(FETCH ? 3 : 2);
+if (!ids.length) throw new Error('usage: node tools/preview/maps.mjs [fetch] <resort id> [...]');
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'proxy-injected';
 const AUTH = ['-H', `Authorization: Bearer ${TOKEN}`, '-A', 'weski-build'];
 const curl = (args) => execFileSync('curl', ['-s', '--fail-with-body', ...AUTH, ...args], { maxBuffer: 1 << 26 }).toString();
@@ -25,6 +32,26 @@ const put = (key, file, type) => {
     `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/r2/buckets/${BUCKET}/objects/${key}`]));
   if (!r.success) throw new Error(`${key}: ${JSON.stringify(r.errors)}`);
 };
+if (FETCH) {
+  for (const id of ids) {
+    const dir = `public/data/${id}`;
+    mkdirSync(dir, { recursive: true });
+    const get = (f, to) => {
+      try {
+        execFileSync('curl', ['-s', '--fail', ...AUTH, '-o', to, `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/r2/buckets/${BUCKET}/objects/preview/data/${id}/${f}`]);
+        return true;
+      } catch { return false; }
+    };
+    if (!get('resort.json', `${dir}/resort.json`) || !get('graph.json', `${dir}/graph.tmp.json`)) throw new Error(`${id}: not on the preview`);
+    const R = JSON.parse(readFileSync(`${dir}/resort.json`, 'utf8'));
+    R.graph = JSON.parse(readFileSync(`${dir}/graph.tmp.json`, 'utf8'));
+    writeFileSync(`${dir}/resort.json`, JSON.stringify(R));
+    rmSync(`${dir}/graph.tmp.json`);
+    const n = ['terrain.bin', 'surround.bin', 'canopy.z8'].filter((f) => get(f, `${dir}/${f}`)).length;
+    console.log(`${id}: fetched from the preview into ${dir} (resort.json and ${n} more files)`);
+  }
+  process.exit(0);
+}
 rmSync(out, { recursive: true, force: true });
 for (const id of ids) {
   const dir = `public/data/${id}`, tmp = join(out, id);

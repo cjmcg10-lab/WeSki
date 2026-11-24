@@ -1,0 +1,42 @@
+{
+ "id": "sundance",
+ "name": "Sundance",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1117698962",
+ "include_ways": [
+  48664305,
+  48664306,
+  257804182,
+  916017074,
+  916017075,
+  1047297205,
+  1117238057,
+  1117238058,
+  1117238059,
+  1385469902
+ ],
+ "osm_bbox": [
+  -111.6032,
+  40.3648,
+  -111.5714,
+  40.3944
+ ],
+ "openskimap": {
+  "id": "745a3b9611363f0f1ca4f55e5403f39dede94ebb",
+  "cc": "US",
+  "runs": 80,
+  "lifts": 10,
+  "rated": 1.0,
+  "skimap": 230,
+  "web": "https://www.sundanceresort.com/"
+ },
+ "area_name": "Sundance Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

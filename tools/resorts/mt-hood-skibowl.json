@@ -1,0 +1,48 @@
+{
+ "id": "mt-hood-skibowl",
+ "name": "Mt. Hood Skibowl",
+ "region": "Oregon, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1155730256",
+ "include_ways": [
+  5250234,
+  5278611,
+  5279988,
+  92829722,
+  144851614,
+  144953980,
+  144953981,
+  144953982,
+  149093801
+ ],
+ "osm_bbox": [
+  -121.7961,
+  45.2838,
+  -121.7493,
+  45.3048
+ ],
+ "openskimap": {
+  "id": "4edeb68c1b51b4fce1d7289cf145de7e1b7b70cc",
+  "cc": "US",
+  "runs": 62,
+  "lifts": 9,
+  "rated": 1.0,
+  "skimap": 263,
+  "web": "https://skibowl.com/winter/"
+ },
+ "area_name": "Mt. Hood Skibowl",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 100%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "10m": 100.0
+ },
+ "rename": {
+  "Round House": "Roundhouse",
+  "Stump Garden": "Stumpgarden",
+  "The Chutes (1)": "The Chutes",
+  "Tom Dick Bowl (1)": "Tom Dick Bowl",
+  "Pizazz": "Pizzaz"
+ }
+}
