@@ -150,8 +150,8 @@
   "YBR": "Yellow Brick Road"
  },
  "lifts_explained": {
-  "Gelande": "the lift skimap.org captions in 2025 as the new Gelande lift; the 2026 maps call the lift on this line Colorado Couloir",
-  "Magic carpet": "surface lift in the Columbine beginner area"
+  "Magic carpet": "surface lift in the Columbine beginner area",
+  "Colorado Couloir": "the 2026 maps name this new lift Colorado Couloir; OpenStreetMap still calls it Gelande"
  },
  "notes": {
   "BD&M Expressway": "OpenStreetMap draws Upper BD&M (blue) and Lower BD&M (green) as one run; the whole run takes the harder rating"

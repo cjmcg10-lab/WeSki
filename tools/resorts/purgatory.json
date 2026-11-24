@@ -43,16 +43,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "isolated_lifts": [
-  "Columbine Lift #9",
-  "Graduate Lift #7",
-  "Ski School Magic Carpet #10"
- ],
- "isolated_notes": {
-  "Columbine Lift #9": "rule: not joined to the rest of the lifts on the map",
-  "Graduate Lift #7": "rule: not joined to the rest of the lifts on the map",
-  "Ski School Magic Carpet #10": "rule: not joined to the rest of the lifts on the map"
- },
  "hold": "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7",
  "rename": {
   "Cathedral Treeway": "Cathedral Tree Way",

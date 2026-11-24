@@ -119,6 +119,7 @@
   "Topping Creek Chair"
  ],
  "lifts_explained": {
-  "Red Carpet": "the map legend lists a Red Carpet (beginner carpet); OpenStreetMap calls it Magic carpet"
+  "Red Carpet": "the map legend lists a Red Carpet (beginner carpet); OpenStreetMap calls it Magic carpet",
+  "Grey Mtn Chair": "the map legend shortens it; OpenStreetMap: Grey Mountain Chair"
  }
 }

@@ -153,5 +153,12 @@
  ],
  "confirm": {
   "Dandy Glades": "named on the 2025 trail map (marked NEW) without a rating symbol; OpenStreetMap rating kept"
+ },
+ "hide": {
+  "After You": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
+  "After Me": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
+  "Cougar Run": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
+  "Bear Claw": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
+  "Valhalla Ridge Access (Hike)": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them"
  }
 }

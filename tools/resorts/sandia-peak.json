@@ -10,7 +10,6 @@
   151810726,
   151810727,
   151810731,
-  199295489,
   199295490
  ],
  "osm_bbox": [
@@ -34,16 +33,22 @@
   "1m": 32.4,
   "10m": 67.6
  },
- "isolated_lifts": [
-  "Sandia Peak Aerial Tramway"
- ],
- "isolated_notes": {
-  "Sandia Peak Aerial Tramway": "rule: not joined to the rest of the lifts on the map"
- },
  "hold": "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway",
  "rename": {
   "Cibola Cutoff": "Cibola Cut Off",
   "Upper Salom": "Slalom",
   "South Upper Slalom": "Slalom"
+ },
+ "two_way_lifts": [
+  "Sandia Peak Aerial Tramway"
+ ],
+ "links": [
+  [
+   "Sandia Peak Aerial Tramway (top)",
+   "Chairlift #2 (top)"
+  ]
+ ],
+ "links_notes": {
+  "Sandia Peak Aerial Tramway (top) -> Chairlift #2 (top)": "2026-11-24: the tram's top station on the crest is about 40 m from the tops of Chairlifts #2 and #3; skiers can ride the tram up from Albuquerque and ski the area, and ride it back down (two ways). OpenStreetMap draws the tram's two track ropes as two ways; one (199295489) is left out so it is drawn once"
  }
 }

@@ -39,23 +39,20 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "isolated_lifts": [
-  "Cedar Park Express",
-  "Colburn Triple",
-  "Idyle Our T-Bar",
-  "Stella"
- ],
- "isolated_notes": {
-  "Cedar Park Express": "rule: not joined to the rest of the lifts on the map",
-  "Colburn Triple": "rule: not joined to the rest of the lifts on the map",
-  "Idyle Our T-Bar": "rule: not joined to the rest of the lifts on the map",
-  "Stella": "rule: not joined to the rest of the lifts on the map"
- },
  "hold": "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple",
  "rename": {
   "Scars Spur": "Sars Spur",
   "Siberia Runout": "Siberia Run Out",
   "Kohli's Big TImber": "Kohli's Big Timber",
   "Lakeside": "Lakeside Chutes"
+ },
+ "links": [
+  [
+   "trail:Phineas Forest (bottom)",
+   "trail:Springboard"
+  ]
+ ],
+ "links_notes": {
+  "trail:Phineas Forest (bottom) -> trail:Springboard": "2026-11-24: Phineas Forest (glade) ends about 500 m short of the run-out the Outback Bowl map shows it flowing into; joined downhill (1289 m to 1262 m) to the bottom of Springboard, which leads to the Outback Inn base"
  }
 }

@@ -50,5 +50,18 @@
   "Gunbarrel": "Gun Barrel",
   "Zone 4": "Zone 2",
   "Evasion": "Evasion Traverse"
- }
+ },
+ "links": [
+  [
+   "Summit Quad (top)",
+   "trail:Outback Ridge",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Summit Quad (top) -> trail:Outback Ridge (hike)": "2026-11-24: OpenStreetMap draws Outback Ridge from the Summit Quad top along the ridge, climbing about 55 m to where the Taynton Bowl runs (Wild Thing, Spectre and the rest) drop off; the 2024 trail map shows that ridge as the way into the bowl, so it is a walk out the ridge"
+ },
+ "two_way_lifts": [
+  "Village"
+ ]
 }

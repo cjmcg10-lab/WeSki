@@ -42,5 +42,14 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "rename": {}
+ "rename": {},
+ "links": [
+  [
+   "trail:Castle",
+   "trail:Rerun"
+  ]
+ ],
+ "links_notes": {
+  "trail:Castle -> trail:Rerun": "2026-11-24: OpenStreetMap starts Rerun about 600 m short of the Eastabout / Castle junction it leaves from on the 2025 trail map; the join skis down about 115 m"
+ }
 }

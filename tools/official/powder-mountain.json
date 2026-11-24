@@ -212,5 +212,12 @@
   "Jump Line": "terrain park line on the 2026 trail map (no rating)",
   "Rail Garden": "terrain park line on the 2026 trail map (no rating)",
   "Pinball Alley": "terrain park line on the 2026 trail map (no rating)"
+ },
+ "lifts_explained": {
+  "Mary's": "Mary's Quad: tagged private in OpenStreetMap (Private Homeowners Only, no public access), so the build hides it",
+  "Village": "Village Quad: tagged private in OpenStreetMap (Private Homeowners Only, no public access), hidden",
+  "Raintree": "tagged private in OpenStreetMap (Private Homeowners Only, no public access), hidden",
+  "Primetime": "Primetime Express: tagged private in OpenStreetMap, hidden",
+  "Sun Tunnel": "a short surface lift shown on the map; not in OpenStreetMap"
  }
 }
