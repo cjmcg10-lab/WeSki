@@ -941,8 +941,8 @@ dragStops($('#start-panel'), {
 // Starting a search: give the list the whole screen, so more results show above the keyboard.
 // On an iPhone the first tap used to push the search bar off the top of the screen: the phone scrolls the page to keep
 // the field above the keyboard, measuring it where it sat before the list had glided up. So the list now jumps to the
-// whole screen at once (laid out before the phone measures), the page is kept scrolled to the top, and while the
-// keyboard is up the list is pinned to the part of the screen the keyboard leaves visible (visualViewport).
+// whole screen at once (laid out before the phone measures) and the page is kept scrolled to the top; the keyboard then
+// covers the list's lower part (fitStartToKeyboard).
 $('#f-resort').addEventListener('focus', () => {
   if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full', null, startGeom(), true);
   unscrollPage();
@@ -955,16 +955,16 @@ function unscrollPage() {
   const se = document.scrollingElement;
   if (se && se.scrollTop) se.scrollTop = 0;
 }
-/** While the on-screen keyboard is up, keep the whole-screen mountain list inside the visible part of the screen. */
+/** While the on-screen keyboard is up the whole-screen mountain list keeps its size and place, as the panels do: the
+ *  keyboard covers its lower part and the list gets room at its bottom (--kb-cover) to scroll every result clear of it.
+ *  (It used to shrink to the part above the keyboard and grow back when the keyboard closed: a jolt, owner 2026-11-24.) */
 function fitStartToKeyboard() {
   const p = $('#start-panel'), vv = window.visualViewport;
   const typing = !!vv && document.activeElement === $('#f-resort') && !COLUMN.matches;
   const kb = typing && window.innerHeight - vv.height > 120;   // a keyboard, not just the browser's bars moving
   p.classList.toggle('kb', kb);
-  if (kb) {
-    p.style.setProperty('--kb-top', Math.max(0, Math.round(vv.offsetTop)) + 'px');
-    p.style.setProperty('--kb-h', Math.round(vv.height) + 'px');
-  } else { p.style.removeProperty('--kb-top'); p.style.removeProperty('--kb-h'); }
+  if (kb) p.style.setProperty('--kb-cover', Math.max(0, Math.round(p.getBoundingClientRect().bottom - (vv.offsetTop + vv.height))) + 'px');
+  else p.style.removeProperty('--kb-cover');
 }
 // Panels (sheets) with a text field (owner, 2026-11-23, changed 2026-11-24): while the keyboard is up the panel keeps
 // its full size and place and the keyboard covers its lower part (cutting the panel off at the keyboard let the mountain
