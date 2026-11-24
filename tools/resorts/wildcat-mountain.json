@@ -22,7 +22,7 @@
   "cc": "US",
   "runs": 50,
   "lifts": 4,
-  "rated": 1.0,
+  "rated": 1,
   "skimap": 356,
   "web": "https://www.skiwildcat.com/"
  },
@@ -31,7 +31,77 @@
  "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
  "terrain_res": 1,
  "terrain_shares": {
-  "1m": 100.0
+  "1m": 100
  },
- "hold": "2 runs climb more than 12 m"
+ "drop_ways": {
+  "250208159": "Cat-Walk crosses a rise (lidar: 828 m west end, 802 m low point, 830 m crest, 797 m east end); redrawn as three pieces in extra_trails with OpenStreetMap's own points, each running downhill",
+  "20250179029": "end of Upper Polecat's way: after its low point it loops back uphill to a node it already passed (the 17 m climb); left out"
+ },
+ "extra_trails": [
+  {
+   "name": "Cat-Walk",
+   "pts": [
+    [-71.2347582, 44.2563014],
+    [-71.2345866, 44.2563513],
+    [-71.2344766, 44.2564262],
+    [-71.234321, 44.2566529],
+    [-71.2341735, 44.2567105],
+    [-71.2339965, 44.256749],
+    [-71.2336585, 44.256797],
+    [-71.2334493, 44.2570582],
+    [-71.2331435, 44.2574501],
+    [-71.2329094, 44.2576178]
+   ],
+   "note": "OpenStreetMap way 250208159 (Cat-Walk), its own points, cut at the low point and the crest so each piece runs downhill (the aerial photo puts the way on its cut strip)"
+  },
+  {
+   "name": "Cat-Walk",
+   "pts": [
+    [-71.228452, 44.2607437],
+    [-71.2288803, 44.2604522],
+    [-71.2295689, 44.2600033],
+    [-71.2305118, 44.2594612],
+    [-71.2307059, 44.2593403],
+    [-71.2309811, 44.2591101],
+    [-71.2313066, 44.258966],
+    [-71.231384, 44.2589178],
+    [-71.2319043, 44.2583953],
+    [-71.2320653, 44.2581571],
+    [-71.2323265, 44.2579921],
+    [-71.2325266, 44.2578657],
+    [-71.2328378, 44.2576691],
+    [-71.2329094, 44.2576178]
+   ],
+   "note": "OpenStreetMap way 250208159 (Cat-Walk), its own points, cut at the low point and the crest so each piece runs downhill (the aerial photo puts the way on its cut strip)"
+  },
+  {
+   "name": "Cat-Walk",
+   "pts": [
+    [-71.228452, 44.2607437],
+    [-71.2278398, 44.2613115],
+    [-71.2275461, 44.2616325],
+    [-71.226645, 44.262623]
+   ],
+   "note": "OpenStreetMap way 250208159 (Cat-Walk), its own points, cut at the low point and the crest so each piece runs downhill (the aerial photo puts the way on its cut strip)"
+  }
+ ],
+ "keep_traced": [
+  "Cat-Walk"
+ ],
+ "rename": {
+  "Alls-Folly": "Al's Folly",
+  "The-Chutes": "The Chute",
+  "Lower wild cat": "Lower Wildcat",
+  "Middle wildcat": "Middle Wildcat",
+  "Lower cat track": "Lower Cat Track",
+  "Snowcat trail": "Snowcat Trail",
+  "TopCat": "Top-Cat"
+ },
+ "split_ways": {
+  "250179029": [
+   [-71.2265929, 44.2557471],
+   "",
+   ""
+  ]
+ }
 }
