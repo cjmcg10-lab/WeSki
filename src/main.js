@@ -456,8 +456,12 @@ function notchHeight() {
   }
   return parseFloat(getComputedStyle(el).paddingTop) || 0;
 }
+let startGeomLast = null;
 function startGeom() {
   const p = $('#start-panel'), H = $('#start').clientHeight;
+  // while the list glides, measuring it would stop the glide dead (it switches the glide off for a moment), so the
+  // sizes measured when it started are used: the globe asks for them as the list sets off
+  if (startGeomLast && startGeomLast.H === H && p.getAnimations?.().some((a) => a.transitionProperty)) return startGeomLast;
   const keep = { h: p.style.height, mh: p.style.maxHeight, pt: p.style.getPropertyValue('--padt'), full: p.classList.contains('full'), drag: p.classList.contains('dragging') };
   const sat = notchHeight();
   // measure with the glide switched off: otherwise the brief changes below start glides of their own, and on letting go
@@ -472,22 +476,29 @@ function startGeom() {
   p.style.height = keep.h; p.style.maxHeight = keep.mh;
   if (keep.pt) p.style.setProperty('--padt', keep.pt);
   if (!keep.drag) { void p.offsetHeight; p.classList.remove('dragging'); }
-  return { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
+  startGeomLast = { H, h, mini, sat, pos: { full: 0, normal: H - h, mini: H - h + mini } };
+  return startGeomLast;
 }
-/** Put the top of the list at p (px from the top of the screen): above its normal place it grows, below it slides down. */
+/** Put the top of the list at p (px from the top of the screen). Above its normal place the list is as tall as the
+ *  screen and slides up and down as one piece (g.tall: also for a glide between the whole screen and normal), the same
+ *  way it slides down to its bar: moving it by changing its height made the phone lay out the whole list again on every
+ *  frame, so going up to the whole screen felt heavier than going down (owner, 2026-11-24). */
 function placeStart(g, p) {
   const el = $('#start-panel');
   el.style.maxHeight = 'none';
-  if (p >= g.pos.normal) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
-  else { el.style.height = Math.round(g.H - Math.max(p, 0)) + 'px'; el.style.transform = 'translateY(0px)'; }
+  if (p >= g.pos.normal && !(g.tall && p <= g.pos.normal + 1)) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
+  else { el.style.height = Math.round(g.H) + 'px'; el.style.transform = `translateY(${Math.round(Math.max(p, 0))}px)`; }
   // near the top the title moves down out of the notch, and the rounded corners square off
   el.style.setProperty('--padt', START_PAD + Math.max(0, g.sat - Math.max(0, p)) + 'px');
   const r = Math.max(0, Math.min(26, p / 2));
   el.style.borderRadius = `${r}px ${r}px 0 0`;
 }
+/** Back to the stylesheet's place and size, with no glide (it already sits there). */
 function clearStartPlace() {
-  const el = $('#start-panel');
+  const el = $('#start-panel'), drag = el.classList.contains('dragging');
+  el.classList.add('dragging');
   for (const k of ['height', 'max-height', 'transform', 'border-radius', '--padt']) el.style.removeProperty(k);
+  if (!drag) { void el.offsetHeight; el.classList.remove('dragging'); }
 }
 /** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now.
  *  `snap`: go there at once, with no glide (used when the search is tapped, see the focus handler below). */
@@ -507,6 +518,8 @@ function goStart(state, from = null, g = startGeom(), snap = false) {
     else { globe?.setPaused(false); layoutGlobe(true, state); }
     return;
   }
+  // between the whole screen and normal the list slides at full height (see placeStart)
+  g = { ...g, tall: state === 'full' || prev === 'full' || (from != null && from < g.pos.normal) };
   if (from == null) {
     if (prev === state) return;
     el.classList.add('dragging'); placeStart(g, g.pos[prev]); void el.offsetHeight; el.classList.remove('dragging');
