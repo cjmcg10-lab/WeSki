@@ -554,6 +554,9 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   cell's height to the summit and base; MET snowfall is worked out from precipitation and temperature, its gusts are
   wind x 1.5 where it gives none; freezing level comes from the summit and base temperatures where NWS gives no snow
   level. Snow depth is no longer shown (neither source has it). Open-Meteo is no longer used.
+- Usage alerts (2026-11-23, #116): a daily workflow (`.github/workflows/usage.yml`, `tools/usage/`) reads Cloudflare's
+  analytics and keeps one issue labelled `usage-alert` with what to upgrade; a weekly summary on the `usage-summary` issue.
+  Limits are in `tools/usage/limits.mjs`. Read `docs/USAGE_ALERTS.md`.
 - Owner accounts: Cloudflare secret `COMP_EMAILS` (comma-separated) = every paid feature, no end date, plus crew.
 - The public website for Paddle's review is `public/about.html` (served at `/about`): features, free vs pass, prices,
   install steps, contact, company. Link legal pages without `.html` (`/legal/terms`); the server redirects `.html`, and

@@ -376,7 +376,10 @@ for t in sel:
     o = np.abs(r["off"])
     row = {"name": t["name"], "osm": t["osm"], "traced": bool(t.get("traced")), "len": t["len"], "evidence": round(r["evidence"], 2),
            "bounded": round(r["bounded"], 2), "width": round(r["width"]), "mean_off": round(float(o.mean()), 1),
-           "max_off": round(float(o.max()), 1), "good": good, "taken": taken, "tree": tree}
+           "max_off": round(float(o.max()), 1), "good": good, "taken": taken, "tree": tree,
+           # the cut run's middle line found on the photo (map metres, every 3rd cross-section): tools/map_fixes.mjs
+           # checks that it lies where skiers' off-run squares are before letting --write move a run
+           "found": [[round(float(p[0]), 1), round(float(p[1]), 1)] for p in r["xy"][::3]]}
     if A.test and good:
         rec = []
         for D in (50, 100, 150):

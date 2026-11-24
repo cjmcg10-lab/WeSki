@@ -57,7 +57,7 @@ export async function feedbackResponse(raw, env, networkKey, { resolve = resortP
   return respond(out, out.ok ? 200 : 429);
 }
 
-async function sameSecret(given, secret) {
+export async function sameSecret(given, secret) {
   const [a, b] = await Promise.all([sha256(given), sha256(secret)]);
   let diff = 0;
   for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
