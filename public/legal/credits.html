@@ -96,14 +96,12 @@ In Canada: Data Source: <a href="https://weather.gc.ca/">Environment and Climate
 In Norway: alerts from <a href="https://api.met.no/">MET Norway</a> (MetAlerts), licensed under
 <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Alerts only add a note to a day: they never change its score.</p>
 
-<h2>Mountain photos</h2>
-<p>The photos on the mountain list come from Wikimedia Commons:</p>
-<ul id="photos"><li class="note">Loading…</li></ul>
-<p>Mountains with no free photo show a picture made from the app's own map data instead: a view of that mountain's 3D
-map with its runs and lifts, and its key numbers (summit, vertical, runs by rating, lifts) taken from the same map. These
-pictures are not photos. They are made from the sources credited above: runs, lifts and buildings from OpenStreetMap
-contributors (ODbL), ratings from the resorts' published trail lists where we have them, and the terrain sources listed
-under Terrain. Mountains shown this way: <span id="cards">loading…</span></p>
+<h2>Mountain pictures</h2>
+<p>Every mountain's picture on the mountain list and its card is made from the app's own map data: a view of that
+mountain's 3D map with its runs and lifts, and its key numbers (summit, vertical, runs by rating, lifts) taken from the
+same map. These pictures are not photos. They are made from the sources credited above: runs, lifts and buildings from
+OpenStreetMap contributors (ODbL), ratings from the resorts' published trail lists where we have them, and the terrain
+sources listed under Terrain. This applies to all mountains with a 3D map: <span id="cards">loading…</span></p>
 
 <h2>Software</h2>
 <p>three.js (MIT), Vite (MIT), Montserrat and Nunito Sans fonts (SIL Open Font License), and other open-source packages under their
@@ -114,13 +112,6 @@ own licences.</p>
 <h2>Contact</h2>
 <p>Built By Roger LLC, <a href="mailto:hello@builtbyroger.app">hello@builtbyroger.app</a></p>
 <script>
-fetch('/photos/credits.json').then((r) => r.json()).then((c) => {
-  const esc = (s) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
-  document.getElementById('photos').innerHTML = Object.entries(c).map(([id, p]) => {
-    const file = String(p.title || '').replace(/^File:/, '');
-    return `<li>${esc(id.replace(/-/g, ' '))}: “<a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, '_'))}">${esc(file)}</a>” by ${esc(p.artist || 'unknown')}, ${esc(p.lic || '')}</li>`;
-  }).join('');
-}).catch(() => { document.getElementById('photos').innerHTML = '<li>See each photo on Wikimedia Commons.</li>'; });
 fetch('/photos/cards.json').then((r) => r.json()).then((c) => {
   document.getElementById('cards').textContent = Object.keys(c).map((id) => id.replace(/-/g, ' ')).join(', ') || 'none';
 }).catch(() => { document.getElementById('cards').textContent = 'see the mountain list'; });

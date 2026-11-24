@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-// Mountain cards: a picture for every mountain that has no real photo, made from our own map data.
+// Mountain cards: the picture of every mountain in the app, made from our own map data.
 //
 //   node tools/mountain_cards.mjs <id> [<id> ...]     make cards for these mountains
-//   node tools/mountain_cards.mjs --missing           every built mountain without a photo in public/photos/credits.json
-//   options: --out <dir> (default public/photos), --port <n> (default 5197)
+//   node tools/mountain_cards.mjs --all               every built mountain in public/data/index.json
+//   node tools/mountain_cards.mjs --missing           every built mountain that has no card in public/photos/cards.json yet
+//   options: --out <dir> (default public/photos), --port <n> (default: the first free one from 5197)
+//   (tools/pipeline.py runs it for the mountains it builds; tests/cards.test.js fails when a built mountain has none)
 //
 // For each mountain the app's own 3D map is opened in headless Chromium (vite dev server, `?skip=<id>`), the camera is
 // placed automatically below the base area looking up the fall line (the direction from the lifts' bottoms to the
@@ -12,9 +14,9 @@
 // resort.json (summit and base as on the resort card, runs and lifts as shown on the map, ratings as the map shows
 // them: the resort's own list where we have it, else OpenStreetMap; runs with no rating anywhere are counted as unrated).
 //
-// Writes, like the real photos: <out>/<id>.jpg (768 x 360, the resort card, with the numbers) and <out>/<id>-s.jpg
+// Writes <out>/<id>.jpg (768 x 360, the resort card, with the numbers) and <out>/<id>-s.jpg
 // (208 x 112, the list thumbnail, picture only), and records the mountain in <out>/cards.json, which the app reads to
-// show a card where no photo exists. Needs the mountain's map files on disk (node tools/maps_r2.mjs pull <id>).
+// show the cards. Needs the mountain's map files on disk (node tools/maps_r2.mjs pull <id>).
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -23,12 +25,25 @@ import { join } from 'node:path';
 const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
 const OUT = opt('--out', 'public/photos');
-const PORT = +opt('--port', '5197');
+const ASKED = opt('--port', null);
+const up = (port) => fetch(`http://127.0.0.1:${port}`).then(() => true, () => false);
+// another checkout's server on the same port would answer instead of ours (without this checkout's maps or code),
+// so a port that already answers is never used: the next free one is taken, or an asked-for one is refused
+let PORT = +(ASKED || 5197);
+while (await up(PORT)) {
+  if (ASKED) { console.error(`port ${PORT} is already in use (another vite?): pass another --port`); process.exit(1); }
+  if (++PORT > 5260) { console.error('no free port between 5197 and 5260'); process.exit(1); }
+}
 const ORIGIN = `http://127.0.0.1:${PORT}`;
 const index = JSON.parse(readFileSync('public/data/index.json', 'utf8'));
-const photos = existsSync('public/photos/credits.json') ? JSON.parse(readFileSync('public/photos/credits.json', 'utf8')) : {};
-let ids = args.includes('--missing') ? index.map((r) => r.id).filter((id) => !photos[id]) : args.filter((a) => !a.startsWith('--'));
-if (!ids.length) { console.error('usage: node tools/mountain_cards.mjs <id...> | --missing [--out dir]'); process.exit(1); }
+const made = existsSync(join(OUT, 'cards.json')) ? JSON.parse(readFileSync(join(OUT, 'cards.json'), 'utf8')) : {};
+const ids = args.includes('--all') ? index.map((r) => r.id)
+  : args.includes('--missing') ? index.map((r) => r.id).filter((id) => !made[id] || !existsSync(join(OUT, `${id}.jpg`)))
+    : args.filter((a) => !a.startsWith('--'));
+if (!ids.length) {
+  if (args.includes('--missing')) { console.log('every built mountain has a card'); process.exit(0); }
+  console.error('usage: node tools/mountain_cards.mjs <id...> | --all | --missing [--out dir]'); process.exit(1);
+}
 const missing = ids.filter((id) => !existsSync(`public/data/${id}/resort.json`));
 if (missing.length) { console.error(`no map on disk for ${missing.join(', ')}: run node tools/maps_r2.mjs pull ${missing.join(' ')}`); process.exit(1); }
 mkdirSync(OUT, { recursive: true });
@@ -120,6 +135,9 @@ function stage(region) {
     d = Math.min(30000, Math.max(600, d * Math.pow(s, 0.6)));
   }
   place();
+  // the haze starts beyond the mountain, however far back a big ski area puts the camera
+  const dist = cam.position.distanceTo(target);
+  m.scene.fog.near = Math.max(7000, dist * 1.4); m.scene.fog.far = Math.max(22000, dist * 4);
   m.controls.target.copy(target);
   return new Promise((resolve) => requestAnimationFrame(() => {
     m.pickLods(); m.updateTrees(); m.animateLifts(m.t || 1);
@@ -186,7 +204,8 @@ html.card-shot #map::after { content: ''; position: absolute; inset: 0; pointer-
 `;
 
 // ---------------------------------------------------------------- run it
-const server = spawn('npx', ['vite', '--port', String(PORT), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
+// vite itself, not through npx: stopping npx would leave vite running on the port
+const server = spawn(process.execPath, ['node_modules/vite/bin/vite.js', '--port', String(PORT), '--strictPort', '--host', '127.0.0.1'], { stdio: 'ignore' });
 const stop = () => server.kill();
 process.on('exit', stop);
 for (let i = 0; ; i++) {

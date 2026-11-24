@@ -8,6 +8,7 @@ usage: python3 tools/pipeline.py <id> [<id> ...] [options]
   --terrain         download the terrain again (default for an existing resort: rebuild it from the built map)
   --checks-only     skip the build, only run the checks and write the score card
   --no-index        do not rebuild index.json and globe at the end
+  --no-cards        do not make the mountain cards (the app's picture of each mountain) at the end
   --r2              upload the rebuilt map to Cloudflare R2 (tools/maps_r2.mjs push), which the LIVE app reads,
                     and keep its files there rather than in git. Without it nothing is uploaded, not even for a
                     resort already listed in public/data/r2.json (such a resort is downloaded first if it is not on
@@ -27,7 +28,10 @@ Steps, in the order docs/MOUNTAIN_CHECKLIST.md asks for:
   5. checks: official_ratings check, audit --list, check_downhill
   6. score card: tools/cards/<id>.md (committed: it is the record of the mountain's state) and a
      line in the summary table printed at the end. Full logs stay in the work folder.
-After all resorts: build_index and build_globe.
+After all resorts: build_index and build_globe, then the mountain cards (tools/mountain_cards.mjs: the picture of
+each mountain in the app, made from its 3D map; needs Chromium, PW_CHROMIUM=/opt/pw-browsers/chromium in a cloud
+session). A mountain whose card could not be made gets a LOOK line on its score card; tests/cards.test.js fails
+until it has one.
 
 The card only lists what needs a person: everything else is a one-line pass.
 """
@@ -50,7 +54,7 @@ UA = {"User-Agent": "weski-build"}
 def args():
     a = sys.argv[1:]
     opt = {"work": os.environ.get("PIPE_WORK", "/tmp/weski-pipe"), "fresh_osm": False, "terrain": False,
-           "checks_only": False, "index": True, "r2": False}
+           "checks_only": False, "index": True, "r2": False, "cards": True}
     ids = []
     i = 0
     while i < len(a):
@@ -65,6 +69,8 @@ def args():
             opt["checks_only"] = True
         elif x == "--no-index":
             opt["index"] = False
+        elif x == "--no-cards":
+            opt["cards"] = False
         elif x == "--r2":
             opt["r2"] = True
         elif x.startswith("-"):
@@ -677,6 +683,28 @@ def one(rid, opt):
     return result
 
 
+def mountain_cards(ids):
+    """The app's picture of each built mountain (public/photos/<id>.jpg and <id>-s.jpg, listed in cards.json), made
+    from its 3D map once index.json lists it. A card that is not made is a LOOK line on the score card."""
+    t = time.time()
+    env = {**os.environ}
+    if not env.get("PW_CHROMIUM") and os.path.exists("/opt/pw-browsers/chromium"):
+        env["PW_CHROMIUM"] = "/opt/pw-browsers/chromium"
+    p = subprocess.run(["node", "tools/mountain_cards.mjs", *ids], cwd=ROOT, capture_output=True, text=True, env=env)
+    out = p.stdout + p.stderr
+    made = {line.split(":", 1)[0] for line in out.splitlines() if ": card made (" in line}
+    print(f"   {'mountain_cards.mjs':22s} {time.time() - t:6.1f} s  {len(made)} of {len(ids)} cards made")
+    why = (out.strip().splitlines() or ["no output"])[-1][:200]
+    for rid in ids:
+        if rid in made:
+            continue
+        path = f"{ROOT}/tools/cards/{rid}.md"
+        if os.path.exists(path):
+            with open(path, "a") as f:
+                f.write(f"- **LOOK**: no mountain card made ({why}): run node tools/mountain_cards.mjs {rid}\n")
+        print(f"   no mountain card for {rid}: {why}")
+
+
 def main():
     ids, opt = args()
     results = []
@@ -700,6 +728,9 @@ def main():
     if opt["index"] and not opt["checks_only"]:
         for step in ("build_index.py", "build_globe.py"):
             subprocess.run([PY, f"tools/{step}", "public/data"], cwd=ROOT, capture_output=True)
+    built = [rid for rid, m, c, s in results if not c.startswith("STOPPED")]
+    if opt["cards"] and not opt["checks_only"] and built:
+        mountain_cards(built)
     print("\nresort                 map                     card                         time")
     for rid, m, c, s in results:
         print(f"{rid:22s} {m:23s} {c:28s} {s:5.0f} s")
