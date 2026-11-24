@@ -125,6 +125,10 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
 
 ## What the owner must do before turning the paywall on
 
+Step-by-step setup for Paddle (website) and Apple (iPhone app), with what to have ready: `docs/PAYMENTS_SETUP.md`
+(2026-11-24: same prices everywhere, Season and Crew renew yearly, Paddle first, Apple when the app goes into the
+App Store).
+
 1. Form the LLC (recommended first; payments, trademark and terms in its name). Then put the company name and a
    contact email into `public/legal/*.html` (search for "to be added before the paid launch").
 2. (Done 2026-11-20) The app is at https://skiwithme.builtbyroger.app; the website Paddle reviews is
