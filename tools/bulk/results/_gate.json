@@ -1404,5 +1404,284 @@
   "ratings": "resort feed (SilverStar trail map by James Niehues, f)",
   "terrain_res": 30,
   "gate": "publish"
+ },
+ {
+  "id": "snow-valley-mountain",
+  "name": "Snow Valley Mountain",
+  "region": "California, USA",
+  "seconds": 64,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 13,
+  "osk_runs": 42,
+  "lifts": 13,
+  "runs": 37,
+  "named": 28,
+  "km": 12.2,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   38,
+   38
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 2,
+  "ratings": "resort feed (Snow Valley 2026 trail map (skimap.org m)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sugar-bowl",
+  "name": "Sugar Bowl",
+  "region": "California, USA",
+  "seconds": 115,
+  "hold": [],
+  "soft": [
+   "isolated by rule: Magic carpet",
+   "1 lift ends joined by rule"
+  ],
+  "osk_lifts": 13,
+  "osk_runs": 94,
+  "lifts": 13,
+  "runs": 119,
+  "named": 111,
+  "km": 48.4,
+  "osk_lift_ids_on_map": [
+   13,
+   13
+  ],
+  "reachable": [
+   120,
+   123
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Sugar Bowl trail map (skimap.org map 493)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "sundance",
+  "name": "Sundance",
+  "region": "Utah, USA",
+  "seconds": 49,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 10,
+  "osk_runs": 80,
+  "lifts": 10,
+  "runs": 93,
+  "named": 71,
+  "km": 34.6,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   94,
+   94
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Sundance 2025 trail map (skimap.org map )",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "taos-valley",
+  "name": "Taos Ski Valley",
+  "region": "New Mexico, USA",
+  "seconds": 59,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 14,
+  "osk_runs": 105,
+  "lifts": 14,
+  "runs": 170,
+  "named": 111,
+  "km": 59.9,
+  "osk_lift_ids_on_map": [
+   14,
+   14
+  ],
+  "reachable": [
+   173,
+   173
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 3,
+  "ratings": "resort feed (Taos Ski Valley 2026 winter trail map (s)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "timberline-lodge",
+  "name": "Timberline Lodge",
+  "region": "Oregon, USA",
+  "seconds": 111,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 12,
+  "osk_runs": 62,
+  "lifts": 12,
+  "runs": 67,
+  "named": 51,
+  "km": 57.1,
+  "osk_lift_ids_on_map": [
+   12,
+   12
+  ],
+  "reachable": [
+   68,
+   72
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Timberline 2025 trail map (skimap.org ma)",
+  "terrain_res": 10,
+  "gate": "publish"
+ },
+ {
+  "id": "welch-village",
+  "name": "Welch Village",
+  "region": "Minnesota, USA",
+  "seconds": 40,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 10,
+  "osk_runs": 54,
+  "lifts": 10,
+  "runs": 54,
+  "named": 48,
+  "km": 14.6,
+  "osk_lift_ids_on_map": [
+   10,
+   10
+  ],
+  "reachable": [
+   55,
+   55
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 1
+  },
+  "guess_pct": 2,
+  "ratings": "resort feed (Welch Village 2025-27 trail map and Back)",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "whitefish-mountain",
+  "name": "Whitefish Mountain",
+  "region": "Montana, USA",
+  "seconds": 93,
+  "hold": [],
+  "soft": [
+   "ratings not checked against the resort"
+  ],
+  "osk_lifts": 16,
+  "osk_runs": 137,
+  "lifts": 16,
+  "runs": 140,
+  "named": 113,
+  "km": 85.3,
+  "osk_lift_ids_on_map": [
+   16,
+   16
+  ],
+  "reachable": [
+   141,
+   141
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "OpenStreetMap, not checked",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "whitewater",
+  "name": "Whitewater",
+  "region": "British Columbia, Canada",
+  "seconds": 80,
+  "hold": [],
+  "soft": [
+   "30 m terrain"
+  ],
+  "osk_lifts": 5,
+  "osk_runs": 88,
+  "lifts": 5,
+  "runs": 104,
+  "named": 95,
+  "km": 60.5,
+  "osk_lift_ids_on_map": [
+   5,
+   5
+  ],
+  "reachable": [
+   105,
+   106
+  ],
+  "conn": {
+   "unreachable": 1,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Whitewater 2026-27 trail map (skimap.org)",
+  "terrain_res": 30,
+  "gate": "publish"
  }
 ]

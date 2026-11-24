@@ -2,17 +2,17 @@
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
  "unreachable": {
-  "Blackbird": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Porky Nose": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Kiko": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Blackbird": "2026-11-23 AI pass: tops on the ridge 140-180 m above the Middle Bowl Express and Porcupine tops, 300-400 m away (hike-to); OpenStreetMap draws no bootpack and no trail map was read for this mountain yet",
+  "Porky Nose": "2026-11-23 AI pass: see Blackbird (top 180 m above the Porcupine top)",
+  "Kiko": "2026-11-23 AI pass: see Blackbird"
  },
  "dead_end": {
-  "Sister's Bowl Traverse": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Sister's Bowl Traverse": "2026-11-23 AI pass: its bottom runs 680 m on past Monkey Tree and ends away from every run and lift; needs the trail map"
  },
  "outside_core": {},
  "lift_end": {},
  "uphill": {},
  "doubled": {
-  "Arrowhead ~ Middle Bowl Cirque": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Arrowhead ~ Middle Bowl Cirque": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
  }
 }

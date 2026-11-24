@@ -7,7 +7,7 @@
  "lift_end": {},
  "uphill": {},
  "doubled": {
-  "(unnamed run 214) ~ Mt. Morrisey Connector": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "(unnamed run 232) ~ Sunrise": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "(unnamed run 214) ~ Mt. Morrisey Connector": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "(unnamed run 232) ~ Sunrise": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
  }
 }

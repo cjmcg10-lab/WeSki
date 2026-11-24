@@ -39,5 +39,24 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "links": [
+  [
+   "trail:Show Off",
+   "trail:Little Bowl"
+  ],
+  [
+   "trail:Little Bowl",
+   "trail:East Bowl"
+  ],
+  [
+   "trail:The Chute",
+   "trail:Show Off"
+  ]
+ ],
+ "links_notes": {
+  "trail:Show Off -> trail:Little Bowl": "2026-11-23: see The Chute -> Show Off",
+  "trail:Little Bowl -> trail:East Bowl": "2026-11-23: see The Chute -> Show Off",
+  "trail:The Chute -> trail:Show Off": "2026-11-23: on the 2026 trail map Show Off, Little Bowl and East Bowl branch off the open slope below The Chute and Big Bowl, across the Snow Valley Express and Chair 3; OpenStreetMap only joined them through a short unnamed piece the resort does not show (hidden). Joins are approximate (55-75 m)"
  }
 }

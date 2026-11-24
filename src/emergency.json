@@ -869,6 +869,10 @@
   },
   "sun-peaks": {
    "country": "CA",
+   "phone": "+1.250.578.5521",
+   "tel": "+12505785521",
+   "label": "Sun Peaks on-hill emergency",
+   "source": "https://skimap.org/skimaps/view/45445",
    "checked": "2026-11-23"
   },
   "sun-valley-bald-mountain": {
@@ -889,6 +893,18 @@
   },
   "tamarack": {
    "country": "US",
+   "phone": "208-325-1031",
+   "tel": "+12083251031",
+   "label": "Tamarack emergencies only (security)",
+   "source": "https://skimap.org/skimaps/view/49309",
+   "checked": "2026-11-23"
+  },
+  "taos-valley": {
+   "country": "US",
+   "phone": "575.776.0505",
+   "tel": "+15757760505",
+   "label": "Taos Ski Patrol (on-mountain accidents, emergencies only)",
+   "source": "https://skimap.org/skimaps/view/48818",
    "checked": "2026-11-23"
   },
   "telluride": {
@@ -917,6 +933,10 @@
     }
    ],
    "source": "https://www.valdisere.ski/en/ski-safely",
+   "checked": "2026-11-23"
+  },
+  "timberline-lodge": {
+   "country": "US",
    "checked": "2026-11-23"
   },
   "vail": {
@@ -957,6 +977,10 @@
   },
   "whistler-blackcomb": {
    "country": "CA",
+   "phone": "604.935.5555",
+   "tel": "+16049355555",
+   "label": "Whistler Blackcomb mountain emergency",
+   "source": "https://skimap.org/skimaps/view/44244",
    "checked": "2026-11-23"
   },
   "whiteface": {

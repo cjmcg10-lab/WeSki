@@ -37,5 +37,15 @@
  "terrain_shares": {
   "1m": 41.2,
   "30m": 58.8
+ },
+ "rename": {
+  "Backburner": "Back Burner",
+  "Enchantment Forest": "Enchanted Forest",
+  "Face Plant": "Faceplant",
+  "Giddy Up Glades": "Giddy Up Gully",
+  "Parking Log Ski Way": "Parking Lot Ski Way",
+  "Silver Ledge": "Silverledge",
+  "Trash Chutes Traverse": "Trash Traverse",
+  "Trolly Tracks": "Trolley Tracks"
  }
 }

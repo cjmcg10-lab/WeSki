@@ -40,6 +40,5 @@
  "terrain_res": 10,
  "terrain_shares": {
   "10m": 100.0
- },
- "hold": "4 runs no lift reaches"
+ }
 }

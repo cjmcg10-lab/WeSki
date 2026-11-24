@@ -2,16 +2,16 @@
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
  "unreachable": {
-  "Horseshoe Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Camino Del Monte Sol": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Sleeping Beauty Glades": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Alberta Peak": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Horseshoe Bowl": "2026-11-23 AI pass: hike-to terrain off the Knife Ridge (the 2026 trail map draws the ridge with control gates); OpenStreetMap draws no bootpack",
+  "Camino Del Monte Sol": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Sleeping Beauty Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Alberta Peak": "2026-11-23 AI pass: hike-to summit above the Alberta lift top (2026 trail map); OpenStreetMap draws no bootpack"
  },
  "dead_end": {},
  "outside_core": {},
  "lift_end": {},
  "uphill": {},
  "doubled": {
-  "Chi's ~ Zia's": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Chi's ~ Zia's": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
  }
 }
