@@ -10,6 +10,7 @@ import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
+import { count, flush, routeKey, usageResponse, mailResponse } from './usage.js';
 import { runDigest, DIGEST_INDEX, isKnownResort } from './digest.js';
 
 /** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
@@ -55,6 +56,8 @@ async function api(request, env, url, ctx) {
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
+  if (path === '/api/admin/usage' && method === 'GET') return usageResponse(request, url, env);
+  if (path === '/api/admin/usage/mail' && method === 'POST') return mailResponse(request, env);
   if (path === '/api/weather' && method === 'GET') return weatherResponse(url, env, ctx);
   if (path === '/api/elevation' && method === 'GET') return elevationResponse(url);
   const historyId = method === 'GET' && /^\/api\/history\/([a-z0-9-]{2,40})$/.exec(path)?.[1];
@@ -84,6 +87,7 @@ async function api(request, env, url, ctx) {
       body: JSON.stringify({ from: env.MAIL_FROM, to: [email], subject: mail.subject, text: mail.text, html: mail.html }),
     });
     if (!res.ok) return json({ error: 'The email could not be sent. Try again in a moment.' }, 502);
+    count('out:resend');
     return json({ ok: true });
   }
   if (path === '/api/auth/finish' && method === 'GET') {
@@ -186,6 +190,9 @@ export default {
 
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    // a rough count for the usage alerts (docs/USAGE_ALERTS.md); written out at most once a minute
+    count(routeKey(url.pathname, request.method));
+    flush(env, ctx);
     // directions data is part of the paid tier: served only with a pass when the paywall is on
     const graph = url.pathname.match(/^\/data\/([a-z0-9-]{2,40})\/graph\.json$/);
     // Members of a group get it too, for meeting points (a group is only created with a pass, so someone paid).

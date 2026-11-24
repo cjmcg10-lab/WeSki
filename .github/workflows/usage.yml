@@ -1,0 +1,52 @@
+# Usage alerts: once a day, reads how much of each Cloudflare allowance the app uses (read-only analytics), works out
+# the trend, and opens, updates or closes one GitHub issue labelled usage-alert with plain advice on what to upgrade.
+# On Mondays it also adds a summary comment to the standing "Usage: weekly summary" issue. See docs/USAGE_ALERTS.md.
+#
+# Uses the existing secrets CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID (the token needs "Account Analytics: Read").
+# Optional: secret USAGE_SECRET (the Worker's own count), variables CF_WORKERS_PLAN (free|paid, default free),
+# USAGE_WEEKLY ("off" stops the weekly comment), USAGE_EMAIL ("on" also emails through the Worker).
+name: Usage alerts
+
+on:
+  schedule:
+    - cron: '17 7 * * *' # 07:17 UTC daily, after Cloudflare has finished the previous day's figures
+  workflow_dispatch:
+    inputs:
+      weekly:
+        description: Also post the weekly summary now
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: usage-alerts
+  cancel-in-progress: false
+
+jobs:
+  usage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Check usage and update the alert issue
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          USAGE_SECRET: ${{ secrets.USAGE_SECRET }}
+          CF_WORKERS_PLAN: ${{ vars.CF_WORKERS_PLAN }}
+          USAGE_EMAIL: ${{ vars.USAGE_EMAIL }}
+          APP_URL: https://skiwithme.builtbyroger.app
+          GITHUB_TOKEN: ${{ github.token }}
+          WEEKLY: ${{ (github.event_name == 'workflow_dispatch' && inputs.weekly) || (github.event_name == 'schedule' && vars.USAGE_WEEKLY != 'off') }}
+        run: |
+          extra=""
+          # the weekly summary: on Mondays for the daily run, or when asked for by hand
+          if [ "$WEEKLY" = "true" ] && { [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] || [ "$(date -u +%u)" = "1" ]; }; then extra="--weekly"; fi
+          node tools/usage/run.mjs --github --md usage-report.md $extra
+          cat usage-report.md >> "$GITHUB_STEP_SUMMARY"

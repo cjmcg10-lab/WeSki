@@ -1,3 +1,5 @@
+import { count } from './usage.js';
+
 export const UA = 'weski-build';
 export const LAPSE = 0.0065; // °C per metre, standard atmosphere
 export const HOURS = 7 * 24;
@@ -14,6 +16,7 @@ export async function cachedJson(url, ttl, headers = {}, { timeoutMs = FETCH_TIM
   const key = new Request(url);
   const hit = cache && (await cache.match(key));
   if (hit) return hit.json();
+  count('out:weather');
   const res = await fetch(url, { headers: { 'user-agent': UA, accept: 'application/geo+json, application/json', ...headers }, signal: AbortSignal.timeout(timeoutMs) });
   if (!res.ok) throw new Error(`weather source ${res.status}`);
   const body = await res.text();
