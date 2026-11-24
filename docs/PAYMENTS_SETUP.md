@@ -218,13 +218,16 @@ Do these once Part C is done. Claude builds the app side at the same time.
 - Need: the spare email address.
 - Do: Users and Access → **Sandbox** → Test Accounts → + → fill in (any name, region United States). Test purchases
   with this account cost nothing.
-- On your iPhone: Settings → App Store → Sandbox Account → sign in with it.
+- Not needed for TestFlight: purchases in a TestFlight app use your normal Apple account and are always free. The
+  iPhone's Settings → App Store → Sandbox Account section only appears once a developer build has been installed, so
+  it is missing on a normal phone (2026-11-24). The test account is a spare for testing outside TestFlight.
 
 **D8. Test, then submit.**
 - Claude: builds the Apple purchase into the app, a TestFlight build arrives, and gives you review screenshots and
   notes for D2 and D3.
-- You: in the TestFlight app buy each pass with the test buyer, check the website shows the pass when signed in with the
-  same SkiWithMe account, and try **Restore purchases**.
+- You: in the TestFlight app buy each pass (free in TestFlight), check the website shows the pass when signed in with the
+  same SkiWithMe account, try **Restore purchases** (asks Apple again for passes bought with this Apple account, e.g.
+  after a new phone) and **Manage subscription** (opens Apple's own screen to cancel or change Season or Crew).
 - Then: the passes are submitted together with the first App Store version of the app (the first in-app purchases
   must go to review with an app version).
 
