@@ -1106,4 +1106,5 @@ export default {
   1546: "Runs or lifts don’t connect here",
   1547: "It should be:",
   1548: "Choose what the rating should be.",
+  1580: "Made from our 3D map",
 };

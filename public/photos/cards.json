@@ -1,0 +1,92 @@
+{
+ "49-north-mountain": {
+  "made": "2026-11-24",
+  "runs": 83,
+  "lifts": 7
+ },
+ "angel-fire": {
+  "made": "2026-11-24",
+  "runs": 89,
+  "lifts": 9
+ },
+ "apex-mountain": {
+  "made": "2026-11-24",
+  "runs": 63,
+  "lifts": 4
+ },
+ "belleayre-mountain-center": {
+  "made": "2026-11-24",
+  "runs": 51,
+  "lifts": 8
+ },
+ "brundage": {
+  "made": "2026-11-24",
+  "runs": 79,
+  "lifts": 6
+ },
+ "cascade-mountain": {
+  "made": "2026-11-24",
+  "runs": 47,
+  "lifts": 11
+ },
+ "castle-mountain": {
+  "made": "2026-11-24",
+  "runs": 151,
+  "lifts": 7
+ },
+ "china-peak-mountain": {
+  "made": "2026-11-24",
+  "runs": 44,
+  "lifts": 11
+ },
+ "dodge-ridge": {
+  "made": "2026-11-24",
+  "runs": 67,
+  "lifts": 11
+ },
+ "great-divide": {
+  "made": "2026-11-24",
+  "runs": 125,
+  "lifts": 6
+ },
+ "holiday-valley": {
+  "made": "2026-11-24",
+  "runs": 69,
+  "lifts": 13
+ },
+ "mad-river-glen": {
+  "made": "2026-11-24",
+  "runs": 60,
+  "lifts": 5
+ },
+ "pats-peak": {
+  "made": "2026-11-24",
+  "runs": 36,
+  "lifts": 11
+ },
+ "red-river": {
+  "made": "2026-11-24",
+  "runs": 68,
+  "lifts": 7
+ },
+ "schweitzer-mountain": {
+  "made": "2026-11-24",
+  "runs": 92,
+  "lifts": 10
+ },
+ "silver-mountain": {
+  "made": "2026-11-24",
+  "runs": 75,
+  "lifts": 7
+ },
+ "snow-valley-mountain": {
+  "made": "2026-11-24",
+  "runs": 28,
+  "lifts": 13
+ },
+ "tamarack": {
+  "made": "2026-11-24",
+  "runs": 75,
+  "lifts": 7
+ }
+}

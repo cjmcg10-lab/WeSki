@@ -21,6 +21,11 @@ export default {
     }
     // photos and Forecast data are large and unchanged by a branch: straight from the live site
     if (/^\/(photos|forecast)\//.test(url.pathname)) {
+      // a branch's own new pictures (e.g. mountain cards) are uploaded to R2 under preview/photos/
+      if (url.pathname.startsWith('/photos/') && env.MAPS) {
+        const own = await env.MAPS.get('preview' + url.pathname);
+        if (own) return new Response(own.body, { headers: { 'content-type': url.pathname.endsWith('.json') ? 'application/json' : 'image/jpeg', 'cache-control': 'no-cache' } });
+      }
       const r = await fetch(LIVE + url.pathname, { headers: { 'user-agent': 'skiwithme-preview' } });
       return new Response(r.body, { status: r.status, headers: { 'content-type': r.headers.get('content-type') || 'application/octet-stream' } });
     }
