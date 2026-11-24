@@ -47,7 +47,6 @@
   305386920,
   306018804,
   306018805,
-  307618278,
   325289727,
   325289729,
   330691226,
@@ -128,5 +127,14 @@
   "Giggling": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
   "Skiroute Alte Wacht": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus",
   "Golf": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus"
- }
+ },
+ "links": [
+  [
+   "Bichlalmlift (top)",
+   "trail:Stuckkogel",
+   "hike"
+  ]
+ ],
+ "links_note": "Ski route 52 Stuckkogel starts on the Stuckkogel summit, about 1.1 km and 280 m above the Bichlalm lift's top: skiers walk up from the lift (hike link).",
+ "include_ways_note": "307618278 removed: OpenSkiMap assigns this 'Panoramabahn' chair (near St. Johann in Tirol, 12.57 E 47.48 N, 15 km away) to KitzSki, but it is not a KitzSki lift"
 }
