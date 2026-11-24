@@ -1,0 +1,49 @@
+{
+ "id": "mt-spokane",
+ "name": "Mt. Spokane",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1263733813",
+ "include_ways": [
+  6145228,
+  6146679,
+  6146683,
+  6149880,
+  164664135,
+  712981032,
+  1524759676,
+  1524759677
+ ],
+ "osm_bbox": [
+  -117.1375,
+  47.9109,
+  -117.0888,
+  47.945
+ ],
+ "openskimap": {
+  "id": "8e5e9380d0d0cc2fb2476b4df89e04ac0da644c7",
+  "cc": "US",
+  "runs": 61,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 189,
+  "web": "https://www.mtspokane.com/"
+ },
+ "area_name": "Mt. Spokane",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Alison's Way": "Allison's Way",
+  "Big 200": "Big200",
+  "Rockslide": "Rock Slide",
+  "Skid Road": "Skid Row",
+  "Swede's Folley": "Swede's Folly",
+  "Yellow Brick Road": "Yellowbrick Road",
+  "B-29": "B29"
+ }
+}

@@ -1,0 +1,57 @@
+{
+ "id": "beaver-creek-arrowhead-mountain",
+ "name": "Beaver Creek (Arrowhead Mountain)",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "include_ways": [
+  37378012,
+  37378013,
+  37378014,
+  37378016,
+  37378017,
+  101010732,
+  101010733,
+  101010734,
+  148521788,
+  148521789,
+  148521791,
+  198994137,
+  198994139,
+  238615475,
+  238752119,
+  258698685,
+  258698686,
+  258698687,
+  258698688,
+  258699702,
+  842879767,
+  842879768,
+  1125555206,
+  1125555502,
+  1578009986
+ ],
+ "osm_bbox": [
+  -106.5736,
+  39.5589,
+  -106.4837,
+  39.6408
+ ],
+ "openskimap": {
+  "id": "1185f0916cf0cbf03f6b75c9d1449b86afb1516d",
+  "cc": "US",
+  "runs": 247,
+  "lifts": 25,
+  "rated": 0.996,
+  "skimap": 497,
+  "web": "https://www.beavercreek.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "two_way_lifts": [
+  "Riverfront Express Gondola"
+ ]
+}

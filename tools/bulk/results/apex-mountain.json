@@ -1,0 +1,28 @@
+{
+ "id": "apex-mountain",
+ "reachable": [
+  76,
+  76
+ ],
+ "auto_joins": 4,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  76,
+  90,
+  0
+ ],
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 26.7,
+  "30m": 73.3
+ },
+ "notes": [],
+ "failed": null,
+ "built": "2026-11-24",
+ "first_build_seconds": 79,
+ "rebuild_seconds": 17,
+ "seconds": 15
+}

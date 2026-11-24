@@ -1,0 +1,27 @@
+{
+ "id": "belleayre-mountain-center",
+ "reachable": [
+  95,
+  95
+ ],
+ "auto_joins": 6,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  50,
+  71,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [],
+ "failed": null,
+ "built": "2026-11-24",
+ "first_build_seconds": 89,
+ "rebuild_seconds": 25,
+ "seconds": 26
+}

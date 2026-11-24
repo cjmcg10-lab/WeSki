@@ -1,0 +1,99 @@
+{
+ "id": "angel-fire",
+ "name": "Angel Fire",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1263733614",
+ "include_ways": [
+  14447568,
+  63707920,
+  63708337,
+  257379455,
+  257379456,
+  257379457,
+  257380092,
+  1381817999
+ ],
+ "osm_bbox": [
+  -105.2809,
+  36.3675,
+  -105.2131,
+  36.3915
+ ],
+ "openskimap": {
+  "id": "34ac08b56aded0d8451d6ca515d06a2f6dbb0b59",
+  "cc": "US",
+  "runs": 101,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 331,
+  "web": "https://www.angelfireresort.com/"
+ },
+ "area_name": "Angel Fire Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Fly-Way": "Flyway",
+  "Motherlode": "Mother Lode",
+  "Ripcord": "Rip Cord"
+ },
+ "links": [
+  [
+   "Southwest Flyer (top)",
+   "trail:C-4",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Nitro",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Detonator",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Baa-Da-Bing",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "C-4, Nitro, Detonator, Baa-Da-Bing": "the trail map marks these HIKING REQUIRED, reached by the dotted Hike Access Trail from the top of the Southwest Flyer"
+ },
+ "way_names": {
+  "776370525": "Upper El Sol"
+ },
+ "extra_lifts": [
+  {
+   "name": "Angel Express",
+   "kind": "chair_lift",
+   "seats": 6,
+   "pts": [
+    [
+     -105.274339,
+     36.3867716
+    ],
+    [
+     -105.2657486,
+     36.3820064
+    ],
+    [
+     -105.2610874,
+     36.3794207
+    ],
+    [
+     -105.2585915,
+     36.3780361
+    ]
+   ],
+   "why": "new six-seat chair on the 2026-27 trail map (base to the 9,446 ft top); OpenStreetMap still has it as proposed (way 1390584629), whose line is used here"
+  }
+ ]
+}

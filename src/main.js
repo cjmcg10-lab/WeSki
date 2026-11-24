@@ -152,7 +152,9 @@ async function loadPlaces() {
   fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; if (!$('#start').classList.contains('hidden')) renderResortList(); }).catch(() => {});
   const built = await fetchOk('/data/index.json').then((r) => r.json());
   const have = new Set(built.map((r) => r.id));
-  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id))];
+  // a coming-soon entry is left out once a built mountain has its id or sits within 15 km (built under another id)
+  const near = (r) => built.some((b) => Math.hypot((b.lat - r.lat) * 111, (b.lon - r.lon) * 111 * Math.cos(r.lat * Math.PI / 180)) < 15);
+  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id) && !near(r))];
 }
 const placeById = (id) => PLACES.find((r) => r.id === id);
 /** Settings that belong to one mountain (closures, saved routes, tracks...) are stored per resort. */
@@ -600,6 +602,8 @@ function resortCard(r) {
   return `<button class="back" data-act="resort-back">‹ All mountains</button>${photo}
     <div class="head">${photo ? '' : thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
+      ${r.checked === false ? '<p class="note map-note">Trail ratings not yet checked against the resort’s own list: they come from OpenStreetMap. Signs on the mountain always win.</p>' : ''}
+      ${r.coarse ? '<p class="note map-note">Lower-detail terrain for this mountain (30 m): the 3D slopes look smoother than they are.</p>' : ''}
       <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>`
     : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
     <button class="btn outline join-btn" data-act="start-join">Join Group</button>`;
@@ -1490,6 +1494,8 @@ function describeSpot(x, y, acc) {
   if (best) {
     bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(runName(best.t) || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
     if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
+    if (best.t.raised) bits.push('Rating raised: steeper than its OpenStreetMap rating');
+    else if (!best.t.ok && !S.resort.sources.ratings) bits.push('Rating not yet checked against the resort’s own list');
     if (best.t.unl) bits.push('Connecting piece: not named on the resort’s trail list');
     if (best.t.unof) bits.push('Not on the resort’s trail map: rating unconfirmed, may be ungroomed or unpatrolled');
     const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;

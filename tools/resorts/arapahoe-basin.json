@@ -1,0 +1,50 @@
+{
+ "id": "arapahoe-basin",
+ "name": "Arapahoe Basin",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/461239598",
+ "include_ways": [
+  17144372,
+  17144445,
+  37353337,
+  37353338,
+  102018790,
+  258683225,
+  677913293,
+  685993650,
+  1125353383
+ ],
+ "osm_bbox": [
+  -105.8948,
+  39.6076,
+  -105.8539,
+  39.6483
+ ],
+ "openskimap": {
+  "id": "1e281ff389476a82150ad7ef7be5f1ea48edd5e5",
+  "cc": "US",
+  "runs": 103,
+  "lifts": 9,
+  "rated": 1.0,
+  "skimap": 513,
+  "web": "https://www.arapahoebasin.com/"
+ },
+ "area_name": "Arapahoe Basin",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "11 dead-end runs",
+ "rename": {
+  "Chisolm Trail": "Chisholm Trail",
+  "Noth Fork": "North Fork",
+  "Skudder": "Scudder",
+  "West Gullly": "West Gully",
+  "Bailey Brothers": "Bailey Bros.",
+  "Cabin Glades": "Cabins Glades"
+ }
+}

@@ -1,0 +1,51 @@
+{
+ "id": "attitash-mountain",
+ "name": "Attitash Mountain",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/256024127",
+ "include_ways": [
+  204726132,
+  204726134,
+  204726143,
+  205580573,
+  205580574,
+  242374813,
+  1052505314,
+  1065582923
+ ],
+ "osm_bbox": [
+  -71.2593,
+  44.0615,
+  -71.2129,
+  44.087
+ ],
+ "openskimap": {
+  "id": "513237f93d127ca8e5cdbcd527ac3c99cef7c6ed",
+  "cc": "US",
+  "runs": 87,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 349,
+  "web": "https://www.attitash.com/"
+ },
+ "area_name": "Attitash Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Ammonousuc": "Ammonoosuc",
+  "Blueberrylane": "Blueberry Lane",
+  "Lower Myth Maker": "Lower Mythmaker",
+  "Lower Snowdancer": "Lower Snow Dancer",
+  "Snowdancer": "Snow Dancer",
+  "Stoney Brook": "Stony Brook",
+  "Stoney Brook By Pass": "Stony Brook Bypass",
+  "Upper Myth Maker": "Upper Mythmaker",
+  "Barksville Glad": "Barksville Glade"
+ }
+}

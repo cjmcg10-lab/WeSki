@@ -1,0 +1,70 @@
+{
+ "id": "grand-targhee",
+ "name": "Grand Targhee",
+ "region": "Wyoming, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/952802401",
+ "include_ways": [
+  15777783,
+  15778916,
+  206279599,
+  206280596,
+  257374320,
+  933071628
+ ],
+ "osm_bbox": [
+  -110.9669,
+  43.762,
+  -110.9184,
+  43.8079
+ ],
+ "openskimap": {
+  "id": "84ddf46f67c0fca577dc969188dc189f1c7a040f",
+  "cc": "US",
+  "runs": 93,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 150,
+  "web": "https://www.grandtarghee.com/"
+ },
+ "area_name": "Grand Targhee Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Chief Joe Bowl": "Chief Joseph Bowl",
+  "Croazy Horse Woods": "Crazy Horse Woods",
+  "Instructor's Chute": "Instructor Chute",
+  "Little Bighorn": "Little Big Horn",
+  "Lost Groomer": "Lost Groomers",
+  "Redezvous": "Rendezvous",
+  "Screaming Cheatah": "Screaming Cheetah",
+  "Watchabe Woods": "Wachabe Woods",
+  "Tanglewood": "Tanglefoot"
+ },
+ "links": [
+  [
+   "Colter Lift (top)",
+   "trail:K-1",
+   "hike"
+  ],
+  [
+   "trail:Blackfoot Traverse",
+   "trail:Lost Warrior"
+  ],
+  [
+   "trail:Ermine",
+   "trail:Thunder Trees",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Colter Lift (top) -> trail:K-1": "2026-11-23: K-1 starts below Mary's Nipple; the trail map draws a hiking route (orange dots) along the ridge from the Colter top to it",
+  "trail:Blackfoot Traverse -> trail:Lost Warrior": "2026-11-23: Lost Warrior starts beside the end of Blackfoot Traverse (about 150 m, downhill) on the trail map",
+  "trail:Ermine -> trail:Thunder Trees": "2026-11-23: Thunder Trees is reached on foot from Ermine through the access gate the trail map shows (orange dotted route)"
+ }
+}

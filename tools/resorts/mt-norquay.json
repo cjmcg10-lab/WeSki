@@ -1,0 +1,59 @@
+{
+ "id": "mt-norquay",
+ "name": "Mt Norquay",
+ "region": "Alberta, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/1563251164",
+ "include_ways": [
+  23259693,
+  23259697,
+  23259698,
+  1016444718,
+  1347194346,
+  1347196860,
+  1464502225
+ ],
+ "osm_bbox": [
+  -115.6229,
+  51.1847,
+  -115.5846,
+  51.2177
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 75
+ },
+ "openskimap": {
+  "id": "aedc10b0b4b20c17f083be799be906cc5fdb41ac",
+  "cc": "CA",
+  "runs": 68,
+  "lifts": 7,
+  "rated": 0.985,
+  "skimap": 16,
+  "web": "https://www.banffnorquay.com/"
+ },
+ "area_name": "Mt Norquay",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing Carpet"
+ ],
+ "isolated_notes": {
+  "Tubing Carpet": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "40 Mile Gully": "40 Mile Gulley",
+  "Bruno's Gully": "Bruno's Gulley",
+  "Norquay Gully": "Norquay Gulley",
+  "Sheep Chutes": "Sheep Chute",
+  "Sun Chutes": "Sun Chute"
+ }
+}

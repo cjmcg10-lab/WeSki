@@ -1,0 +1,42 @@
+{
+ "id": "welch-village",
+ "name": "Welch Village",
+ "region": "Minnesota, USA",
+ "tz": "America/Chicago",
+ "auto": true,
+ "area_osm": "way/1227143650",
+ "include_ways": [
+  93232987,
+  93232996,
+  93233002,
+  93233007,
+  256880496,
+  256880497,
+  256880498,
+  256880671,
+  1480370057,
+  1497035525
+ ],
+ "osm_bbox": [
+  -92.7414,
+  44.5445,
+  -92.719,
+  44.5649
+ ],
+ "openskimap": {
+  "id": "e0c315dfc3d1759447815000e3dd57b01b5e04d4",
+  "cc": "US",
+  "runs": 54,
+  "lifts": 10,
+  "rated": 0.981,
+  "skimap": 379,
+  "web": "https://www.welchvillage.com"
+ },
+ "area_name": "Welch Village",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

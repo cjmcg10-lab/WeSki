@@ -1,0 +1,75 @@
+{
+ "id": "mont-sutton",
+ "name": "Mont Sutton",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "include_ways": [
+  332021995,
+  332021996,
+  332021998,
+  332022019,
+  332022024,
+  332022136,
+  332022169,
+  332022171,
+  397730089
+ ],
+ "osm_bbox": [
+  -72.5826,
+  45.0777,
+  -72.5353,
+  45.1121
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "67b5c6852f920dd04961d91ab13aa83a9b47c255",
+  "cc": "CA",
+  "runs": 87,
+  "lifts": 9,
+  "rated": 0.977,
+  "skimap": 90,
+  "web": "https://www.montsutton.com"
+ },
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "3 Startlet": "Starlet",
+  "4 Sous-bois Startlet": "Sous-bois Starlet",
+  "A Fantaisie": "Fantaisie",
+  "B Extase": "Extase",
+  "C Séduction": "Séduction",
+  "Detour": "Détour",
+  "Dou-le-lom": "Dou-de-Lom",
+  "Bo Real": "Bo-Réal",
+  "Emótion": "Émotion",
+  "9A Forêt des merveilles": "Forêt des merveilles",
+  "1 Alleghanys": "Alleghanys",
+  "10 Connection": "Connection",
+  "11 Passeport": "Passeport",
+  "12 Transit": "Transit",
+  "13 Cendrillon": "Cendrillon",
+  "2 Coucou": "Coucou",
+  "5 Loup de Loup": "Loup de Loup",
+  "6 Bee-bop": "Bee-Bop",
+  "7 St-Bernard": "St-Bernard",
+  "8 Ricochet": "Ricochet",
+  "9 Yum-Yum": "Yum-Yum"
+ },
+ "links": [
+  [
+   "trail:Starlet (bottom)",
+   "I (base)"
+  ],
+  [
+   "trail:Coucou (bottom)",
+   "I (base)"
+  ]
+ ],
+ "links_notes": "Starlet and Coucou end at the bottom of the old I OW chair, which is not on the 2026-27 trail map (hidden); on the map they run out to the base of chair I (about 140 m across the base area)"
+}

@@ -1,0 +1,150 @@
+{
+ "id": "aspen-highlands",
+ "name": "Aspen Highlands",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/530531926",
+ "include_ways": [
+  17117676,
+  17117678,
+  17118210,
+  151179408,
+  151179418,
+  1212154522
+ ],
+ "osm_bbox": [
+  -106.8818,
+  39.1233,
+  -106.8439,
+  39.1905
+ ],
+ "ratings_feed": {
+  "mtnpowder": 53
+ },
+ "openskimap": {
+  "id": "0469463129ab65721499780f98a6394662564f32",
+  "cc": "US",
+  "runs": 76,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 1032,
+  "web": "https://www.aspensnowmass.com/four-mountains/aspen-highlands"
+ },
+ "area_name": "Aspen Highlands",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Exibition": "Exhibition",
+  "Face of Olly": "Face of Oly",
+  "Grand Pr": "Grand Prix",
+  "Separator": "Sepparator",
+  "T-Lazy Catwalk": "T-Lazy-7 Catwalk",
+  "Aeroble": "Aerobie"
+ },
+ "links": [
+  [
+   "Loge Peak (top)",
+   "trail:G-2",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:G-3",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:G-4",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Hines-Sight",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:G-6",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:G-8",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Full Curl",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Ozone",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Be-One",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:White Kitchen",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Steep 'N Deep",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:B-Fore",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Grahamster's",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Boxcar",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Mosh Pit",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Ballroom",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Flip's Leap",
+   "hike"
+  ],
+  [
+   "Loge Peak (top)",
+   "trail:Whip's Veneration",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Highland Bowl": "the trail map draws the Highland Bowl hike as a dashed line from the top of Loge Peak along the ridge to the bowl; every bowl line starts from that ridge (2026-27 trail map, skimap.org 49175)"
+ },
+ "isolated_lifts": [
+  "Five Trees"
+ ],
+ "isolated_notes": {
+  "Five Trees": "rule: not joined to the rest of the lifts on the map"
+ }
+}

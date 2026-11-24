@@ -1,0 +1,46 @@
+{
+ "id": "red-river",
+ "name": "Red River",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "include_ways": [
+  53124814,
+  53125129,
+  53125131,
+  53125148,
+  53125156,
+  257380788,
+  257380789
+ ],
+ "osm_bbox": [
+  -105.4234,
+  36.6814,
+  -105.3942,
+  36.7159
+ ],
+ "openskimap": {
+  "id": "bf6afe86945513e83720c59303658436be745f18",
+  "cc": "US",
+  "runs": 85,
+  "lifts": 7,
+  "rated": 0.988,
+  "skimap": 333,
+  "web": "https://www.redriverskiarea.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Copper Toll Rd.": "Copper Toll Road",
+  "Down Town": "Downtown",
+  "Goldrush": "Gold Rush",
+  "Purkapile": "Purkapiles",
+  "Sluice Box Glade": "Sluice Box Glades",
+  "Tony's Twist": "Toni's Twist",
+  "Whoop Dee Do Haven": "Whoopdedoo Haven",
+  "Gulch": "Cowboys Gulch"
+ }
+}

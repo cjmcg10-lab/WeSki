@@ -1,0 +1,43 @@
+{
+ "id": "cascade-mountain",
+ "name": "Cascade Mountain",
+ "region": "Wisconsin, USA",
+ "tz": "America/Chicago",
+ "auto": true,
+ "area_osm": "way/552426422",
+ "include_ways": [
+  256893687,
+  256893688,
+  256893690,
+  256893691,
+  256893692,
+  256893693,
+  256893694,
+  256893695,
+  256893696,
+  478979189,
+  1293540799
+ ],
+ "osm_bbox": [
+  -89.5276,
+  43.4912,
+  -89.4982,
+  43.5095
+ ],
+ "openskimap": {
+  "id": "2388f55dbb0c7682709069fcb7b94caf06cc6472",
+  "cc": "US",
+  "runs": 48,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 175,
+  "web": "https://www.cascademountain.com/index.php"
+ },
+ "area_name": "Cascade Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}
