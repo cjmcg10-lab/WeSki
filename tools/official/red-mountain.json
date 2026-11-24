@@ -27,12 +27,10 @@
   "Crackerjack": 1,
   "Dale's Trail": 1,
   "Doug's Run": 3,
-  "Dr. Feel Good": 2,
   "EZ Ryder": 2,
   "Easy Street": 0,
   "Face of Red": 1,
   "Faceplant": 1,
-  "Free as a Bird": 2,
   "Gambler": 1,
   "Gambler Towers": 2,
   "Get Up Stand Up": 1,
@@ -78,7 +76,6 @@
   "Sally's Alley": 1,
   "Sara's Chute": 3,
   "Schultz Trees": 1,
-  "Search and Destroy": 2,
   "Shortcuts": 1,
   "Shoulder": 3,
   "Silver Sheep": 0,
@@ -121,5 +118,10 @@
  "lifts_explained": {
   "Red Carpet": "the map legend lists a Red Carpet (beginner carpet); OpenStreetMap calls it Magic carpet",
   "Grey Mtn Chair": "the map legend shortens it; OpenStreetMap: Grey Mountain Chair"
+ },
+ "hide": {
+  "Dr. Feel Good": "Mount Kirkup cat-skiing run: the 2025/26 trail map shows it reached by the paid Kirkup snowcat from the Grey Mountain top, not by a lift, so directions cannot use it (the map rates it black)",
+  "Free as a Bird": "Mount Kirkup cat-skiing run: the 2025/26 trail map shows it reached by the paid Kirkup snowcat from the Grey Mountain top, not by a lift, so directions cannot use it (the map rates it black)",
+  "Search and Destroy": "Mount Kirkup cat-skiing run: the 2025/26 trail map shows it reached by the paid Kirkup snowcat from the Grey Mountain top, not by a lift, so directions cannot use it (the map rates it black)"
  }
 }

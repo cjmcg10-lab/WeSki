@@ -43,7 +43,7 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "12 runs no lift reaches; 17 dead-end runs; 10 runs climb more than 12 m",
+ "hold": "lifts 9 of OpenSkiMap's 14; only 9 of the 14 lifts OpenSkiMap assigns are on the map; 49 runs no lift reaches; 71 dead-end runs; 10 runs climb more than 12 m",
  "rename": {
   "Breakaway": "Break Away",
   "Candy L:and": "Candy Land",

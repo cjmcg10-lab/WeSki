@@ -186,6 +186,15 @@ is in `tools/bulk/batch-1.md` (gate result, why held, numbers) and each one's ca
 this checklist only in part: ratings are OpenStreetMap's (not checked against the resort, and the app says so), no
 photo, no browser close-ups, and no person has looked at their joins.
 
+AI checking pass, group 4 of 5 (2026-11-24, issue #45, branch `claude/45-ai-pass-4`): Mt. Hood Skibowl, Mt Norquay,
+Mt Seymour, Mt. Spokane, Northstar, Pajarito, Panorama, Pico, Powder Mountain, Purgatory, Red Mountain, Red River,
+Revelstoke, Sandia Peak, Ski Santa Fe, Schweitzer, Seven Springs, Sierra-at-Tahoe, Silver Mountain and SilverStar now have
+`tools/official/<id>.json` (ratings and lift list read by hand from each resort's trail map on skimap.org, with the
+easier-than-OpenStreetMap readings looked at a second time), connections checked with reasons in
+`tests/fixtures/connections/<id>.json`, and patrol numbers where the trail map prints one. 19 pass the gate; Powder
+Mountain stays held (five lifts are private, homeowners only, in OpenStreetMap). Still to do at all 20: the runs each card
+lists as "on the resort's list but not on the map" (not traced), photos, browser close-ups.
+
 ## Runs on the resort's list but not yet on the map (2026-11-19)
 
 `python3 tools/official_ratings.py check <id>` gives the names. 165 were missing on 2026-11-18; 11 remain (2026-11-20). The rest

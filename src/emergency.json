@@ -556,6 +556,14 @@
    "source": "https://www.palisadestahoe.com/footer/safety",
    "checked": "2026-11-23"
   },
+  "panorama-mountain": {
+   "country": "CA",
+   "phone": "250.341.3650",
+   "tel": "+12503413650",
+   "label": "Panorama emergency line",
+   "source": "https://skimap.org/skimaps/view/29614",
+   "checked": "2026-11-23"
+  },
   "park-city": {
    "country": "US",
    "phone": "435-615-1911",
@@ -587,6 +595,14 @@
    "tel": "+18608769063",
    "label": "Powder Ridge Ski Patrol",
    "source": "https://powderridgepark.com/hours-directions/",
+   "checked": "2026-11-23"
+  },
+  "purgatory": {
+   "country": "US",
+   "phone": "(970) 385-2178",
+   "tel": "+19703852178",
+   "label": "Purgatory Ski Patrol dispatch",
+   "source": "https://skimap.org/skimaps/view/48835",
    "checked": "2026-11-23"
   },
   "ragged": {
@@ -626,9 +642,17 @@
    "source": "https://www.saddlebackmaine.com/about-us/ski-patrol/",
    "checked": "2026-11-23"
   },
+  "sandia-peak": {
+   "country": "US",
+   "checked": "2026-11-24"
+  },
   "santa-fe-santa-fe-q38555": {
    "country": "US",
    "checked": "2026-11-23"
+  },
+  "schweitzer-mountain": {
+   "country": "US",
+   "checked": "2026-11-24"
   },
   "seven-springs-mountain": {
    "country": "US",

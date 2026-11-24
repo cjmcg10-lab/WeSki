@@ -2212,7 +2212,6 @@
   "seconds": 46,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "2 lift ends joined by rule"
   ],
   "osk_lifts": 9,
@@ -2238,7 +2237,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Mt. Hood Skibowl 2026-27 trail map (skim)",
   "terrain_res": 10,
   "gate": "publish"
  },
@@ -2249,13 +2248,12 @@
   "seconds": 59,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "30 m terrain"
   ],
   "osk_lifts": 7,
   "osk_runs": 68,
   "lifts": 7,
-  "runs": 88,
+  "runs": 87,
   "named": 74,
   "km": 30.2,
   "osk_lift_ids_on_map": [
@@ -2263,8 +2261,8 @@
    7
   ],
   "reachable": [
-   88,
-   88
+   87,
+   87
   ],
   "conn": {
    "unreachable": 0,
@@ -2275,7 +2273,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Mt Norquay trail map (skimap.org map 450)",
   "terrain_res": 30,
   "gate": "publish"
  },
@@ -2286,22 +2284,21 @@
   "seconds": 66,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "30 m terrain"
   ],
   "osk_lifts": 5,
   "osk_runs": 71,
   "lifts": 5,
-  "runs": 66,
+  "runs": 63,
   "named": 44,
-  "km": 17.1,
+  "km": 16.8,
   "osk_lift_ids_on_map": [
    5,
    5
   ],
   "reachable": [
-   66,
-   66
+   64,
+   64
   ],
   "conn": {
    "unreachable": 0,
@@ -2311,8 +2308,8 @@
    "uphill": 0,
    "doubled": 0
   },
-  "guess_pct": 7,
-  "ratings": "OpenStreetMap, not checked",
+  "guess_pct": 5,
+  "ratings": "resort feed (Mt Seymour trail map 2024 by James Niehu)",
   "terrain_res": 30,
   "gate": "publish"
  },
@@ -2322,9 +2319,7 @@
   "region": "Washington, USA",
   "seconds": 59,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 8,
   "osk_runs": 61,
   "lifts": 8,
@@ -2348,7 +2343,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Mt. Spokane trail maps, front and back s)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2358,22 +2353,20 @@
   "region": "California, USA",
   "seconds": 77,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 20,
   "osk_runs": 130,
   "lifts": 20,
-  "runs": 147,
+  "runs": 136,
   "named": 92,
-  "km": 84.3,
+  "km": 84.1,
   "osk_lift_ids_on_map": [
    20,
    20
   ],
   "reachable": [
-   147,
-   147
+   139,
+   139
   ],
   "conn": {
    "unreachable": 0,
@@ -2384,7 +2377,7 @@
    "doubled": 0
   },
   "guess_pct": 2,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Northstar California 2025/26 winter trai)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2394,9 +2387,7 @@
   "region": "New Mexico, USA",
   "seconds": 40,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 6,
   "osk_runs": 62,
   "lifts": 6,
@@ -2420,7 +2411,7 @@
    "doubled": 0
   },
   "guess_pct": 7,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Pajarito Mountain trail map by James Nie)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2429,40 +2420,36 @@
   "name": "Panorama Mountain",
   "region": "British Columbia, Canada",
   "seconds": 105,
-  "hold": [
-   "11 runs no lift reaches"
-  ],
+  "hold": [],
   "soft": [
-   "lift ends: 0 outside the network, 1 with no run",
-   "ratings not checked against the resort",
    "30 m terrain"
   ],
   "osk_lifts": 10,
   "osk_runs": 127,
   "lifts": 10,
-  "runs": 174,
+  "runs": 171,
   "named": 132,
-  "km": 105.2,
+  "km": 104.7,
   "osk_lift_ids_on_map": [
    10,
    10
   ],
   "reachable": [
-   164,
-   175
+   173,
+   173
   ],
   "conn": {
-   "unreachable": 11,
+   "unreachable": 0,
    "dead_end": 0,
    "outside_core": 0,
-   "lift_end": 1,
+   "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
   "guess_pct": 1,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Panorama 2024 trail map by James Niehues)",
   "terrain_res": 30,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "pico-mountain",
@@ -2470,22 +2457,20 @@
   "region": "Vermont, USA",
   "seconds": 48,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 7,
   "osk_runs": 68,
   "lifts": 7,
-  "runs": 86,
+  "runs": 85,
   "named": 57,
-  "km": 34.5,
+  "km": 34.4,
   "osk_lift_ids_on_map": [
    7,
    7
   ],
   "reachable": [
-   86,
-   86
+   85,
+   85
   ],
   "conn": {
    "unreachable": 0,
@@ -2496,7 +2481,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Pico Mountain trail map by James Niehues)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2506,37 +2491,37 @@
   "region": "Utah, USA",
   "seconds": 206,
   "hold": [
-   "12 runs no lift reaches",
-   "17 dead-end runs",
+   "lifts 9 of OpenSkiMap's 14",
+   "only 9 of the 14 lifts OpenSkiMap assigns are on the map",
+   "49 runs no lift reaches",
+   "71 dead-end runs",
    "10 runs climb more than 12 m"
   ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 14,
   "osk_runs": 155,
-  "lifts": 14,
-  "runs": 226,
+  "lifts": 9,
+  "runs": 225,
   "named": 205,
-  "km": 189.2,
+  "km": 189.1,
   "osk_lift_ids_on_map": [
-   14,
+   9,
    14
   ],
   "reachable": [
-   214,
-   226
+   213,
+   225
   ],
   "conn": {
-   "unreachable": 12,
-   "dead_end": 17,
+   "unreachable": 49,
+   "dead_end": 71,
    "outside_core": 0,
    "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Powder Mountain (Powder Haven) 2026 trai)",
   "terrain_res": 1,
   "gate": "hold"
  },
@@ -2545,18 +2530,14 @@
   "name": "Purgatory",
   "region": "Colorado, USA",
   "seconds": 151,
-  "hold": [
-   "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7"
-  ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "hold": [],
+  "soft": [],
   "osk_lifts": 14,
   "osk_runs": 92,
   "lifts": 12,
-  "runs": 113,
+  "runs": 112,
   "named": 103,
-  "km": 80.5,
+  "km": 80.3,
   "osk_lift_ids_on_map": [
    12,
    14
@@ -2574,9 +2555,9 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Purgatory Resort 2026 trail map and Colo)",
   "terrain_res": 1,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "red-mountain",
@@ -2585,15 +2566,14 @@
   "seconds": 68,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "30 m terrain"
   ],
   "osk_lifts": 8,
   "osk_runs": 84,
   "lifts": 8,
-  "runs": 111,
-  "named": 106,
-  "km": 86.9,
+  "runs": 108,
+  "named": 103,
+  "km": 83.6,
   "osk_lift_ids_on_map": [
    8,
    8
@@ -2603,7 +2583,7 @@
    112
   ],
   "conn": {
-   "unreachable": 3,
+   "unreachable": 0,
    "dead_end": 0,
    "outside_core": 0,
    "lift_end": 0,
@@ -2611,7 +2591,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (RED Mountain Resort 2025/26 trail map by)",
   "terrain_res": 30,
   "gate": "publish"
  },
@@ -2621,22 +2601,20 @@
   "region": "New Mexico, USA",
   "seconds": 47,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 7,
   "osk_runs": 85,
   "lifts": 7,
-  "runs": 84,
+  "runs": 80,
   "named": 68,
-  "km": 28.4,
+  "km": 28.3,
   "osk_lift_ids_on_map": [
    7,
    7
   ],
   "reachable": [
-   84,
-   84
+   81,
+   81
   ],
   "conn": {
    "unreachable": 0,
@@ -2647,7 +2625,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Red River Ski Area trail maps, front sid)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2657,13 +2635,11 @@
   "region": "British Columbia, Canada",
   "seconds": 230,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 7,
   "osk_runs": 83,
   "lifts": 7,
-  "runs": 95,
+  "runs": 94,
   "named": 71,
   "km": 93.6,
   "osk_lift_ids_on_map": [
@@ -2671,8 +2647,8 @@
    7
   ],
   "reachable": [
-   104,
-   113
+   103,
+   112
   ],
   "conn": {
    "unreachable": 0,
@@ -2683,7 +2659,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Revelstoke Mountain Resort 2025-26 trail)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2692,21 +2668,17 @@
   "name": "Sandia Peak",
   "region": "New Mexico, USA",
   "seconds": 63,
-  "hold": [
-   "lifts not joined to the rest of the map (isolated by rule): Sandia Peak Aerial Tramway, Sandia Peak Aerial Tramway"
-  ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "hold": [],
+  "soft": [],
   "osk_lifts": 6,
   "osk_runs": 67,
-  "lifts": 6,
+  "lifts": 5,
   "runs": 63,
-  "named": 63,
+  "named": 62,
   "km": 25.2,
   "osk_lift_ids_on_map": [
-   6,
-   6
+   5,
+   5
   ],
   "reachable": [
    63,
@@ -2721,9 +2693,9 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Sandia Peak Ski Area trail map (skimap.o)",
   "terrain_res": 10,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "santa-fe-santa-fe-q38555",
@@ -2732,22 +2704,21 @@
   "seconds": 43,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "1 lift ends joined by rule"
   ],
   "osk_lifts": 7,
   "osk_runs": 88,
   "lifts": 7,
-  "runs": 98,
+  "runs": 95,
   "named": 79,
-  "km": 32.4,
+  "km": 32.3,
   "osk_lift_ids_on_map": [
    7,
    7
   ],
   "reachable": [
-   98,
-   98
+   97,
+   97
   ],
   "conn": {
    "unreachable": 0,
@@ -2758,7 +2729,7 @@
    "doubled": 0
   },
   "guess_pct": 3,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Ski Santa Fe trail map by James Niehues )",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2767,38 +2738,34 @@
   "name": "Schweitzer Mountain",
   "region": "Idaho, USA",
   "seconds": 80,
-  "hold": [
-   "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple"
-  ],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "hold": [],
+  "soft": [],
   "osk_lifts": 10,
   "osk_runs": 104,
   "lifts": 10,
-  "runs": 112,
-  "named": 93,
-  "km": 69.6,
+  "runs": 103,
+  "named": 92,
+  "km": 69.3,
   "osk_lift_ids_on_map": [
    10,
    10
   ],
   "reachable": [
-   112,
-   112
+   107,
+   107
   ],
   "conn": {
    "unreachable": 0,
-   "dead_end": 1,
+   "dead_end": 0,
    "outside_core": 0,
    "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Schweitzer trail maps by James Niehues, )",
   "terrain_res": 1,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "seven-springs-mountain",
@@ -2808,15 +2775,14 @@
   "hold": [],
   "soft": [
    "isolated by rule: Magic carpet, Magic carpet",
-   "ratings not checked against the resort",
    "1 lift ends joined by rule"
   ],
   "osk_lifts": 16,
   "osk_runs": 54,
   "lifts": 16,
-  "runs": 57,
-  "named": 43,
-  "km": 27.1,
+  "runs": 54,
+  "named": 41,
+  "km": 27.0,
   "osk_lift_ids_on_map": [
    16,
    16
@@ -2834,7 +2800,7 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Seven Springs Mountain Resort winter tra)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2844,58 +2810,20 @@
   "region": "California, USA",
   "seconds": 59,
   "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
+  "soft": [],
   "osk_lifts": 13,
   "osk_runs": 41,
   "lifts": 13,
-  "runs": 53,
-  "named": 50,
-  "km": 33.3,
+  "runs": 52,
+  "named": 49,
+  "km": 32.7,
   "osk_lift_ids_on_map": [
    13,
    13
   ],
   "reachable": [
-   52,
+   53,
    53
-  ],
-  "conn": {
-   "unreachable": 1,
-   "dead_end": 0,
-   "outside_core": 0,
-   "lift_end": 0,
-   "uphill": 0,
-   "doubled": 0
-  },
-  "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
-  "terrain_res": 1,
-  "gate": "publish"
- },
- {
-  "id": "silver-mountain",
-  "name": "Silver Mountain",
-  "region": "Idaho, USA",
-  "seconds": 89,
-  "hold": [],
-  "soft": [
-   "ratings not checked against the resort"
-  ],
-  "osk_lifts": 7,
-  "osk_runs": 79,
-  "lifts": 7,
-  "runs": 94,
-  "named": 75,
-  "km": 45.4,
-  "osk_lift_ids_on_map": [
-   7,
-   7
-  ],
-  "reachable": [
-   98,
-   98
   ],
   "conn": {
    "unreachable": 0,
@@ -2906,7 +2834,41 @@
    "doubled": 0
   },
   "guess_pct": 0,
-  "ratings": "OpenStreetMap, not checked",
+  "ratings": "resort feed (Sierra-at-Tahoe trail map with Backside )",
+  "terrain_res": 1,
+  "gate": "publish"
+ },
+ {
+  "id": "silver-mountain",
+  "name": "Silver Mountain",
+  "region": "Idaho, USA",
+  "seconds": 89,
+  "hold": [],
+  "soft": [],
+  "osk_lifts": 7,
+  "osk_runs": 79,
+  "lifts": 7,
+  "runs": 92,
+  "named": 75,
+  "km": 45.3,
+  "osk_lift_ids_on_map": [
+   7,
+   7
+  ],
+  "reachable": [
+   96,
+   96
+  ],
+  "conn": {
+   "unreachable": 0,
+   "dead_end": 0,
+   "outside_core": 0,
+   "lift_end": 0,
+   "uphill": 0,
+   "doubled": 0
+  },
+  "guess_pct": 0,
+  "ratings": "resort feed (Silver Mountain trail map by James Niehu)",
   "terrain_res": 1,
   "gate": "publish"
  },
@@ -2917,33 +2879,32 @@
   "seconds": 127,
   "hold": [],
   "soft": [
-   "ratings not checked against the resort",
    "30 m terrain"
   ],
   "osk_lifts": 11,
   "osk_runs": 192,
   "lifts": 11,
-  "runs": 206,
-  "named": 148,
-  "km": 117.0,
+  "runs": 193,
+  "named": 142,
+  "km": 110.1,
   "osk_lift_ids_on_map": [
    11,
    11
   ],
   "reachable": [
-   197,
-   206
+   195,
+   204
   ],
   "conn": {
-   "unreachable": 6,
+   "unreachable": 0,
    "dead_end": 1,
    "outside_core": 0,
    "lift_end": 0,
    "uphill": 0,
    "doubled": 0
   },
-  "guess_pct": 1,
-  "ratings": "OpenStreetMap, not checked",
+  "guess_pct": 0,
+  "ratings": "resort feed (SilverStar trail map by James Niehues, f)",
   "terrain_res": 30,
   "gate": "publish"
  },

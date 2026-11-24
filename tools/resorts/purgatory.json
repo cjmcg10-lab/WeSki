@@ -43,7 +43,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Columbine Lift #9, Graduate Lift #7",
  "rename": {
   "Cathedral Treeway": "Cathedral Tree Way",
   "Dead Spike": "Deadspike",
@@ -51,5 +50,15 @@
   "Monkey Gulley": "Monkey Gully",
   "Angel's Road": "Angels Tread",
   "Gelande Dead End": "Gelande"
+ },
+ "isolated_lifts": [
+  "Columbine Lift #9",
+  "Graduate Lift #7",
+  "Ski School Magic Carpet #10"
+ ],
+ "isolated_notes": {
+  "Columbine Lift #9": "Columbine beginner area: its runs (Apprentice, Graduate, PHD, Professor, Flume) are on the resort's 2026 trail map but not in OpenStreetMap, so no run on our map reaches this lift; kept out of directions until they are traced (checked 2026-11-24)",
+  "Graduate Lift #7": "Columbine beginner area: its runs (Apprentice, Graduate, PHD, Professor, Flume) are on the resort's 2026 trail map but not in OpenStreetMap, so no run on our map reaches this lift; kept out of directions until they are traced (checked 2026-11-24)",
+  "Ski School Magic Carpet #10": "Columbine beginner area: its runs (Apprentice, Graduate, PHD, Professor, Flume) are on the resort's 2026 trail map but not in OpenStreetMap, so no run on our map reaches this lift; kept out of directions until they are traced (checked 2026-11-24)"
  }
 }

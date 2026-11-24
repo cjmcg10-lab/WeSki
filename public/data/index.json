@@ -1331,8 +1331,8 @@
   "trails": 70,
   "lifts": 9,
   "zones": false,
-  "bytes": 468964,
-  "checked": false
+  "bytes": 469789,
+  "checked": true
  },
  {
   "id": "mt-norquay",
@@ -1348,8 +1348,8 @@
   "trails": 74,
   "lifts": 7,
   "zones": false,
-  "bytes": 504225,
-  "checked": false,
+  "bytes": 504580,
+  "checked": true,
   "coarse": true
  },
  {
@@ -1366,8 +1366,8 @@
   "trails": 44,
   "lifts": 5,
   "zones": true,
-  "bytes": 373866,
-  "checked": false,
+  "bytes": 372350,
+  "checked": true,
   "coarse": true
  },
  {
@@ -1384,8 +1384,8 @@
   "trails": 65,
   "lifts": 8,
   "zones": false,
-  "bytes": 611902,
-  "checked": false
+  "bytes": 612733,
+  "checked": true
  },
  {
   "id": "northstar-at-tahoe",
@@ -1401,8 +1401,8 @@
   "trails": 92,
   "lifts": 20,
   "zones": false,
-  "bytes": 1328920,
-  "checked": false
+  "bytes": 1326192,
+  "checked": true
  },
  {
   "id": "okemo",
@@ -1435,8 +1435,8 @@
   "trails": 42,
   "lifts": 6,
   "zones": true,
-  "bytes": 411730,
-  "checked": false
+  "bytes": 412533,
+  "checked": true
  },
  {
   "id": "palisades-tahoe",
@@ -1454,6 +1454,24 @@
   "zones": true,
   "bytes": 2644354,
   "checked": true
+ },
+ {
+  "id": "panorama-mountain",
+  "name": "Panorama Mountain",
+  "region": "British Columbia, Canada",
+  "tz": "America/Edmonton",
+  "lat": 50.42812,
+  "lon": -116.17904,
+  "baseLat": 50.45868,
+  "baseLon": -116.23985,
+  "top": 2452,
+  "base": 1140,
+  "trails": 132,
+  "lifts": 10,
+  "zones": false,
+  "bytes": 1383978,
+  "checked": true,
+  "coarse": true
  },
  {
   "id": "park-city",
@@ -1503,8 +1521,8 @@
   "trails": 57,
   "lifts": 7,
   "zones": false,
-  "bytes": 435126,
-  "checked": false
+  "bytes": 434793,
+  "checked": true
  },
  {
   "id": "pizol",
@@ -1541,6 +1559,23 @@
   "checked": true
  },
  {
+  "id": "purgatory",
+  "name": "Purgatory",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 37.61803,
+  "lon": -107.85296,
+  "baseLat": 37.62806,
+  "baseLon": -107.81089,
+  "top": 3293,
+  "base": 2680,
+  "trails": 103,
+  "lifts": 12,
+  "zones": false,
+  "bytes": 843569,
+  "checked": true
+ },
+ {
   "id": "ragged",
   "name": "Ragged Mountain",
   "region": "New Hampshire, USA",
@@ -1571,8 +1606,8 @@
   "trails": 106,
   "lifts": 8,
   "zones": true,
-  "bytes": 1193450,
-  "checked": false,
+  "bytes": 1195324,
+  "checked": true,
   "coarse": true
  },
  {
@@ -1589,8 +1624,8 @@
   "trails": 68,
   "lifts": 7,
   "zones": false,
-  "bytes": 469888,
-  "checked": false
+  "bytes": 469055,
+  "checked": true
  },
  {
   "id": "revelstoke-mountain",
@@ -1606,8 +1641,8 @@
   "trails": 71,
   "lifts": 7,
   "zones": true,
-  "bytes": 1481702,
-  "checked": false
+  "bytes": 1481653,
+  "checked": true
  },
  {
   "id": "saalbach",
@@ -1644,6 +1679,23 @@
   "checked": true
  },
  {
+  "id": "sandia-peak",
+  "name": "Sandia Peak",
+  "region": "New Mexico, USA",
+  "tz": "America/Denver",
+  "lat": 35.19575,
+  "lon": -106.43394,
+  "baseLat": 35.19076,
+  "baseLon": -106.47936,
+  "top": 3142,
+  "base": 1988,
+  "trails": 62,
+  "lifts": 5,
+  "zones": false,
+  "bytes": 674917,
+  "checked": true
+ },
+ {
   "id": "santa-fe-santa-fe-q38555",
   "name": "Ski Santa Fe, Santa Fe, Q38555",
   "region": "New Mexico, USA",
@@ -1657,8 +1709,25 @@
   "trails": 79,
   "lifts": 7,
   "zones": true,
-  "bytes": 444460,
-  "checked": false
+  "bytes": 444164,
+  "checked": true
+ },
+ {
+  "id": "schweitzer-mountain",
+  "name": "Schweitzer Mountain",
+  "region": "Idaho, USA",
+  "tz": "America/Los_Angeles",
+  "lat": 48.36727,
+  "lon": -116.64481,
+  "baseLat": 48.3976,
+  "baseLon": -116.60745,
+  "top": 1949,
+  "base": 1221,
+  "trails": 92,
+  "lifts": 10,
+  "zones": true,
+  "bytes": 988686,
+  "checked": true
  },
  {
   "id": "seven-springs-mountain",
@@ -1671,11 +1740,11 @@
   "baseLon": -79.31056,
   "top": 913,
   "base": 688,
-  "trails": 43,
+  "trails": 41,
   "lifts": 16,
   "zones": true,
-  "bytes": 525957,
-  "checked": false
+  "bytes": 526753,
+  "checked": true
  },
  {
   "id": "sierra-at-tahoe",
@@ -1691,8 +1760,8 @@
   "trails": 50,
   "lifts": 13,
   "zones": false,
-  "bytes": 668746,
-  "checked": false
+  "bytes": 669782,
+  "checked": true
  },
  {
   "id": "silver-mountain",
@@ -1708,8 +1777,8 @@
   "trails": 75,
   "lifts": 7,
   "zones": false,
-  "bytes": 1104738,
-  "checked": false
+  "bytes": 1103613,
+  "checked": true
  },
  {
   "id": "silver-star-mountain",
@@ -1725,8 +1794,8 @@
   "trails": 148,
   "lifts": 11,
   "zones": true,
-  "bytes": 1743743,
-  "checked": false,
+  "bytes": 1746332,
+  "checked": true,
   "coarse": true
  },
  {
@@ -2152,8 +2221,8 @@
   "trails": 182,
   "lifts": 80,
   "zones": true,
-   "bytes": 3285418,
-   "checked": true
+  "bytes": 3285418,
+  "checked": true
  },
  {
   "id": "vail",

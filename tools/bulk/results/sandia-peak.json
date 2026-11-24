@@ -23,8 +23,8 @@
   "the resort's outline relation/4644818 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)"
  ],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 63,
  "rebuild_seconds": 20,
- "seconds": 162
+ "seconds": 154
 }

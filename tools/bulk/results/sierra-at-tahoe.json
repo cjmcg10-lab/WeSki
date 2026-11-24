@@ -1,7 +1,7 @@
 {
  "id": "sierra-at-tahoe",
  "reachable": [
-  52,
+  53,
   53
  ],
  "auto_joins": 2,
@@ -20,8 +20,8 @@
  },
  "notes": [],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 59,
  "rebuild_seconds": 13,
- "seconds": 101
+ "seconds": 104
 }

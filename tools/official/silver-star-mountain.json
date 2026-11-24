@@ -6,7 +6,6 @@
   "Aabye Road": 3,
   "Abbott's Gulch": 1,
   "Aberdeen Skiway": 0,
-  "Alder Point": 3,
   "Attridge Face": 2,
   "Attridge Run Out": 0,
   "Aunt Gladys": 0,
@@ -159,6 +158,7 @@
   "After Me": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
   "Cougar Run": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
   "Bear Claw": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
-  "Valhalla Ridge Access (Hike)": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them"
+  "Valhalla Ridge Access (Hike)": "not on the resort's 2025 trail map (unnamed lines in the limited access area beyond Alder Point at most); no lift reaches them",
+  "Alder Point": "reached only by the Alder Point Access Traverse into a limited access area (follow posted signage), which OpenStreetMap does not map; hidden until that traverse is traced (the map rates it double black)"
  }
 }

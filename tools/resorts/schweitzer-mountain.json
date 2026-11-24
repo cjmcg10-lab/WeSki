@@ -39,7 +39,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): Stella, Cedar Park Express, Colburn Triple",
  "rename": {
   "Scars Spur": "Sars Spur",
   "Siberia Runout": "Siberia Run Out",
@@ -50,9 +49,14 @@
   [
    "trail:Phineas Forest (bottom)",
    "trail:Springboard"
+  ],
+  [
+   "Colburn Triple (top)",
+   "Great Escape Quad (top)"
   ]
  ],
  "links_notes": {
-  "trail:Phineas Forest (bottom) -> trail:Springboard": "2026-11-24: Phineas Forest (glade) ends about 500 m short of the run-out the Outback Bowl map shows it flowing into; joined downhill (1289 m to 1262 m) to the bottom of Springboard, which leads to the Outback Inn base"
+  "trail:Phineas Forest (bottom) -> trail:Springboard": "2026-11-24: Phineas Forest (glade) ends about 500 m short of the run-out the Outback Bowl map shows it flowing into; joined downhill (1289 m to 1262 m) to the bottom of Springboard, which leads to the Outback Inn base",
+  "Colburn Triple (top) -> Great Escape Quad (top)": "2026-11-24: both lifts end at the Sky House on the summit (about 180 m apart); from the Great Escape top the Great Divide leads back to the village, so the Outback Bowl lifts (Colburn, Cedar Park, Stella, Idyle Our T-Bar) are joined to the front side here; before, no way led back from the back side"
  }
 }

@@ -1,16 +1,9 @@
 {
- "checked": "2026-11-23",
+ "checked": "2026-11-24",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
- "unreachable": {
-  "Alder Point": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Cougar Run": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Bear Claw": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "After You": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "After Me": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Valhalla Ridge Access (Hike)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
- },
+ "unreachable": {},
  "dead_end": {
-  "Criss Cross": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Criss Cross": "checked 2026-11-24: OpenStreetMap's Criss Cross stops on the west side of the village about 800 m short of the Silver Queen base, where the trail map carries it on through the village; left rather than inventing a line"
  },
  "outside_core": {},
  "lift_end": {},

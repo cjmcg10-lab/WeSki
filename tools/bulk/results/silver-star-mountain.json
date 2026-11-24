@@ -10,8 +10,8 @@
  "climbing_runs": 0,
  "raised": 0,
  "official": [
-  131,
-  217,
+  130,
+  215,
   0
  ],
  "terrain_res": 30,
@@ -21,8 +21,8 @@
  },
  "notes": [],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 127,
  "rebuild_seconds": 38,
- "seconds": 40
+ "seconds": 27
 }
