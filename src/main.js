@@ -5,6 +5,7 @@ import { fetchHeights, fetchCanopy, fetchLandcover } from './heights.js';
 import { repairEdges } from './seam.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
+import { daySummary, blockedPlaces, contribBody } from './contrib.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
 import { Tracker, LiftSense, computeStats, smoothSpeed, ST } from './tracker.js';
@@ -2195,42 +2196,17 @@ async function flushContrib() {
     (byDay.get(day) || byDay.set(day, []).get(day)).push(s);
   }
   for (const [day, list] of byDay) {
-    const runs = new Set(), cells = new Set();
-    for (const s of list) daySummary(s.points, runs, cells);
+    const runs = new Set(), cells = new Set(), onCells = new Set();
+    const deps = { trailOf: (x, y, prev) => trailAt(S.resort, x, y, { prev }), inBounds: (x, y) => S.geo.inBounds(x, y), near: blockedPlaces(S.resort) };
+    for (const s of list) daySummary(s.points, deps, runs, cells, onCells);
     const key = [...crypto.getRandomValues(new Uint8Array(16))].map((b) => b.toString(16).padStart(2, '0')).join('');
-    const body = { resort: S.place.id, key, day, runs: [...runs].slice(0, 400), cells: [...cells].slice(0, 6000).map((c) => c.split(',').map(Number)) };
+    // on: how many 20 m squares on the shown runs were skied (a count only, never which squares), so the server can
+    // tell what share of the skiing was on the drawn runs (#112)
+    const body = contribBody(S.place.id, key, day, runs, cells, onCells);
     const r = await fetch('/api/contrib', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
     if (!r || (!r.ok && r.status !== 400)) return;            // offline or busy: try again next time
     done.add(`${S.place.id}:${day}`);
     prefs.set('contribDone', [...done].slice(-400));
-  }
-}
-
-/** Runs skied and 20 m squares skied off the mapped runs. Only what looks like skiing counts: moving at ski speed on the
- *  ground the map covers, not on a lift, not standing still, and not in or near lodges, other buildings or car parks.
- *  That leaves out home, the car, the lodge and the lift line, wherever in the day they come. */
-function daySummary(P, runs, cells) {
-  const R = S.resort, near = [];
-  for (const p of R.pois || []) if (['lodge', 'parking', 'food', 'service', 'shelter'].includes(p.kind)) near.push([p.x, p.y, 70]);
-  for (const b of R.buildings || []) {
-    const q = b.pts; let cx = 0, cy = 0, r = 0;
-    for (let k = 0; k < q.length; k += 2) { cx += q[k]; cy += q[k + 1]; }
-    cx /= q.length / 2; cy /= q.length / 2;
-    for (let k = 0; k < q.length; k += 2) r = Math.max(r, Math.hypot(q[k] - cx, q[k + 1] - cy));
-    near.push([cx, cy, r + 30]);
-  }
-  const blocked = (x, y) => near.some(([bx, by, r]) => Math.abs(x - bx) < r && Math.abs(y - by) < r && Math.hypot(x - bx, y - by) < r);
-  let prev = null;
-  for (let i = 1; i < P.length - 1; i++) {
-    const a = P[i - 1], p = P[i], c = P[i + 1];
-    const [, x, y, z, st] = p;
-    if (st !== ST.SKI || p[5] || c[5] || !S.geo.inBounds(x, y)) { prev = null; continue; }
-    const dt = (c[0] - a[0]) / 1000, v = dt > 0 ? Math.hypot(c[1] - a[1], c[2] - a[2]) / dt : 0;
-    if (v < 2.5 || v > 40 || blocked(x, y)) { prev = null; continue; }   // standing, walking, or a GPS jump
-    const on = trailAt(R, x, y, { prev });
-    prev = on?.t || null;
-    if (on) runs.add(on.t.id);
-    else if (c[3] - a[3] < 1) cells.add(`${Math.floor(x / 20)},${Math.floor(y / 20)}`);  // off the runs: only while going downhill
   }
 }
 
