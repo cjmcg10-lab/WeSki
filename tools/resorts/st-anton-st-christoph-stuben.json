@@ -118,5 +118,18 @@
    "Stallmähder-Fang",
    "Hopplweg"
   ]
- ]
+ ],
+ "split_ways": {
+  "54255149": [
+   [
+    10.2218249,
+    47.1528181
+   ],
+   "",
+   ""
+  ]
+ },
+ "drop_ways": {
+  "54255149": "top 324 m of OpenStreetMap's run 85 Valfagehrjoch, south up the ridge above where the run from the Schindlergratbahn top joins it: no lift or run reaches it (cut off with split_ways; the run below the junction is kept)"
+ }
 }
