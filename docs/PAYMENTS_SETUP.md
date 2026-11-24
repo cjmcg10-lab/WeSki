@@ -155,15 +155,18 @@ Do these once Part C is done. Claude builds the app side at the same time.
 - Send to Claude: that number.
 
 **D2. Create the Day and Week passes.**
-- Do: App Store Connect → Apps → SkiWithMe → Monetization → **In-App Purchases** → + → type **Non-Renewing
-  Subscription**, twice:
+- Do: App Store Connect → Apps → SkiWithMe → Monetization → **Subscriptions** → scroll to **Non-Renewing
+  Subscriptions** → Manage → +, twice:
 
   | Reference name | Product ID | Price | Display name | Description |
   | --- | --- | --- | --- | --- |
-  | Day Pass | `app.builtbyroger.skiwithme.day` | $2.99 | Day Pass | Directions, groups and more for 24 hours |
-  | Week Pass | `app.builtbyroger.skiwithme.week` | $5.99 | Week Pass | Directions, groups and more for 7 days |
+  | Day Pass | `app.builtbyroger.skiwithme.day` | $2.99 | Day Pass | Routes, groups, forecast, offline, history |
+  | Week Pass | `app.builtbyroger.skiwithme.week` | $5.99 | Week Pass | Routes, groups, forecast, offline, history |
 
-  Product IDs must be typed exactly as above and can never be reused or changed.
+  Product IDs must be typed exactly as above and can never be reused or changed. Descriptions name what the pass
+  unlocks (`src/passrules.js`, docs/PAID_TIER.md): directions, creating groups, the full Forecast, saving mountains
+  for offline, and earlier ski days. Apple allows 45 characters here, so "Routes" stands for directions; the display
+  name gives the length.
 - Availability: all countries. Review screenshot and notes: leave for now; Claude supplies them (D8).
 
 **D3. Create the Season and Crew passes.**
@@ -172,8 +175,8 @@ Do these once Part C is done. Claude builds the app side at the same time.
 
   | Reference name | Product ID | Length | Price | Display name | Description |
   | --- | --- | --- | --- | --- | --- |
-  | Crew Season Pass | `app.builtbyroger.skiwithme.crew` | 1 year | $44.99 | Crew Season Pass | Every pass feature for you and 3 friends, for a year |
-  | Season Pass | `app.builtbyroger.skiwithme.season` | 1 year | $24.99 | Season Pass | Every pass feature for a year |
+  | Crew Season Pass | `app.builtbyroger.skiwithme.crew` | 1 year | $44.99 | Crew Season Pass | Season Pass features for you and 3 friends |
+  | Season Pass | `app.builtbyroger.skiwithme.season` | 1 year | $24.99 | Season Pass | Directions, groups, forecast, offline, history |
 
   In the group, put **Crew above Season** (the higher level), so moving between them counts as an upgrade or
   downgrade rather than a second subscription. No free trial or introductory offer.
