@@ -198,7 +198,14 @@ try {
   const keeps = async (label, field) => {
     await page.locator(field).waitFor({ state: 'visible', timeout: 15000 });
     const s0 = await rect('#sheet');
-    await page.locator(field).focus();
+    // a real tap, as on the phone: the app focuses the field itself without letting the page scroll (the "jolt")
+    await page.evaluate(() => {
+      window.__tapNoScroll = null;
+      document.addEventListener('touchend', (e) => { window.__tapNoScroll = e.defaultPrevented; }, { once: true });
+    });
+    await page.locator(field).tap();
+    if (await page.evaluate((sel) => document.activeElement !== document.querySelector(sel), field)) fail(`${label}: tapping the field did not focus it (no keyboard would come up)`);
+    if (await page.evaluate(() => window.__tapNoScroll) !== true) fail(`${label}: the tap was left to the phone, which scrolls the page to the field (the jolt)`);
     await page.evaluate((kb) => window.__kbSet(kb), KB);
     await page.waitForTimeout(200);
     const s1 = await rect('#sheet'), f1 = await rect(field);

@@ -989,6 +989,24 @@ function fitSheetToKeyboard() {
   if (r.bottom > seen - 12) body.scrollTop += r.bottom - (seen - 12);          // field hidden by the keyboard: lift it
   else if (r.top < top + 4) body.scrollTop -= top + 4 - r.top;                  // above the panel's visible part
 }
+// Tapping a text field (owner, 2026-11-24: "the app jolts down and then back up" as the keyboard comes up): an iPhone
+// scrolls the whole page to bring the field above the keyboard, and unscrollPage then snaps it back. The in-map search
+// never did this because it is focused with preventScroll. So a tap on any text field that is not yet focused focuses it
+// the same way, with the caret at the end; the panel code above keeps the field visible inside its panel instead.
+const TEXT_TYPES = new Set(['text', 'search', 'email', 'tel', 'url', 'password', 'number', '']);
+let tapFrom = null;                 // where the touch began: a touch that moved is a scroll, not a tap
+document.addEventListener('touchstart', (e) => { const t = e.touches[0]; tapFrom = e.touches.length === 1 ? [t.clientX, t.clientY] : null; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const f = e.target;
+  if (!(f instanceof HTMLElement) || f === document.activeElement || f.disabled || f.readOnly) return;
+  if (!(f.tagName === 'TEXTAREA' || (f.tagName === 'INPUT' && TEXT_TYPES.has(f.getAttribute('type') || '')))) return;
+  const t = e.changedTouches[0];
+  if (e.touches.length || e.changedTouches.length !== 1 || !tapFrom || Math.hypot(t.clientX - tapFrom[0], t.clientY - tapFrom[1]) > 10) return;
+  e.preventDefault();               // no native focus, so no page scroll; focusing here still opens the keyboard
+  f.focus({ preventScroll: true });
+  try { const n = f.value.length; f.setSelectionRange(n, n); } catch { /* email and number fields have no caret API */ }
+  unscrollPage();
+}, { passive: false });
 $('#sheet').addEventListener('focusin', () => { if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } });
 $('#sheet').addEventListener('focusout', () => setTimeout(fitSheetToKeyboard, 0));
 if (window.visualViewport) {
