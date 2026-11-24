@@ -3,7 +3,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
-import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
+import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, newSignInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
@@ -35,6 +35,37 @@ const readJson = async (request, max = 200000) => {
   try { return JSON.parse(raw); } catch { return null; }
 };
 const priceMap = (env) => { try { return JSON.parse(env.PADDLE_PRICES || '{}'); } catch { return {}; } }; // {price id: plan}
+
+/** Send one email through Resend (the sign-in mail account). Returns true when Resend accepted it. */
+async function sendMail(env, to, mail) {
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST', headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
+    body: JSON.stringify({ from: env.MAIL_FROM, to: [to], subject: mail.subject, text: mail.text, html: mail.html }),
+  });
+  if (res.ok) count('out:resend');
+  return res.ok;
+}
+
+/** After a sign-in to an account that already existed: email its owner which device signed in, with a link that signs
+ *  out every device. Sent in the background; a failed email never blocks the sign-in. */
+function noticeSignIn(out, env, url, ctx) {
+  if (!out?.notice || !env.RESEND_API_KEY || !env.MAIL_FROM) return;
+  const mail = newSignInEmail(out.notice.device, Date.now(), `${url.origin}/api/auth/revoke?t=${out.notice.token}`);
+  const job = sendMail(env, out.notice.email, mail).catch(() => false);
+  if (ctx?.waitUntil) ctx.waitUntil(job);
+}
+
+/** The small page behind the "sign out everywhere" link. A plain link that acted by itself could be set off by an
+ *  email scanner opening it, so the page asks for one tap first. */
+function revokePage(state, token = '') {
+  const body = {
+    ask: `<h1>Sign out everywhere?</h1><p>Every device signed in to your SkiWithMe account will be signed out, this one too. Sign in again with your email afterwards.</p><form method="post" action="/api/auth/revoke"><input type="hidden" name="t" value="${token}"><button>Sign out everywhere</button></form>`,
+    done: '<h1>Signed out everywhere</h1><p>Every device was signed out of your SkiWithMe account. Sign in again with your email on your own devices.</p><p><a href="/">Open SkiWithMe</a></p>',
+    gone: '<h1>This link has expired</h1><p>It works once, for 7 days. To sign out every device now, sign in to SkiWithMe and open SkiWithMe Pass → Sign out of all devices.</p><p><a href="/">Open SkiWithMe</a></p>',
+  }[state];
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>SkiWithMe</title><style>body{font:16px/1.5 system-ui,sans-serif;background:#010c1b;color:#e8eef5;margin:0;padding:40px 20px}main{max-width:480px;margin:auto}h1{font-size:22px}button{font:600 16px system-ui;background:#16a3a3;color:#fff;border:0;border-radius:10px;padding:12px 20px}a{color:#5fd3d3}</style></head><body><main>${body}</main></body></html>`;
+  return new Response(html, { status: state === 'gone' ? 410 : 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'referrer-policy': 'same-origin', 'x-robots-tag': 'noindex' } });
+}
 
 /** Paid features that live on the server check the pass here, on every request. */
 async function passOk(request, env) {
@@ -82,17 +113,13 @@ async function api(request, env, url, ctx) {
     const login = await accounts(env).startLogin(email, await ipKey(request, env));
     if (!login) return json({ error: 'Too many sign-in emails. Try again in an hour.' }, 429);
     const mail = signInEmail(`${url.origin}/api/auth/finish?t=${login.token}`, login.code);
-    const res = await fetch('https://api.resend.com/emails', {
-      method: 'POST', headers: { authorization: `Bearer ${env.RESEND_API_KEY}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ from: env.MAIL_FROM, to: [email], subject: mail.subject, text: mail.text, html: mail.html }),
-    });
-    if (!res.ok) return json({ error: 'The email could not be sent. Try again in a moment.' }, 502);
-    count('out:resend');
+    if (!(await sendMail(env, email, mail))) return json({ error: 'The email could not be sent. Try again in a moment.' }, 502);
     return json({ ok: true });
   }
   if (path === '/api/auth/finish' && method === 'GET') {
     const t = url.searchParams.get('t') || '';
     const out = /^[0-9a-f]{64}$/.test(t) ? await accounts(env).finishLogin(t, request.headers.get('user-agent')) : null;
+    noticeSignIn(out, env, url, ctx);
     const headers = { location: out ? '/?signedin=1' : '/?signin=expired', 'cache-control': 'no-store', 'referrer-policy': 'no-referrer' };
     if (out) headers['set-cookie'] = sessionCookie(out.session, Math.floor(SESSION_TTL_MS / 1000));
     return new Response(null, { status: 302, headers });
@@ -102,6 +129,7 @@ async function api(request, env, url, ctx) {
     if (!EMAIL_RE.test(email) || code.length !== 6) return json({ error: 'Enter the 6-digit code from the email' }, 400);
     const out = await accounts(env).finishCode(email, code, request.headers.get('user-agent'));
     if (!out) return json({ error: 'That code is wrong or has expired. After five wrong tries, ask for a new email.' }, 401);
+    noticeSignIn(out, env, url, ctx);
     return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'cache-control': 'no-store', 'set-cookie': sessionCookie(out.session, Math.floor(SESSION_TTL_MS / 1000)) } });
   }
   if (path === '/api/me' && method === 'GET') {
@@ -111,6 +139,19 @@ async function api(request, env, url, ctx) {
   if (path === '/api/auth/signout' && method === 'POST') {
     await accounts(env).signOut(session(request));
     return new Response(JSON.stringify({ ok: true }), { headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie('', 0) } });
+  }
+  if (path === '/api/auth/signout-all' && method === 'POST') {
+    const ok = await accounts(env).signOutAll(session(request));
+    return new Response(JSON.stringify({ ok }), { status: ok ? 200 : 401, headers: { 'content-type': 'application/json', 'set-cookie': sessionCookie('', 0) } });
+  }
+  if (path === '/api/auth/revoke' && method === 'GET') {
+    const t = url.searchParams.get('t') || '';
+    return revokePage(/^[0-9a-f]{64}$/.test(t) && await accounts(env).revokeValid(t) ? 'ask' : 'gone', t);
+  }
+  if (path === '/api/auth/revoke' && method === 'POST') {
+    let t = '';
+    try { t = String((await request.formData()).get('t') || ''); } catch { /* not a form */ }
+    return revokePage(/^[0-9a-f]{64}$/.test(t) && await accounts(env).revokeAll(t) ? 'done' : 'gone');
   }
   if (path === '/api/account/delete' && method === 'POST') {
     const ok = await accounts(env).deleteAccount(session(request));

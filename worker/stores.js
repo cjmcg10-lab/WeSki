@@ -1,7 +1,7 @@
 // Durable Objects for accounts (one instance, SQLite) and for each resort's map evidence (one per resort).
 import { DurableObject } from 'cloudflare:workers';
 import {
-  sha256, randomToken, entitlement, PLANS, TRIAL_HOURS, MAX_SESSIONS, LOGIN_TTL_MS, SESSION_TTL_MS, normEmail,
+  sha256, randomToken, entitlement, PLANS, TRIAL_HOURS, MAX_SESSIONS, LOGIN_TTL_MS, SESSION_TTL_MS, REVOKE_TTL_MS, normEmail, deviceName,
 } from './accounts.js';
 import { addSummary, publicTotals, CELL_M } from './evidence.js';
 import { HistoryStore } from './history.js';
@@ -41,6 +41,7 @@ export class Accounts extends DurableObject {
       CREATE TABLE IF NOT EXISTS limits (k TEXT PRIMARY KEY, n INTEGER, until INTEGER);
       CREATE TABLE IF NOT EXISTS consents (account TEXT, v TEXT, at INTEGER, PRIMARY KEY (account, v));
       CREATE TABLE IF NOT EXISTS usage (day TEXT, k TEXT, n INTEGER, PRIMARY KEY (day, k));
+      CREATE TABLE IF NOT EXISTS revokes (hash TEXT PRIMARY KEY, account TEXT, expires INTEGER);
     `);
   }
 
@@ -123,19 +124,50 @@ export class Accounts extends DurableObject {
     return this.openSession(row.email, device);
   }
 
+  /** Sign in: make the account if new, open a session, keep only the MAX_SESSIONS devices used most recently.
+   *  For an account that already existed, also returns `notice`: {email, token, device} for the new-sign-in email,
+   *  whose token signs out every device (revokeAll). */
   async openSession(email, device) {
-    const row = { email };
-    let acc = this.one('SELECT id FROM accounts WHERE email = ?', row.email);
-    if (!acc) {
+    const now = Date.now();
+    let acc = this.one('SELECT id FROM accounts WHERE email = ?', email);
+    const isNew = !acc;
+    if (isNew) {
       acc = { id: randomToken(12) };
-      this.sql.exec('INSERT INTO accounts (id, email, created) VALUES (?, ?, ?)', acc.id, row.email, Date.now());
+      this.sql.exec('INSERT INTO accounts (id, email, created) VALUES (?, ?, ?)', acc.id, email, now);
     }
-    const session = randomToken(), now = Date.now();
+    const session = randomToken();
     this.sql.exec('INSERT INTO sessions VALUES (?, ?, ?, ?, ?)', await sha256(session), acc.id, now, now, String(device || '').slice(0, 80));
-    // keep the newest MAX_SESSIONS phones signed in
-    const all = this.rows('SELECT hash FROM sessions WHERE account = ? ORDER BY seen DESC', acc.id);
+    // the new session counts as the most recently used, whatever the clock says about the others
+    const all = this.rows('SELECT hash FROM sessions WHERE account = ? ORDER BY created = ? DESC, seen DESC', acc.id, now);
     for (const s of all.slice(MAX_SESSIONS)) this.sql.exec('DELETE FROM sessions WHERE hash = ?', s.hash);
-    return { session, account: acc.id };
+    if (isNew) return { session, account: acc.id, notice: null };
+    const token = randomToken();
+    this.sql.exec('DELETE FROM revokes WHERE expires < ?', now);
+    this.sql.exec('INSERT INTO revokes VALUES (?, ?, ?)', await sha256(token), acc.id, now + REVOKE_TTL_MS);
+    return { session, account: acc.id, notice: { email, token, device: deviceName(device) } };
+  }
+
+  /** Is this "sign out everywhere" link still good? (Looking does not use it up.) */
+  async revokeValid(token) {
+    const r = this.one('SELECT expires FROM revokes WHERE hash = ?', await sha256(token));
+    return !!r && r.expires > Date.now();
+  }
+
+  /** Use a "sign out everywhere" link: every device of that account is signed out. Works once. */
+  async revokeAll(token) {
+    const h = await sha256(token), r = this.one('SELECT account, expires FROM revokes WHERE hash = ?', h);
+    if (!r || r.expires <= Date.now()) return false;
+    this.sql.exec('DELETE FROM sessions WHERE account = ?', r.account);
+    this.sql.exec('DELETE FROM revokes WHERE account = ?', r.account);
+    return true;
+  }
+
+  /** "Sign out of all devices" from a signed-in device (this one included). */
+  async signOutAll(session) {
+    const id = await this.accountFor(session);
+    if (!id) return false;
+    this.sql.exec('DELETE FROM sessions WHERE account = ?', id);
+    return true;
   }
 
   async accountFor(session) {
@@ -158,6 +190,7 @@ export class Accounts extends DurableObject {
   async me(session) {
     const id = await this.accountFor(session);
     if (!id) return null;
+    const mine = await sha256(session);
     const acc = this.one('SELECT * FROM accounts WHERE id = ?', id);
     const own = this.rows('SELECT * FROM purchases WHERE account = ?', id);
     const crewOf = this.rows(`SELECT p.* FROM crew c JOIN purchases p ON p.account = c.owner WHERE c.email = ? AND p.plan = 'crew'`, acc.email);
@@ -169,7 +202,8 @@ export class Accounts extends DurableObject {
           : entitlement(own, crewOf, acc.trial_until),
       purchases: own.map((p) => ({ plan: p.plan, status: p.status, ends: p.ends, renews: PLANS[p.plan]?.renews })),
       crew: this.rows('SELECT email FROM crew WHERE owner = ?', id).map((r) => r.email),
-      devices: this.rows('SELECT created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id),
+      devices: this.rows('SELECT hash, created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id)
+        .map((d) => ({ created: d.created, seen: d.seen, name: deviceName(d.device), current: d.hash === mine })),
       terms: this.rows('SELECT v, at FROM consents WHERE account = ? ORDER BY at', id),
     };
   }
@@ -188,11 +222,13 @@ export class Accounts extends DurableObject {
     return { ok: true };
   }
 
-  /** A verified Paddle event (each applied once). */
+  /** A verified payment event (each applied once). A purchase belongs to the account it was first recorded for:
+   *  a later event naming another account for the same purchase is ignored, so one purchase never unlocks two. */
   applyPurchase(eventId, p) {
     if (this.one('SELECT id FROM events WHERE id = ?', eventId)) return false;
     this.sql.exec('INSERT INTO events VALUES (?, ?)', eventId, Date.now());
-    if (p) {
+    const before = p && this.one('SELECT account FROM purchases WHERE id = ?', p.id);
+    if (p && (!before || before.account === p.account)) {
       this.sql.exec('INSERT OR REPLACE INTO purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?)', p.id, p.account, p.plan, p.status, p.starts, p.ends, p.sub, Date.now());
     }
     return true;

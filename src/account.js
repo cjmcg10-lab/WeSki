@@ -53,6 +53,8 @@ export async function syncConsent(v) {
 }
 export const finishSignIn = async (email, code) => { const r = await post('/api/auth/code', { email, code }); if (r.ok) await refreshMe(); return r; };
 export const signOut = async () => { const r = await post('/api/auth/signout'); me = { signedIn: false, paywall: config().paywall }; return r; };
+/** Sign out every device of this account, this one included. */
+export const signOutAll = async () => { const r = await post('/api/auth/signout-all'); me = { signedIn: false, paywall: config().paywall }; return r; };
 export const deleteAccount = async () => { const r = await post('/api/account/delete'); if (r.ok) me = { signedIn: false, paywall: config().paywall }; return r; };
 export const startTrial = async () => { const r = await post('/api/trial'); await refreshMe(); return r; };
 export const setCrew = async (emails) => { const r = await post('/api/crew', { emails }); await refreshMe(); return r; };

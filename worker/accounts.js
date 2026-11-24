@@ -21,7 +21,8 @@ export const PLANS = {
   crew: { name: 'Crew Season Pass', price: 44.99, days: null, seats: 4, renews: true },
 };
 export const TRIAL_HOURS = 24;               // one free day per account
-export const MAX_SESSIONS = 3;               // signed-in phones per account; the oldest is signed out
+export const MAX_SESSIONS = 2;               // signed-in devices per account; signing in on another signs out the one used longest ago
+export const REVOKE_TTL_MS = 7 * 24 * 3600 * 1000; // the "sign out everywhere" link in a new-sign-in email works for 7 days, once
 export const LOGIN_TTL_MS = 15 * 60 * 1000;  // a sign-in link works for 15 minutes, once
 export const SESSION_TTL_MS = 180 * 24 * 3600 * 1000;
 export const GRACE_MS = 3 * 24 * 3600 * 1000; // a renewing pass stays on 3 days past a late payment
@@ -107,6 +108,28 @@ export function sessionFromCookie(header) {
 
 export const sessionCookie = (token, maxAgeS) =>
   `sw_session=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAgeS}`;
+
+/** A plain name for the kind of device, from its browser's User-Agent ("iPhone", "Mac"...), or null when unclear. */
+export function deviceName(ua) {
+  const s = String(ua || '');
+  if (/iPhone/.test(s)) return 'iPhone';
+  if (/iPad/.test(s)) return 'iPad';
+  if (/Android/.test(s)) return /Mobile/.test(s) ? 'Android phone' : 'Android tablet';
+  if (/CrOS/.test(s)) return 'Chromebook';
+  if (/Macintosh|Mac OS X/.test(s)) return 'Mac';
+  if (/Windows/.test(s)) return 'Windows computer';
+  if (/Linux/.test(s)) return 'Linux computer';
+  return null;
+}
+
+/** The email sent when an existing account signs in on a device: a warning, and a link to sign out everywhere. */
+export function newSignInEmail(device, at, link) {
+  const what = !device ? 'a new device' : `${/^[AEIOU]/i.test(device) ? 'an' : 'a'} ${device}`;
+  const when = new Date(at).toISOString().slice(0, 16).replace('T', ' at ') + ' UTC';
+  const text = `Your SkiWithMe account was just signed in on ${what}, on ${when}.\n\nIf that was you, there is nothing to do.\n\nIf it was not you, or you shared your sign-in code, sign out every device here (the link works for 7 days):\n${link}\n\nAn account can be signed in on 2 devices at once. To ski with friends on one pass, the Crew Season Pass covers 4 people.`;
+  const html = `<p>Your SkiWithMe account was just signed in on <b>${what}</b>, on ${when}.</p><p>If that was you, there is nothing to do.</p><p>If it was not you, or you shared your sign-in code, sign out every device:</p><p><a href="${link}" style="display:inline-block;padding:12px 20px;background:#16a3a3;color:#fff;border-radius:10px;text-decoration:none;font-weight:600">Sign out everywhere</a></p><p style="color:#667">The link works for 7 days. An account can be signed in on 2 devices at once. To ski with friends on one pass, the Crew Season Pass covers 4 people.</p>`;
+  return { subject: 'New sign-in to your SkiWithMe account', text, html };
+}
 
 export function signInEmail(link, code) {
   const text = `Your SkiWithMe sign-in code is ${code}\n\nType it in the app, or tap this link in the browser you use SkiWithMe in:\n${link}\n\nIt works once, for 15 minutes. If you did not ask to sign in, ignore this email: nothing happens without the code.`;

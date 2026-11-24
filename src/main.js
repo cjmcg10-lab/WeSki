@@ -2018,6 +2018,7 @@ function upsell(why) {
     <p class="kicker">${ICON.ticket} ${t('Part of the SkiWithMe Pass')}</p>
     <h2>${title}</h2><p>${text}</p>
     ${P.day && P.season ? `<p class="sub">${t('Day Pass {0} · Season Pass {1} a year', price('day'), price('season'))}</p>` : ''}
+    ${P.crew ? `<p class="sub">${t('Skiing with friends? The Crew Season Pass covers 4 people for {0} a year.', price('crew'))}</p>` : ''}
     ${trialBtn}
     <button class="btn ${trialBtn ? 'alt' : ''}" data-act="up-plans" data-why="${why}">See plans</button>
     <button class="learn" data-act="modal-cancel">Not now</button></div>`;
@@ -2037,6 +2038,13 @@ async function buyPlan(plan) {
   catch (err) { toast(err.message); }
 }
 
+/** The devices signed in to this account (at most 2), so a shared sign-in is easy to spot. */
+function deviceList(devices) {
+  if (!devices?.length) return '';
+  const names = devices.map((d) => `<span translate="no">${esc(d.name || t('Unknown device'))}</span>${d.current ? ` (${t('this device')})` : ''}`);
+  return `<p class="sub">${t('Signed in on: {0}', names.join(', '))}</p>`;
+}
+
 function sheetPass(why) {
   const c = acct.config(), me = acct.account(), P = c.plans || {};
   const reason = { directions: 'Directions are part of the SkiWithMe Pass.', group: 'Creating a group is part of the SkiWithMe Pass. Joining a friend’s group stays free.', history: t('Your saved ski days, stats and replays open with the SkiWithMe Pass, including days recorded before you buy it.'), forecast: t('The full ski forecast is part of the SkiWithMe Pass. Today and tomorrow at one mountain stay free.'), offline: t('Downloading mountains for offline use is part of the SkiWithMe Pass. The map you open stays on your phone that day, free.') }[why];
@@ -2046,7 +2054,9 @@ function sheetPass(why) {
     const own = me.pass?.comp || (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
     who = `<div class="card"><h4>Your account</h4><p class="sub" translate="no">${esc(me.email)}</p><p class="${me.pass?.active ? 'ok-text' : 'sub'}">${passStatus(me)}</p>
       ${own ? `<label class="lbl">Your crew (up to 3 friends’ emails)</label>${[0, 1, 2].map((i) => `<input class="field" id="f-crew${i}" type="email" autocomplete="off" placeholder="friend@example.com" value="${esc(me.crew?.[i] || '')}" />`).join('')}<button class="btn alt" data-act="crew-save">Save crew</button><p class="note">Each friend signs in with that email to use the pass.</p>` : ''}
+      ${deviceList(me.devices)}
       <button class="btn alt" data-act="signout">Sign out</button>
+      <button class="btn alt" data-act="signout-all">Sign out of all devices</button>
       <button class="learn" data-act="acct-delete-ask">Delete my account</button>
       ${S.askDelete ? '<p class="note">This deletes your account, sign-ins, crew list and pass on our server, and any pass ends. Cancel a renewing Season Pass first, from the link in your Paddle receipt. Paddle keeps its payment records as the law requires. Ski days saved on this phone stay on this phone.</p><button class="btn danger" data-act="acct-delete">Delete my account</button>' : ''}</div>`;
   } else if (!c.signIn) {
@@ -2057,7 +2067,7 @@ function sheetPass(why) {
       <button class="btn" data-act="signin-code">Sign in</button><button class="learn" data-act="signin-again">Use a different email</button></div>`;
   } else {
     const want = S.buyAfter && P[S.buyAfter];
-    who = `<div class="card${want ? ' buy-first' : ''}" id="signin-card"><h4>${want ? 'Create your account or sign in' : 'Sign in'}</h4><p class="sub">${want ? t('To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.', esc(want.name)) : 'With your email: no password. Your pass then works on up to 3 phones.'}</p>
+    who = `<div class="card${want ? ' buy-first' : ''}" id="signin-card"><h4>${want ? 'Create your account or sign in' : 'Sign in'}</h4><p class="sub">${want ? t('To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.', esc(want.name)) : 'With your email: no password. Your pass then works on up to 2 devices.'}</p>
       <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
@@ -2766,6 +2776,11 @@ async function onClick(e) {
       break;
     }
     case 'signout': await acct.signOut().catch(() => {}); await afterPassChange(); renderSheet(); break;
+    case 'signout-all': {
+      const r = await acct.signOutAll().catch(() => ({}));
+      toast(r.ok ? 'Signed out of all devices.' : 'Could not reach the server. Try again.');
+      await afterPassChange(); renderSheet(); break;
+    }
     case 'acct-delete-ask': S.askDelete = !S.askDelete; renderSheet(); break;
     case 'acct-delete': {
       const r = await acct.deleteAccount().catch(() => ({}));

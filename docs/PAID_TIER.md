@@ -117,8 +117,22 @@ when the terms change), after 365 days, or when the record is missing. Signed-in
 Sign-in: email with a 6-digit code (also a link, for browsers). The code is needed because on iPhone a link in an
 email opens Safari, which does not share sign-ins with the app added to the home screen. Limits: 5 emails per address
 per hour, 20 per network per hour, 5 wrong codes end a code, 10 wrong codes per address per day. Sessions are a random
-256-bit cookie (`sw_session`, HttpOnly, Secure, SameSite=Lax); only its SHA-256 is stored; 3 phones per account; 180
-days unused signs out. All POSTs except the webhook must come from the app's own origin.
+256-bit cookie (`sw_session`, HttpOnly, Secure, SameSite=Lax); only its SHA-256 is stored; 180
+days unused signs out.
+
+Account sharing (owner, 2026-11-24, issue #134). Sign-in stays an emailed code, not a password: a password can be
+passed on once and works for ever, while every new sign-in with a code needs the owner to forward a fresh code.
+- **2 devices per account** (`MAX_SESSIONS` in `worker/accounts.js`). Signing in on a third signs out the device used
+  longest ago. The pass sheet lists the devices signed in ("Signed in on: iPhone (this device), Mac").
+- **New sign-in email.** Every sign-in to an account that already existed emails the owner the kind of device
+  (`deviceName`, from the browser's User-Agent) and a "Sign out everywhere" link (`/api/auth/revoke?t=`, 7 days, once,
+  only its hash stored). The link opens a page with a button; only the button's POST signs out, so an email scanner
+  opening the link does nothing. The first sign-in, which creates the account, sends no notice.
+- **Sign out of all devices** in the pass sheet (`POST /api/auth/signout-all`).
+- **One purchase, one account.** A purchase record never moves to another account: a later payment event naming a
+  different account for the same purchase is ignored (`applyPurchase`). Needed for Apple purchases (#118).
+- The pass pop-up points groups at the Crew Season Pass (4 people).
+- Not done on purpose: blocking by location or device fingerprint, which locks out paying customers by mistake. All POSTs except the webhook must come from the app's own origin.
 
 Server pieces: `worker/accounts.js` (pure logic, tested in `tests/accounts.test.js`), `worker/stores.js` (`Accounts`
 Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, the `pass` sheet in `src/main.js`.
