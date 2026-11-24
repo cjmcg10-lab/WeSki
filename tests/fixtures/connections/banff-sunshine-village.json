@@ -1,0 +1,19 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Delirium Dive": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Galaxy Chutes Traverse": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "G2": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "G1": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Milky Way": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "dead_end": {},
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Delirium Dive ~ Sweet & Low": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Banff Avenue ~ Lower Canyon": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ }
+}

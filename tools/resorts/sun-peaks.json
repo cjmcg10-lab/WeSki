@@ -1,0 +1,55 @@
+{
+ "id": "sun-peaks",
+ "name": "Sun Peaks",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/1138470815",
+ "include_ways": [
+  85730823,
+  85730829,
+  85730843,
+  85730852,
+  85730856,
+  85730860,
+  258228860,
+  258228923,
+  258228924,
+  657740361,
+  854343271,
+  1099859832,
+  1360222756
+ ],
+ "osm_bbox": [
+  -119.9396,
+  50.836,
+  -119.8308,
+  50.9219
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "9f1d79969a331ae7d0969bf41f5d4910c7d07a0d",
+  "cc": "CA",
+  "runs": 260,
+  "lifts": 13,
+  "rated": 0.977,
+  "skimap": 36,
+  "web": "https://www.sunpeaksresort.com/"
+ },
+ "area_name": "Sun Peaks Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Tube Time Lift"
+ ],
+ "isolated_notes": {
+  "Tube Time Lift": "rule: tubing or sledding lift"
+ }
+}

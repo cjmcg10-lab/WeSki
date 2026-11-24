@@ -6,7 +6,8 @@ Written 2026-11-20. The public version is `public/legal/privacy.html`; keep both
 
 1. Location stays on the phone unless the skier chooses otherwise (group sharing, map help).
 2. Collect the least that answers the question. The maps need "do skiers go here?", not "where did this person go?".
-3. No identity on map data: no account, device id, IP address or time travels with a summary.
+3. No identity on map data: no account, device id, IP address or time travels with a map-help summary. (Map-mistake
+   reports carry a random install id, hashed per mountain on the server, only to count separate phones; see below.)
 4. Counts only, and only counts reached by at least K = 5 separate ski days are used or published.
 5. Short retention for anything that could link records.
 
@@ -72,10 +73,35 @@ sets the secret with `npx wrangler secret put ARCHIVE_ADMIN_SECRET -c wrangler.a
 
 ## Map-mistake reports
 
-Public notes: mountain, place (map grid metres), run at that place, kind, text (contact details stripped), time.
-No account or address is stored with them. 10 a day per network. Listed at `GET /api/reports/<id>`.
-To review: fetch the list per mountain, check each against the trail map and photos, fix, then mark it done
-(status column; a review script is still to write).
+Public notes: mountain, place (map grid metres, and its lat/lon since 2026-11-24), run or lift at that place (its
+OpenStreetMap id or `lift:<id or name>`, and its name), kind, for a wrong rating the rating it should be (`should`,
+`scale`, since 2026-11-24), text (contact details stripped), time. No account or address is stored with them. 10 a day per network. Listed at
+`GET /api/reports/<id>`. To review: the daily email and `tools/reports.py` (see `docs/MAP_REPORTS.md`), check each
+against the trail map and photos, fix, then mark it done (status column).
+
+Added 2026-11-24 for the confidence scores (#112), kept on the server and never in the public list:
+- **Install id.** The phone makes a random 128-bit id the first time it sends a report (`installId` in local storage,
+  `reportExtras` in `src/main.js`) and sends it with each report. It is not tied to an account, a sign-in, the map-help
+  summaries or anything else, and it is gone when the app is removed or its data cleared. The server stores only the
+  first 16 characters of SHA-256(mountain id + ":" + id), so the same phone cannot be followed from one mountain to
+  another, and the id itself is never stored. It is used only to count separate phones per problem.
+- **Distance to the spot.** How far the phone's own GPS fix (under 10 minutes old) was from the reported spot, rounded
+  to 10 m. Only the distance is sent, never the phone's position. When no pin is dropped the spot is where the person
+  stands, as before (distance 0). Not sent while "Simulated location" is on.
+- **Run number** on that map build, to compare with the map-help counts.
+- Reports older than 60 days no longer count; the scores (`GET /api/reports/<id>/problems`) show counts and reasons only:
+  report ids, number of phones, number sent from near the spot, map-help counts of 5 or more.
+- The hashed id and the distance stay with the report row (not published). The distance also appears in the owner's
+  daily email (worker/digest.js), which goes only to the owner's inbox. Reports are accepted only for mountains in
+  the app's index.
+
+## Offline maps and locked days (on the phone only, 2026-11-23)
+
+Two small lists in the phone's settings, never sent: `openedMaps` {mountain id: local date it was opened today} and
+`offlineMaps` {mountain id: {at, bytes}} for downloads. Without a pass, map files of mountains opened on an earlier day
+are deleted from the phone's `weski-map` cache at the next start-up with a server answer. Saved ski days are never
+deleted for lack of a pass: earlier days are only shown locked (`historyView` in `src/passrules.js`).
+`public/legal/privacy.html` ("What stays only on your phone") says the same.
 
 ## Accounts and payments
 

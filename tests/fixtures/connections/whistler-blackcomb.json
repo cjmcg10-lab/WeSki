@@ -1,0 +1,44 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Encore Ridge": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Flute Shoulder": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "Flute Chutes": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "Flute North Bowl": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "North Bowl Cornice": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "Big O": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Lesser Flute Bowl": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "Moraine": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Pig's Fancy": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Search Ski Areas, Lifts, and Runs Stuie's Slope": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Main Flute Bowl": "2026-11-23 AI pass: Flute is hike-to terrain at Whistler (reached on foot from the Symphony and Harmony area); OpenStreetMap draws no bootpack; not traced in this pass",
+  "DOA (Down, Over, and Around)": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Poop Chutes": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Husume": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Corona Bowl": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Asian Pussy (AP)": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
+ },
+ "dead_end": {
+  "The Bite": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Sapphire Chutes": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Bad Attitude": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Playland": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Cafe Chute": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Everglades ~ Everglades Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "School Yard ~ School Yard Training Area": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Zudrell's ~ Zurdell's Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Wolverine Trees ~ Wolverine Trees Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Coyote Trees ~ Coyote Trees Glades Area": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Catskinner Traverse ~ Stoker Bumps": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Showcase ~ Showcase Bowl": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Arthur's Choice ~ Arthur's Choice Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Outer Limits ~ Outer Limits Glades": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it",
+  "Upper Feather Tree Glades ~ Upper Feathertree": "2026-11-23 AI pass: not looked at in this pass (no trail-map reading yet for this mountain); left as the gate accepted it"
+ }
+}

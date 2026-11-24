@@ -69,7 +69,7 @@ describe('very cold day note (issue #51)', () => {
   it('returns null for rows without sites and is a listed code with English and translated text', () => {
     expect(veryColdNote([])).toBeNull();
     expect(ALL_CODES).toContain('NT_VERY_COLD');
-    expect(SCORING_VERSION).toBe('1.7.0');
+    expect(SCORING_VERSION).toBe('1.8.0');
     expect(EN[1430]).toBe(CODE_TEXT.NT_VERY_COLD);
     expect(codeText({ code: 'NT_VERY_COLD', params: ['-25°C'] })).toBe('Very cold on the lifts: it feels like -25°C in the coldest ski hour.');
   });

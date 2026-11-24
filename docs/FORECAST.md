@@ -12,18 +12,18 @@ The **Forecast** tab (and the Forecast button on the start screen) lets anyone b
 - **Plan a trip.** Pick days, or a range, and the mountains are ranked by their average over the days they all forecast, with the strongest and weakest day each, and "too close to call" when the gap is smaller than the forecast can tell apart.
 - **Offline.** The list, the last forecasts and the catalog are kept on the phone; the screens say how old a forecast is.
 
-The whole section is free (owner decision, 2026-11-21). The map, groups and tracking are unchanged.
+The whole section was free (owner decision, 2026-11-21). Since 2026-11-23 (#115) it needs a pass, apart from a free taste: today's and tomorrow's score for one mountain (see `docs/PAID_TIER.md`). The map, groups and tracking are unchanged.
 
 ## How a score is made
 
-Full rules: `docs/FORECAST_SCORING.md` (engine version 1.7.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
+Full rules: `docs/FORECAST_SCORING.md` (engine version 1.8.0) and `docs/FORECAST_SPEC.md` (Connor's spec).
 
 1. Each hour is scored from 0 to 100 at the base and at the upper mountain from four parts: expected snow surface 45% (carried hour by hour from the last 48 to 72 hours: new snow, rain then refreeze, daytime softening, grooming), visibility 25%, wind 20%, temperature and precipitation comfort 10%.
 2. The hour score is the average of base and upper. If the source cannot tell them apart, one estimate is used and confidence drops. Summit wind and visibility are never invented.
 3. The day score is `0.60 x average of the ski hours + 0.40 x best average of any 3 consecutive ski hours`. It is rounded only for display. Ski hours are the published hours, otherwise an assumed 9:00 to 16:00 that the screens label "Assumed".
 4. Confidence (High, Medium, Low) is kept apart from the score and has a stated reason: forecast age, model grid size, how much history there is, one estimate instead of two, a stale copy.
 5. "Closed" appears only for a confirmed closure. "Insufficient data" appears when too many ski hours are missing.
-6. Days 6 and later are an outlook with no numbers: no free ensemble source could be used (see limits).
+6. Days 6 and later have Low confidence. For Swiss resorts, days 6 to 8 come from MeteoSwiss's ensemble forecast and show a likely range ("77, 74–85"), and "Close call" can appear when two mountains are within it (issue #57). Elsewhere day 6 has no range.
 
 ## Where the data comes from
 
@@ -32,6 +32,7 @@ Details, licences and live checks: `docs/FORECAST_SOURCES.md`. In short:
 | Data | Source | Licence |
 | --- | --- | --- |
 | Forecast | US National Weather Service in the USA; MET Norway elsewhere | Public domain; CC BY 4.0 (credit on `/legal/credits`) |
+| Ranges for days 6 to 8, Swiss resorts | MeteoSwiss open data, local forecasts with 10% and 90% ensemble values, read by a scheduled job every 12 hours | CC BY ("Source: MeteoSwiss", on `/legal/credits` and under the forecast) |
 | Weather alerts | NWS, Environment Canada, MET Norway | Public domain; ECCC Open Government licence; CC BY 4.0 |
 | Resort list | OpenSkiData (OpenSkiMap), time zones from `timezonefinder`, height checks from Copernicus GLO-30 | ODbL (derived files in `public/forecast/` are covered by the offer on the credits page); free with credit |
 | Hours, closures, lift holds, grooming | mtnpowder.com resort feeds, 10 Alterra resorts only | No published terms; switched on by the owner on 2026-11-22 without explicit permission, can be switched off in `LIVE_SOURCES` |
@@ -56,7 +57,7 @@ Full detail: `docs/FORECAST_HISTORY.md` (server) and `docs/PRIVACY_DATA.md`.
 | Scoring engine (pure, no network) | `src/forecast/score/` (`index.js`, `hour.js`, `day.js`, `components.js`, `explain.js`, `codes.js`, `version.js`) |
 | Screens | `src/forecast/ui.js` (calendar, day, add, edit), `pinscreen.js` and `pinmap.js` (pins), `tripscreen.js` (trip), `text.js` (wording and formats), styles in `src/styles.css` ("fc-" classes) |
 | Phone data | `src/forecast/data.js` (load, score, offline), `watchlist.js`, `catalog.js` and `resorts.js` (search), `status.js`, `trip.js`, `pin.js`; `src/weather.js` (`loadWeather`, `loadHistory`), `src/feedback.js` |
-| Worker (server) | `worker/weather.js` and `worker/sources/` (weather and alert adapters), `worker/history.js` and `worker/observations.js` (history store), `worker/resort-status.js` and `resort-status-feeds.js`, `worker/catalog.js`, `worker/elevation.js`, `worker/calibration.js`, `worker/index.js` (routes) |
+| Worker (server) | `worker/meteoswiss.js` and `worker/meteoswiss-points.js` (ensemble job, built by `tools/build_meteoswiss_points.mjs`), `worker/weather.js` and `worker/sources/` (weather and alert adapters), `worker/history.js` and `worker/observations.js` (history store), `worker/resort-status.js` and `resort-status-feeds.js`, `worker/catalog.js`, `worker/elevation.js`, `worker/calibration.js`, `worker/index.js` (routes) |
 | Catalog | `public/forecast/catalog-index.json`, `public/forecast/detail/*.json`, built by `tools/build_forecast_catalog.py`, ids kept in `tools/forecast_catalog_ids.json` |
 | Calibration | `tools/forecast_backtest.mjs`, `tools/forecast_calibrate.mjs` |
 | Tests | `tests/forecast-*.test.js`, `tests/weather-sources.test.js`, `tests/worker-catalog.test.js`, `tests/worker-elevation.test.js`; recorded data in `tests/fixtures/forecast/` (each file says in `_label` what it is and when it was recorded) |
@@ -99,7 +100,7 @@ Seen and left alone: the "Base and summit" block in the day view is about 5 px w
 
 ## Known limits
 
-- **No ensembles.** The weather comes from one model per place. Days 6 and later show an outlook with no numbers and "Close call" never appears. See "Ensembles and ranges" in `docs/FORECAST_SOURCES.md` for what would be needed.
+- **Ensembles only in Switzerland.** Swiss resorts get ranges for days 6 to 8 from MeteoSwiss (issue #57). Elsewhere the weather comes from one model per place, day 6 has no range and "Close call" never appears. See "Ensembles and ranges" in `docs/FORECAST_SOURCES.md`. The MeteoSwiss job runs on Cloudflare only once deployed; it has not run there yet.
 - **Calibration needs a season of data.** Round 1 used airport observations only (`docs/FORECAST_SCORING.md`). Real calibration needs the forecast archive and skier feedback from a winter.
 - **Hours, closures and season dates** exist only for 10 Alterra resorts. Everywhere else the 9 to 16 window is assumed and the screens say so; nobody can tell the app a resort is out of season (#50).
 - **Translations were written by Claude and not checked by native speakers.** New Forecast wording exists in all ten languages.

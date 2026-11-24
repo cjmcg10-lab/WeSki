@@ -38,6 +38,7 @@ export async function loadWeather(place, force = false, { allowStale = false } =
     const out = {
       at: Date.now(), source: data.source, summit: data.summit, base: data.base,
       model: data.model, issuedAt: data.issuedAt, ageHours: data.ageHours, stale: data.stale, resolutionKm: data.resolutionKm, gridElevation: data.gridElevation, alerts: data.alerts ?? [],
+      ...(data.ensemble ? { ensemble: data.ensemble } : {}),
     };
     if (!data.stale) prefs.set(key, out);
     return out;

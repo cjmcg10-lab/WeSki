@@ -1,0 +1,28 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "8899": "not on the resort's trail list (OpenStreetMap only, kept as a linking piece): it starts on the ridge above the DMI chair's base, about 2,670 m up, where no lift, uptrack or listed run arrives; left as OpenStreetMap draws it (it was unreachable in the first build too)",
+  "East": "not on the resort's trail list (OpenStreetMap only, kept as a linking piece): it starts on the ridge above the DMI chair's base, about 2,670 m up, where no lift, uptrack or listed run arrives; left as OpenStreetMap draws it (it was unreachable in the first build too)",
+  "Not 8900": "not on the resort's trail list (OpenStreetMap only, kept as a linking piece): it starts on the ridge above the DMI chair's base, about 2,670 m up, where no lift, uptrack or listed run arrives; left as OpenStreetMap draws it (it was unreachable in the first build too)"
+ },
+ "dead_end": {
+  "Baldy Face": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Cut Run": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Dakine": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Dead Horse": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Eden View": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Faceshot": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Freeride": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Moose Hollow": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Powder Country Boundary": "Powder Country: the uptrack along the Powder Country boundary (dotted on the 2026 trail map) to the tops of Baldy Face and Eden View; everything below it ends at the Powder Country shuttle stop, and a bus takes skiers back",
+  "Powder Hog": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Pumphouse": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Sounder Ridge": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Southface": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {}
+}

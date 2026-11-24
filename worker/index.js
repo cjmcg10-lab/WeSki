@@ -6,11 +6,15 @@ import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
-import { weatherResponse, historyResponse } from './capture.js';
+import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
 import { count, flush, routeKey, usageResponse, mailResponse } from './usage.js';
+import { runDigest, DIGEST_INDEX, isKnownResort } from './digest.js';
+
+/** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
+export const DIGEST_CRON = '23 11 * * *';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -144,15 +148,46 @@ async function api(request, env, url, ctx) {
   if (path === '/api/reports' && method === 'POST') {
     const r = cleanReport(await readJson(request, 4000));
     if (r.error) return json({ error: r.error }, 400);
+    if (!isKnownResort(r.report.resort)) return json({ error: 'unknown mountain' }, 400);
+    // the install id is stored only as a hash made with the mountain's id, so one phone cannot be followed across mountains
+    if (r.report.dev) r.report.dev = (await sha256(`${r.report.resort}:${r.report.dev}`)).slice(0, 16);
     const out = await resortLog(env, r.report.resort).addReport(r.report, await ipKey(request, env));
+    if (out.ok) ctx.waitUntil(resortLog(env, DIGEST_INDEX).digestNote(r.report.resort, r.report.at).catch(() => {}));
     return json(out, out.ok ? 200 : 429);
   }
   const reps = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})$/);
   if (reps && method === 'GET') return json(await resortLog(env, reps[1]).reports());
+  const probs = path.match(/^\/api\/reports\/([a-z0-9-]{2,40})\/problems$/);
+  if (probs && method === 'GET') return json(await resortLog(env, probs[1]).problems());
   return null;
 }
 
+/** The scheduled job (cron in wrangler.assets.jsonc): one step of reading MeteoSwiss ensemble files (worker/meteoswiss.js). */
+export async function runEnsemble(env, now = Date.now()) {
+  try {
+    const out = await env.FORECASTHIST.get(env.FORECASTHIST.idFromName(ENSEMBLE_STORE)).ensembleStep(now);
+    if (out.action !== 'none') console.log('meteoswiss', out);
+    return out;
+  } catch (e) {
+    console.error('meteoswiss step failed', { message: e.message });
+    return { action: 'error', message: e.message };
+  }
+}
+
 export default {
+  // Cron Triggers (wrangler configs "triggers"): every 5 minutes a MeteoSwiss ensemble step (worker/meteoswiss.js);
+  // once a day (DIGEST_CRON) the email of new map-mistake reports (worker/digest.js).
+  async scheduled(controller, env, ctx) {
+    const now = controller.scheduledTime || Date.now();
+    if (controller.cron === DIGEST_CRON) {
+      ctx.waitUntil(runDigest(env, resortLog, now)
+        .then((r) => console.log('report digest', JSON.stringify(r)))
+        .catch((e) => console.error('report digest failed', e?.message || e)));
+      return;
+    }
+    ctx.waitUntil(runEnsemble(env, now));
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // a rough count for the usage alerts (docs/USAGE_ALERTS.md); written out at most once a minute

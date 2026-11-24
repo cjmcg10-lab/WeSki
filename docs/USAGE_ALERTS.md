@@ -111,17 +111,10 @@ The table under it lists every limit with the amount used, the change per day ov
    - in GitHub, the same value: Settings → Secrets and variables → Actions → **Secrets** → New repository secret,
      name `USAGE_SECRET`.
 4. **Email as well as GitHub (optional).** GitHub already emails the owners. To also get the alert at
-   hello@builtbyroger.app through Cloudflare Email Routing (free):
-   1. Cloudflare dashboard → builtbyroger.app → **Email** → **Email Routing** → **Get started / Enable**. **Careful:**
-      this sets the domain's mail (MX) records to Cloudflare. If hello@builtbyroger.app already receives mail through
-      another provider, enabling it would break that; then skip this step.
-   2. Email Routing → **Destination addresses** → add hello@builtbyroger.app and click the link in the email it sends.
-   3. Ask a Claude session to add the binding to `wrangler.assets.jsonc` in a pull request:
-      `"send_email": [{ "name": "USAGE_MAIL", "destination_address": "hello@builtbyroger.app" }]`
-      (deploying it before steps 1 and 2 may fail, which is why it is not in the file yet).
-   4. Set the repository variable `USAGE_EMAIL` = `on` (step 3 above must be done too: the workflow uses the secret).
-   The email goes out when the alert opens or gets worse, from usage@builtbyroger.app (variable `USAGE_MAIL_FROM` on
-   the Worker changes it).
+   hello@builtbyroger.app (which the owner forwards to their own inbox), set the repository variable `USAGE_EMAIL` =
+   `on` (step 3 above must be done too: the workflow uses the secret). Nothing else to set up: the Worker sends it
+   through the sign-in Resend account, like the daily map-report email (to `USAGE_MAIL_TO`, or else
+   `REPORT_DIGEST_TO`). It goes out when the alert opens or gets worse.
 
 ## The Worker's own count
 
@@ -163,5 +156,5 @@ Cloudflare datasets used: `workersInvocationsAdaptive` (requests, CPU, status), 
 - The prices and allowances were not re-read from the providers' pages (blocked from the container): from memory.
 - Whether the GitHub secret token has Account Analytics: Read (the environment's token does).
 - The GitHub issue steps ran only against a stand-in for GitHub in the tests, not the real repository.
-- The email path ran only in tests with a stand-in for Cloudflare's email binding.
+- The email path ran only in tests with a stand-in for Resend.
 - The account's actual Workers plan (the token cannot read billing).

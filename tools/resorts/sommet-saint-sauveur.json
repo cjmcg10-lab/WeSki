@@ -1,0 +1,64 @@
+{
+ "id": "sommet-saint-sauveur",
+ "name": "Sommet Saint-Sauveur",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "relation/5365963",
+ "include_ways": [
+  208140474,
+  208140476,
+  208140477,
+  208140478,
+  208140481,
+  258795596,
+  258795597,
+  887681739,
+  1328446295,
+  1328446296,
+  1331248264,
+  1437072785,
+  1437072786,
+  1437072787,
+  1437072788,
+  1437072789,
+  1437072790
+ ],
+ "osm_bbox": [
+  -74.1594,
+  45.875,
+  -74.1171,
+  45.8893
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "78ac27731bb078db310933e9828665ca59858de2",
+  "cc": "CA",
+  "runs": 63,
+  "lifts": 17,
+  "rated": 0.984,
+  "skimap": 15836,
+  "web": "https://www.sommets.com/fr/montagne-de-ski/sommet-saint-sauveur/"
+ },
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Surface lift",
+  "Tapis roulant versant Bobsleigh + Vortex360",
+  "Tapis roulant versant Tube",
+  "Télérafting",
+  "Télésiège"
+ ],
+ "isolated_notes": {
+  "Surface lift": "rule: not joined to the rest of the lifts on the map",
+  "Tapis roulant versant Bobsleigh + Vortex360": "rule: not joined to the rest of the lifts on the map",
+  "Tapis roulant versant Tube": "rule: tubing or sledding lift",
+  "Télérafting": "rule: not joined to the rest of the lifts on the map",
+  "Télésiège": "rule: not joined to the rest of the lifts on the map"
+ }
+}

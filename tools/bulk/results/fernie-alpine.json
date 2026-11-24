@@ -1,0 +1,28 @@
+{
+ "id": "fernie-alpine",
+ "reachable": [
+  157,
+  157
+ ],
+ "auto_joins": 15,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 1,
+ "raised": 0,
+ "official": [
+  146,
+  217,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 80.9,
+  "30m": 19.1
+ },
+ "notes": [],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 136,
+ "rebuild_seconds": 25,
+ "seconds": 23
+}

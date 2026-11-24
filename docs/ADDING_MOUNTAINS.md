@@ -292,6 +292,46 @@ lifts (by OpenStreetMap id, from OpenSkiMap's `lifts.geojson`; lifts without an 
 our maps. A name-and-distance match only prints a "review:" line and never marks a resort built. The builder starts from these
 entries rather than names typed by hand: matching by name and distance once picked Park City for Deer Valley.
 
+### Building a batch (phases 2 to 7, 2026-11-23, issues #104, #105, #106)
+
+```
+node tools/maps_r2.mjs pull --all
+python3 -I tools/bulk/candidates.py                      # the candidate list (or --areas/--lifts with saved files)
+python3 tools/bulk/run_batch.py --next 100 --workers 3   # config + build for the next 100, overlap check
+python3 tools/bulk/gate.py --write --table tools/bulk/batch-<n>.md
+python3 tools/build_index.py public/data --with-held && python3 tools/build_globe.py public/data
+node tools/preview/maps.mjs <ids>  /  node tools/preview/deploy.mjs   # preview only, never live R2
+python3 tools/build_index.py public/data                 # the committed index leaves held mountains out
+```
+
+- **Config by rule** (`tools/bulk/autoconfig.py`): name (without a trailing "Resort" / "Ski Area"), region, time zone
+  (timezonefinder), box from OpenSkiMap's area and lifts, `area_osm` (the OpenStreetMap outline OpenSkiMap built the
+  area from; the pipeline reads its name into `area_name`, a multipolygon relation works too), `include_ways` (the
+  area's lifts by OpenStreetMap id: the whole-resort search starts from them when there is no readable outline, and an
+  outline holding mostly these lifts counts as the resort's own), `dem` by country, a resort feed where one is known,
+  OpenSkiMap's counts, `"auto": true`.
+- **Terrain by country** (`tools/fetch_dem.py`): USA as before; Canada `canada` (HRDEM 1 m mosaic tiles, then single
+  lidar projects, found from the extents NRCan publishes; MRDEM 30 m fills the rest: in British Columbia and Alberta
+  the mountains are mostly outside the lidar, so they come out at 30 m); `copernicus` (GLO-30) everywhere else not
+  covered by swiss / ign / gsi. The share each source filled goes into the config (`terrain_source`, `terrain_res`,
+  `terrain_shares`) and the map's credits; maps at 30 m get the app's "lower-detail terrain" note.
+- **Rule-based fixes** (automatic configs only; the 60 hand-checked maps keep their reviewed joins): a lift end with no
+  run within 110 m skis onto the nearest run below within 150 m or walks to one within 100 m; a dead-end run bottom
+  skis to the nearest point that leads to a lift within 300 m (no more than 3 m up) or walks within 150 m; a village
+  gondola whose bottom no run reaches rides both ways; a lift still cut off from the rest, and any tubing or sledding
+  lift, is marked isolated with the reason (`isolated_notes`). Every one is printed on the card.
+- **Ratings**: a feed where known; otherwise OpenStreetMap's, and the app says "not yet checked against the resort's own
+  list" on the resort card and the run card. The steepness check (`tools/steepness.py`) raises a North American green
+  steeper than 28 degrees to blue and a blue steeper than 43 to black (marked `raised`; thresholds above the steepest
+  official green and blue at our 34 checked North American mountains). `verify_exists.py` only applies its tag rules
+  when there is no resort list.
+- **Gate** (`tools/bulk/gate.py`, limits in its header): publish or hold. Held mountains carry `"hold"` in the config,
+  stay out of the committed index (`build_index.py` without `--with-held`) and have no emergency entry; published ones
+  get an emergency entry (country numbers only) and a connections allow-list of the problems the gate accepted.
+  Per-mountain numbers are in `tools/bulk/results/<id>.json`; the table in `tools/bulk/batch-<n>.md`.
+- **Going live** after the owner approves the preview: `node tools/preview/maps.mjs fetch <ids>` (only if the maps are
+  not on disk: it copies them back from the preview), then `node tools/maps_r2.mjs push <ids>`, then merge.
+
 ## Real trees, lift and building details, and previews (2026-11-22)
 
 - `python3 -I tools/build_canopy.py <id>` writes `public/data/<id>/canopy.z8`: tree cover and height on a grid of
@@ -304,7 +344,15 @@ entries rather than names typed by hand: matching by name and distance once pick
   capacity (chairs are spaced from it), bubble, heating, detachable; building roof shape and colour, wall colour or
   material, storeys. US resorts have almost none of these tags (Jay Peak, Cannon, Magic, Stowe: none); Zermatt has
   capacity on 37 of 66 lifts and 11 bubble chairs. Buildings without tags get a gabled roof along their long side.
-- `pipeline.py` runs both after every build; `maps_r2.mjs` uploads and downloads `canopy.z8` when there is one.
+- `python3 -I tools/build_landcover.py <id>` (2026-11-24) writes `public/data/<id>/landcover.z8`: the share of forest,
+  water and bare rock in every 140 m cell of the surrounding land (`surround.bin`'s grid), from ESA WorldCover 10 m 2021
+  (CC BY 4.0, read from `esa-worldcover.s3.eu-central-1.amazonaws.com` at a reduced resolution: about 2 s and 10-25 KB per
+  resort). The app colours the surrounding land from it per pixel (forest, snow on open ground, ice on lakes, rock),
+  with a soft noise on the line between forest and field so it does not follow the grid, and fades the detailed map's
+  own tree pattern into it over the last ~400 m inside its edge (`LAND_GLSL` in `src/map.js`). Before, the surrounding
+  land was coloured by height alone (almost all forest), so snowy clearings stopped in a straight line at the edge.
+  Maps without the file still fade their clearings into forest at the edge. Needs `surround.bin` (run after `build_extras.py`).
+- `pipeline.py` runs these after every build; `maps_r2.mjs` uploads and downloads `canopy.z8` and `landcover.z8` when there is one.
 - Runs are drawn at their measured width (`w`), or 26 m (greens 30 m) instead of 50-60 m; slope outlines are filled.
 - **Preview a branch before it reaches main:** `node tools/preview/deploy.mjs <ids>` bundles the app into the
   separate Worker `skiwithme-preview` (https://skiwithme-preview.cjmcg10.workers.dev) and uploads the named

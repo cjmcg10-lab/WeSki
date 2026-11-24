@@ -408,7 +408,7 @@ describe('output contract', () => {
     expect(out.hours).toEqual({ ...ASSUMED_HOURS, assumed: true });
     expect(out.ageHours).toBeNull();
     expect(scoreForecast(RESORT, fixture('scenario-powder-morning'), { ageHours: 3 }).ageHours).toBe(3);
-    expect(Object.keys(d).sort()).toEqual(['broadWindow', 'confidence', 'date', 'daysAhead', 'detail', 'explain', 'factors', 'flags', 'hours', 'liftHolds', 'mean', 'notes', 'peakHour', 'score', 'skiHours', 'status', 'uncertainty', 'window', 'windowConfidence'].sort());
+    expect(Object.keys(d).sort()).toEqual(['broadWindow', 'confidence', 'date', 'daysAhead', 'detail', 'explain', 'factors', 'flags', 'hours', 'liftHolds', 'mean', 'notes', 'peakHour', 'range', 'score', 'skiHours', 'status', 'uncertainty', 'window', 'windowConfidence'].sort());
     expect(d.flags).toContain('snow_history_limited');
     expect(d.confidence.level).not.toBe('High');
   });

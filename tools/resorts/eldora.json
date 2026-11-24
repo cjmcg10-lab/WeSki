@@ -1,0 +1,48 @@
+{
+ "id": "eldora",
+ "name": "Eldora",
+ "region": "Colorado, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/427517284",
+ "include_ways": [
+  99641627,
+  99641637,
+  99641640,
+  99641646,
+  99645413,
+  99645420,
+  99645422,
+  99645425,
+  1125554719,
+  1453393760
+ ],
+ "osm_bbox": [
+  -105.6137,
+  39.9295,
+  -105.5731,
+  39.9531
+ ],
+ "ratings_feed": {
+  "mtnpowder": 56
+ },
+ "openskimap": {
+  "id": "a2909bf21b379e545b5be4f1dbe9b6c334e9e41c",
+  "cc": "US",
+  "runs": 67,
+  "lifts": 10,
+  "rated": 1.0,
+  "skimap": 508,
+  "web": "https://www.eldora.com/"
+ },
+ "area_name": "Eldora",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Corrona": "Corona"
+ }
+}

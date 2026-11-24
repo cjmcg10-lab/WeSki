@@ -1,0 +1,29 @@
+{
+ "id": "dodge-ridge",
+ "reachable": [
+  67,
+  67
+ ],
+ "auto_joins": 5,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  69,
+  104,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [
+  "the resort's outline relation/3139919 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)"
+ ],
+ "failed": null,
+ "built": "2026-11-23",
+ "first_build_seconds": 49,
+ "rebuild_seconds": 16,
+ "seconds": 14
+}

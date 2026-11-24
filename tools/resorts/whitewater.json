@@ -1,0 +1,51 @@
+{
+ "id": "whitewater",
+ "name": "Whitewater",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/475723205",
+ "include_ways": [
+  101303220,
+  101303225,
+  326328039,
+  326976587,
+  1039462415
+ ],
+ "osm_bbox": [
+  -117.1938,
+  49.4217,
+  -117.1145,
+  49.4598
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "5e0f5c940cee44b22481b5599698c2ce040e5693",
+  "cc": "CA",
+  "runs": 88,
+  "lifts": 5,
+  "rated": 0.977,
+  "skimap": 59,
+  "web": "https://www.skiwhitewater.com/"
+ },
+ "area_name": "Whitewater Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 59%, 1 m lidar 41%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 41.2,
+  "30m": 58.8
+ },
+ "rename": {
+  "Backburner": "Back Burner",
+  "Enchantment Forest": "Enchanted Forest",
+  "Face Plant": "Faceplant",
+  "Giddy Up Glades": "Giddy Up Gully",
+  "Parking Log Ski Way": "Parking Lot Ski Way",
+  "Silver Ledge": "Silverledge",
+  "Trash Chutes Traverse": "Trash Traverse",
+  "Trolly Tracks": "Trolley Tracks"
+ }
+}

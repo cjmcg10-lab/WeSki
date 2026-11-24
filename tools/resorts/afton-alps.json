@@ -1,0 +1,55 @@
+{
+ "id": "afton-alps",
+ "name": "Afton Alps",
+ "region": "Minnesota, USA",
+ "tz": "America/Chicago",
+ "auto": true,
+ "area_osm": "way/543987749",
+ "include_ways": [
+  243687904,
+  243687905,
+  243687906,
+  243687907,
+  243687908,
+  243687909,
+  243687910,
+  243687911,
+  243687912,
+  243687913,
+  243687914,
+  243687915,
+  243736722,
+  243736723,
+  243736724,
+  244790555,
+  244790556,
+  256864080,
+  892414179,
+  1318146186
+ ],
+ "osm_bbox": [
+  -92.7965,
+  44.8458,
+  -92.775,
+  44.8606
+ ],
+ "openskimap": {
+  "id": "37f4ea452662caed6a34272742ddce97f1a4734a",
+  "cc": "US",
+  "runs": 61,
+  "lifts": 20,
+  "rated": 0.918,
+  "skimap": 393,
+  "web": "https://www.aftonalps.com/"
+ },
+ "area_name": "Afton Alps",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Chris's Canyon": "Chris' Canyon"
+ }
+}

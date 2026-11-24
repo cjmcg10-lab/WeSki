@@ -77,7 +77,7 @@ export function scoreDay({ date, rows, window, single, closure, daysAhead, ageHo
   const cold = veryColdNote([...skiRowsOf(rows, from, to).values()]);
   if (cold) notes.push(cold);
   const detail = detailLevel(daysAhead);
-  const base = { date, uncertainty: null, detail, skiHours: { from, to, assumed, expected }, daysAhead, liftHolds: holds, notes };
+  const base = { date, uncertainty: null, range: null, detail, skiHours: { from, to, assumed, expected }, daysAhead, liftHolds: holds, notes };
   if (closure) {
     return { ...base, status: 'closed', score: null, mean: null, window: null, peakHour: null, hours: [], factors: [], explain: null, confidence: null, windowConfidence: null, closureSource: closure === true ? null : closure, flags: [] };
   }

@@ -1,0 +1,40 @@
+{
+ "id": "mount-rose-tahoe",
+ "name": "Mount Rose Ski Tahoe",
+ "region": "Nevada, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/534160668",
+ "include_ways": [
+  38790253,
+  38790355,
+  38795516,
+  175341323,
+  175353185,
+  257192523,
+  257192524,
+  469593010
+ ],
+ "osm_bbox": [
+  -119.9003,
+  39.3066,
+  -119.8661,
+  39.3318
+ ],
+ "openskimap": {
+  "id": "7e9c9c28d2694a3b49ad5d70e6a3c8d59dc75cbd",
+  "cc": "US",
+  "runs": 60,
+  "lifts": 8,
+  "rated": 0.967,
+  "skimap": 358,
+  "web": "https://skirose.com/"
+ },
+ "area_name": "Mount Rose Ski Tahoe",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

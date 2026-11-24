@@ -1,0 +1,68 @@
+{
+ "id": "bear-valley",
+ "name": "Bear Valley",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/16792393",
+ "include_ways": [
+  10282429,
+  10282436,
+  28395593,
+  258027228,
+  258027229,
+  258027231,
+  258027232,
+  258027409,
+  1565059116
+ ],
+ "osm_bbox": [
+  -120.0736,
+  38.4627,
+  -120.0331,
+  38.5046
+ ],
+ "openskimap": {
+  "id": "f357cc18ead38a393c55cf27921fe05913dc33e1",
+  "cc": "US",
+  "runs": 61,
+  "lifts": 9,
+  "rated": 0.967,
+  "skimap": 534,
+  "web": "https://www.bearvalley.com/"
+ },
+ "area_name": "Bear Valley",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Murry's Meadow": "Maury's Meadow",
+  "Porrige Bowl": "Porridge Bowl",
+  "Red Barron": "Red Baron",
+  "Sea of Hunt": "Sea Hunt"
+ },
+ "dead_end_notes": {
+  "Lunch Run": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Home Run": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Inner Space": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Wild Wild West": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Single Tree Slot": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "West Finger": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Greg's Way": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Patty's Way": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "East Ridge": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "School House Ridge": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Sea of Holes": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Mayan Ruins": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Bruc's Run": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Applebonkers East": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Applebonkers West": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Sea Hunt": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Outer Space": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Sunrise": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts",
+  "Schimke's": "ends in Bear Valley Village at the foot of the mountain: the 2025 trail map (skimap.org 45900) shows no lift back from the village, and the resort's shuttle bus takes skiers back to the lifts"
+ }
+}

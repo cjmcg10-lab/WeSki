@@ -2,6 +2,7 @@
 // Counts are kept in memory and written to the Accounts Durable Object at most once a minute per Worker copy, so the
 // count itself adds very few Durable Object requests. A copy that is shut down loses its last minute: the count is a
 // guide next to Cloudflare's own analytics, not a bill.
+import { sendMail } from './digest.js';
 import { sameSecret } from './calibration.js';
 
 export const FLUSH_MS = 60e3;
@@ -61,33 +62,20 @@ export async function usageResponse(request, url, env) {
   return respond({ days: await env.ACCOUNTS.get(env.ACCOUNTS.idFromName('main')).usage(since) });
 }
 
-const header = (s) => String(s).replace(/[\r\n]+/g, ' ').replace(/[^\x20-\x7e]/g, '').slice(0, 200);
-
-/** A plain-text email as raw MIME, for Cloudflare's send_email binding. */
-export function mimeText({ from, to, subject, text, now = new Date() }) {
-  const id = `${crypto.randomUUID()}@${from.split('@')[1].replace(/>.*/, '')}`;
-  return [
-    `From: SkiWithMe usage <${from}>`, `To: ${to}`, `Subject: ${header(subject)}`, `Date: ${now.toUTCString()}`, `Message-ID: <${id}>`,
-    'MIME-Version: 1.0', 'Content-Type: text/plain; charset=utf-8', 'Content-Transfer-Encoding: 8bit', '',
-    String(text).slice(0, 50000).replace(/\r?\n/g, '\r\n'),
-  ].join('\r\n');
-}
-
 /**
- * POST /api/admin/usage/mail {subject, text}: emails the usage alert to the owner through Cloudflare Email Routing.
- * Answers 404 until the owner has added the `USAGE_MAIL` send_email binding (docs/USAGE_ALERTS.md, "Email").
+ * POST /api/admin/usage/mail {subject, text}: emails the usage alert to the owner through the sign-in Resend account
+ * (the same sender as the daily map-report email). Answers 404 until sign-in mail is set up (RESEND_API_KEY, MAIL_FROM).
  */
-export async function mailResponse(request, env, { EmailMessage } = {}) {
+export async function mailResponse(request, env, fetchFn = fetch) {
   const no = await guard(request, env);
   if (no) return no;
-  if (!env.USAGE_MAIL) return respond({ error: 'Email is not set up' }, 404);
+  const to = env.USAGE_MAIL_TO || env.REPORT_DIGEST_TO;
+  if (!env.RESEND_API_KEY || !env.MAIL_FROM || !to) return respond({ error: 'Email is not set up' }, 404);
   let b;
   try { b = JSON.parse(await request.text()); } catch { return respond({ error: 'Bad body' }, 400); }
   if (!b?.subject || !b?.text) return respond({ error: 'subject and text are needed' }, 400);
-  const from = env.USAGE_MAIL_FROM || 'usage@builtbyroger.app', to = env.USAGE_MAIL_TO || 'hello@builtbyroger.app';
-  EmailMessage ||= (await import('cloudflare:email')).EmailMessage;
   try {
-    await env.USAGE_MAIL.send(new EmailMessage(from, to, mimeText({ from, to, subject: b.subject, text: b.text })));
+    await sendMail(env, { to, from: env.MAIL_FROM, key: env.RESEND_API_KEY }, { subject: String(b.subject).slice(0, 200), text: String(b.text).slice(0, 50000) }, Date.now(), fetchFn);
   } catch (e) {
     return respond({ error: `Not sent: ${e.message}` }, 502);
   }

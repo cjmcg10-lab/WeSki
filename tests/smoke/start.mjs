@@ -39,7 +39,7 @@ try {
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
   await context.addInitScript(() => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-21', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
     // A stand-in for window.visualViewport whose size the test can change, to imitate the on-screen keyboard.
     const real = window.visualViewport;
     const fake = new EventTarget();
@@ -78,18 +78,37 @@ try {
   const field = await rect('#f-resort');
   if (field.top < 0) fail(`search field above the screen (top ${field.top})`);
 
-  // imitate the keyboard: visible part 450 px high, and the phone having moved it 120 px down the page
-  await page.evaluate(() => window.__kbSet({ height: 450, offsetTop: 120 }));
+  // imitate the keyboard: visible part 450 px high. The list keeps its whole-screen size and place (the keyboard covers
+  // its lower part, as with the panels), the field stays visible and the results get room to scroll clear of the keyboard.
+  await page.evaluate(() => window.__kbSet({ height: 450, offsetTop: 0 }));
   await page.waitForTimeout(100);
-  const pinned = await rect('#start-panel');
-  if (Math.abs(pinned.top - 120) > 1 || Math.abs(pinned.height - 450) > 1) fail(`with the keyboard up the list is not inside the visible part (top ${pinned.top}, height ${pinned.height}; want 120 and 450)`);
+  const up = await rect('#start-panel');
+  if (Math.abs(up.top) > 1 || Math.abs(up.height - 844) > 1) fail(`with the keyboard up the list moved or changed size (top ${up.top}, height ${up.height}; want 0 and 844)`);
   const f2 = await rect('#f-resort');
-  if (f2.top < 120 || f2.bottom > 570) fail(`with the keyboard up the search field is not visible (top ${f2.top})`);
-  // keyboard closed (Done): back to the whole screen
-  await page.evaluate(() => { document.querySelector('#f-resort').blur(); window.__kbSet(null); });
-  await page.waitForTimeout(600);   // it grows back with the usual glide
-  const after = await rect('#start-panel');
-  if (Math.abs(after.top) > 1 || Math.abs(after.height - 844) > 1) fail(`after the keyboard closed the list did not fill the screen again (top ${after.top}, height ${after.height})`);
+  if (f2.top < 0 || f2.bottom > 450) fail(`with the keyboard up the search field is not visible (top ${f2.top})`);
+  const room = await page.evaluate(() => parseFloat(getComputedStyle(document.querySelector('#resort-list')).paddingBottom));
+  if (room < 380) fail(`with the keyboard up the results cannot scroll clear of it (room at the bottom ${room} px)`);
+  // keyboard closed (Done): the list does not move at all, on any frame
+  await page.evaluate(() => { window.__tops = []; const p = document.querySelector('#start-panel'), t0 = performance.now(), f = () => { const r = p.getBoundingClientRect(); window.__tops.push([r.top, r.height, document.querySelector('#f-resort').getBoundingClientRect().height]); if (performance.now() - t0 < 600) requestAnimationFrame(f); }; f(); document.querySelector('#f-resort').blur(); window.__kbSet(null); });
+  await page.waitForTimeout(700);
+  const frames = await page.evaluate(() => window.__tops);
+  const moved = frames.find(([t, h]) => Math.abs(t) > 1 || Math.abs(h - 844) > 1);
+  if (moved) fail(`the list jolted when the keyboard closed (top ${moved[0]}, height ${moved[1]})`);
+  if (new Set(frames.map((x) => x[2])).size > 1) fail('the search field changed height when the keyboard closed');
+  // dragging the list down and back up: the search field keeps its height on every frame
+  const fh = (await rect('#f-resort')).height;
+  await page.evaluate(() => { window.__fh = []; const fl = document.querySelector('#f-resort'), t0 = performance.now(), f = () => { window.__fh.push(fl.getBoundingClientRect().height); if (performance.now() - t0 < 2400) requestAnimationFrame(f); }; f(); });
+  for (const dy of [600, -600]) {
+    const g = await page.locator('#start-panel .grab').boundingBox();
+    await page.evaluate(async ({ x, y, dy }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
+      ev('pointerdown', y); for (let i = 1; i <= 12; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y + dy * i / 12); } ev('pointerup', y + dy); }, { x: g.x + g.width / 2, y: g.y + g.height / 2, dy });
+    await page.waitForTimeout(900);
+  }
+  const hs = await page.evaluate(() => window.__fh);
+  if (hs.some((h) => Math.abs(h - fh) > 0.5)) fail(`the search field changed height while the list was dragged (${Math.min(...hs)} to ${Math.max(...hs)} px, at rest ${fh})`);
+  if (fh < 40) fail(`the search field is squeezed (${fh} px high)`);
+  // back to the whole screen for the next step
+  if (!(await page.locator('#start-panel.full').count())) { await page.locator('#f-resort').tap(); await page.waitForTimeout(500); await page.evaluate(() => document.querySelector('#f-resort').blur()); }
   // tapping search again while it already fills the screen: still at the top
   await page.locator('#f-resort').tap();
   await page.waitForTimeout(400);

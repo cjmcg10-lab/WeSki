@@ -71,8 +71,8 @@ session needs that the README does not: the rules, the state of the work, and wh
   trademark registers and found the name clear. The trademark is to be filed as SKIWITHME, one word (owner's decision,
   2026-11-17).
 - **Launch order:** paid web app first (no app stores), then a native wrapper for the App Store and Google Play.
-- **Price:** free map everywhere; Day $2.99, Week $3.99, Season $19.99 a year, Crew Season $34.99 a year for 4
-  (set 2026-11-21 to undercut Slopes and Ski Tracks; see `docs/PAID_TIER.md`). Owner's company: Built By Roger LLC
+- **Price:** free map everywhere; Day $2.99, Week $5.99, Season $24.99 a year, Crew Season $44.99 a year for 4
+  (set 2026-11-23, may still change; one place: `PLANS` in `worker/accounts.js`, then Paddle; see `docs/PAID_TIER.md`). Owner's company: Built By Roger LLC
   (exact registered name), a Connecticut LLC; the terms use Connecticut law. Contact hello@builtbyroger.app, domain
   builtbyroger.app (registered at Cloudflare). skiwithme.app belongs to someone else. The app's address is
   https://skiwithme.builtbyroger.app (custom domain in `wrangler.assets.jsonc` `routes`, owner's choice 2026-11-20); the
@@ -410,6 +410,18 @@ Rendering rules learned the same day: runs show through trees but never through 
 runs once marking SEEN, trees skip SEEN pixels; #84, #88). A lift end on a mapped station building is drawn once
 (`stationClashes` in `src/liftmotion.js`: small building left out, big lodge kept and the terminal model left out).
 
+## Automatic builder: first batch of 100 (2026-11-23, #45, #104-#106)
+
+100 US and Canadian mountains were built with no hand edits (`tools/bulk/run_batch.py`: `autoconfig.py` config from
+OpenSkiMap, terrain by country, rule-based joins, steepness check) and scored by `tools/bulk/gate.py`: 79 publish, 21
+held (`"hold"` in the config keeps a mountain out of the committed index). Table, timings, storage and the free-plan
+estimate: `tools/bulk/batch-1.md`; how-to: "Building a batch" in `docs/ADDING_MOUNTAINS.md`. The maps are on the
+preview only (R2 `preview/data/<id>/`); they go live only after the owner approves: `node tools/preview/maps.mjs fetch
+<ids>` (copies them back from the preview if not on disk), `node tools/maps_r2.mjs push <ids>`, then merge. The index
+must not reach `main` before that push. Their ratings come from OpenStreetMap (3 from resort feeds) and the app says
+"not yet checked against the resort's own list"; 17 sit on 30 m terrain (British Columbia, Alberta) with a note.
+Rule-based fixes run only for configs with `"auto": true`; the 60 hand-checked maps are unchanged.
+
 ## Existence check (2026-11-20)
 
 The owner found a lift and runs at Sunday River (Merrill Hill II and runs toward it) that are not on the resort's map.
@@ -500,8 +512,12 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
 (what skier data is collected and how it is stored). In short:
 - Switch `PAYWALL` in both wrangler configs; `"off"` until the owner's Resend and Paddle accounts exist. With it off,
   everything is free and the pass screen says "free during the preview".
-- Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $3.99, Season $19.99/yr, Crew Season $34.99/yr (4 seats),
-  one free day per account. Paid: directions, creating groups, full history (latest day free). Group meeting points
+- Plans (`PLANS` in `worker/accounts.js`): Day $2.99, Week $5.99, Season $24.99/yr, Crew Season $44.99/yr (4 seats),
+  one free day per account. Paid (since 2026-11-23, #115; rules in `src/passrules.js`): directions, creating groups,
+  saved days before today (listed locked, never deleted, all open with a pass incl. days recorded before buying), the
+  full Forecast (free taste: today and tomorrow at one mountain; the weather sheet stays free), "Download for offline"
+  (without a pass the map opened today stays on the phone that day; earlier days' maps are removed once the server has
+  answered, `tidyMaps`). Group meeting points
   and directions to them or to friends are free for every group member (owner, 2026-11-21): `graph.json?g=<code>&m=<id>`.
 - Enforced on the server: the build moves each resort's routing graph into `dist/data/<id>/graph.json`
   (`vite.config.js`); the Worker answers 402 without a pass; `POST /api/groups` too. Purchases only arrive by Paddle's
@@ -513,7 +529,11 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   law requires that) and in More → Privacy & map help, sends the day after each ski day a summary: run ids and 20 m
   squares off the shown runs, only from stretches that look like skiing (not lifts, standing, lodges, car parks), no
   time or identity; server keeps counts, publishes only >= 5
-  ski days (`/api/heat/<id>`). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
+  ski days (`/api/heat/<id>`). Reports get a confidence score (`worker/confidence.js`, all thresholds in `CONFIDENCE`;
+  `/api/reports/<id>/problems`) and a daily email to hello@builtbyroger.app (`worker/digest.js`, Cron Trigger 11:23 UTC, sent
+  through the sign-in Resend account; the owner forwards hello@ to their own inbox). Reports about a run or lift group
+  by that run or lift, place reports by distance; "Wrong rating" asks what it should be: `docs/MAP_REPORTS.md`
+  (#112 steps 1-2, 2026-11-24). "Report a map mistake" (flag button in the map's right-hand column, pin sheet, Privacy) → `/api/reports`, public list
   at `/api/reports/<id>`. `tools/reports.py <id>|--all` lists new reports (marker in `tools/.reports_seen.json`,
   not in git); `tools/evidence.py <id>` also shows the `/api/heat` ski days per run and squares skied off the runs
   (`--heat-only` skips the GPS download). See "The final check" in `docs/ADDING_MOUNTAINS.md`.
@@ -577,20 +597,21 @@ Calling has not been tried on a real phone or in the TestFlight app.
 
 ## Forecast (built 2026-11-22)
 
-A free Forecast tab (also a button on the start screen): a watchlist of any of 4,792 catalog resorts or map pins, a
+A Forecast tab (also a button on the start screen; behind the pass since 2026-11-23 apart from today and tomorrow at one mountain): a watchlist of any of 4,792 catalog resorts or map pins, a
 calendar of daily ski scores (mountains as rows, days as columns), an hourly day view and a trip planner. **Read
 `docs/FORECAST.md` first**: what it does, how a score is made, sources and licences, what is stored, the files map, how to
 rerun the acceptance check (`node tests/acceptance/acceptance.mjs`, writes screenshots to the git-ignored
 `smoke-output/acceptance/`) and the known limits. The other pages are linked from it: `FORECAST_SCORING.md`,
 `FORECAST_HISTORY.md`, `FORECAST_SOURCES.md`, `FORECAST_SPEC.md`, `FORECAST_PLAN.md`. The engine is a pure module in
-`src/forecast/score/` (version 1.7.0); change `docs/FORECAST_SCORING.md` first, then bump `SCORING_VERSION`. Acceptance run
+`src/forecast/score/` (version 1.8.0: Swiss resorts get ranges for days 6 to 8 from a MeteoSwiss cron job, #57, see
+"MeteoSwiss ensembles" in `docs/FORECAST_SOURCES.md`); change `docs/FORECAST_SCORING.md` first, then bump `SCORING_VERSION`. Acceptance run
 on the live site on 2026-11-22: all five steps passed (Jay Peak, Burke and Cannon; then Sundown Mountain Resort, Zermatt
 and Mount Buller; a pin; 360 and 1280 px, light and dark). Nothing has been tested on a real phone. Translations are not
 native-checked. Mount Buller in November shows ordinary scores because no season data exists (#50).
 
 ## What is next
 
-**Forecast section: built (2026-11-22), free.** Issues #2 to #11, #15, #19 and #34 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
+**Forecast section: built (2026-11-22); full view behind the pass since 2026-11-23 (#115).** Issues #2 to #11, #15, #19 and #34 are merged; #12 is the acceptance test and `docs/FORECAST.md`.
 Left: #17 (allow pinch-zoom, needs a real iPhone and both owners), #42 (Connor: `IP_SALT` secret, R2 `push --all`, optional
 `ARCHIVE_ADMIN_SECRET`), follow-up issues #50 (resorts out of season) and #51 (very cold days), and a season of archived
 forecasts plus skier feedback before the scores can be calibrated for real. Every merge to `main` also uploads a TestFlight

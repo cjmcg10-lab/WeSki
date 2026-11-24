@@ -1,0 +1,56 @@
+{
+ "id": "blue-mountain-ontario",
+ "name": "Blue Mountain",
+ "region": "Ontario, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/1040649718",
+ "include_ways": [
+  196817583,
+  196948297,
+  196948487,
+  203677464,
+  203677465,
+  203677466,
+  203678534,
+  203679001,
+  203679003,
+  203679005,
+  203682385,
+  203682388,
+  247107412
+ ],
+ "osm_bbox": [
+  -80.3398,
+  44.4853,
+  -80.298,
+  44.5145
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 3
+ },
+ "openskimap": {
+  "id": "c5f70b639b76f6496d08a74e0691d5d71836cb4d",
+  "cc": "CA",
+  "runs": 60,
+  "lifts": 13,
+  "rated": 0.95,
+  "skimap": 113,
+  "web": "https://www.bluemountain.ca"
+ },
+ "area_name": "Blue Mountain Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 98%, 30 m 2%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 98.3,
+  "30m": 1.7
+ },
+ "rename": {
+  "Hell;s Half Acre": "Hell's Half Acre",
+  "Senator/Laraway": "Senator / Larway"
+ }
+}

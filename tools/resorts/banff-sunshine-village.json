@@ -1,0 +1,53 @@
+{
+ "id": "banff-sunshine-village",
+ "name": "Banff Sunshine Village",
+ "region": "Alberta, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/739168515",
+ "include_ways": [
+  23259655,
+  23259657,
+  23259658,
+  23259660,
+  23259661,
+  23259678,
+  23259679,
+  51863590,
+  51863591,
+  58931793,
+  258174501,
+  258178409,
+  1528642543,
+  1551467721
+ ],
+ "osm_bbox": [
+  -115.7966,
+  51.0653,
+  -115.7409,
+  51.1182
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 76
+ },
+ "openskimap": {
+  "id": "7df6d649ccd61056844b92208038a03c0d6c6091",
+  "cc": "CA",
+  "runs": 155,
+  "lifts": 14,
+  "rated": 0.981,
+  "skimap": 10,
+  "web": "https://www.skibanff.com"
+ },
+ "area_name": "Banff Sunshine Village",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 100%, 1 m lidar 0%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 0.0,
+  "30m": 100.0
+ }
+}

@@ -1,0 +1,43 @@
+{
+ "id": "santa-fe-santa-fe-q38555",
+ "name": "Ski Santa Fe, Santa Fe, Q38555",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "relation/14934032",
+ "include_ways": [
+  14599583,
+  14602708,
+  91810960,
+  92511755,
+  104595681,
+  257376652,
+  257376792
+ ],
+ "osm_bbox": [
+  -105.806,
+  35.7821,
+  -105.7736,
+  35.8002
+ ],
+ "openskimap": {
+  "id": "7ba787e59e18c7270741425fea002c1f18d20ab3",
+  "cc": "US",
+  "runs": 88,
+  "lifts": 7,
+  "rated": 0.909,
+  "skimap": 335,
+  "web": "https://www.skisantafe.com/"
+ },
+ "area_name": "Ski Santa Fe",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Roadrunner": "Road Runner",
+  "Thru Way": "Thruway"
+ }
+}

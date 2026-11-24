@@ -9,7 +9,7 @@
     "build:assets": "vite build && node tools/embed.mjs --none",
     "test": "vitest run",
     "lint": "eslint .",
-    "smoke": "node tests/smoke/smoke.mjs && node tests/smoke/start.mjs",
+    "smoke": "node tests/smoke/smoke.mjs && node tests/smoke/start.mjs && node tests/smoke/sheet.mjs && node tests/smoke/freetier.mjs",
     "deploy": "npm run build && wrangler deploy",
     "worker:dev": "npm run build && wrangler dev"
   },

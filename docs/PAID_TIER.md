@@ -5,38 +5,84 @@ pass screen says so. Turning it `"on"` (after the owner's accounts are set up) e
 
 ## Free and paid
 
+Changed by the owner on 2026-11-23 (issue #115): the Forecast, saved days and offline downloads moved behind the pass.
+
 | Free (everyone, no account) | SkiWithMe Pass |
 | --- | --- |
-| 3D map of every mountain, offline download | Turn-by-turn and spoken directions anywhere on the mountain |
+| 3D map of every mountain; the map you open stays on the phone that day, even with no signal | Turn-by-turn and spoken directions anywhere on the mountain |
 | Your position and the run you are on | Creating groups (joining a friend's group stays free) |
-| Search, weather (today and 7 days), legend | Full history of ski days and replays (the latest day stays free) |
-| Joining a group and sharing locations | |
+| Search, legend, mountain weather (the weather sheet: now, today and 7 days) | All saved ski days, stats and replays, including days recorded before buying |
+| Ski forecast: today's and tomorrow's score for one mountain | The full Forecast: every listed mountain, the whole week, calendar, sorting by day, trip planner |
+| Joining a group and sharing locations | "Download for offline": whole mountains stored ahead of time, list with sizes, delete |
 | Group meeting points; directions to a meeting point or to a friend in the group (owner, 2026-11-21) | |
-| Tracking today's ski day, stats | |
+| Tracking and saving every ski day (automatic), today's stats and today's saved days | |
+| Emergency (SOS) sheet, offline | |
 | Report a map mistake, map help | |
 
 Why this split: the free map is what people tell friends about; directions and group creation are what a group pays
 for, and both need our server, so they can be enforced. Joining stays free so one paying friend brings the rest in.
+Saved days are a reason to buy that grows with use: nothing is ever deleted, so a pass bought in March opens the whole
+season. The free Forecast taste shows the score is worth having; the week and the trip planner are what a trip needs.
+
+How each gate behaves without a pass (rules in `src/passrules.js`, tested in `tests/passrules.test.js`):
+- **Forecast** (`src/forecast/ui.js` `sheetTaste`, `paidAction`): one mountain (the one you are at, else the first on
+  your list), two day cards (today, tomorrow) that open the day view, then "See the full week, calendar and trip
+  planner with a pass". Days after tomorrow, a second mountain (Add, Keep on my list), sorting and the trip planner
+  open the pop-up (`upsell('forecast')`). The rest of the list is kept for when a pass arrives.
+- **Saved days** (`sheetHistory`, `sheetSession`, the start screen's History list): days from today open as before;
+  earlier days are locked cards with date and mountain only, under "N ski days saved — unlock them with a pass".
+  Tapping one opens the pop-up (`upsell('history')`). A pass opens all of them (nothing depends on the purchase date).
+  This replaced "the latest day stays free".
+- **Offline maps** (`downloadMountain`, `tidyMaps`, `offlineBlock`, `offlineListCard` in `src/main.js`): the service
+  worker keeps every map file it loads, as before. The phone notes the day each mountain was opened
+  (`prefs openedMaps`). With no pass, at start-up and only once the server has answered (`acct.passKnown()`: never
+  while offline, on a failed request, or while "Simulate free tier" is on), map files of mountains opened on an
+  earlier day are deleted from the `weski-map` cache; the map opened today is never touched. "Download for offline"
+  (in the start screen's mountain card and in More) needs a pass and stores the app, `resort.json`, both terrain
+  grids, the tree-cover file and, with a pass, `graph.json` (a 402 is skipped, not an error). More lists the downloaded
+  mountains (`prefs offlineMaps`, size, date, Delete) and the storage the site uses (`navigator.storage.estimate`).
+  The SOS numbers are bundled in the app, so they work offline for everyone.
+
+"Simulate free tier" (Appearance & advanced) shows every gate above while `PAYWALL` is off. It never deletes anything.
 
 ## Plans and prices
 
 | Plan | Price | Length | Notes |
 | --- | --- | --- | --- |
 | Day Pass | $2.99 | 24 hours from purchase | one-time |
-| Week Pass | $3.99 | 7 days from purchase | one-time, the ski-trip pass |
-| Season Pass | $19.99 / year | one year, renews | the main plan |
-| Crew Season Pass | $34.99 / year | one year, renews | buyer plus 3 friends' emails |
+| Week Pass | $5.99 | 7 days from purchase | one-time, the ski-trip pass |
+| Season Pass | $24.99 / year | one year, renews | the main plan |
+| Crew Season Pass | $44.99 / year | one year, renews | buyer plus 3 friends' emails |
 | Free day | $0 | 24 hours | once per account |
 
-No monthly plan: skiing is seasonal. Prices set 2026-11-21 after checking competitors (US App Store and their sites):
-Slopes Plus $34.99/yr (family $59.99, up to 6), single day pass $3.99, 7 day passes $11.99; Ski Tracks $4.99/week or
-$49.99/yr (from a competitor's comparison page, 2026-11-12; the App Store page refused the fetch). Ours undercut by:
-Day $2.99 (25% under Slopes' $3.99), Week $3.99 (20% under Ski Tracks' $4.99 weekly, 67% under Slopes' 7 passes),
-Season $19.99 (43% under Slopes Plus, 60% under Ski Tracks yearly), Crew $34.99 for 4 (42% under Slopes' family plan,
-which covers 6). Slopes' free version tracks and saves days with basic stats, so tracking stays free here too.
-Paddle takes 5% + 50 cents: about 22% of a $2.99 sale and 18% of $3.99, and it asks for custom terms on prices under
-$10, so confirm with Paddle before launch. The constants are `PLANS` in `worker/accounts.js`; prices in Paddle must
-match.
+Set by the owner on 2026-11-23 (before: $2.99, $3.99, $19.99, $34.99) and may still change. No monthly plan: skiing
+is seasonal.
+
+Competitors (checked 2026-11-21 and 2026-11-23): **Slopes** made its free tier much wider on 2026-11-10: tracking,
+friends, unlimited saved days and weather are free. Slopes Plus is $34.99 a year (family $59.99, up to 6) and adds the
+3D and 2D maps, offline maps and replays; a single day pass is $3.99, 7 day passes $11.99. **Ski Tracks**: $4.99 a week
+or $49.99 a year (from a competitor's comparison page, 2026-11-12). Where we stand: Season $24.99 is 29% under Slopes
+Plus and half of Ski Tracks' year; Crew $44.99 for 4 is 25% under Slopes' family plan (which covers 6); Day $2.99 is
+25% under Slopes' day pass. Unlike Slopes, our 3D map and today's tracking stay free; unlike Slopes, saved days are
+behind the pass (but never deleted), and directions and the ski-score forecast have no Slopes equivalent.
+
+Paddle takes 5% + 50 cents: about 22% of a $2.99 sale and 13% of $5.99, and it asks for custom terms on prices under
+$10, so confirm with Paddle before launch.
+
+### Changing a price
+
+The prices live in one place: `PLANS` in `worker/accounts.js`. The pass sheet and the pop-up read them from
+`/api/config`. Then:
+1. Change the number in `PLANS` and run `npm test`: `tests/prices.test.js` fails and names every page and document that
+   still shows the old number (`public/about.html` `data-plan` cells, this file's table). Fix those.
+2. Change the price in Paddle so the checkout charges the same. In the Paddle dashboard (sandbox first, then the live
+   account): Catalog → Products → open the product (Day Pass, Week Pass, Season Pass, Crew Season Pass) → its price →
+   Edit → set the new amount in USD (and the yearly billing period for Season and Crew) → Save. Editing the existing
+   price keeps its price id, so nothing else changes. If Paddle does not allow editing it, add a new price on the same
+   product instead, archive the old one, and send the new price id (it is not secret): it goes into `PADDLE_PRICES`
+   in `wrangler.assets.jsonc`. Existing yearly subscribers keep the price they signed up at unless Paddle is told
+   otherwise.
+3. Check with a sandbox purchase that the checkout shows the new amount.
 
 ## Terms agreement
 
@@ -58,8 +104,11 @@ when the terms change), after 365 days, or when the record is missing. Signed-in
     to places and pins with that copy are a phone-only gate, and leaving the group drops the copy.
   - The pass itself: only Paddle's signed webhook (`/api/paddle/webhook`, HMAC-SHA256 over `ts:body`, 5-minute replay
     window, each event applied once) creates purchases. The phone never tells the server it has paid.
-- **Phone-only (soft):** hiding older history days. The data is already on the phone; a determined person could edit
-  the app to show it. That is acceptable: it is their own data.
+- **Phone-only (soft):** locking earlier saved days, the full Forecast (weather and scores come from free
+  sources through our server, and the weather sheet stays free anyway), and the "Download for offline" button. The
+  data is already on the phone or public; a determined person could edit the app to get round them. That is acceptable:
+  saved days are their own data, and the paid value is the convenience. Removing yesterday's maps happens only once the
+  server has answered, so a phone that stays offline keeps what it has until it is next online.
 - **Honest limits:** someone with a pass can save `graph.json` and pass it on, or keep using a downloaded copy offline
   after the pass ends (the service worker asks the server first and deletes the copy on a 402, but cannot stop a copy
   made by hand). OpenStreetMap's licence (ODbL) also means the derived map database must be offered on request
@@ -90,7 +139,9 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
    Claude the client-side token and the four price ids (these are not secret). Test in Paddle's sandbox first.
 5. Have a lawyer read the terms and privacy policy once (optional but recommended; Claude drafted them; they are
    not legal advice). Decide the governing-law state.
-6. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
+6. The daily email of map-mistake reports needs nothing to set up: it uses the sign-in mail account (Resend, step 3)
+   and goes to hello@builtbyroger.app. See `docs/MAP_REPORTS.md`.
+7. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
 
 Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
 plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).

@@ -22,7 +22,7 @@ Steps, in the order docs/MOUNTAIN_CHECKLIST.md asks for:
               an existing resort without --terrain -> tools/dem_from_built.py (exact, no download)
   3. official ratings: if tools/official/<id>.json is missing and the config names a feed
      ("ratings_feed": {"mtnpowder": 60}), fetch it; otherwise the card says the ratings are NOT checked
-  4. build_data, build_extras, build_zones, verify_exists, build_canopy (real trees), enrich_osm (lift and
+  4. build_data, build_extras, build_zones, verify_exists, build_canopy (real trees), build_landcover (forest, fields, lakes round the map), enrich_osm (lift and
      building details)
   5. checks: official_ratings check, audit --list, check_downhill
   6. score card: tools/cards/<id>.md (committed: it is the record of the mountain's state) and a
@@ -220,6 +220,7 @@ def whole_resort(rid, cfg, bbox, osm, opt, log, notes):
 
     if have is None:
         have = fetch(pad(bbox, 1500))  # a margin beyond the box, to see what continues past it
+    resolve_outline(rid, cfg, osm, notes)
     have, got = grow(have)
     offp = f"{ROOT}/tools/official/{rid}.json"
     offj = json.load(open(offp)) if os.path.exists(offp) else {}
@@ -269,6 +270,73 @@ def whole_resort(rid, cfg, bbox, osm, opt, log, notes):
     return bigger
 
 
+def resolve_outline(rid, cfg, osm, notes):
+    """Automatic configs name the resort's OpenStreetMap outline by id (area_osm, from OpenSkiMap): read its name from
+    the download and set area_name, which the build and the whole-resort search use. An outline with no name, or one
+    not in the download, leaves the config as it is (the search then starts from the resort's lifts, include_ways)."""
+    if not cfg.get("area_osm") or cfg.get("area_name"):
+        return
+    import xml.etree.ElementTree as ET
+    kind, oid = cfg["area_osm"].split("/")
+    name, access = None, None
+    for ev, el in ET.iterparse(osm):
+        if el.tag == kind and el.get("id") == oid:
+            t = {x.get("k"): x.get("v") for x in el.findall("tag")}
+            if t.get("landuse") == "winter_sports" and t.get("name"):
+                name = t["name"]
+            access = t.get("access")
+            break
+        if el.tag in ("way", "relation"):
+            el.clear()
+    if not name:
+        notes.append(f"the resort's outline {cfg['area_osm']} has no name or is not in the download: the build starts "
+                     "from the resort's lifts instead (include_ways)")
+        return
+    path = f"{ROOT}/tools/resorts/{rid}.json"
+    disk = json.load(open(path))
+    disk["area_name"] = cfg["area_name"] = name
+    disk["area_buffer"] = cfg["area_buffer"] = 300
+    if access:   # the quality gate holds a private club (access=private)
+        disk["area_access"] = cfg["area_access"] = access
+    json.dump(disk, open(path, "w"), indent=1, ensure_ascii=False)
+    open(path, "a").write("\n")
+
+
+TERRAIN_NAMES = {"1m": "1 m lidar", "10m": "10 m national model", "30m": "30 m", "other": "other"}
+
+
+def terrain_shares(out):
+    """The "share <source> <percent>" lines tools/fetch_dem.py prints: how much of the area each source filled."""
+    sh = {}
+    for m in re.finditer(r"^share (\S+) ([\d.]+)$", out, re.M):
+        sh[m.group(1)] = sh.get(m.group(1), 0) + float(m.group(2))
+    tot = sum(sh.values()) or 1
+    return {k: round(v / tot * 100, 1) for k, v in sh.items()}
+
+
+def record_terrain(rid, cfg, label, shares):
+    """Automatic configs: write the terrain source, its shares and its resolution into the config, so the app's
+    credits name it and the app can say when the terrain is coarse (30 m)."""
+    if not cfg.get("auto"):
+        return
+    fine = shares.get("1m", 0) + shares.get("other", 0) * (cfg.get("dem", {}).get("source") in ("swiss", "ign", "gsi"))
+    res = 1 if fine >= 80 else 10 if fine + shares.get("10m", 0) >= 80 else 30
+    parts = ", ".join(f"{TERRAIN_NAMES.get(k, k)} {v:.0f}%" for k, v in sorted(shares.items(), key=lambda x: -x[1]))
+    path = f"{ROOT}/tools/resorts/{rid}.json"
+    disk = json.load(open(path))
+    disk["terrain_source"] = cfg["terrain_source"] = label + (f" ({parts})" if parts else "")
+    disk["terrain_res"] = cfg["terrain_res"] = res
+    disk["terrain_shares"] = cfg["terrain_shares"] = shares
+    json.dump(disk, open(path, "w"), indent=1, ensure_ascii=False)
+    open(path, "a").write("\n")
+
+
+SOURCE_LABEL = {"canada": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada)",
+                "copernicus": "Copernicus DEM GLO-30, 30 m (produced using Copernicus WorldDEM-30, DLR e.V. and Airbus, "
+                              "provided under COPERNICUS by the European Union and ESA)",
+                "swiss": "swisstopo swissALTI3D 2 m", "ign": "IGN RGE ALTI 1 m", "gsi": "GSI Japan 5 m DEM"}
+
+
 def terrain(rid, cfg, bbox, out, opt, log):
     if os.path.exists(out) and not opt["terrain"]:
         return "reused from the work folder"
@@ -280,16 +348,19 @@ def terrain(rid, cfg, bbox, out, opt, log):
         return "rebuilt from the existing map (no download)"
     b = pad(bbox, 1500)  # build_data adds its own margin around everything in the extract
     if is_usa(cfg) and not cfg.get("dem"):
-        return "USGS " + terrain_usa(b, out, log)
+        note = "USGS " + terrain_usa(b, out, log)
+        record_terrain(rid, cfg, "USGS 3DEP elevation (public domain)", terrain_shares(open(log).read().rsplit("tools/fetch_dem.py", 1)[-1]))
+        return note
     d = cfg.get("dem")
     if isinstance(d, list):  # older form: [source, west, south, east, north]
         d, b = {"source": d[0]}, [float(v) for v in d[1:5]]
     if not d:
         raise StepFailed("no terrain source: add \"dem\" to the config (see tools/pipeline.py)")
     if d["source"] == "cog":
-        run([PY, "tools/fetch_dem.py", "cog", out, *map(str, b), str(d["epsg"]), *d["urls"]], log)
+        got = run([PY, "tools/fetch_dem.py", "cog", out, *map(str, b), str(d["epsg"]), *d["urls"]], log)
     else:
-        run([PY, "tools/fetch_dem.py", d["source"], out, *map(str, b)], log)
+        got = run([PY, "tools/fetch_dem.py", d["source"], out, *map(str, b)], log)
+    record_terrain(rid, cfg, SOURCE_LABEL.get(d["source"], d["source"]), terrain_shares(got) or {"other": 100.0})
     return d["source"]
 
 
@@ -330,11 +401,50 @@ def lift_ends_stuck(R):
         return []
     rs = {p["n"]: reach(p["n"]) for p in ends}
     nodes = {p["n"] for p in ends}
-    hub = max(ends, key=lambda p: len(rs[p["n"]] & nodes))["n"]
+    # the hub: the lift end that the most other ends can both reach and get back from (the largest group joined both
+    # ways), so one cut-off lift is reported as such rather than making every other end look stuck
+    hub = max(ends, key=lambda p: sum(1 for q in ends if q["n"] in rs[p["n"]] and p["n"] in rs[q["n"]]))["n"]
     flat = [R["lifts"][e["r"]]["name"] + ": does not climb" for e in g.get("edges", [])
             if e["k"] == "l" and not e.get("bi") and g["nodes"][e["b"]][2] <= g["nodes"][e["a"]][2]]
     return flat + [p["name"] + ("" if p["n"] in rs[hub] else ": not reachable") + ("" if hub in rs[p["n"]] else ": no way back")
                    for p in ends if p["n"] not in rs[hub] or hub not in rs[p["n"]]]
+
+
+TUBING = re.compile(r"tub(e|es|ing)\b|sled|snow ?coaster|luge", re.I)
+
+
+def isolate_cut_off(rid, R):
+    """Automatic configs (issue #45, phase 4): a lift whose ends the routing cannot reach from the rest of the lifts, or
+    cannot get back from, after the rule-based joins, is marked isolated with the reason (config isolated_lifts and
+    isolated_notes), as a person did by hand for village tows; tubing and sledding lifts always are. Returns the names
+    newly marked (the build is then run again). The quality gate holds a map with more than a few such lifts."""
+    lines = lift_ends_stuck(R)
+    kind = {l["name"]: l.get("kind") for l in R["lifts"]}
+    # a village gondola whose bottom no run reaches but whose top is joined: skiers ride it down too (two_way_lifts,
+    # as set by hand for Steamboat's and Telluride's gondolas)
+    two = sorted({s.split(" (")[0] for s in lines if s.endswith("(base): not reachable")
+                  and kind.get(s.split(" (")[0]) in ("gondola", "cable_car", "tram", "mixed_lift")
+                  and not any(x.startswith(s.split(" (")[0] + " (top)") for x in lines)})
+    path = f"{ROOT}/tools/resorts/{rid}.json"
+    disk = json.load(open(path))
+    if [n for n in two if n not in disk.get("two_way_lifts", [])]:
+        disk["two_way_lifts"] = sorted(set(disk.get("two_way_lifts", [])) | set(two))
+        json.dump(disk, open(path, "w"), indent=1, ensure_ascii=False)
+        open(path, "a").write("\n")
+        return [f"{n} (rides both ways)" for n in two]
+    stuck = {s.split(" (")[0] for s in lines}
+    tub = {l["name"] for l in R["lifts"] if l.get("name") and TUBING.search(l["name"])}
+    have = set(disk.get("isolated_lifts", []))
+    new = sorted(n for n in (stuck | tub) - have if n)
+    if not new:
+        return []
+    disk["isolated_lifts"] = sorted(have | set(new))
+    notes = disk.setdefault("isolated_notes", {})
+    for n in new:
+        notes[n] = "rule: tubing or sledding lift" if n in tub else "rule: not joined to the rest of the lifts on the map"
+    json.dump(disk, open(path, "w"), indent=1, ensure_ascii=False)
+    open(path, "a").write("\n")
+    return new
 
 
 def card(rid, cfg, logs, before, terrain_note, notes):
@@ -396,7 +506,8 @@ def card(rid, cfg, logs, before, terrain_note, notes):
                                   "run down: links; a private or club lift: isolated_lifts with a note)" if stuck else ""))
 
     joins = []
-    for key in ("loose run ends joined automatically:", "cut-off runs joined to the nearest reachable point:"):
+    for key in ("loose run ends joined automatically:", "cut-off runs joined to the nearest reachable point:",
+                "dead-end runs joined to the nearest way to a lift:", "lift ends joined by rule:"):
         for line in logs.get("build_data", "").splitlines():
             if line.startswith(key):
                 joins += [j.strip() for j in line[len(key):].split(";") if j.strip()]
@@ -453,6 +564,31 @@ def card(rid, cfg, logs, before, terrain_note, notes):
     return after, look
 
 
+def metrics(rid, cfg, logs, notes):
+    """The numbers the quality gate reads (tools/bulk/gate.py), from this build's logs: tools/bulk/results/<id>.json."""
+    bd = logs.get("build_data", "")
+    m = re.search(r"from the base of (.+?): (\d+)/(\d+) trail segments reachable", bd)
+    joins = sum(len([j for j in line.split(":", 1)[1].split(";") if j.strip()]) for line in bd.splitlines()
+                if line.startswith(("loose run ends joined automatically:", "cut-off runs joined to the nearest reachable point:",
+                                    "dead-end runs joined to the nearest way to a lift:")))
+    rule = next((line.split(":", 1)[1] for line in bd.splitlines() if line.startswith("lift ends joined by rule:")), "")
+    R = json.load(open(f"{ROOT}/public/data/{rid}/resort.json"))
+    chk = logs.get("check", "")
+    mc = re.search(r"(\d+) official runs, (\d+) matched on the map, (\d+) with a different rating", chk)
+    out = {"id": rid, "reachable": [int(m.group(2)), int(m.group(3))] if m else None, "auto_joins": joins,
+           "rule_joins": [j.strip() for j in rule.split(";") if j.strip()],
+           "stuck_lift_ends": lift_ends_stuck(R),
+           "climbing_runs": len([r for r in (logs.get("downhill_json") or []) if not r.get("flat")]),
+           "raised": sum(1 for t in R["trails"] if t.get("raised") and not t.get("hide")),
+           "official": [int(x) for x in mc.groups()] if mc else None,
+           "terrain_res": cfg.get("terrain_res"), "terrain_shares": cfg.get("terrain_shares"),
+           "notes": notes}
+    os.makedirs(f"{ROOT}/tools/bulk/results", exist_ok=True)
+    old = f"{ROOT}/tools/bulk/results/{rid}.json"
+    prev = json.load(open(old)) if os.path.exists(old) else {}
+    json.dump({**prev, **out}, open(old, "w"), indent=1, ensure_ascii=False)
+
+
 def one(rid, opt):
     cfg = json.load(open(f"{ROOT}/tools/resorts/{rid}.json"))
     w = opt["work"]
@@ -482,7 +618,10 @@ def one(rid, opt):
     off = f"{ROOT}/tools/official/{rid}.json"
     feed = cfg.get("ratings_feed", {})
     if not os.path.exists(off) and "mtnpowder" in feed:
-        run([PY, "tools/official_ratings.py", "fetch", "mtnpowder", str(feed["mtnpowder"]), rid], log)
+        try:
+            run([PY, "tools/official_ratings.py", "fetch", "mtnpowder", str(feed["mtnpowder"]), rid], log)
+        except StepFailed as e:   # a feed that no longer lists trails: build with OpenStreetMap's ratings
+            notes.append(f"resort feed mtnpowder {feed['mtnpowder']} gave no trail list: {str(e).splitlines()[-1][:120]}")
 
     if not opt["checks_only"]:
         cfg_path = f"tools/resorts/{rid}.json"
@@ -497,12 +636,19 @@ def one(rid, opt):
             os.remove(dem)
             tnote = terrain(rid, cfg, bbox, dem, {**opt, "terrain": True}, log)
             logs["build_data"] = run([PY, "tools/build_data.py", cfg_path, osm, f"public/data/{rid}", dem], log)
+        if cfg.get("auto"):
+            for _ in range(2):   # first a village gondola made two-way, then whatever is still cut off
+                iso = isolate_cut_off(rid, json.load(open(f"{ROOT}/public/data/{rid}/resort.json")))
+                if not iso:
+                    break
+                notes.append("lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): " + ", ".join(iso))
+                logs["build_data"] = run([PY, "tools/build_data.py", cfg_path, osm, f"public/data/{rid}", dem], log)
         run([PY, "tools/build_extras.py", f"public/data/{rid}"], log)
         run([PY, "tools/build_zones.py", cfg_path, osm, f"public/data/{rid}"], log)
         logs["verify"] = run([PY, "tools/verify_exists.py", rid, osm, "--list"], log)
-        # real trees (Meta's canopy map) and the lift and building details OpenStreetMap records; a source that does
+        # real trees (Meta's canopy map), what covers the land round the map (ESA WorldCover) and the lift and building details OpenStreetMap records; a source that does
         # not answer leaves the map as it was (older trees, generic buildings) rather than stopping the build
-        for step in (["tools/build_canopy.py", rid], ["tools/enrich_osm.py", rid]):
+        for step in (["tools/build_canopy.py", rid], ["tools/build_landcover.py", rid], ["tools/enrich_osm.py", rid]):
             try:
                 run([PY, *step], log)
             except StepFailed as e:
@@ -516,10 +662,16 @@ def one(rid, opt):
     run(["node", "tools/check_downhill.mjs", rid, "--json", dj], log)
     try:
         d = json.load(open(dj))
-        logs["downhill_json"] = d
+        # a run the existence check hides is not on the map: its climb neither needs a look nor counts at the gate
+        T = json.load(open(f"{ROOT}/public/data/{rid}/resort.json"))["trails"]
+        hid = {(t.get("osm"), t.get("name")) for t in T if t.get("hide")}
+        shown = {(t.get("osm"), t.get("name")) for t in T if not t.get("hide")}
+        logs["downhill_json"] = [r for r in d if (r.get("osm"), r.get("name")) not in hid - shown]
     except Exception:
         pass
     result = card(rid, cfg, logs, before, tnote, notes)
+    if cfg.get("auto"):
+        metrics(rid, cfg, logs, notes)
     if opt["r2"] and not opt["checks_only"]:  # never without --r2: R2 is what the live app serves
         run(["node", "tools/maps_r2.mjs", "push", rid], log)
     return result
@@ -534,9 +686,17 @@ def main():
             after, look = one(rid, opt)
             results.append((rid, f"{after['runs']} runs, {after['lifts']} lifts",
                             "ready" if not look else f"{len(look)} to look at", time.time() - t))
+            failed = None
         except StepFailed as e:
             print(f"   {e}")
             results.append((rid, "-", "STOPPED: " + str(e).splitlines()[0], time.time() - t))
+            failed = str(e)[:600]
+        rp = f"{ROOT}/tools/bulk/results/{rid}.json"
+        if json.load(open(f"{ROOT}/tools/resorts/{rid}.json")).get("auto"):   # build time and failure, for the gate
+            os.makedirs(os.path.dirname(rp), exist_ok=True)
+            prev = json.load(open(rp)) if os.path.exists(rp) else {"id": rid}
+            prev.update({"seconds": round(time.time() - t), "failed": failed, "built": str(datetime.date.today())})
+            json.dump(prev, open(rp, "w"), indent=1, ensure_ascii=False)
     if opt["index"] and not opt["checks_only"]:
         for step in ("build_index.py", "build_globe.py"):
             subprocess.run([PY, f"tools/{step}", "public/data"], cwd=ROOT, capture_output=True)

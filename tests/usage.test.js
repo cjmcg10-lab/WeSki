@@ -3,7 +3,7 @@ import { assess, assessAll, report, readState, gotWorse, trend, fmt, addDays } f
 import { limitsFor, PLANS } from '../tools/usage/limits.mjs';
 import { fromCloudflare, fromWorker, r2Class } from '../tools/usage/collect.mjs';
 import { publishAlert, publishWeekly } from '../tools/usage/github.mjs';
-import { routeKey, count, flush, usageResponse, mailResponse, mimeText } from '../worker/usage.js';
+import { routeKey, count, flush, usageResponse, mailResponse } from '../worker/usage.js';
 
 const lim = (plan, id) => limitsFor(plan).find((l) => l.id === id);
 /** n daily points ending the day before `today`, from `start` growing by `step` a day; plus a partial today. */
@@ -246,21 +246,20 @@ describe('the Worker\'s own count', () => {
     const ok = await usageResponse(req('s'), url, env({ USAGE_SECRET: 's' }));
     expect(await ok.json()).toEqual({ days: { '2026-11-22': { 'req:map': 3 } } });
   });
-  it('emails through the send_email binding only when it exists', async () => {
+  it('emails through the sign-in Resend account only when it is set up (Resend is never called here)', async () => {
     const post = (key) => req(key, { method: 'POST', body: JSON.stringify({ subject: 'Hi\r\nBcc: x@y', text: 'line 1\nline 2' }) });
     expect((await mailResponse(post('s'), env({ USAGE_SECRET: 's' }))).status).toBe(404);
-    const sent = [];
-    class EmailMessage { constructor(from, to, raw) { Object.assign(this, { from, to, raw }); } }
-    const res = await mailResponse(post('s'), env({ USAGE_SECRET: 's', USAGE_MAIL: { send: async (m) => sent.push(m) } }), { EmailMessage });
+    const calls = [];
+    const fake = async (url, init) => { calls.push({ url, init }); return { ok: true, status: 200 }; };
+    const mail = { USAGE_SECRET: 's', RESEND_API_KEY: 're_test', MAIL_FROM: 'SkiWithMe <signin@builtbyroger.app>', REPORT_DIGEST_TO: 'hello@builtbyroger.app' };
+    expect((await mailResponse(post('wrong'), env(mail), fake)).status).toBe(401);
+    const res = await mailResponse(post('s'), env(mail), fake);
     expect(res.status).toBe(200);
-    expect(sent[0].to).toBe('hello@builtbyroger.app');
-    expect(sent[0].raw).toContain('Subject: Hi Bcc: x@y\r\n'); // no header can be slipped in
-    expect(sent[0].raw).toContain('line 1\r\nline 2');
-  });
-  it('builds a plain-text email', () => {
-    const raw = mimeText({ from: 'a@b.app', to: 'c@d.app', subject: 'S', text: 'T' });
-    expect(raw).toMatch(/^From: SkiWithMe usage <a@b\.app>\r\nTo: c@d\.app\r\nSubject: S\r\n/);
-    expect(raw).toContain('Message-ID: <');
-    expect(raw.endsWith('\r\n\r\nT')).toBe(true);
+    expect(calls).toHaveLength(1);
+    const body = JSON.parse(calls[0].init.body);
+    expect(body.to).toEqual(['hello@builtbyroger.app']);
+    expect(body.subject).toBe('Hi Bcc: x@y'); // no header can be slipped in
+    expect(body.text).toBe('line 1\nline 2');
+    expect((await mailResponse(post('s'), env(mail), async () => ({ ok: false, status: 403 }))).status).toBe(502);
   });
 });

@@ -37,7 +37,8 @@ available on request, like the map database above.</p>
 listed under Terrain below.</p>
 
 <h2>Ratings</h2>
-<p>Run ratings are checked against each resort’s own published trail list or trail map. Trail names and ratings are facts published
+<p>Run ratings are checked against each resort’s own published trail list or trail map, except at mountains marked “Trail ratings
+not yet checked against the resort’s own list”, where they come from OpenStreetMap. Trail names and ratings are facts published
 by the resorts; resort names belong to their owners. SkiWithMe is not affiliated with or endorsed by any resort.</p>
 
 <h2>Terrain</h2>
@@ -48,6 +49,11 @@ by the resorts; resort names belong to their owners. SkiWithMe is not affiliated
 <li>France: IGN RGE ALTI 1 m, Licence Ouverte / Open Licence.</li>
 <li>Austria: BEV / Austrian federal states ALS terrain model 1 m, CC BY 4.0.</li>
 <li>Japan: Geospatial Information Authority of Japan (GSI) elevation tiles.</li>
+<li>Canada: High Resolution Digital Elevation Model (HRDEM) 1 m and Medium Resolution Digital Elevation Model (MRDEM) 30 m,
+Natural Resources Canada, Open Government Licence – Canada.</li>
+<li>Elsewhere, and where no national model reaches: Copernicus GLO-30, produced using Copernicus WorldDEM-30 © DLR e.V.
+2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights
+reserved.</li>
 <li>Surrounding terrain and pin heights: Mapzen / AWS Terrain Tiles. The tile providers ask for these credits:
 <ul>
 <li>ArcticDEM terrain data DEM(s) were created from DigitalGlobe, Inc., imagery and funded under National Science Foundation awards 1043681, 1559691, and 1542736;</li>
@@ -70,6 +76,7 @@ orthophotos, basemap.at and GSI, used to check positions; the photos are not sho
 <h2>Trees</h2>
 <ul>
 <li>Where the trees stand and how tall: High Resolution Canopy Height Maps by Meta and World Resources Institute (WRI), 2024, <a href="https://registry.opendata.aws/dataforgood-fb-forests/">Registry of Open Data on AWS</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. We summarise it per resort (tree cover and average height on a 7-13 m grid) to place the trees on the map.</li>
+<li>What covers the land around each mountain (forest, open ground, water, bare rock): ESA WorldCover 10 m 2021 v200, © ESA WorldCover project 2021 / Contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium, <a href="https://esa-worldcover.org">esa-worldcover.org</a>, licensed <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. We summarise it per resort (shares of each cover on a 140 m grid) to colour the land around the detailed map.</li>
 </ul>
 
 <h2>Weather</h2>
@@ -78,6 +85,11 @@ Weather elsewhere: data from <a href="https://api.met.no/">MET Norway</a> (the N
 <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. We change it to fit the app: snowfall outside the USA is worked out
 from precipitation and temperature, wind gusts are estimated where MET Norway gives none, and summit and base values are adjusted
 to their real heights.</p>
+<p id="wx-meteoswiss">Forecast ranges for days 6 to 8 at Swiss mountains: Source: <a href="https://www.meteoswiss.admin.ch/services-and-publications/service/open-data.html">MeteoSwiss</a>
+(Federal Office of Meteorology and Climatology MeteoSwiss), open data, local forecasting point data, licensed under
+<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. We change it to fit the app: we pick the forecast point nearest each
+mountain's summit and base, adjust temperatures to their real heights, work out snowfall from precipitation and temperature, and turn the
+10% and 90% ensemble values into a range of ski scores.</p>
 <p id="wx-alerts">Weather alerts (winter storm, snow, ice, high wind and wind chill) in the USA: <a href="https://www.weather.gov/">US National Weather Service</a> (public domain).
 In Canada: Data Source: <a href="https://weather.gc.ca/">Environment and Climate Change Canada</a>, under the
 <a href="https://eccc-msc.github.io/open-data/licence/readme_en/">Data Services End-use Licence</a>; the name of each alert is shown as issued.
