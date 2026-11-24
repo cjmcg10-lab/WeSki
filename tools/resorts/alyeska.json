@@ -35,5 +35,10 @@
  "terrain_res": 10,
  "terrain_shares": {
   "10m": 100.0
+ },
+ "rename": {
+  "Cheechacko": "Cheechako",
+  "Klondike Cutoff": "Klondike Cut-Off",
+  "Perseverence": "Perseverance"
  }
 }

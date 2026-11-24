@@ -36,5 +36,38 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Fly-Way": "Flyway",
+  "Motherlode": "Mother Lode",
+  "Ripcord": "Rip Cord"
+ },
+ "links": [
+  [
+   "Southwest Flyer (top)",
+   "trail:C-4",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Nitro",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Detonator",
+   "hike"
+  ],
+  [
+   "Southwest Flyer (top)",
+   "trail:Baa-Da-Bing",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "C-4, Nitro, Detonator, Baa-Da-Bing": "the trail map marks these HIKING REQUIRED, reached by the dotted Hike Access Trail from the top of the Southwest Flyer"
+ },
+ "way_names": {
+  "776370525": "Upper El Sol"
  }
 }
