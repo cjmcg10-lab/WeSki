@@ -1,13 +1,17 @@
 # Sugar Mountain (sugar-mountain)
 
-Built 2026-11-24 by tools/pipeline.py. Terrain: USGS NC_Phase5_2018_A18 (gaps filled from TN Eastern 2 16 B16 Del4 2016, 10 m national elevation model (1/3 arc-second)).
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
-**27 runs (21 named, 7.4 km), 8 lifts. 1 things to look at.**
+**26 runs (21 named, 7.4 km), 8 lifts. 1 things to look at.**
 
-- **LOOK**: ratings NOT checked: not ready to go live  
-  make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)
+- **LOOK**: 2 runs on the resort's list are not on the map  
+  Crossover, Laurel Lane (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - info: audit: stub: 1
+- info: same counts as the previous build
+- pass: ratings checked against the resort's own list  
+  21 on the list, 34 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 6 of 6 on the map
 - pass: 0 shown runs rated by guess
-- pass: reachable from the base: 27 of 27 run pieces
+- pass: reachable from the base: 26 of 26 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m
