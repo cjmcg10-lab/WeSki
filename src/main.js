@@ -392,7 +392,8 @@ async function openStart(from = null) {
   $('#f-resort').value = '';
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
-  // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
+  addCatalogToGlobe(globe);
+  // tap a mountain's peak to open its card; tapping elsewhere zooms in (the button top right zooms back out)
   globe.onPick = (rs) => pickResort(rs.id);
   globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
   // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
@@ -409,6 +410,16 @@ async function openStart(from = null) {
   $('#start-panel').classList.toggle('hidden', !!from);
   $('.start-top').classList.toggle('hidden', !!from);
   if (from) globe.surface(from);
+}
+
+// The Forecast catalogue gives the globe the heights of coming-soon mountains and the Forecast-only mountains.
+// Fetched after the globe shows (it is 0.7 MB) and kept for the rest of the visit.
+let globeCatalog = null;
+function addCatalogToGlobe(g) {
+  globeCatalog ??= Promise.all([fetchOk('/forecast/catalog-index.json').then((r) => r.json()), import('./globemarks.js')])
+    .then(([index, { catalogMarks }]) => catalogMarks(index, PLACES))
+    .catch(() => { globeCatalog = null; return null; });
+  globeCatalog.then((m) => { if (m) g.addCatalog(m.drops, m.others); });
 }
 
 /** Size the resting globe to the space between the title and the mountain list. */

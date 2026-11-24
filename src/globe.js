@@ -1,6 +1,7 @@
 // Start-screen globe: a single low-poly sphere with a canvas-drawn texture (Natural Earth
 // land outlines), slowly spinning. Picking a resort turns the globe to it and zooms in.
 import * as THREE from 'three';
+import { peakHeight, dropOf } from './globemarks.js';
 
 const LAYERS = ['land', 'coast', 'borders', 'states', 'hiCoast', 'hiBorders', 'water'];
 /** The point lists of one layer of globe.bin, as [lon, lat, lon, lat, ...] arrays in degrees. */
@@ -19,6 +20,81 @@ const ll = (lat, lon, r = 1) => {
   const phi = THREE.MathUtils.degToRad(lon + 180), c = Math.cos(THREE.MathUtils.degToRad(lat));
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
 };
+
+// Resort peaks. Colours: built mountains in the app's teal, mountains not added yet in a muted slate.
+const BUILT = '#2fd3b3', LATER = '#8e9ab3', SNOW = '#f6fbff';
+const MAX_PEAK = 0.075; // the tallest peak's height in globe radii at scale 1 (the old dots were 0.012 across)
+
+/**
+ * One InstancedMesh for many peaks. Each peak is a six-sided low-poly cone with a snow cap. It stands straight up
+ * on the screen wherever it is on the globe (so heights can be compared anywhere, not only at the edge), tilted a
+ * little to be seen from above, and is drawn just in front of the globe's surface so the globe never cuts into it.
+ * Per peak the instance matrix holds: [0][0] unused, [0][1] a turn so neighbours differ, [1][1] the height (0-1),
+ * [3] the spot on the globe.
+ */
+function makePeaks(list, order = 2) {
+  let geo = new THREE.ConeGeometry(1, 1, 6, 3, true);
+  geo.translate(0, 0.5, 0);
+  geo = geo.toNonIndexed();
+  geo.computeVertexNormals();
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uScale: { value: 1 }, uMax: { value: MAX_PEAK }, uSnow: { value: new THREE.Color(SNOW) } },
+    vertexShader: `
+      uniform float uScale, uMax;
+      varying vec3 vCol; varying float vLight, vY, vAng, vH;
+      void main() {
+        vec3 anchor = instanceMatrix[3].xyz;
+        float h = instanceMatrix[1][1], yaw = instanceMatrix[0][1];
+        vec4 a = modelViewMatrix * vec4(anchor, 1.0);
+        // shrink away on the far side of the globe
+        float facing = dot(normalize(normalMatrix * anchor), normalize(-a.xyz));
+        float s = uScale * smoothstep(0.0, 0.12, facing);
+        float c = cos(yaw), sn = sin(yaw);
+        vec3 p = vec3(c * position.x + sn * position.z, position.y, -sn * position.x + c * position.z);
+        vec3 nr = vec3(c * normal.x + sn * normal.z, normal.y, -sn * normal.x + c * normal.z);
+        vec3 sc = vec3(0.3 + 0.12 * h, h, 0.3 + 0.12 * h);
+        p *= sc; nr = normalize(nr / sc);
+        const float T = 0.5; float ct = cos(T), st = sin(T);
+        p = vec3(p.x, ct * p.y - st * p.z, st * p.y + ct * p.z);
+        nr = vec3(nr.x, ct * nr.y - st * nr.z, st * nr.y + ct * nr.z);
+        vec3 v = a.xyz + p * uMax * s;
+        // slide the whole peak toward the camera along the line of sight: the same place on screen,
+        // but in front of the curved surface it would otherwise sink into near the globe's edge
+        float pull = min(0.5, (sqrt(2.0 * uMax * s) + 0.001) / length(a.xyz));
+        v *= 1.0 - pull;
+        gl_Position = projectionMatrix * vec4(v, 1.0);
+        vCol = instanceColor;
+        vLight = 0.5 + 0.65 * max(0.0, dot(nr, normalize(vec3(-0.55, 0.6, 0.6))));
+        vY = position.y; vAng = atan(position.z, position.x); vH = h;
+      }`,
+    fragmentShader: `
+      uniform vec3 uSnow;
+      varying vec3 vCol; varying float vLight, vY, vAng, vH;
+      void main() {
+        // a ragged snow line; taller peaks carry more snow
+        float line = 1.0 - (0.28 + 0.22 * vH) + 0.05 * sin(vAng * 3.0);
+        vec3 col = mix(vCol, uSnow, step(line, vY));
+        gl_FragColor = vec4(col * vLight, 1.0);
+        #include <colorspace_fragment>
+      }`,
+  });
+  const mesh = new THREE.InstancedMesh(geo, mat, Math.max(1, list.length));
+  mesh.count = list.length;
+  mesh.frustumCulled = false;       // the shader places the peaks; the mesh's own bounds mean nothing
+  mesh.renderOrder = order;
+  const col = new THREE.Color();
+  list.forEach((p, i) => { setPeak(mesh, i, p); mesh.setColorAt(i, col.set(p.color)); });
+  if (!list.length) mesh.setColorAt(0, col.set(LATER));
+  return mesh;
+}
+
+function setPeak(mesh, i, { at, h }) {
+  const m = new THREE.Matrix4(), e = m.elements;
+  e.fill(0);
+  e[1] = ((Math.sin(i * 12.9898 + at.x * 78.233) * 43758.5453) % 1) * Math.PI; // a turn that differs from peak to peak
+  e[5] = h; e[12] = at.x; e[13] = at.y; e[14] = at.z; e[15] = 1;
+  mesh.setMatrixAt(i, m);
+}
 
 const MIN_DIST = 1.035, ZOOM_STEP = 0.36; // tap-to-zoom: each tap brings the camera this much closer, down to ~220 km up
 const CARD_DIST = 1.6, CARD_LIFT = 0.13, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
@@ -70,13 +146,12 @@ export class Globe {
     lines(['coast', 'hiCoast'], '#ffffff', 1);
     // soft atmosphere rim
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
-    this.pins = [];
-    for (const rs of resorts) {
-      const pin = new THREE.Mesh(new THREE.SphereGeometry(rs.available ? 0.012 : 0.007, 10, 8), new THREE.MeshBasicMaterial({ color: rs.available ? '#3ee6c4' : '#ff9f2e' }));
-      pin.position.copy(ll(rs.lat, rs.lon, 1.004));
-      g.add(pin);
-      this.pins.push({ rs, pin });
-    }
+    // Each resort is a little snow-capped peak standing on the globe; its height shows the vertical drop.
+    // Mountains with a map are teal; mountains not added yet (coming soon, and the Forecast-only ones) are muted slate.
+    this.pins = resorts.map((rs) => ({ rs, at: ll(rs.lat, rs.lon, 1), h: peakHeight(dropOf(rs)), visible: true }));
+    this.peaks = makePeaks(this.pins.map((p) => ({ at: p.at, h: p.h, color: p.rs.available ? BUILT : LATER })));
+    g.add(this.peaks);
+    this.others = null; this.peakScale = 1;
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.026, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide, transparent: true }));
     this.ring.visible = false;
     g.add(this.ring);
@@ -89,6 +164,8 @@ export class Globe {
     this.meHalo = new THREE.Mesh(new THREE.CircleGeometry(0.03, 32), new THREE.MeshBasicMaterial({ color: '#1e88ff', transparent: true, opacity: 0.3, side: THREE.DoubleSide, depthWrite: false }));
     this.meHalo.position.z = -0.0002;
     this.me.add(this.meHalo);
+    // drawn over the peaks; hidden in loop() while on the far side of the globe
+    this.me.traverse((o) => { if (o.material) { o.material.depthTest = false; o.renderOrder = 3; } });
     this.me.visible = false;
     g.add(this.me);
     g.rotation.order = 'XYZ';
@@ -209,18 +286,20 @@ export class Globe {
     if (!this.zoomAt(x, y)) this.zoomOut();
   }
 
-  /** Resort dots on the visible side of the globe, nearest to a screen point first, with their distance in px. */
+  /** Resort peaks on the visible side of the globe, nearest to a screen point first, with their distance in px. */
   pinsNear(x, y) {
-    const w = this.renderer.domElement.clientWidth, h = this.renderer.domElement.clientHeight;
+    const w = this.renderer.domElement.clientWidth, h0 = this.renderer.domElement.clientHeight;
     const cam = this.camera.position, out = [], v = new THREE.Vector3();
     this.globe.updateMatrixWorld();
-    for (const { rs, pin } of this.pins) {
-      if (!pin.visible) continue;
-      pin.getWorldPosition(v);
-      // behind the globe: the dot faces away from the camera
+    const lift = MAX_PEAK * this.peakScale * 0.45;
+    for (const { rs, at, h, visible } of this.pins) {
+      if (!visible) continue;
+      v.copy(at).applyMatrix4(this.globe.matrixWorld);
+      // behind the globe: the mountain faces away from the camera
       if (v.clone().normalize().dot(cam.clone().sub(v)) <= 0) continue;
+      v.y += lift * h;                               // aim at the middle of the peak, which stands straight up on screen
       v.project(this.camera);
-      out.push({ rs, px: Math.hypot((v.x + 1) / 2 * w - x, (1 - v.y) / 2 * h - y) });
+      out.push({ rs, px: Math.hypot((v.x + 1) / 2 * w - x, (1 - v.y) / 2 * h0 - y) });
     }
     return out.sort((a, b) => a.px - b.px);
   }
@@ -252,6 +331,24 @@ export class Globe {
     if (!this.zoomed) return;
     this.zoomed = false; this.onZoom?.(false);
     this.go({ d: this.home, l: this.homeLift }, 0.9, { zoom: true }).then(() => { if (!this.focused && !this.zoomed) this.spin = true; });
+  }
+
+  /**
+   * Add what the Forecast catalogue knows: drops for coming-soon mountains that had none (id -> metres), and the
+   * Forecast-only mountains ([{lat, lon, drop}]), shown as smaller slate peaks once zoomed in. They cannot be tapped.
+   */
+  addCatalog(drops, others) {
+    if (!this.alive) return;
+    this.pins.forEach((p, i) => {
+      const d = drops.get(p.rs.id);
+      if (d == null || dropOf(p.rs) != null) return;
+      p.h = peakHeight(d);
+      setPeak(this.peaks, i, { at: p.at, h: p.h });
+    });
+    this.peaks.instanceMatrix.needsUpdate = true;
+    if (this.others || !others.length) return;
+    this.others = makePeaks(others.map((o) => ({ at: ll(o.lat, o.lon, 1), h: peakHeight(o.drop), color: LATER })), 1);
+    this.globe.add(this.others);
   }
 
   /** Show (or with null, hide) the viewer's own position on the globe. */
@@ -378,9 +475,22 @@ export class Globe {
     let ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.min(2.6, Math.max(0.35, (this.dist - 0.95) / 2.4));
     // zoomed in by tapping (or flying to a resort card from there): the dots stay about the same size on screen
     if (this.zoomed || (this.focused && this.dist < 1.6 && !this.diving)) ps = Math.min(2.6, Math.max(0.012, (this.dist - 0.995) / 2.4));
-    for (const p of this.pins) { p.pin.visible = ps > 0.001; p.pin.scale.setScalar(ps || 0.001); }
+    this.peakScale = ps;
+    const shown = ps > 0.001;
+    for (const p of this.pins) p.visible = shown;
+    this.peaks.visible = shown;
+    this.peaks.material.uniforms.uScale.value = ps;
+    if (this.others) {
+      // the Forecast-only mountains appear once zoomed in a little, smaller than the others, so the whole globe stays clear
+      const k = Math.min(1, Math.max(0, (2.3 - this.dist) / 0.5));
+      this.others.visible = shown && k > 0;
+      this.others.material.uniforms.uScale.value = ps * 0.6 * k;
+    }
     if (this.me.visible) {
-      const show = ps > 0.001 && !this.diving;
+      this.globe.updateMatrixWorld();
+      const mw = this.me.getWorldPosition(new THREE.Vector3());
+      const facing = mw.clone().normalize().dot(this.camera.position.clone().sub(mw)) > 0;
+      const show = ps > 0.001 && !this.diving && facing;
       this.me.children.forEach((c) => (c.visible = show));
       this.me.scale.setScalar(Math.max(0.001, ps));
       const k = (this.t * 0.8) % 1;
