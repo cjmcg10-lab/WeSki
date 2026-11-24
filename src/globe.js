@@ -26,45 +26,80 @@ const BUILT = '#2fd3b3', LATER = '#8e9ab3', SNOW = '#f6fbff';
 const MAX_PEAK = 0.075; // the tallest peak's height in globe radii at scale 1 (the old dots were 0.012 across)
 
 /**
- * One InstancedMesh for many peaks. Each peak is a six-sided low-poly cone with a snow cap. It stands straight up
- * on the screen wherever it is on the globe (so heights can be compared anywhere, not only at the edge), tilted a
- * little to be seen from above, and is drawn just in front of the globe's surface so the globe never cuts into it.
- * Per peak the instance matrix holds: [0][0] unused, [0][1] a turn so neighbours differ, [1][1] the height (0-1),
- * [3] the spot on the globe.
+ * The shape of one mountain: a main low-poly peak with uneven, faceted sides and a lower shoulder peak beside it,
+ * 1 tall, about 0.6 across, base at y = 0. Plain triangles (no index) so every facet is lit flat.
+ */
+function mountainGeo() {
+  const parts = [];
+  const hash = (x) => { const v = Math.sin(x * 127.1) * 43758.5453; return v - Math.floor(v); };
+  const peak = (r, h, segs, ox, oz, seed) => {
+    let g = new THREE.ConeGeometry(r, h, segs, 3, true);
+    g.translate(0, h / 2, 0);
+    const pos = g.attributes.position;
+    for (let i = 0; i < pos.count; i++) {
+      const y = pos.getY(i);
+      if (y > h * 0.98) continue;                                   // keep the summit sharp
+      const ang = Math.atan2(pos.getZ(i), pos.getX(i));
+      const k = 1 + 0.32 * (hash(seed + Math.round(ang * 10) * 3.1 + Math.round(y * 9)) - 0.5); // ragged ridges
+      pos.setXYZ(i, pos.getX(i) * k + ox, y, pos.getZ(i) * k + oz);
+    }
+    g = g.toNonIndexed();
+    g.computeVertexNormals();
+    parts.push(g);
+  };
+  peak(0.3, 1, 7, 0, 0, 1);
+  peak(0.22, 0.58, 6, 0.24, 0.1, 7);
+  peak(0.18, 0.42, 5, -0.2, -0.12, 13);
+  const n = parts.reduce((t, g) => t + g.attributes.position.count, 0);
+  const P = new Float32Array(n * 3), N = new Float32Array(n * 3);
+  let o = 0;
+  for (const g of parts) { P.set(g.attributes.position.array, o); N.set(g.attributes.normal.array, o); o += g.attributes.position.array.length; }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(P, 3));
+  geo.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+  return geo;
+}
+
+/**
+ * One InstancedMesh for many peaks. Each is a small 3D mountain standing on the globe (owner, 2026-11-24: "as I scroll
+ * north or south the perspective should translate as though I was looking at an actual mountain"): its sides and its
+ * light turn with the globe, so it is seen from the angle the viewer really looks at it. It leans part of the way toward
+ * the top of the screen (uLean), or a mountain in the middle of the globe, seen from straight above, would read as a dot
+ * and heights could not be compared. Real 3D shapes at their real depth, so a nearer mountain covers a farther one.
+ * The whole set is slid toward the camera by the same share (uPull), which keeps every mountain's place on screen and
+ * their front-to-back order, and lifts them clear of the curved surface near the globe's edge.
+ * Per peak the instance matrix holds: [0][1] a turn so neighbours differ, [1][1] the height (0-1), [3] the spot on the globe.
  */
 function makePeaks(list, order = 2) {
-  let geo = new THREE.ConeGeometry(1, 1, 6, 3, true);
-  geo.translate(0, 0.5, 0);
-  geo = geo.toNonIndexed();
-  geo.computeVertexNormals();
+  const geo = mountainGeo();
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uScale: { value: 1 }, uMax: { value: MAX_PEAK }, uSnow: { value: new THREE.Color(SNOW) } },
+    uniforms: { uScale: { value: 1 }, uPull: { value: 1 }, uMax: { value: MAX_PEAK }, uLean: { value: 2.2 }, uSnow: { value: new THREE.Color(SNOW) } },
     vertexShader: `
-      uniform float uScale, uMax;
+      uniform float uScale, uMax, uPull, uLean;
       varying vec3 vCol; varying float vLight, vY, vAng, vH;
       void main() {
         vec3 anchor = instanceMatrix[3].xyz;
         float h = instanceMatrix[1][1], yaw = instanceMatrix[0][1];
         vec4 a = modelViewMatrix * vec4(anchor, 1.0);
+        vec3 up = normalize(normalMatrix * normalize(anchor));        // the ground's upward direction, as seen
         // shrink away on the far side of the globe
-        float facing = dot(normalize(normalMatrix * anchor), normalize(-a.xyz));
-        float s = uScale * smoothstep(0.0, 0.12, facing);
+        float s = uScale * smoothstep(0.0, 0.12, dot(up, normalize(-a.xyz)));
+        // the mountain's own axes: Y up out of the ground (leaning toward the top of the screen), X east on the globe
+        vec3 Y = normalize(up + uLean * vec3(0.0, 1.0, 0.0));
+        vec3 east = normalMatrix * normalize(cross(vec3(0.0, 1.0, 0.0), anchor) + vec3(1e-5, 0.0, 0.0));
+        vec3 X = normalize(east - dot(east, Y) * Y), Z = cross(X, Y);
         float c = cos(yaw), sn = sin(yaw);
         vec3 p = vec3(c * position.x + sn * position.z, position.y, -sn * position.x + c * position.z);
         vec3 nr = vec3(c * normal.x + sn * normal.z, normal.y, -sn * normal.x + c * normal.z);
-        vec3 sc = vec3(0.3 + 0.12 * h, h, 0.3 + 0.12 * h);
+        vec3 sc = vec3(0.6 + 0.3 * h, h, 0.6 + 0.3 * h);             // taller peaks a little broader too
         p *= sc; nr = normalize(nr / sc);
-        const float T = 0.5; float ct = cos(T), st = sin(T);
-        p = vec3(p.x, ct * p.y - st * p.z, st * p.y + ct * p.z);
-        nr = vec3(nr.x, ct * nr.y - st * nr.z, st * nr.y + ct * nr.z);
-        vec3 v = a.xyz + p * uMax * s;
-        // slide the whole peak toward the camera along the line of sight: the same place on screen,
-        // but in front of the curved surface it would otherwise sink into near the globe's edge
-        float pull = min(0.5, (sqrt(2.0 * uMax * s) + 0.001) / length(a.xyz));
+        vec3 v = a.xyz + (X * p.x + Y * p.y + Z * p.z) * uMax * s;
+        vec3 n = normalize(X * nr.x + Y * nr.y + Z * nr.z);
+        float pull = min(0.5, (sqrt(2.0 * uMax * uPull) + 0.001) / length(a.xyz));
         v *= 1.0 - pull;
         gl_Position = projectionMatrix * vec4(v, 1.0);
         vCol = instanceColor;
-        vLight = 0.5 + 0.65 * max(0.0, dot(nr, normalize(vec3(-0.55, 0.6, 0.6))));
+        vLight = 0.42 + 0.75 * max(0.0, dot(n, normalize(vec3(-0.5, 0.65, 0.55))));
         vY = position.y; vAng = atan(position.z, position.x); vH = h;
       }`,
     fragmentShader: `
@@ -72,7 +107,7 @@ function makePeaks(list, order = 2) {
       varying vec3 vCol; varying float vLight, vY, vAng, vH;
       void main() {
         // a ragged snow line; taller peaks carry more snow
-        float line = 1.0 - (0.28 + 0.22 * vH) + 0.05 * sin(vAng * 3.0);
+        float line = 1.0 - (0.3 + 0.22 * vH) + 0.05 * sin(vAng * 3.0);
         vec3 col = mix(vCol, uSnow, step(line, vY));
         gl_FragColor = vec4(col * vLight, 1.0);
         #include <colorspace_fragment>
@@ -480,11 +515,13 @@ export class Globe {
     for (const p of this.pins) p.visible = shown;
     this.peaks.visible = shown;
     this.peaks.material.uniforms.uScale.value = ps;
+    this.peaks.material.uniforms.uPull.value = ps;
     if (this.others) {
       // the Forecast-only mountains appear once zoomed in a little, smaller than the others, so the whole globe stays clear
       const k = Math.min(1, Math.max(0, (2.3 - this.dist) / 0.5));
       this.others.visible = shown && k > 0;
       this.others.material.uniforms.uScale.value = ps * 0.6 * k;
+      this.others.material.uniforms.uPull.value = ps;
     }
     if (this.me.visible) {
       this.globe.updateMatrixWorld();
