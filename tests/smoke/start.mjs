@@ -131,6 +131,26 @@ try {
     await page.locator('#start-panel .grab').tap();
     await page.waitForTimeout(600);
   }
+  // with an iPhone notch (imitated: a 47 px safe area at the top), a quick slide up that is let go part-way glides to the
+  // whole screen with the grab bar and title below the notch on every frame: they used to glide up under the camera and
+  // drop back down once the glide ended (#140)
+  {
+    await page.addStyleTag({ content: ':root { --sat: 47px !important; }' });
+    await page.waitForTimeout(100);
+    const g = await page.locator('#start-panel .grab').boundingBox();
+    await page.evaluate(() => { window.__nt = []; const h = document.querySelector('#start-panel h2'), b = document.querySelector('#start-panel .grab'), t0 = performance.now(), f = () => { window.__nt.push([Math.round(h.getBoundingClientRect().top), Math.round(b.getBoundingClientRect().top)]); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
+    await page.evaluate(async ({ x, y }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
+      ev('pointerdown', y); for (let i = 1; i <= 6; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 40 * i); } ev('pointerup', y - 240); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
+    await page.waitForTimeout(1500);
+    const nt = await page.evaluate(() => window.__nt);
+    if (!(await page.locator('#start-panel.full').count())) fail('a quick slide up did not open the list to the whole screen');
+    const under = nt.filter(([h, b]) => h < 47 || b < 47);
+    if (under.length) fail(`with a notch, the list's title or grab bar went under it while gliding up (highest title ${Math.min(...nt.map((r) => r[0]))}, grab bar ${Math.min(...nt.map((r) => r[1]))})`);
+    const end = nt[nt.length - 1];
+    if (nt.some(([h]) => h < end[0] - 4)) fail(`the title went above its final place and came back down (lowest ${Math.min(...nt.map((r) => r[0]))}, final ${end[0]})`);
+    await page.locator('#start-panel .grab').tap();
+    await page.waitForTimeout(600);
+  }
 
   // ---- 2. picking a mountain: no map building during the globe's turn (1.8 s)
   // its files fetched once first, so they come from the cache and the map could otherwise be built straight away
