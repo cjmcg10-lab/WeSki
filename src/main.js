@@ -609,6 +609,7 @@ async function pickResort(id) {
   const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
+  S.listWas = $('#start-panel').classList.contains('hidden') ? S.listWas : startState();   // the list comes back there
   hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
@@ -2525,7 +2526,7 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
+    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); if (S.listWas === 'mini') goStart('mini', null, startGeom(), true); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
     case 'near-me': S.histOnly = false; nearMe(); break;

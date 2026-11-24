@@ -54,6 +54,19 @@ function mountainGeo() {
  * Height and base both grow with the vertical drop, so a big mountain still reads as big when seen from above.
  * Per peak the instance matrix holds: [0][1] a turn so neighbours differ, [1][1] the height (0-1), [3] the spot on the globe.
  */
+/**
+ * GLSL: true for a point of a mountain that the Earth hides from the camera. The globe itself does not hide the mountains
+ * (they are drawn after it: see the globe's constructor), so each pixel checks whether the line from the eye to it meets
+ * the true sphere first. Mountains then roll over the horizon and slip behind the Earth's curve as they would for real.
+ */
+const BEHIND_EARTH = `
+  varying vec3 vView, vCentre;
+  bool behindEarth() {
+    // the line from the eye (0,0,0) to the point P meets the unit sphere at t*P; hidden if it does so before reaching P
+    float pp = dot(vView, vView), pc = dot(vView, vCentre), d = pc * pc - pp * (dot(vCentre, vCentre) - 1.0);
+    return d > 0.0 && (pc - sqrt(d)) / pp < 1.0 - 1e-4;
+  }`;
+
 function makePeaks(list, order = 11) {
   const geo = mountainGeo();
   const mat = new THREE.ShaderMaterial({
@@ -62,6 +75,7 @@ function makePeaks(list, order = 11) {
     vertexShader: `
       uniform float uScale, uMax;
       varying vec3 vCol; varying float vLight, vY, vAng, vH;
+      varying vec3 vView, vCentre;
       void main() {
         vec3 anchor = instanceMatrix[3].xyz;
         float h = instanceMatrix[1][1], yaw = instanceMatrix[0][1];
@@ -73,12 +87,11 @@ function makePeaks(list, order = 11) {
         vec3 nr = vec3(c * normal.x + sn * normal.z, normal.y, -sn * normal.x + c * normal.z);
         vec3 sc = vec3(0.45 + 0.75 * h, h, 0.45 + 0.75 * h);         // a bigger drop: taller and broader
         p *= sc; nr = normalize(nr / sc);
-        // shrink away toward the edge and on the far side of the globe (the globe does not hide them: see the constructor)
-        vec4 a = modelViewMatrix * vec4(anchor, 1.0);
-        float s = uScale * smoothstep(0.0, 0.12, dot(normalize(normalMatrix * Y), normalize(-a.xyz)));
-        vec3 w = Y + (X * p.x + Y * p.y + Z * p.z) * uMax * s;   // foot on the true surface
+        vec3 w = Y + (X * p.x + Y * p.y + Z * p.z) * uMax * uScale;   // foot on the true surface
         vec3 n = normalize(normalMatrix * (X * nr.x + Y * nr.y + Z * nr.z));
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 1.0);
+        vec4 v = modelViewMatrix * vec4(w, 1.0);
+        gl_Position = projectionMatrix * v;
+        vView = v.xyz; vCentre = (modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
         vCol = instanceColor;
         vLight = 0.42 + 0.75 * max(0.0, dot(n, normalize(vec3(-0.5, 0.65, 0.55))));
         vY = position.y; vAng = atan(position.z, position.x); vH = h;
@@ -86,7 +99,9 @@ function makePeaks(list, order = 11) {
     fragmentShader: `
       uniform vec3 uSnow;
       varying vec3 vCol; varying float vLight, vY, vAng, vH;
+      ${BEHIND_EARTH}
       void main() {
+        if (behindEarth()) discard;
         // a ragged snow line; taller peaks carry more snow
         float line = 1.0 - (0.3 + 0.22 * vH) + 0.05 * sin(vAng * 3.0);
         vec3 col = mix(vCol, uSnow, step(line, vY));
@@ -305,11 +320,11 @@ export class Globe {
     const r = this.renderer.domElement.getBoundingClientRect(), x = cx - r.left, y = cy - r.top;
     // a tap on a mountain's drawn shape opens that mountain's card (the one in front where shapes overlap)
     const hit = this.peakAt(x, y);
-    if (hit) { this.onPick?.(hit); return; }
+    if (hit) { this.stayNext = true; this.onPick?.(hit); this.stayNext = false; return; }
     const near = this.pinsNear(x, y);
     const hitR = 24, clearR = 30;
     if (near.length && near[0].px < hitR && (near.length < 2 || near[1].px > clearR || this.dist <= MIN_DIST + 0.01)) {
-      this.onPick?.(near[0].rs);
+      this.stayNext = true; this.onPick?.(near[0].rs); this.stayNext = false;
       return;
     }
     // the page can claim the first tap (the home screen uses it to slide the mountain list down so the globe fills the screen)
@@ -332,7 +347,8 @@ export class Globe {
         uniforms: this.peaks.material.uniforms,
         vertexShader: this.peaks.material.vertexShader.replace('void main() {', 'flat out int vId;\n      void main() {\n        vId = gl_InstanceID;'),
         fragmentShader: `flat in int vId;
-          void main() { int i = vId + 1; gl_FragColor = vec4(float(i % 256), float((i / 256) % 256), 0.0, 255.0) / 255.0; }`,
+          ${BEHIND_EARTH}
+          void main() { if (behindEarth()) discard; int i = vId + 1; gl_FragColor = vec4(float(i % 256), float((i / 256) % 256), 0.0, 255.0) / 255.0; }`,
       });
     }
     const cam = this.camera, mat = this.peaks.material, clear = r.getClearColor(new THREE.Color()), alpha = r.getClearAlpha();
@@ -431,6 +447,8 @@ export class Globe {
   /** Turn the globe so the resort faces the camera and zoom in. Resolves when it arrives. */
   flyTo(rs, seconds = 1.8, lift = CARD_LIFT) {
     this.spin = false; this.focused = rs;
+    // picked by touching it on the globe: closing the card leaves the globe where this turn puts it
+    this.stay = !!this.stayNext;
     // picked while zoomed in: stay at least that close, and come back to it when the card is closed
     this.backTo = this.zoomed ? this.dist : null;
     if (this.zoomed) { this.zoomed = false; this.onZoom?.(false); }
@@ -449,6 +467,13 @@ export class Globe {
   /** Back to the slow spin (after closing a resort card). */
   release() {
     this.focused = null; this.ring.visible = false; this.diving = false;
+    if (this.stay) {
+      // the mountain was touched on the globe: stay turned and zoomed as it is (only re-centre it in the taller frame
+      // the closed card leaves), so the person carries on looking around from there
+      this.stay = false; this.backTo = null; this.zoomed = true; this.onZoom?.(true);
+      this.go({ l: this.zoomLift() }, 0.6, { zoom: true });
+      return;
+    }
     if (this.backTo) {
       const d = this.backTo; this.backTo = null; this.zoomed = true; this.onZoom?.(true);
       this.go({ d, l: this.zoomLift() }, 0.9, { zoom: true });
