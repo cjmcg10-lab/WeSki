@@ -278,7 +278,7 @@ export class ResortLog extends DurableObject {
     `);
     // columns added for #112 (older objects have the first version of the table)
     const cols = new Set([...this.sql.exec('PRAGMA table_info(reports)')].map((r) => r.name));
-    for (const [c, type] of [['dev', 'TEXT'], ['near', 'INTEGER'], ['run', 'INTEGER'], ['lat', 'REAL'], ['lon', 'REAL'], ['should', 'INTEGER'], ['scale', 'TEXT']]) {
+    for (const [c, type] of [['dev', 'TEXT'], ['near', 'INTEGER'], ['run', 'INTEGER'], ['lat', 'REAL'], ['lon', 'REAL'], ['should', 'INTEGER'], ['scale', 'TEXT'], ['about', 'TEXT']]) {
       if (!cols.has(c)) this.sql.exec(`ALTER TABLE reports ADD COLUMN ${c} ${type}`);
     }
   }
@@ -362,19 +362,19 @@ export class ResortLog extends DurableObject {
   /** `r.dev` must already be the per-mountain hash of the phone's install id (see worker/index.js), or ''. */
   addReport(r, ipKey) {
     if (!this.allow('rep:' + ipKey, 10, 86400e3)) return { error: 'too_many' };
-    this.sql.exec('INSERT INTO reports (at, kind, x, y, ref, name, text, dev, near, run, lat, lon, should, scale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      r.at, r.kind, r.x, r.y, r.ref, r.name, r.text, r.dev || null, r.near ?? null, r.run ?? null, r.lat ?? null, r.lon ?? null, r.should ?? null, r.scale ?? null);
+    this.sql.exec('INSERT INTO reports (at, kind, x, y, ref, name, text, dev, near, run, lat, lon, should, scale, about) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      r.at, r.kind, r.x, r.y, r.ref, r.name, r.text, r.dev || null, r.near ?? null, r.run ?? null, r.lat ?? null, r.lon ?? null, r.should ?? null, r.scale ?? null, r.about ?? null);
     return { ok: true };
   }
 
   /** The public list: never the install-id hash or the reporter's distance from the spot. */
   reports() {
-    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, lat, lon, should, scale FROM reports ORDER BY id DESC LIMIT 500')];
+    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, lat, lon, should, scale, about FROM reports ORDER BY id DESC LIMIT 500')];
   }
 
   /** Reports young enough to count towards a confidence score, with the fields scoring needs (kept inside the server). */
   scoringReports(now) {
-    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, dev, near, run, lat, lon, should, scale FROM reports WHERE at >= ? ORDER BY id LIMIT 5000',
+    return [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, status, dev, near, run, lat, lon, should, scale, about FROM reports WHERE at >= ? ORDER BY id LIMIT 5000',
       now - CONFIDENCE.fadeDays * 86400e3)];
   }
 
@@ -389,7 +389,7 @@ export class ResortLog extends DurableObject {
     const sent = Number(this.kvGet('digestSent') || 0);
     // the first digest for a mountain sends only the last two days, not every report made before the email existed
     const since = this.kvGet('digestSent') == null ? now - 2 * 86400e3 : 0;
-    const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon, should, scale FROM reports WHERE id > ? AND at >= ? ORDER BY id', sent, since)];
+    const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon, should, scale, about FROM reports WHERE id > ? AND at >= ? ORDER BY id', sent, since)];
     const heat = this.heat();
     const p = this.problems(now);
     // heat: the public map-help counts (only what K_ANON or more ski days reached), for the email's map-help part
