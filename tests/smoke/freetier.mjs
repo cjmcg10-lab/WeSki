@@ -85,12 +85,12 @@ try {
   await expectUpsell('Unlock your saved ski days', 'start-history-upsell');
   await page.locator('#hist-btn').click();
 
-  // the mountain's card: a free note, and Download for offline needs the pass
+  // the mountain's card: just the Download for offline button (the explanations are in More), and it needs the pass
   const jay = page.locator('[data-act="pick-resort"][data-id="jay-peak"]');
   await jay.waitFor({ state: 'visible', timeout: 15000 });
   await jay.click();
   await page.locator('#resort-card [data-act="download"]').waitFor({ state: 'visible', timeout: 15000 });
-  if (!(await page.locator('#resort-card', { hasText: 'stays on your phone that day' }).count())) throw new Error('mountain card lacks the "stays on your phone that day" line');
+  if (await page.locator('#resort-card .card-offline .sub').count()) throw new Error('mountain card shows offline explanations again (they belong in More; the card keeps just the button)');
   await shot('start-card');
   await page.locator('#resort-card [data-act="download"]').click();
   await expectUpsell('Download mountains for offline', 'start-card-upsell');

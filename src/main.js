@@ -603,7 +603,7 @@ function resortCard(r) {
     <div class="head">${photo ? '' : thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
       <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>
-      <div class="card-offline">${offlineBlock(r.id, r.name)}</div>`
+      <div class="card-offline">${offlineBlock(r.id, r.name, true)}</div>`
     : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
     <button class="btn outline join-btn" data-act="start-join">Join Group</button>`;
 }
@@ -2501,8 +2501,15 @@ async function downloadMountain(id, box) {
   }
 }
 /** The offline part of a mountain's card or the More panel. */
-function offlineBlock(id, name) {
+/** The offline download block. On the start screen's mountain card (compact) it is just the button, plus the size once
+ *  downloaded: the explanations live in More's "Offline map" card and in the pass pop-up (owner, 2026-11-24: the grey
+ *  text took too much room on the card). */
+function offlineBlock(id, name, compact = false) {
   const off = offlineMaps()[id];
+  if (compact) {
+    const done = off ? `<p class="sub" style="margin:0 0 2px">✓ ${t('Downloaded for offline')} • ${fmtMB(off.bytes)}</p>` : '';
+    return `<div class="dl-box" data-dl="${id}">${done}</div><button class="btn ${off ? 'alt' : ''}" data-act="download" data-id="${id}">${off ? t('Download again') : t('Download for offline')}${passBadge()}</button>`;
+  }
   const open = S.place?.id === id && S.map;   // inside this mountain: it is on the phone today
   const free = `<p class="sub">${open ? t('This mountain stays on your phone today, even without signal.') : t('The map you open stays on your phone that day, even without signal')}</p>`;
   const saved = off ? `<p class="ok-text" style="margin:4px 0 2px">✓ ${t('Downloaded for offline')}</p><p class="sub" style="margin:0 0 4px 22px">${fmtMB(off.bytes)} • ${fmtDate(off.at)}</p>` : `<p class="sub">${t('Download the whole {0} map ahead of time (3D terrain, trails, lifts, buildings and the app itself) so it opens with no signal on any day.', esc(name))}</p>`;
