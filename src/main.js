@@ -528,7 +528,9 @@ function goStart(state, from = null, g = startGeom(), snap = false) {
   el.classList.toggle('full', state === 'full');
   el.classList.toggle('mini', state === 'mini');
   start.classList.toggle('full', state === 'full');
-  if (state !== 'full') globe?.setPaused(false);
+  // the globe stops drawing as the list sets off for the whole screen, so the phone only moves the list (it fades out
+  // frozen): drawing it under the gliding list made the slide up feel slower than the others (owner, 2026-11-24)
+  globe?.setPaused(state === 'full');
   if (state !== prev && (state === 'mini' || prev === 'full')) $('#f-resort').blur();
   placeStart(g, g.pos[state]);
   if (state !== 'full') layoutGlobe(true, state);
