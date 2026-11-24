@@ -463,7 +463,7 @@ function placeStart(g, p) {
   const el = $('#start-panel');
   el.style.maxHeight = 'none';
   if (p >= g.pos.normal) { el.style.height = g.h + 'px'; el.style.transform = `translateY(${Math.round(p - g.pos.normal)}px)`; }
-  else { el.style.height = Math.round(g.H - Math.max(p, -40)) + 'px'; el.style.transform = 'translateY(0px)'; }
+  else { el.style.height = Math.round(g.H - Math.max(p, 0)) + 'px'; el.style.transform = 'translateY(0px)'; }
   // near the top the title moves down out of the notch, and the rounded corners square off
   el.style.setProperty('--padt', START_PAD + Math.max(0, g.sat - Math.max(0, p)) + 'px');
   const r = Math.max(0, Math.min(26, p / 2));

@@ -87,9 +87,10 @@ export function dragStops(panel, opts) {
     }
     st.trail.push({ t: e.timeStamp, y: e.clientY });
     while (st.trail.length > 2 && e.timeStamp - st.trail[0].t > 100) st.trail.shift();
-    // past the first and last resting place the panel only gives a little (a third of the finger's travel)
+    // the panel stops dead at its top resting place (it used to give a little past it, which pushed it above the
+    // top of the screen before it sprang back: #138); past the bottom one it only gives a third of the finger's travel
     let p = st.p0 + dy;
-    if (p < st.min) p = st.min - (st.min - p) / 3;
+    if (p < st.min) p = st.min;
     if (p > st.max) p = st.max + (p - st.max) / 3;
     st.p = p;
     opts.move(p, st.stops);
