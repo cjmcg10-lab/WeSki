@@ -55,6 +55,8 @@ try {
   browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
+  // sign-in switched on, so the pass panel shows its email field
+  await context.route('**/api/config', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ paywall: false, signIn: true, paddle: null, plans: {} }) }));
   await context.addInitScript(() => {
     localStorage.setItem('weski:installSeen', 'true');
     localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-21', at: Date.now() }));
@@ -191,6 +193,32 @@ try {
   await page.evaluate(() => window.__kbSet(null));
   await page.waitForTimeout(150);
   await shot('field-x-group');
+
+  // ---- 4. every other panel with a text field keeps its size and place, with the field above the keyboard
+  const keeps = async (label, field) => {
+    await page.locator(field).waitFor({ state: 'visible', timeout: 15000 });
+    const s0 = await rect('#sheet');
+    await page.locator(field).focus();
+    await page.evaluate((kb) => window.__kbSet(kb), KB);
+    await page.waitForTimeout(200);
+    const s1 = await rect('#sheet'), f1 = await rect(field);
+    if (Math.abs(s1.top - s0.top) > 1 || Math.abs(s1.bottom - s0.bottom) > 1) fail(`${label}: the panel was cut or moved by the keyboard (${s0.top}-${s0.bottom} -> ${s1.top}-${s1.bottom})`);
+    if (f1.top < Math.max(0, s1.top) || f1.bottom > KB.height) fail(`${label}: the field is hidden by the keyboard (top ${f1.top}, bottom ${f1.bottom}, keyboard from ${KB.height})`);
+    await shot(`keyboard-${label.replace(/[^a-z]+/gi, '-').toLowerCase()}`);
+    await page.evaluate(() => { document.activeElement?.blur(); window.__kbSet(null); });
+    await page.waitForTimeout(150);
+  };
+  await keeps('Group display name', '#f-name');
+  await page.locator('#tabs [data-act="tab"][data-tab="more"]').click();
+  await page.locator('#sheet [data-act="open-sheet"][data-s="pass"]').click();
+  await keeps('Sign-in email', '#f-email');
+  await page.locator('#sheet [data-act="close-sheet"]').click();
+  // the same panels opened over the start screen
+  await page.goto(ORIGIN);
+  await page.locator('[data-act="start-forecast"]').waitFor({ state: 'visible', timeout: 30000 });
+  await page.locator('[data-act="start-forecast"]').click();
+  await page.locator('#sheet [data-act="fc-add"]').first().click({ timeout: 30000 });
+  await keeps('Start screen Forecast add a mountain', '#fc-q');
   console.log(`In-map search: ${many} results for "a", ${few} for "${one}"; panel ${withMany.top}-${withMany.bottom} both times.`);
 } catch (e) {
   fail(`panel typing test stopped: ${e.message}`);
