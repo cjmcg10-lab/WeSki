@@ -600,4 +600,5 @@ export default {
   1546: "Piste o impianti qui non si collegano",
   1547: "Dovrebbe essere:",
   1548: "Scegli quale dovrebbe essere la difficoltà.",
+  1580: "Creata dalla nostra mappa 3D",
 };

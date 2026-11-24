@@ -600,4 +600,5 @@ export default {
   1546: "Pistes of liften sluiten hier niet op elkaar aan",
   1547: "Het zou moeten zijn:",
   1548: "Kies wat de moeilijkheid zou moeten zijn.",
+  1580: "Gemaakt van onze 3D-kaart",
 };

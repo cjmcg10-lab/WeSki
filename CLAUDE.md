@@ -581,6 +581,16 @@ and terrain sources; a weather source licensed for commercial use; a "report a m
 add-to-home-screen guide for iPhone. Accounts and payments need the owner to create the outside accounts themselves;
 keys go in through the credential form, never chat.
 
+## Mountain cards (2026-11-24)
+
+Mountains with no free photo in `public/photos/credits.json` get a picture made from our own map instead:
+`node tools/mountain_cards.mjs <ids> | --missing` (needs the maps pulled; `PW_CHROMIUM=/opt/pw-browsers/chromium`).
+It opens the app's 3D map (vite dev, `?skip=<id>`), puts the camera below the base looking up the fall line framed on
+all shown runs, evening light, and lays the numbers from resort.json over it (summit, vertical, named runs by rating,
+unrated ones counted apart, lifts). Writes `public/photos/<id>.jpg` and `<id>-s.jpg` (same sizes as the photos) and
+`public/photos/cards.json`; the app uses a card only when there is no photo. Rerun it after rebuilding a mountain.
+Text in the picture is English only.
+
 ## Emergency button (2026-11-23, issue #92)
 
 A red SOS button at the top of the map's right-hand column (and "Emergency" at the top of More) opens a sheet with the

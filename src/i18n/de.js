@@ -600,4 +600,5 @@ export default {
   1546: "Pisten oder Lifte sind hier nicht verbunden",
   1547: "Sie sollte sein:",
   1548: "Wähle, welche Schwierigkeit es sein sollte.",
+  1580: "Aus unserer 3D-Karte erstellt",
 };
