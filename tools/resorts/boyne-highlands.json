@@ -35,5 +35,11 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Black Diamond": "Black Diamond Glade",
+  "Loren's Lollapaloosa Glade": "Loren's Lollapalooza Glade",
+  "Payton's Bypass": "Payson's Bypass",
+  "Tyler's Tangle": "Tyler's Tangle Glade"
  }
 }

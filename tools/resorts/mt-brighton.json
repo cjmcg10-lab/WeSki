@@ -40,5 +40,16 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
- }
+ },
+ "rename": {
+  "Showshoe": "Snowshoe"
+ },
+ "way_names": {
+  "256916921": "Chair 1",
+  "256916922": "Chair 2",
+  "256916924": "Chair 3",
+  "256916925": "Chair 4",
+  "256916923": "Chair 5"
+ },
+ "way_names_note": "chair numbers from the 2025-26 trail map (OpenStreetMap names them 'Lift')"
 }

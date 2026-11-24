@@ -35,5 +35,14 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Bob Cat": "Bobcat",
+  "Carnie's Couloir": "Carmie's Couloir",
+  "Mama Mie": "Mamma Mie",
+  "Siidewinder": "Sidewinder",
+  "Stone Bridge": "Stonebridge",
+  "Timberwolf": "Timber Wolf",
+  "Wood Spur": "Woodspur"
  }
 }

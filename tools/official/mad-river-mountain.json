@@ -1,0 +1,31 @@
+{
+ "source": "Mad River Mountain trail map 2025-26 (skimap.org map 39632, the resort's PDF), read by hand at 200 dpi",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Deer Run": 0,
+  "Eagle's Nest": 1,
+  "Mad River": 1,
+  "Regulator": 1,
+  "Sidewinder": 1,
+  "Sidewinder Glades": 2,
+  "Sugarbush": 2,
+  "Summit Trail": 0,
+  "Sundowner": 0,
+  "Twister": 1,
+  "Valley View": 0
+ },
+ "blue_black": [],
+ "lifts": [
+  "Flight Deck Double",
+  "Fourstar Express",
+  "Momentum Triple",
+  "Sugar Bush Double",
+  "Sundowner Triple"
+ ],
+ "confirm": {
+  "Capital Park": "terrain park on the resort's map (freestyle terrain, orange, no rating): shown with OpenStreetMap's rating",
+  "Kicker Lane": "terrain park on the resort's map (freestyle terrain, orange, no rating): shown with OpenStreetMap's rating",
+  "L.V.L.P": "terrain park on the resort's map (freestyle terrain, orange, no rating): shown with OpenStreetMap's rating"
+ },
+ "lifts_note": "map names: Sugarbush Chair, Fourstar Express, Sundowner Triple Chair, Momentum Triple Chair, Flight Deck (OpenStreetMap's names used here)"
+}

@@ -47,5 +47,49 @@
  ],
  "isolated_notes": {
   "Magic carpet": "rule: not joined to the rest of the lifts on the map"
- }
+ },
+ "extra_trails": [
+  {
+   "name": "Heartland",
+   "pts": [
+    [
+     -88.191406,
+     42.49907
+    ],
+    [
+     -88.191292,
+     42.499252
+    ],
+    [
+     -88.191178,
+     42.499435
+    ],
+    [
+     -88.191064,
+     42.499617
+    ],
+    [
+     -88.19095,
+     42.4998
+    ],
+    [
+     -88.190837,
+     42.499982
+    ],
+    [
+     -88.190723,
+     42.500165
+    ],
+    [
+     -88.190609,
+     42.500348
+    ],
+    [
+     -88.190494,
+     42.50053
+    ]
+   ],
+   "why": "on the 2025-26 trail map between Competition and chair 5, not in OpenStreetMap; drawn halfway between the two (approximate)"
+  }
+ ]
 }

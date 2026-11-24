@@ -45,9 +45,10 @@
   "Mtn High Express"
  ],
  "isolated_notes": {
-  "Discovery": "rule: not joined to the rest of the lifts on the map",
-  "Magic carpet": "rule: not joined to the rest of the lifts on the map",
-  "Mtn High Express": "rule: not joined to the rest of the lifts on the map"
+  "Discovery": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West",
+  "Mtn High Express": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West",
+  "Magic carpet": "learning carpets at the East and North Resorts, each on its own beginner slope"
  },
- "hold": "only 27 of 43 run pieces reachable from a lift; lifts not joined to the rest of the map (isolated by rule): Mtn High Express, Discovery"
+ "hold": "East Resort (Mtn High Express, Discovery) is a separate area across Highway 2 reached by shuttle, explained in isolated_notes; its 14 run pieces are reachable from its own lifts, but the gate counts reachability only from the West base (27 of 43, North Resort runs hidden). Publish once the gate counts explained separate areas, or by a person's decision.",
+ "isolated_lifts_note": "East Resort: across Highway 2 from the West Resort, reached by the resort's free shuttle (shuttle pickup on the 2023 East base map); no run joins it to West"
 }

@@ -39,5 +39,9 @@
  "terrain_shares": {
   "1m": 89.4,
   "10m": 10.6
+ },
+ "rename": {
+  "Mitzi's Mother": "Mitzi's",
+  "Cat Track": "Honkers Cat Track"
  }
 }

@@ -36,5 +36,10 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Cutoff": "Cut Off",
+  "Galacier Valley Glades": "Glacier Valley Glades",
+  "Kim's Corner": "Kim's Korner"
  }
 }

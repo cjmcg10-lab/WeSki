@@ -12,8 +12,8 @@
  "climbing_runs": 0,
  "raised": 0,
  "official": [
-  26,
-  31,
+  28,
+  32,
   0
  ],
  "terrain_res": 1,
@@ -23,7 +23,7 @@
  "notes": [
   "the resort's outline relation/4642684 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)"
  ],
- "seconds": 55,
+ "seconds": 31,
  "failed": null,
  "built": "2026-11-24"
 }

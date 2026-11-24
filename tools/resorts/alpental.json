@@ -34,6 +34,5 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
- },
- "hold": "4 runs no lift reaches; 3 dead-end runs"
+ }
 }

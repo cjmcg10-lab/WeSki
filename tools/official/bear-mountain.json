@@ -27,7 +27,9 @@
   "Silver Connection": 1,
   "Street Scene": 1,
   "The Gulch": 0,
-  "The Wedge": 3
+  "The Wedge": 3,
+  "Park Run": 1,
+  "The Park Run": 0
  },
  "blue_black": [],
  "lifts": [
@@ -70,5 +72,14 @@
    "The Gulch",
    "The Wedge"
   ]
- }
+ },
+ "same_as": {
+  "Park Run (Upper)": "Park Run",
+  "Park Run (Face)": "Park Run",
+  "Park Run (Lower)": "The Park Run"
+ },
+ "not_runs": {
+  "Pipeline": "the superpipe (terrain park feature), not a run line"
+ },
+ "note_same_as": "The feed splits Park Run into Upper, Face (both blue) and Lower (green); OpenStreetMap has the upper part as Park Run (2572 to 2266 m) and the lower part as The Park Run (2266 to 2179 m)."
 }
