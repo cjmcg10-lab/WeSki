@@ -394,7 +394,7 @@ async function openStart(from = null) {
   $('#f-resort').value = '';
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
-  // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
+  // tap a mountain's peak to open its card; tapping elsewhere zooms in (the button top right zooms back out)
   globe.onPick = (rs) => pickResort(rs.id);
   globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
   // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
@@ -613,6 +613,7 @@ async function pickResort(id) {
   const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
+  S.listWas = $('#start-panel').classList.contains('hidden') ? S.listWas : startState();   // the list comes back there
   hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
@@ -2531,7 +2532,7 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
+    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); if (S.listWas === 'mini') goStart('mini', null, startGeom(), true); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
     case 'near-me': S.histOnly = false; nearMe(); break;
