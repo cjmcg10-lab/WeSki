@@ -1,25 +1,28 @@
 {
  "id": "revelstoke-mountain",
  "reachable": [
-  104,
-  113
+  103,
+  112
  ],
  "auto_joins": 39,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 1,
  "raised": 0,
- "official": null,
+ "official": [
+  63,
+  96,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 96.7,
   "30m": 3.3
  },
- "notes": [
-  "resort feed mtnpowder 77 gave no trail list: KeyError: 'MountainAreas'"
- ],
+ "notes": [],
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 230,
- "rebuild_seconds": 36
+ "rebuild_seconds": 36,
+ "seconds": 48
 }

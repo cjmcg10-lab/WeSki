@@ -9,7 +9,11 @@
  "stuck_lift_ends": [],
  "climbing_runs": 0,
  "raised": 0,
- "official": null,
+ "official": [
+  51,
+  59,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
@@ -18,5 +22,6 @@
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 59,
- "rebuild_seconds": 13
+ "rebuild_seconds": 13,
+ "seconds": 101
 }

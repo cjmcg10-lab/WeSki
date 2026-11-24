@@ -494,6 +494,10 @@
   },
   "mt-hood-skibowl": {
    "country": "US",
+   "phone": "(971) 269-7074",
+   "tel": "+19712697074",
+   "label": "Skibowl Ski Patrol (emergency)",
+   "source": "https://skimap.org/skimaps/view/49257",
    "checked": "2026-11-23"
   },
   "mt-norquay": {
@@ -502,6 +506,10 @@
   },
   "mt-seymour": {
    "country": "CA",
+   "phone": "604.630.6528",
+   "tel": "+16046306528",
+   "label": "Mt Seymour on-hill emergency",
+   "source": "https://skimap.org/skimaps/view/30094",
    "checked": "2026-11-23"
   },
   "mt-spokane": {
@@ -510,6 +518,10 @@
   },
   "northstar-at-tahoe": {
    "country": "US",
+   "phone": "530-562-3444",
+   "tel": "+15305623444",
+   "label": "Northstar Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/43194",
    "checked": "2026-11-23"
   },
   "okemo": {
@@ -523,6 +535,10 @@
   },
   "pajarito-mountain": {
    "country": "US",
+   "phone": "(505) 662-1991",
+   "tel": "+15056621991",
+   "label": "Pajarito Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/45703",
    "checked": "2026-11-23"
   },
   "palisades-tahoe": {
@@ -591,6 +607,10 @@
   },
   "revelstoke-mountain": {
    "country": "CA",
+   "phone": "250.814.5055",
+   "tel": "+12508145055",
+   "label": "Revelstoke Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/39313",
    "checked": "2026-11-23"
   },
   "saalbach": {
@@ -612,6 +632,10 @@
   },
   "seven-springs-mountain": {
    "country": "US",
+   "phone": "582-682-7814",
+   "tel": "+15826827814",
+   "label": "Seven Springs Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/41939",
    "checked": "2026-11-23"
   },
   "sierra-at-tahoe": {
@@ -624,6 +648,11 @@
   },
   "silver-star-mountain": {
    "country": "CA",
+   "phone": "250-558-6048",
+   "tel": "+12505586048",
+   "label": "SilverStar Patrol Clinic (first aid and emergencies)",
+   "source": "https://skimap.org/skimaps/view/36748",
+   "hours": "7 am to 8 pm, also for missing skiers after hours",
    "checked": "2026-11-23"
   },
   "ski-sundown": {
