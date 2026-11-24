@@ -1,0 +1,58 @@
+{
+ "id": "three-summits",
+ "name": "Three Summits",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1361868120",
+ "include_ways": [
+  26352818,
+  26352830,
+  26352850,
+  26353298,
+  26353308,
+  26353320,
+  26353346,
+  26353482,
+  26353539,
+  26353568,
+  26353661,
+  26353677,
+  130202843,
+  130202876,
+  257783205,
+  257783206,
+  257784074,
+  395201837,
+  1293287936,
+  1293289378
+ ],
+ "osm_bbox": [
+  -121.4318,
+  47.3779,
+  -121.3914,
+  47.429
+ ],
+ "openskimap": {
+  "id": "bd78d22761819b620dbaca7bdbdafc9205b08a32",
+  "cc": "US",
+  "runs": 106,
+  "lifts": 20,
+  "rated": 0.972,
+  "skimap": 16643,
+  "web": "https://www.summitatsnoqualmie.com/"
+ },
+ "area_name": "Three Summits",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ }
+}

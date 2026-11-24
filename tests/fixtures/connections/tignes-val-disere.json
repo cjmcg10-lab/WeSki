@@ -16,6 +16,6 @@
  "uphill": {},
  "doubled": {
   "Anemone ~ Kadjar": "PENDING (Tignes is being traced on another branch): Kadjar (not on the resort's list) runs 5-12 m beside Anemone for about 70% of its 1.7 km. Proposed: config shared_runs [[\"Anemone\", \"Kadjar\"]] after a look at the piste map (2026-11-23)",
-  "(unnamed run 303) ~ Stade Legettaz": "a connecting piece with no name, kept on purpose: other runs start or end on it, or the stretch it shares lies in its middle, so drawing that stretch once would cut the way apart (build_data keeps such pieces); the key holds run numbers, so it changes on a rebuild (2026-11-23)"
+  "(unnamed run 269) ~ Stade Legettaz": "a connecting piece with no name, kept on purpose: other runs start or end on it, or the stretch it shares lies in its middle, so drawing that stretch once would cut the way apart (build_data keeps such pieces); the key holds run numbers, so it changes on a rebuild (2026-11-23)"
  }
 }

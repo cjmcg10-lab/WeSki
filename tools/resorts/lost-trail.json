@@ -1,0 +1,40 @@
+{
+ "id": "lost-trail",
+ "name": "Lost Trail",
+ "region": "Idaho, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1290903952",
+ "include_ways": [
+  257007836,
+  257007837,
+  257007838,
+  257007839,
+  257007840,
+  449700540,
+  472341483,
+  472341486
+ ],
+ "osm_bbox": [
+  -113.9778,
+  45.6754,
+  -113.9362,
+  45.7136
+ ],
+ "openskimap": {
+  "id": "4451d38d77aaff6785c0c786ef45e58f1729e0be",
+  "cc": "US",
+  "runs": 56,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 374,
+  "web": "https://losttrail.com/trail-map/"
+ },
+ "area_name": "Lost Trail",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

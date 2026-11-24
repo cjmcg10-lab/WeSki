@@ -1,0 +1,53 @@
+{
+ "id": "silver-mountain",
+ "name": "Silver Mountain",
+ "region": "Idaho, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/1263732068",
+ "include_ways": [
+  54673352,
+  54673353,
+  164663470,
+  164663471,
+  164663472,
+  164663473,
+  257035233
+ ],
+ "osm_bbox": [
+  -116.1524,
+  47.482,
+  -116.1104,
+  47.5437
+ ],
+ "openskimap": {
+  "id": "d25d32a3fc9e2109feb7a784cd62e354fbb866c6",
+  "cc": "US",
+  "runs": 79,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 479,
+  "web": "https://www.silvermt.com/"
+ },
+ "area_name": "Silver Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "two_way_lifts": [
+  "Silver Mountain Gondola List"
+ ],
+ "rename": {
+  "LowerPaymaster": "Lower Paymaster",
+  "LowerTerrible Edith": "Lower Terrible Edith",
+  "Quicksliver": "Quicksilver",
+  "Sliver Basin": "Silver Basin",
+  "Sliver Basin Traverse": "Silver Basin Traverse",
+  "16-To-1": "16 to 1",
+  "Alpineway": "Alpenway",
+  "Heavenly": "Heaven",
+  "Shear Bilss": "Sheer Bliss"
+ }
+}

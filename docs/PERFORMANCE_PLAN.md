@@ -76,8 +76,9 @@ What each option became:
    2.5 km a block draws a thinner share of its trees (down to 35%).
 9. **Background set-up**: the snow mask, the ground's colour fields and the ground pieces are worked out in a worker
    (`src/terrain.worker.js`) while the map files are read; falls back to the main thread where there is no worker.
-10. **Smooth edges**: antialiasing is off by default on screens sharper than 2.5x, with a switch "Smooth edges" in
-    More, Appearance & advanced (applies the next time a mountain opens).
+10. **Smooth edges**: antialiasing is on by default on every screen (it was off on screens sharper than 2.5x until
+    2026-11-23; the owner found the jagged edges unprofessional on the iPhone and asked for it back on). The switch
+    "Smooth edges" in More, Appearance & advanced still turns it off (applies the next time a mountain opens).
 
 Not done or not measurable here: frame rate and heat on a real phone; the cost of antialiasing and of the softer
 picture while moving (both need a phone); the railway tracks at Zermatt are not simplified.

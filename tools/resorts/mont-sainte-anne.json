@@ -1,0 +1,44 @@
+{
+ "id": "mont-sainte-anne",
+ "name": "Mont-Sainte-Anne",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/391681261",
+ "include_ways": [
+  198869894,
+  200084002,
+  200084004,
+  200084006,
+  200084331,
+  200084332,
+  200084333,
+  200084334,
+  243716790
+ ],
+ "osm_bbox": [
+  -70.9516,
+  47.0706,
+  -70.9,
+  47.1041
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "3785c88c5ad57290cf36584e82109a458c554a54",
+  "cc": "CA",
+  "runs": 67,
+  "lifts": 9,
+  "rated": 0.985,
+  "skimap": 87,
+  "web": "https://mont-sainte-anne.com/en/"
+ },
+ "area_name": "Mont-Sainte-Anne",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

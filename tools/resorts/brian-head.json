@@ -1,0 +1,69 @@
+{
+ "id": "brian-head",
+ "name": "Brian Head",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1230308747",
+ "include_ways": [
+  27185099,
+  27185113,
+  127684384,
+  127684385,
+  127684386,
+  153261048,
+  256976506,
+  257797050,
+  257797051,
+  1107153527,
+  1464505488,
+  1464505494,
+  1464505495
+ ],
+ "osm_bbox": [
+  -112.8684,
+  37.6769,
+  -112.8256,
+  37.7053
+ ],
+ "openskimap": {
+  "id": "d17554e2aaa5a02bbc98023dd1f5cf4e17c6107e",
+  "cc": "US",
+  "runs": 69,
+  "lifts": 13,
+  "rated": 1.0,
+  "skimap": 227,
+  "web": "https://www.brianhead.com"
+ },
+ "area_name": "Brian Head Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Blackfoot Express": "Blackfoot Access",
+  "Georg's Rock Run": "George's Rock Run",
+  "Gold Gulch": "Golden Gulch",
+  "Maryland Parkway": "Maryland Pkwy",
+  "Outskirks": "Outskirts",
+  "Shivwits": "Shivwitz",
+  "Sun Dog": "Sundog"
+ },
+ "links": [
+  [
+   "Navajo Express (top)",
+   "trail:Dineh"
+  ],
+  [
+   "Wildflower (top)",
+   "trail:Brave",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Navajo Express (top) - Dineh": "the trail map draws Kodachrome leaving the Navajo Express top westward and joining Dineh down to the Wildflower base; OpenStreetMap lacks that piece",
+  "Wildflower (top) - Brave (walked)": "the trail map draws Kodachrome from the Wildflower top across to the Navajo Express top, where Brave starts; OpenStreetMap lacks that traverse, so it is joined as a walk (a ski join along the nearest mapped line climbed 13 m)"
+ }
+}

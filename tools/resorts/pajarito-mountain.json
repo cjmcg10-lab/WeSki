@@ -1,0 +1,40 @@
+{
+ "id": "pajarito-mountain",
+ "name": "Pajarito Mountain",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "relation/4646922",
+ "include_ways": [
+  198471543,
+  257377164,
+  257377165,
+  257377166,
+  257377167,
+  986823782
+ ],
+ "osm_bbox": [
+  -106.4145,
+  35.8774,
+  -106.3663,
+  35.907
+ ],
+ "openskimap": {
+  "id": "6113e90989ba3b057fdba6366e2e48ada9428ecc",
+  "cc": "US",
+  "runs": 62,
+  "lifts": 6,
+  "rated": 0.774,
+  "skimap": 336,
+  "web": "https://www.pajarito.ski/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Bruce's Blvd": "Bruce's Blvd East",
+  "Headache": "Hedache"
+ }
+}

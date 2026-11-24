@@ -1,0 +1,12 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {},
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "Short Cut ~ Shortcut": "on purpose: OpenStreetMap stops Marie-Claude Asselin, Banzaï and Tunnel about 160 m above the top of its Shortcut; the hand-drawn Short Cut (config extra_trails, keep_traced) carries them on to it over the open run-out shown on the 2025-26 and 2026-27 trail maps. Checked by a person 2026-11-23"
+ }
+}

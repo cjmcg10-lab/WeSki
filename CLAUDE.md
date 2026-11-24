@@ -101,7 +101,10 @@ blocks on any listed chair or gondola missing from the map. Palisades had lost i
 Silver Creek area before this. The search never crosses into a neighbour: it passes a lift outside the outline only
 when the lift is on the resort's list. `tools/whole_check.py <ids>` checks built maps without rebuilding (run on all
 50 on 2026-11-21: Pizol, Val Thorens, SkiWelt and La Plagne had lifts missing, now added). Lift lists were added to 35
-more official jsons on 2026-11-22 (#79); still without one: Zermatt, Pizol, Magic Mountain and the five big French resorts (#59).
+more official jsons on 2026-11-22 (#79) and to the last eight on 2026-11-23 (#59: Zermatt, Pizol, Magic Mountain, Les
+Contamines, La Plagne, Les Arcs, Tignes – Val d'Isère, Val Thorens), so every official json now has one. That check found
+Tignes – Val d'Isère's two underground funiculars (Funival, Perce-Neige) missing: OSM tags them `railway=funicular`,
+which the build only takes from the config's `extra_lifts` (as Zermatt's Sunnegga Express and Les Arcs' Express).
 See "Getting the whole resort" in `docs/ADDING_MOUNTAINS.md`.
 
 **Every mountain, new or live, must pass `docs/MOUNTAIN_CHECKLIST.md`.** It also holds a table of where each
@@ -307,7 +310,11 @@ Start screen (owner's mock-up, 2026-11-17; title and pull-up changed 2026-11-23,
 "SkiWithMe" in Bowlby One (self-hosted in `public/fonts`, licence on the credits page; the owner chose it over Lilita One
 and Kanit) with the slogan in spaced capitals. The "Find your mountain" panel has three positions (full screen, normal,
 shrunk) dragged by its bar or tapped (`startState`, `dragStops` in `src/drag.js`); full screen hides the globe, title and
-backdrop and pauses the globe. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
+backdrop and pauses the globe. Tapping the search jumps the panel to full screen at once (no glide, so iOS measures the
+field at the top before scrolling for the keyboard), keeps the page unscrolled, and while the keyboard is up pins the panel
+to `visualViewport` (`fitStartToKeyboard`, `.kb`; #100). Picking a mountain downloads it during the globe's turn but builds
+its 3D map only once the globe arrives, Ski Here is tapped or 4 s pass (`holdMapBuild` in `src/main.js`; the build froze the
+turn). `tests/smoke/start.mjs` (part of `npm run smoke`) checks both with an imitated keyboard. Earlier description: "Your mountain. Your crew." over a low-poly mountain backdrop
 (`.start-sky` in `index.html`, drawn in front of the globe and kept while zoomed to a resort; it fades when the dive into
 the mountain starts), a smaller globe higher up (sizes in `Globe.resize`), the "Find your mountain" panel (search,
 Use my location sorts by distance, Favorites filter; favourites are kept on the phone as `favorites`), a painted
@@ -402,6 +409,18 @@ run twice) are being removed in a follow-up branch, with an automatic rule and a
 Rendering rules learned the same day: runs show through trees but never through the ground (stencil: ground first,
 runs once marking SEEN, trees skip SEEN pixels; #84, #88). A lift end on a mapped station building is drawn once
 (`stationClashes` in `src/liftmotion.js`: small building left out, big lodge kept and the terminal model left out).
+
+## Automatic builder: first batch of 100 (2026-11-23, #45, #104-#106)
+
+100 US and Canadian mountains were built with no hand edits (`tools/bulk/run_batch.py`: `autoconfig.py` config from
+OpenSkiMap, terrain by country, rule-based joins, steepness check) and scored by `tools/bulk/gate.py`: 79 publish, 21
+held (`"hold"` in the config keeps a mountain out of the committed index). Table, timings, storage and the free-plan
+estimate: `tools/bulk/batch-1.md`; how-to: "Building a batch" in `docs/ADDING_MOUNTAINS.md`. The maps are on the
+preview only (R2 `preview/data/<id>/`); they go live only after the owner approves: `node tools/preview/maps.mjs fetch
+<ids>` (copies them back from the preview if not on disk), `node tools/maps_r2.mjs push <ids>`, then merge. The index
+must not reach `main` before that push. Their ratings come from OpenStreetMap (3 from resort feeds) and the app says
+"not yet checked against the resort's own list"; 17 sit on 30 m terrain (British Columbia, Alberta) with a note.
+Rule-based fixes run only for configs with `"auto": true`; the 60 hand-checked maps are unchanged.
 
 ## Existence check (2026-11-20)
 
@@ -608,4 +627,5 @@ phones.
    at 60 fps by default ("120 fps motion" in More). Awaiting their retest. The speed work of 2026-11-23 (#88, see
    `docs/PERFORMANCE_PLAN.md` "Built") cut the drawing per frame to a fifth to a third: simpler run lines, ground in
    chunks with distance detail and off-screen culling, lift detail by distance, softer picture while moving, fewer idle
-   redraws, ground set-up in a worker, "Smooth edges" switch. Not yet measured on a phone.
+   redraws, ground set-up in a worker, "Smooth edges" switch (on by default again since 2026-11-23, owner's request).
+   Not yet measured on a phone.

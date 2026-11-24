@@ -9,6 +9,15 @@
            Austria  BEV ALS DTM 1 m (CC BY 4.0)   data.bev.gv.at/download/ALS/DTM/<date>/ALS_DTM_CRS3035RES50000mN<N>E<E>.tif
            Canada   NRCan HRDEM 1 m (OGL-Canada)  canelevation-dem.s3.ca-central-1.amazonaws.com/hrdem-lidar/<project>-1m-dtm.tif
          usage: fetch_dem.py cog <out.tif> <west> <south> <east> <north> <epsg> <url> [<url> ...]
+  canada NRCan HRDEM mosaic 1 m (lidar, OGL-Canada), tiles found from their published extents; MRDEM 30 m fills
+         what the 1 m mosaic does not cover (canelevation-dem.s3.ca-central-1.amazonaws.com)
+  copernicus  Copernicus DEM GLO-30, 30 m, worldwide (copernicus-dem-30m.s3.amazonaws.com; free, credit
+         "produced using Copernicus WorldDEM-30 (c) DLR e.V. 2010-2014 and (c) Airbus Defence and Space GmbH
+         2014-2018 provided under COPERNICUS by the European Union and ESA"). A surface model (tree tops and roofs,
+         not bare earth): the fallback where no national lidar can be read automatically.
+
+The cog, canada and copernicus sources print "share <source> <percent>" lines: how much of the area each source
+filled (tools/pipeline.py reads them so the card and the quality gate know the terrain's resolution).
 
 usage: fetch_dem.py <swiss|ign|gsi> <out.tif> <west> <south> <east> <north>   (degrees; pad ~700 m around the resort)
 """
@@ -17,6 +26,7 @@ import json
 import math
 import sys
 import time
+import urllib.parse
 import urllib.request
 
 import numpy as np
@@ -51,8 +61,19 @@ def write(path, arr, transform, crs):
     print(f"{path}: {arr.shape[1]}x{arr.shape[0]}, z {arr[arr > -9000].min():.0f}..{arr.max():.0f}, holes {(arr < -9000).mean() * 100:.2f}%")
 
 
-def cog(out, w, s, e, n, epsg, urls, res=2.0):
-    """Window of one or more remote COGs, warped to a metric projection at `res` metres."""
+def source_name(url):
+    """A short label for a terrain url, for the share lines (USGS: 1 m surveys vs the 10 m national model)."""
+    u = url.lower()
+    if "/elevation/1m/" in u or "1m-dtm" in u:
+        return "1m"
+    if "/elevation/13/" in u:
+        return "10m"
+    return "other"
+
+
+def cog(out, w, s, e, n, epsg, urls, res=2.0, names=None):
+    """Window of one or more remote COGs, warped to a metric projection at `res` metres. Each url fills only the
+    holes left by the ones before it, so the best source comes first. `names` labels each url in the share lines."""
     import os
     from rasterio.vrt import WarpedVRT
     from rasterio.windows import from_bounds
@@ -66,8 +87,17 @@ def cog(out, w, s, e, n, epsg, urls, res=2.0):
     W, H = int((x1 - x0) / res), int((y1 - y0) / res)
     arr = np.full((H, W), NODATA, dtype="float32")
     tr = from_origin(x0, y1, res, res)
+    filled = {}
     for url in urls:
-        with rasterio.open("/vsicurl/" + url) as src:
+        before = int((arr < -9000).sum())
+        if not before:
+            break
+        try:
+            opened = rasterio.open("/vsicurl/" + url)
+        except Exception as ex:   # a tile that does not exist (open sea, outside a survey) leaves its holes
+            print(f"  {url.rsplit('/', 1)[-1]}: not readable ({str(ex)[:80]})", flush=True)
+            continue
+        with opened as src:
             with WarpedVRT(src, crs=crs, transform=tr, width=W, height=H, resampling=Resampling.bilinear, nodata=NODATA) as vrt:
                 step = 1024   # read in strips so one failed range request does not lose everything
                 for r0 in range(0, H, step):
@@ -76,7 +106,87 @@ def cog(out, w, s, e, n, epsg, urls, res=2.0):
                     m = (dst < -9000) & (part > -9000) & (part < 9000)
                     dst[m] = part[m]
         print(f"  {url.rsplit('/', 1)[-1]}: holes now {(arr < -9000).mean() * 100:.2f}%", flush=True)
+        name = (names or {}).get(url) or source_name(url)
+        filled[name] = filled.get(name, 0) + before - int((arr < -9000).sum())
+    for name, v in filled.items():
+        print(f"share {name} {v / arr.size * 100:.1f}")
     write(out, arr, tr, crs)
+
+
+def utm_epsg(w, s, e, n, nad83=False):
+    lon, lat = (w + e) / 2, (s + n) / 2
+    zone = int((lon + 180) // 6) + 1
+    return (26900 if nad83 else (32600 if lat >= 0 else 32700)) + zone
+
+
+HRDEM = "https://canelevation-dem.s3.ca-central-1.amazonaws.com"
+
+
+def hrdem_extents(prefix):
+    """{dtm url path: [w, s, e, n]} for every HRDEM file under a prefix, from the extent files NRCan publishes
+    beside each one (listed once and cached in $PIPE_WORK: about 60 mosaic tiles and 950 lidar projects)."""
+    import os
+    import re
+    from concurrent.futures import ThreadPoolExecutor
+    cache = os.path.join(os.environ.get("PIPE_WORK", "/tmp/weski-pipe"), f"hrdem-extents-{prefix.strip('/')}.json")
+    if os.path.exists(cache):
+        return json.load(open(cache))
+    keys, tok = [], None
+    while True:
+        q = f"{HRDEM}/?list-type=2&prefix={prefix}&max-keys=1000" + (
+            "&continuation-token=" + urllib.parse.quote(tok, safe="") if tok else "")
+        x = get(q).decode()
+        keys += re.findall(r"<Key>([^<]*-extent\.geojson)</Key>", x)
+        m = re.search(r"<NextContinuationToken>([^<]*)", x)
+        if not m:
+            break
+        tok = m.group(1)
+
+    def box(k):
+        raw = get(f"{HRDEM}/{k}")
+        if not raw:
+            return k, None
+        pts = []
+        g = json.loads(raw)
+        for f in g.get("features") or ([g] if g.get("type") == "Feature" else [{"geometry": g}]):
+            if not f.get("geometry") or f["geometry"]["type"] not in ("Polygon", "MultiPolygon"):
+                continue
+            c = f["geometry"]["coordinates"]
+            for ring in (c if f["geometry"]["type"] == "Polygon" else [r for poly in c for r in poly]):
+                pts += ring
+        return k, [min(p[0] for p in pts), min(p[1] for p in pts), max(p[0] for p in pts), max(p[1] for p in pts)] if pts else None
+    with ThreadPoolExecutor(16) as ex:
+        ext = {k.replace("-extent.geojson", "-dtm.tif"): b for k, b in ex.map(box, keys) if b}
+    os.makedirs(os.path.dirname(cache), exist_ok=True)
+    json.dump(ext, open(cache, "w"))
+    return ext
+
+
+def canada(out, w, s, e, n):
+    """HRDEM 1 m mosaic tiles, then the single lidar projects (newest first), whose published extent overlaps the
+    box; MRDEM 30 m (a national bare-earth model) fills the rest. The mosaic has gaps where the projects do not
+    (measured on Sun Peaks, 2026-11-23: no mosaic coverage)."""
+    import re
+    hit = lambda b: b[0] < e and b[2] > w and b[1] < n and b[3] > s
+    mosaic = [f"{HRDEM}/{k}" for k, b in sorted(hrdem_extents("hrdem-mosaic-1m/").items()) if hit(b)]
+    year = lambda k: max([int(y) for y in re.findall(r"(20\d\d|19\d\d)", k)] or [0])
+    proj = sorted((k for k, b in hrdem_extents("hrdem-lidar/").items() if hit(b)), key=lambda k: -year(k))
+    tiles = mosaic + [f"{HRDEM}/{k}" for k in proj]
+    coarse = f"{HRDEM}/mrdem-30/mrdem-30-dtm.tif"
+    names = {**{u: "1m" for u in tiles}, coarse: "30m"}
+    print(f"{len(mosaic)} HRDEM 1 m mosaic tiles and {len(proj)} lidar projects overlap the area")
+    cog(out, w, s, e, n, utm_epsg(w, s, e, n, nad83=True), tiles + [coarse], names=names)
+
+
+def copernicus(out, w, s, e, n):
+    """Copernicus GLO-30 one-degree tiles over the box (30 m), warped to UTM at 10 m."""
+    urls = []
+    for lat in range(math.floor(s), math.floor(n) + 1):
+        for lon in range(math.floor(w), math.floor(e) + 1):
+            ns, ew = ("N" if lat >= 0 else "S") + f"{abs(lat):02d}", ("E" if lon >= 0 else "W") + f"{abs(lon):03d}"
+            t = f"Copernicus_DSM_COG_10_{ns}_00_{ew}_00_DEM"
+            urls.append(f"https://copernicus-dem-30m.s3.amazonaws.com/{t}/{t}.tif")
+    cog(out, w, s, e, n, utm_epsg(w, s, e, n), urls, res=10.0, names={u: "30m" for u in urls})
 
 
 def swiss(out, w, s, e, n):
@@ -178,4 +288,4 @@ if __name__ == "__main__":
     if sys.argv[1] == "cog":
         cog(sys.argv[2], *map(float, sys.argv[3:7]), int(sys.argv[7]), sys.argv[8:])
     else:
-        {"swiss": swiss, "ign": ign, "gsi": gsi}[sys.argv[1]](sys.argv[2], *map(float, sys.argv[3:7]))
+        {"swiss": swiss, "ign": ign, "gsi": gsi, "canada": canada, "copernicus": copernicus}[sys.argv[1]](sys.argv[2], *map(float, sys.argv[3:7]))

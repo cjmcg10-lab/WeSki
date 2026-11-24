@@ -1,0 +1,67 @@
+{
+ "id": "taos-valley",
+ "name": "Taos Ski Valley",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "relation/13573224",
+ "include_ways": [
+  53215268,
+  53215306,
+  53215421,
+  53215424,
+  53215428,
+  53215476,
+  53215494,
+  53215560,
+  53215570,
+  257380915,
+  257380916,
+  257382133,
+  397803480,
+  846884911
+ ],
+ "osm_bbox": [
+  -105.4673,
+  36.5588,
+  -105.4346,
+  36.5992
+ ],
+ "ratings_feed": {
+  "mtnpowder": 78
+ },
+ "openskimap": {
+  "id": "8faa21d51bf5725e795c0972acbe92178a458347",
+  "cc": "US",
+  "runs": 105,
+  "lifts": 14,
+  "rated": 0.952,
+  "skimap": 338,
+  "web": "https://www.skitaos.com/"
+ },
+ "area_name": "Taos Ski Valley",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "links": [
+  [
+   "Lift 1 (top)",
+   "trail:White Feather"
+  ],
+  [
+   "Lift 1 (top)",
+   "trail:Psycho Path"
+  ]
+ ],
+ "links_notes": {
+  "Lift 1 (top) -> trail:White Feather": "2026-11-23: the 2026 trail map (skimap.org 48818) shows the green High Five running from the Lift 1 top past the Whistlestop Cafe to White Feather and the Lift 2 base; OpenStreetMap lacks it, which cut Lifts 2, 4, 7, 7A, 8 and Kachina off from the base",
+  "Lift 1 (top) -> trail:Psycho Path": "2026-11-23: on the 2026 trail map Psycho Path leaves the Lift 1 top area below White Feather; OpenStreetMap only joins it through a short unnamed piece that the resort does not show (hidden)"
+ },
+ "rename": {
+  "Powerderhorn": "Powderhorn",
+  "Whitefeather Gully": "White Feather Gully"
+ }
+}

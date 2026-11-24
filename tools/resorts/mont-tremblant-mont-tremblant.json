@@ -1,0 +1,121 @@
+{
+ "id": "mont-tremblant-mont-tremblant",
+ "name": "Mont Tremblant",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/671144531",
+ "include_ways": [
+  30734563,
+  30734564,
+  30734565,
+  30747751,
+  30794016,
+  30794017,
+  30794224,
+  31534915,
+  258788001,
+  258788002,
+  1007186790,
+  1359660371
+ ],
+ "osm_bbox": [
+  -74.5964,
+  46.1951,
+  -74.516,
+  46.2548
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "ratings_feed": {
+  "mtnpowder": 4
+ },
+ "openskimap": {
+  "id": "b7cad93e857de92335debf15f4d0bfe9a04f4d1b",
+  "cc": "CA",
+  "runs": 152,
+  "lifts": 12,
+  "rated": 0.974,
+  "skimap": 101,
+  "web": "https://www.tremblant.ca"
+ },
+ "area_name": "Mont Tremblant Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Banzai": "Banzaï",
+  "Carriole": "La Carriole",
+  "Expo": "Expo Haut",
+  "Lower Expo": "Expo Bas",
+  "Fuddle Duddle": "Fuddle Duddle Haut",
+  "Gaetan Boucher": "Gaétan Boucher",
+  "Gagnon": "Gagnon Haut",
+  "L'Algonquin": "Algonquin",
+  "L.T.E.": "LTE",
+  "Lower Duncan": "Duncan Bas",
+  "Upper Duncan": "Duncan Haut",
+  "Lower Ryan": "Ryan Bas",
+  "Upper Ryan": "Ryan Haut",
+  "Taiga": "Taïga",
+  "Upper Desserres": "DeSerres",
+  "Lower Desserres": "DeSerres",
+  "Alpine": "Roger McCarthy",
+  "Ligne de Pente": "Lucille Wheeler",
+  "Les Rapides Bas": "Les Rapides",
+  "Dernier Cri Bas": "Dernier Cri"
+ },
+ "rename_notes": "OpenStreetMap names matched to the resort's trail report (mtnpowder feed 4) and its 2026-27 trail map (skimap.org 49178): Upper/Lower = Haut/Bas; Alpine became Roger McCarthy in 2025 and Ligne de Pente became Lucile Wheeler for 2026-27 (both seen on the maps, same run numbers 7 and 30)",
+ "way_names": {
+  "30794028": "Flying Mile Haut",
+  "1253095405": "Flying Mile Bas"
+ },
+ "as_runs": [
+  "31786842",
+  "31786843",
+  "31250646",
+  "57994302",
+  "1252083947",
+  "1253099521"
+ ],
+ "as_runs_notes": "tagged snow_park in OpenStreetMap but on the resort's trail list as runs: Curé Deslauriers (33), Promenade (35), Sissy Schuss (79, the whole run; only a 217 m piece was tagged downhill), Roger McCarthy (7, two pieces named Alpine); Dernier Cri Bas (lower Dernier Cri, 21, through Le P'tit Parc)",
+ "drop_ways": {
+  "1430685422": "unnamed 96 m piece crossing the top of Fuddle Duddle as an X, its top end leads nowhere (not on the trail map)",
+  "1430685423": "unnamed 88 m piece crossing the top of Fuddle Duddle as an X, its bottom end leads nowhere (not on the trail map)"
+ },
+ "extra_trails": [
+  {
+   "name": "Short Cut",
+   "pts": [
+    [
+     -74.5433326,
+     46.2234298
+    ],
+    [
+     -74.5434583,
+     46.2237444
+    ],
+    [
+     -74.5434873,
+     46.2240019
+    ],
+    [
+     -74.5438052,
+     46.2246026
+    ],
+    [
+     -74.5442641,
+     46.2254027
+    ]
+   ],
+   "why": "OpenStreetMap stops Marie-Claude Asselin, Banzaï and Tunnel about 160 m above the top of Short Cut; on the trail map (2025-26 and 2026-27) all three run out into the open area where Short Cut starts. Drawn through their three ends to the top of Short Cut (flat ground, 676 to 670 m)"
+  }
+ ],
+ "keep_traced": [
+  "Short Cut"
+ ]
+}

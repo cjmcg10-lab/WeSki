@@ -2,6 +2,7 @@ import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
 import { fetchHeights, fetchCanopy } from './heights.js';
+import { repairEdges } from './seam.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
@@ -21,6 +22,7 @@ import { avatarThumb, mountPreview } from './avatarview.js';
 import { t, getLang, setLang, initialLang, watchPage, onLangChange, LANGS } from './i18n.js';
 import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
+import { watchClearButtons, syncClear, scan as addClearButtons } from './clearfield.js';
 import * as acct from './account.js';
 import * as fcUi from './forecast/ui.js';
 import { emergencyFor, mainNumber, telHref, fmtCoords, nearestLift, nearestRun, sourceHost } from './emergency.js';
@@ -42,6 +44,8 @@ applyTheme((() => { try { return JSON.parse(localStorage.getItem('weski:theme'))
  */
 // On a computer or a tablet the app is shown as a phone-sized column (see "Phone shape" in styles.css).
 const COLUMN = window.matchMedia('(min-width: 600px) and (min-height: 541px), (min-width: 600px) and (hover: hover) and (pointer: fine)');
+/** Panels that list results as you type: they keep one height while typing (see fitSheetToKeyboard). */
+const LIST_SHEETS = new Set(['search', 'fcadd', 'closures']);
 function fitScreen() {
   if (window.visualViewport && window.visualViewport.scale > 1.01) return;
   const portrait = window.innerHeight >= window.innerWidth;
@@ -76,7 +80,7 @@ const S = {
   simFree: prefs.get('simFree', false),
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
-  smooth: prefs.get('smoothEdges', null),   // antialiasing: null = automatic (off on screens sharper than 2.5x)
+  smooth: prefs.get('smoothEdges', null),   // antialiasing: null = the default (on)
   me: null,                 // {x, y, lat, lon, heading, acc, t}
   gpsMsg: '',
   group: null,              // {code, client, state, status}
@@ -151,7 +155,9 @@ async function loadPlaces() {
   fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; if (!$('#start').classList.contains('hidden')) renderResortList(); }).catch(() => {});
   const built = await fetchOk('/data/index.json').then((r) => r.json());
   const have = new Set(built.map((r) => r.id));
-  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id))];
+  // a coming-soon entry is left out once a built mountain has its id or sits within 15 km (built under another id)
+  const near = (r) => built.some((b) => Math.hypot((b.lat - r.lat) * 111, (b.lon - r.lon) * 111 * Math.cos(r.lat * Math.PI / 180)) < 15);
+  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id) && !near(r))];
 }
 const placeById = (id) => PLACES.find((r) => r.id === id);
 /** Settings that belong to one mountain (closures, saved routes, tracks...) are stored per resort. */
@@ -161,10 +167,31 @@ const resortOf = (session) => session.resort || 'jay-peak'; // sessions saved be
 // ---------- boot
 let mapP = null, mapId = null, ticking = false;
 
+// While the globe turns toward a mountain picked on the start screen, building that mountain's 3D map (seconds of
+// main-thread work on a big resort: meshes, lifts, buildings, shaders) waits, or the turn freezes partway. The files
+// still download and the ground is still worked out in the background worker meanwhile. The wait ends when the turn
+// ends, when Ski Here is tapped, when another mountain is opened, or after 4 s. Back on the card keeps it waiting
+// (the globe is turning away again) until the mountain is picked again or another one is opened.
+let mapGate = null;
+function holdMapBuild(until) {
+  openMapGate();                                // a build already waiting re-checks and waits on the new gate
+  let open;
+  const g = { p: new Promise((r) => { open = r; }) };
+  g.open = () => { clearTimeout(g.timer); if (mapGate === g) mapGate = null; open(); };
+  g.timer = setTimeout(g.open, 4000);
+  // let the globe's last frame of the turn reach the screen before the heavy work starts
+  Promise.resolve(until).then(() => requestAnimationFrame(() => setTimeout(g.open, 0)), g.open);
+  mapGate = g;
+}
+function openMapGate() { mapGate?.open(); }
+/** Back from the card: the globe turns away, so do not build now (its turn would never "arrive"). */
+function keepMapGate() { if (mapGate) { clearTimeout(mapGate.timer); mapGate.timer = null; } }
+
 /** Open a resort: load its data and build its 3D map (replacing any other mountain that was open). */
 function initMap(id) {
   if (mapP && mapId === id) return mapP;
   const prev = mapP;
+  openMapGate();                                // a build of another mountain waiting for the globe gives up now
   mapId = id;
   return (mapP = (async () => {
     if (prev) await prev.catch(() => {});
@@ -180,9 +207,11 @@ function initMap(id) {
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     const heights = new Uint16Array(buf);
+    repairEdges(heights, resort.grid.nx, resort.grid.ny);   // a few maps have a broken outermost row (src/seam.js)
     // the ground's heavy set-up runs in a background worker, so the screen does not freeze while it is worked out
     const prep = await SkiMap.prepare(resort, { h: heights });
     if (mapId !== id) return;
+    while (mapGate) { await mapGate.p; if (mapId !== id) return; }   // see holdMapBuild
     if (S.map) {                              // leaving the previous mountain
       S.loc?.setSim(false); S.loc?.stop();
       S.map.dispose();
@@ -345,7 +374,7 @@ async function restoreAfterReload(back, acctReady) {
   const tg = back.nav;
   if (!tg || !['poi', 'pin', 'meet', 'friend'].includes(tg.type)) return;
   if (tg.type === 'poi' && !S.resort.pois[tg.id]) return;
-  if (tg.type === 'pin' && !S.pin) return;
+  if (tg.type === 'pin' && !S.pin && !Number.isFinite(tg.x)) return;
   if ((tg.type === 'meet' || tg.type === 'friend') && !S.group) return;
   await acctReady.catch(() => {});            // directions need to know about the pass
   if (!S.nav && S.place?.id === back.resort) startNav(tg);
@@ -366,9 +395,10 @@ async function openStart(from = null) {
   showStartPanel();
   $('.start-top').classList.remove('hidden');
   $('#f-resort').value = '';
+  syncClear($('#f-resort'));
   renderResortList('');
   globe = new Globe($('#globe'), meta, new Int16Array(bin), PLACES);
-  // tap a mountain's dot to open its card; tapping elsewhere zooms in (the button top right zooms back out)
+  // tap a mountain's peak to open its card; tapping elsewhere zooms in (the button top right zooms back out)
   globe.onPick = (rs) => pickResort(rs.id);
   globe.onZoom = (on) => $('#globe-out').classList.toggle('hidden', !on);
   // the first tap on the globe slides the mountain list down (as if dragged down by its bar) so the globe fills the space
@@ -436,9 +466,24 @@ function clearStartPlace() {
   const el = $('#start-panel');
   for (const k of ['height', 'max-height', 'transform', 'border-radius', '--padt']) el.style.removeProperty(k);
 }
-/** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now. */
-function goStart(state, from = null, g = startGeom()) {
+/** Glide the list to one of its places, from where a drag left it (`from`) or from where it rests now.
+ *  `snap`: go there at once, with no glide (used when the search is tapped, see the focus handler below). */
+function goStart(state, from = null, g = startGeom(), snap = false) {
   const el = $('#start-panel'), start = $('#start'), prev = startState(), tok = ++startTok;
+  if (snap) {
+    if (prev === state) return;
+    el.classList.add('dragging');
+    el.classList.toggle('full', state === 'full');
+    el.classList.toggle('mini', state === 'mini');
+    if (state === 'mini') el.style.setProperty('--mini', g.mini + 'px');
+    start.classList.toggle('full', state === 'full');
+    clearStartPlace();
+    void el.offsetHeight;                       // lay it out in its new place now, before the phone measures it
+    requestAnimationFrame(() => requestAnimationFrame(() => { if (tok === startTok) el.classList.remove('dragging'); }));
+    if (state === 'full') setTimeout(() => { if (tok === startTok) globe?.setPaused(true); }, 420);
+    else { globe?.setPaused(false); layoutGlobe(true, state); }
+    return;
+  }
   if (from == null) {
     if (prev === state) return;
     el.classList.add('dragging'); placeStart(g, g.pos[prev]); void el.offsetHeight; el.classList.remove('dragging');
@@ -561,6 +606,8 @@ function resortCard(r) {
   return `<button class="back" data-act="resort-back">‹ All mountains</button>${photo}
     <div class="head">${photo ? '' : thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>
+      ${r.checked === false ? '<p class="note map-note">Trail ratings not yet checked against the resort’s own list: they come from OpenStreetMap. Signs on the mountain always win.</p>' : ''}
+      ${r.coarse ? '<p class="note map-note">Lower-detail terrain for this mountain (30 m): the 3D slopes look smoother than they are.</p>' : ''}
       <button class="ski-here" data-act="ski-here" data-id="${r.id}">Ski Here</button>`
     : '<p class="soon">The 3D map for this mountain has not been built yet.</p><button class="ski-here off" disabled>Map coming soon</button>'}
     <button class="btn outline join-btn" data-act="start-join">Join Group</button>`;
@@ -570,17 +617,24 @@ async function pickResort(id) {
   const r = placeById(id);
   if (!r || !globe) return;
   $('#f-resort').blur();
+  S.listWas = $('#start-panel').classList.contains('hidden') ? S.listWas : startState();   // the list comes back there
   hideStartPanel();
   $('#start').classList.add('focus');
   const card = $('#resort-card');
   card.innerHTML = resortCard(r);
   card.classList.remove('hidden');
   card.dataset.id = r.id;
-  // build the mountain while the card is on screen, then hold it still until it is needed
-  if (r.available) initMap(r.id).then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
   // aim the mountain at the middle of the space left above the card (the card is taller with a photo)
   const h = $('#start').clientHeight, f = Math.max(0.17, (card.getBoundingClientRect().top - $('#start').getBoundingClientRect().top) / h / 2);
-  await globe.flyTo(r, 1.8, 0.13 * (0.5 - f) / 0.19);
+  const flight = globe.flyTo(r, 1.8, 0.13 * (0.5 - f) / 0.19);
+  // download the mountain during the turn and build it once the globe has arrived (see holdMapBuild), then hold it
+  // still until it is needed
+  if (r.available) {
+    const built = initMap(r.id);
+    holdMapBuild(flight);
+    built.then(() => { if (globe && S.map) S.map.setPaused(true); }).catch(() => {});
+  }
+  await flight;
 }
 
 function toggleFav(id) {
@@ -678,6 +732,7 @@ const skiHere = (btn) => goSki(btn.dataset.id, btn);
 /** Dive from the globe into a mountain; with `joinCode`, join that group once there. */
 async function goSki(id, btn, joinCode = null) {
   if (btn) { btn.disabled = true; btn.textContent = 'Loading the mountain…'; }
+  openMapGate();                                // tapped before the globe arrived: build it now
   const r = placeById(id);
   try { await initMap(r.id); } catch (e) { if (btn) { btn.disabled = false; btn.textContent = 'Ski Here'; } bootFailed(e); return; }
   const g = globe;
@@ -835,6 +890,7 @@ if (updates) {
 persist();
 // Language: translate the page as it changes, starting with the saved choice or the phone's language.
 watchPage();
+watchClearButtons();
 setLang(initialLang(), false).catch(() => {});
 onLangChange(() => {
   if (!$('#sheet').classList.contains('hidden')) renderSheet();
@@ -887,8 +943,86 @@ dragStops($('#start-panel'), {
   settle: (state, p) => goStart(state, p),
   onTap: () => { const now = startState(); goStart(now === 'mini' ? 'normal' : now === 'normal' ? 'full' : 'normal'); return true; },
 });
-// starting a search: give the list the whole screen, so more results show above the keyboard
-$('#f-resort').addEventListener('focus', () => { if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full'); });
+// Starting a search: give the list the whole screen, so more results show above the keyboard.
+// On an iPhone the first tap used to push the search bar off the top of the screen: the phone scrolls the page to keep
+// the field above the keyboard, measuring it where it sat before the list had glided up. So the list now jumps to the
+// whole screen at once (laid out before the phone measures) and the page is kept scrolled to the top; the keyboard then
+// covers the list's lower part (fitStartToKeyboard).
+$('#f-resort').addEventListener('focus', () => {
+  if (!$('#start-panel').classList.contains('hidden') && startState() !== 'full') goStart('full', null, startGeom(), true);
+  unscrollPage();
+  fitStartToKeyboard();
+});
+$('#f-resort').addEventListener('blur', () => setTimeout(fitStartToKeyboard, 0));
+/** The app never scrolls as a page; undo the scroll a phone makes to show a focused field. */
+function unscrollPage() {
+  if (window.scrollX || window.scrollY) window.scrollTo(0, 0);
+  const se = document.scrollingElement;
+  if (se && se.scrollTop) se.scrollTop = 0;
+}
+/** While the on-screen keyboard is up the whole-screen mountain list keeps its size and place, as the panels do: the
+ *  keyboard covers its lower part and the list gets room at its bottom (--kb-cover) to scroll every result clear of it.
+ *  (It used to shrink to the part above the keyboard and grow back when the keyboard closed: a jolt, owner 2026-11-24.) */
+function fitStartToKeyboard() {
+  const p = $('#start-panel'), vv = window.visualViewport;
+  const typing = !!vv && document.activeElement === $('#f-resort') && !COLUMN.matches;
+  const kb = typing && window.innerHeight - vv.height > 120;   // a keyboard, not just the browser's bars moving
+  p.classList.toggle('kb', kb);
+  if (kb) p.style.setProperty('--kb-cover', Math.max(0, Math.round(p.getBoundingClientRect().bottom - (vv.offsetTop + vv.height))) + 'px');
+  else p.style.removeProperty('--kb-cover');
+}
+// Panels (sheets) with a text field (owner, 2026-11-23, changed 2026-11-24): while the keyboard is up the panel keeps
+// its full size and place and the keyboard covers its lower part (cutting the panel off at the keyboard let the mountain
+// show through around it). The page is kept unscrolled, the panel's content gets room to scroll clear of the keyboard
+// (--kb-cover), and the field being typed in is scrolled into view inside the panel. Panels that list results as you
+// type (search, Forecast "add a mountain", closures) keep one fixed height, the tallest they can be, so the list does
+// not shrink as fewer results match: results sit at the top, under the field (LIST_SHEETS, near the top of this file).
+/** The text field the person is typing in, when it is inside the panel. */
+function sheetField() {
+  const a = document.activeElement;
+  return a && $('#sheet').contains(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'date', 'button'].includes(a.type))) ? a : null;
+}
+/** While the on-screen keyboard is up and a panel field has focus, keep that field and the content above the keyboard. */
+function fitSheetToKeyboard() {
+  const sh = $('#sheet'), vv = window.visualViewport, f = sheetField();
+  const kb = !!vv && !!f && !COLUMN.matches && !sh.classList.contains('hidden') && window.innerHeight - vv.height > 120;
+  sh.classList.toggle('kb', kb);
+  if (!kb) { sh.style.removeProperty('--kb-cover'); return; }
+  const seen = vv.offsetTop + vv.height;                         // bottom of the part of the screen the keyboard leaves
+  sh.style.setProperty('--kb-cover', Math.max(0, Math.round(sh.getBoundingClientRect().bottom - seen)) + 'px');
+  const body = $('#sheet-body'), r = f.getBoundingClientRect(), top = Math.max(body.getBoundingClientRect().top, vv.offsetTop);
+  if (r.bottom > seen - 12) body.scrollTop += r.bottom - (seen - 12);          // field hidden by the keyboard: lift it
+  else if (r.top < top + 4) body.scrollTop -= top + 4 - r.top;                  // above the panel's visible part
+}
+// Tapping a text field (owner, 2026-11-24: "the app jolts down and then back up" as the keyboard comes up): an iPhone
+// scrolls the whole page to bring the field above the keyboard, and unscrollPage then snaps it back. The in-map search
+// never did this because it is focused with preventScroll. So a tap on any text field that is not yet focused focuses it
+// the same way, with the caret at the end; the panel code above keeps the field visible inside its panel instead.
+const TEXT_TYPES = new Set(['text', 'search', 'email', 'tel', 'url', 'password', 'number', '']);
+let tapFrom = null;                 // where the touch began: a touch that moved is a scroll, not a tap
+document.addEventListener('touchstart', (e) => { const t = e.touches[0]; tapFrom = e.touches.length === 1 ? [t.clientX, t.clientY] : null; }, { passive: true });
+document.addEventListener('touchend', (e) => {
+  const f = e.target;
+  if (!(f instanceof HTMLElement) || f === document.activeElement || f.disabled || f.readOnly) return;
+  if (!(f.tagName === 'TEXTAREA' || (f.tagName === 'INPUT' && TEXT_TYPES.has(f.getAttribute('type') || '')))) return;
+  const t = e.changedTouches[0];
+  if (e.touches.length || e.changedTouches.length !== 1 || !tapFrom || Math.hypot(t.clientX - tapFrom[0], t.clientY - tapFrom[1]) > 10) return;
+  e.preventDefault();               // no native focus, so no page scroll; focusing here still opens the keyboard
+  f.focus({ preventScroll: true });
+  try { const n = f.value.length; f.setSelectionRange(n, n); } catch { /* email and number fields have no caret API */ }
+  unscrollPage();
+}, { passive: false });
+$('#sheet').addEventListener('focusin', () => { if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } });
+$('#sheet').addEventListener('focusout', () => setTimeout(fitSheetToKeyboard, 0));
+if (window.visualViewport) {
+  const onVV = () => {
+    if (document.activeElement === $('#f-resort')) { unscrollPage(); fitStartToKeyboard(); } else if ($('#start-panel').classList.contains('kb')) fitStartToKeyboard();
+    if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } else if ($('#sheet').classList.contains('kb')) fitSheetToKeyboard();
+  };
+  window.visualViewport.addEventListener('resize', onVV);
+  window.visualViewport.addEventListener('scroll', onVV);
+}
+window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort') || sheetField()) unscrollPage(); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
@@ -1226,6 +1360,7 @@ const routeOpts = () => ({ maxDiff: S.maxDiff, closed: S.closures, tol: S.uphill
 async function startNav(target) {
   if (!(await needRouter(target.type === 'meet' || target.type === 'friend' ? 'group' : undefined))) return;
   S.nav = { target, route: null, problem: null, lastCalc: 0, key: '', fresh: true };
+  S.map.setNavPin(target.type === 'pin' && Number.isFinite(target.x) ? target : null);
   guide.reset();
   ensureLocation(); wakeLock();
   closeSheet();
@@ -1237,6 +1372,7 @@ function endNav() {
   S.nav = null;
   speaker.stop(); releaseWake();
   S.map.setRoute(null);
+  S.map.setNavPin(null);
   S.loc.simPath = null;
   renderChrome();
 }
@@ -1244,7 +1380,11 @@ function endNav() {
 function navDest() {
   const t = S.nav.target;
   if (t.type === 'poi') { const p = S.resort.pois[t.id]; return { place: p.n >= 0 ? { node: p.n } : { x: p.x, y: p.y }, name: p.name, x: p.x, y: p.y }; }
-  if (t.type === 'pin') return S.pin ? { place: { x: S.pin.x, y: S.pin.y }, name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y } : null;
+  if (t.type === 'pin') {
+    // The pin the directions were started for: dropping a new pin does not move the route (Directions on it does).
+    const p = Number.isFinite(t.x) ? t : S.pin;
+    return p ? { place: { x: p.x, y: p.y }, name: p.name || 'Dropped pin', x: p.x, y: p.y } : null;
+  }
   if (t.type === 'meet') { const m = S.map.meet; return m ? { place: { x: m.x, y: m.y }, name: m.name || 'Meeting point', x: m.x, y: m.y } : null; }
   const f = friends().find((m) => m.id === t.id);
   if (!f) return { gone: true, name: t.name };
@@ -1370,6 +1510,10 @@ function onMapTap(ev) {
   if (S.player) return;
   if (ev.type === 'ground') { S.pin = { x: ev.x, y: ev.y }; S.map.setPin(S.pin); openSheet('place', { type: 'pin' }); }
   else if (ev.type === 'me') S.map.wave('me');                  // tap yourself: your rider waves
+  else if (ev.type === 'navpin') {                             // the pin the directions lead to: it becomes the dropped pin again
+    const tg = S.nav?.target; if (!tg || !Number.isFinite(tg.x)) return;
+    S.pin = { x: tg.x, y: tg.y, ...(tg.name && tg.name !== 'Dropped pin' ? { name: tg.name } : {}) }; S.map.setPin(S.pin); openSheet('place', { type: 'pin' });
+  }
   else {
     if (ev.type === 'friend') S.map.wave(ev.id);                // a friend's rider waves, and their card opens
     openSheet('place', ev);
@@ -1402,6 +1546,8 @@ function describeSpot(x, y, acc) {
   if (best) {
     bits.unshift(`<span class="${runCss(S.resort, best.t)}">${runSym(S.resort, best.t)}</span> On ${esc(runName(best.t) || 'a connector trail')}${best.t.glade ? ' (glade)' : ''}`);
     if (best.t.u) bits.push('Rating not in the map data: shown as a guess');
+    if (best.t.raised) bits.push('Rating raised: steeper than its OpenStreetMap rating');
+    else if (!best.t.ok && !S.resort.sources.ratings) bits.push('Rating not yet checked against the resort’s own list');
     if (best.t.unl) bits.push('Connecting piece: not named on the resort’s trail list');
     if (best.t.unof) bits.push('Not on the resort’s trail map: rating unconfirmed, may be ungroomed or unpatrolled');
     const tag = (k, name) => `<span class="zn" style="--zn-l:${ZONES[k].ink};--zn-d:rgb(${ZONES[k].rgb})">${ZONES[k].sym} ${esc(name || ZONES[k].name)}</span>`;
@@ -1501,6 +1647,7 @@ function closeSheet() {
   S.buyAfter = null;
   S.sheet = null; S.tab = 'map';
   $('#sheet').classList.add('hidden');
+  fitSheetToKeyboard();
   renderChrome();
 }
 
@@ -1531,6 +1678,7 @@ function renderSheet() {
   // size first, before any early return, so a panel never keeps the short size of the one before it
   $('#sheet').classList.toggle('small', !!small);
   $('#sheet').classList.toggle('tall', fcUi.isForecastSheet(S.sheet));
+  $('#sheet').classList.toggle('fill', LIST_SHEETS.has(S.sheet));
   $('#sheet-title').setAttribute('translate', S.sheet === 'place' ? 'no' : 'yes');   // place names stay as they are
   $('#sheet-title').textContent = title;
   $('#sheet-title').classList.toggle('long', title.length > 19);
@@ -1540,6 +1688,7 @@ function renderSheet() {
   if (same && html === S.sheetHtml) return; // nothing changed: leave the DOM (and any tap in progress) alone
   S.sheetHtml = html;
   body.innerHTML = html;
+  addClearButtons(body);   // before anything focuses a field: wrapping a focused field would drop its focus
   if (same) body.scrollTop = keep;
   if (fcUi.isForecastSheet(S.sheet)) fcUi.afterRender(S.sheet);
   const pv = $('#av-preview');
@@ -2437,7 +2586,7 @@ async function onClick(e) {
     case 'pick-resort': pickResort(d.id); break;
     case 'globe-out': globe?.zoomOut(); break;
     case 'ski-here': skiHere(b); break;
-    case 'resort-back': $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
+    case 'resort-back': keepMapGate(); $('#resort-card').classList.add('hidden'); $('#start-panel').classList.remove('hidden'); $('#start').classList.remove('focus'); if (S.listWas === 'mini') goStart('mini', null, startGeom(), true); globe?.release(); requestAnimationFrame(() => layoutGlobe(true)); break;
     case 'fav': toggleFav(d.id); break;
     case 'favs': S.favOnly = !S.favOnly; if (S.favOnly) { S.nearMe = null; S.histOnly = false; } renderResortList(); break;
     case 'near-me': S.histOnly = false; nearMe(); break;
@@ -2558,8 +2707,8 @@ async function onClick(e) {
     case 'close-group': if (confirm(t('Close the group for everyone? All shared locations are deleted and each person keeps their own runs.'))) leaveGroup(true); break;
     case 'nav-friend': { const f = friends().find((m) => m.id === d.id); if (f) startNav({ type: 'friend', id: f.id, name: f.name }); break; }
     case 'nav-poi': startNav({ type: 'poi', id: +d.id, name: S.resort.pois[+d.id].name }); break;
-    case 'nav-pin': startNav({ type: 'pin', name: S.pin?.name || 'Dropped pin' }); break;
-    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus(), 60); } break;
+    case 'nav-pin': if (S.pin) startNav({ type: 'pin', name: S.pin.name || 'Dropped pin', x: S.pin.x, y: S.pin.y }); break;
+    case 'search': if (S.sheet === 'search') closeSheet(); else { openSheet('search'); setTimeout(() => $('#f-search')?.focus({ preventScroll: true }), 60); } break;
     case 'search-go': $('#f-search')?.blur(); searchGo(d.k, d.v); break;
     case 'nav-meet': startNav({ type: 'meet', name: S.map.meet?.name || 'Meeting point' }); break;
     case 'end-nav': endNav(); break;
@@ -2575,7 +2724,10 @@ async function onClick(e) {
       break;
     }
     case 'clear-meet': S.group?.client.setMeet(null); S.map.setMeet(null); if (S.nav?.target.type === 'meet') endNav(); closeSheet(); break;
-    case 'remove-pin': S.pin = null; S.map.setPin(null); if (S.nav?.target.type === 'pin') endNav(); closeSheet(); break;
+    case 'remove-pin': {
+      const tg = S.nav?.target, routed = tg?.type === 'pin' && (!Number.isFinite(tg.x) || (tg.x === S.pin?.x && tg.y === S.pin?.y));
+      S.pin = null; S.map.setPin(null); if (routed) endNav(); closeSheet(); break;
+    }
     case 'sim-here': S.loc.simTeleport(S.pin.x, S.pin.y); S.pin = null; S.map.setPin(null); closeSheet(); toast('Test location set.'); break;
     case 'sim-go': if (S.nav?.route) { S.loc.simFollow(S.nav.route.pts, 9); toast('Simulating movement along the route…'); } break;
     case 'start-track': startSession('solo'); if (!S.me) toast(S.testMode ? 'Tracking started (test mode).' : 'Tracking started — finding GPS…'); renderSheet(); renderChrome(); trackNotice(); break;

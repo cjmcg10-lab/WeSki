@@ -98,10 +98,13 @@ And one independent check, which catches what geometry cannot (an area reached o
 
    Older mountains (issue #59, 2026-11-22): 35 of the 43 that had no list now carry one, read from the resort's
    trail map on skimap.org (the file comes from `files.skimap.org`, now on the network allowlist), with the map
-   and how it was read in `lifts_source`. Still without a list: Zermatt (its map numbers the lifts without
-   names), Pizol (lifts lettered A to L only), Magic Mountain (lifts drawn but not named), Tignes – Val d'Isère,
-   Val Thorens, La Plagne, Les Arcs and Les Contamines (big Alpine maps with small labels; skimap.org's newest
-   Tignes file is the bike map). A listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12")
+   and how it was read in `lifts_source`. The last eight followed on 2026-11-23 from the resorts' own sources:
+   status pages (Pizol on infosnow.ch, Val Thorens on les3vallees.com, Magic Mountain's snow report), printed
+   timetables (Zermatt Bergbahnen's winter timetable, Les Contamines' piste map), and the 2026 piste maps of La
+   Plagne, Paradiski (Les Arcs) and Tignes – Val d'Isère (labels from the PDF text where it has any, otherwise read
+   by hand from 400 dpi tiles). Lifts on a resort's list that are drawn as railways in OpenStreetMap
+   (`railway=funicular`: Tignes' Funival and Perce-Neige, Zermatt's Leisee-Shuttle) are only built when the
+   config lists them under `extra_lifts` with `"rail": true`. A listed name made only of lift words ("Gondola", "Cabriolet", "Chair 12")
    cannot be matched by name, so the whole-resort search ignores it (it once matched every lift around Park City).
 
 A separate area reached by shuttle (Snowshoe's Silver Creek) goes in `isolated_lifts` with a note.
@@ -288,6 +291,46 @@ into `tools/bulk/candidates.json` (not in git), in build order. A resort counts 
 lifts (by OpenStreetMap id, from OpenSkiMap's `lifts.geojson`; lifts without an id are left out) are already on one of
 our maps. A name-and-distance match only prints a "review:" line and never marks a resort built. The builder starts from these
 entries rather than names typed by hand: matching by name and distance once picked Park City for Deer Valley.
+
+### Building a batch (phases 2 to 7, 2026-11-23, issues #104, #105, #106)
+
+```
+node tools/maps_r2.mjs pull --all
+python3 -I tools/bulk/candidates.py                      # the candidate list (or --areas/--lifts with saved files)
+python3 tools/bulk/run_batch.py --next 100 --workers 3   # config + build for the next 100, overlap check
+python3 tools/bulk/gate.py --write --table tools/bulk/batch-<n>.md
+python3 tools/build_index.py public/data --with-held && python3 tools/build_globe.py public/data
+node tools/preview/maps.mjs <ids>  /  node tools/preview/deploy.mjs   # preview only, never live R2
+python3 tools/build_index.py public/data                 # the committed index leaves held mountains out
+```
+
+- **Config by rule** (`tools/bulk/autoconfig.py`): name (without a trailing "Resort" / "Ski Area"), region, time zone
+  (timezonefinder), box from OpenSkiMap's area and lifts, `area_osm` (the OpenStreetMap outline OpenSkiMap built the
+  area from; the pipeline reads its name into `area_name`, a multipolygon relation works too), `include_ways` (the
+  area's lifts by OpenStreetMap id: the whole-resort search starts from them when there is no readable outline, and an
+  outline holding mostly these lifts counts as the resort's own), `dem` by country, a resort feed where one is known,
+  OpenSkiMap's counts, `"auto": true`.
+- **Terrain by country** (`tools/fetch_dem.py`): USA as before; Canada `canada` (HRDEM 1 m mosaic tiles, then single
+  lidar projects, found from the extents NRCan publishes; MRDEM 30 m fills the rest: in British Columbia and Alberta
+  the mountains are mostly outside the lidar, so they come out at 30 m); `copernicus` (GLO-30) everywhere else not
+  covered by swiss / ign / gsi. The share each source filled goes into the config (`terrain_source`, `terrain_res`,
+  `terrain_shares`) and the map's credits; maps at 30 m get the app's "lower-detail terrain" note.
+- **Rule-based fixes** (automatic configs only; the 60 hand-checked maps keep their reviewed joins): a lift end with no
+  run within 110 m skis onto the nearest run below within 150 m or walks to one within 100 m; a dead-end run bottom
+  skis to the nearest point that leads to a lift within 300 m (no more than 3 m up) or walks within 150 m; a village
+  gondola whose bottom no run reaches rides both ways; a lift still cut off from the rest, and any tubing or sledding
+  lift, is marked isolated with the reason (`isolated_notes`). Every one is printed on the card.
+- **Ratings**: a feed where known; otherwise OpenStreetMap's, and the app says "not yet checked against the resort's own
+  list" on the resort card and the run card. The steepness check (`tools/steepness.py`) raises a North American green
+  steeper than 28 degrees to blue and a blue steeper than 43 to black (marked `raised`; thresholds above the steepest
+  official green and blue at our 34 checked North American mountains). `verify_exists.py` only applies its tag rules
+  when there is no resort list.
+- **Gate** (`tools/bulk/gate.py`, limits in its header): publish or hold. Held mountains carry `"hold"` in the config,
+  stay out of the committed index (`build_index.py` without `--with-held`) and have no emergency entry; published ones
+  get an emergency entry (country numbers only) and a connections allow-list of the problems the gate accepted.
+  Per-mountain numbers are in `tools/bulk/results/<id>.json`; the table in `tools/bulk/batch-<n>.md`.
+- **Going live** after the owner approves the preview: `node tools/preview/maps.mjs fetch <ids>` (only if the maps are
+  not on disk: it copies them back from the preview), then `node tools/maps_r2.mjs push <ids>`, then merge.
 
 ## Real trees, lift and building details, and previews (2026-11-22)
 

@@ -214,6 +214,13 @@ def main():
         if str(wid) in cfg.get("as_runs", []):
             t["piste:type"] = "downhill"
     pistes = [w for w in ways if w[2].get("piste:type") == "downhill"]
+    # "drop_ways" {way id: reason}: OpenStreetMap pieces checked by hand and left out (a stray stub running off into
+    # nowhere, a crossing drawn as an X with loose ends). Each is printed with its reason.
+    if cfg.get("drop_ways"):
+        dw = {str(k): v for k, v in cfg["drop_ways"].items()}
+        print("left out by the config (drop_ways):", "; ".join(f"{w[2].get('name') or 'way ' + str(w[0])}: {dw[str(w[0])]}"
+                                                              for w in pistes if str(w[0]) in dw))
+        pistes = [w for w in pistes if str(w[0]) not in dw]
     # trains and funiculars only come from the resort config (extra_lifts), which gives them their track
     lifts = [w for w in ways if w[2].get("aerialway") in LIFT_KINDS and (w[2]["aerialway"] not in ("train", "funicular") or str(w[0]).startswith("x"))]
     # Leave out what is not there to ski or ride this winter: abandoned, removed or unbuilt lifts and
@@ -241,9 +248,20 @@ def main():
         # the boundary is a multi-part relation in OSM (Sugarloaf, Sunday River): use a box drawn around it instead
         w_, s_, e_, n_ = cfg["area_bbox"]
         area = Polygon([tf.transform(x, y) for x, y in ((w_, s_), (e_, s_), (e_, n_), (w_, n_))]).buffer(cfg.get("area_buffer", 150))
+    if area is None and cfg.get("area_name"):
+        # an outline mapped as a multipolygon relation (automatic configs take the outline OpenSkiMap names, which is
+        # often one): its outer rings, joined as tools/extent.py joins them
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import extent
+        from shapely.ops import unary_union
+        polys = [Polygon([tf.transform(x, y) for x, y in ring]) for n, rings in extent.load(osm_path)[1]
+                 if n == cfg["area_name"] for ring in rings if len(ring) > 3]
+        polys = [p if p.is_valid else p.buffer(0) for p in polys]
+        if polys:
+            area = unary_union(polys).buffer(cfg.get("area_buffer", 150))
     if cfg.get("area_name"):
         assert area is not None, f"no winter_sports area named {cfg['area_name']!r} in the OSM extract"
-    if cfg.get("area_name") or cfg.get("area_bbox"):
+    if cfg.get("area_name") or cfg.get("area_bbox") or cfg.get("include_ways"):
         # tools/extent.py: what lies inside the outline (or box), plus every run and lift joined to it on the
         # ground, except what is inside another resort's outline. An outline that leaves out part of the resort
         # no longer drops that part (Palisades' Sherwood bowl, 2026-11-21).
@@ -251,7 +269,17 @@ def main():
         import extent
         feats, areas = extent.load(osm_path)
         keep, added = extent.resort(feats, areas, cfg)
-        inside_area = lambda w: sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
+        # A way inside another resort's named outline is not "inside" ours just because it lies within the buffer
+        # around our outline (automatic configs use 300 m): Blue Mountain took in Craigleith Ski Club's V-Hill chair
+        # and its six runs next door (2026-11-23). What the search above kept (keep) is unaffected.
+        _own = {cfg.get("area_name")} | set(cfg.get("area_names", []))
+        _foreign = [Polygon([tf.transform(x, y) for x, y in r]) for n, rs in areas if n not in _own for r in rs if len(r) > 3]
+        _foreign = [p if p.is_valid else p.buffer(0) for p in _foreign]
+
+        def _in_foreign(w):
+            return bool(_foreign) and sum(any(p.contains(Point(nodes[i])) for p in _foreign) for i in w[1]) >= 0.5 * len(w[1])
+        inside_area = lambda w: area is not None and sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1]) \
+            and not _in_foreign(w)
         # runs drawn by hand (extra_trails, ids from 9e9) are always the resort's own, even just outside its outline
         ours = lambda w: str(w[0]).startswith("x") or int(w[0]) >= 9_000_000_000 or int(w[0]) in keep or inside_area(w)
         joined = sorted({w[2].get("name") or f"way {w[0]}" for w in lifts if not str(w[0]).startswith("x") and int(w[0]) in added and not inside_area(w)})
@@ -336,6 +364,8 @@ def main():
         raise SystemExit(f"DEM has holes inside the resort bounds: {len(jj)} cells ({len(jj) / h.size * 100:.2f}%), "
                          f"E {x0 + ii.min() * CELL:.0f}..{x0 + ii.max() * CELL:.0f}, N {y0 + jj.min() * CELL:.0f}..{y0 + jj.max() * CELL:.0f} "
                          f"(needed E {b[0]:.0f}..{b[2]:.0f}, N {b[1]:.0f}..{b[3]:.0f})")
+    for side, lines in repair_edges(h).items():
+        print(f"edge of the terrain grid mended ({side} side, {lines} line{'s' if lines > 1 else ''}): it jumped far more than the lines inside it")
     zmin = math.floor(h.min())
     q = np.round((h - zmin) * 10).astype("<u2")
     os.makedirs(out_dir, exist_ok=True)
@@ -708,6 +738,45 @@ def main():
             if o is not w and math.dist(oc[0], c[-1]) < 120:     # top of one lift beside base of another
                 links.append((top, G.node(oc[0]), "w", True))
 
+    # Rule-based joins for lift ends nothing reached above (issue #45, phase 4; replaces a hand-written `links`
+    # line): a lift top with no run within 110 m skis onto the nearest run below it within 150 m, else walks to
+    # the nearest run within 100 m; a lift bottom no run reaches is skied into from the nearest run above it
+    # within 150 m, else walked to within 100 m. Anything still unjoined is left for the card (isolated_lifts).
+    # Only for automatic configs ("auto": true) for now: the 60 hand-checked maps had these ends reviewed by hand.
+    rule_joins = []
+    for w in (ls if cfg.get("auto") else []):
+        c = list(w["line"].coords)
+        nm = lift_out[w["ref"]]["name"] or f"lift {w['ref']}"
+        for end, pt in (("top", c[-1]), ("bottom", c[0])):
+            if any(o["line"].distance(Point(pt)) < 110 for o in ps):
+                continue
+            zp = elev(*pt)
+            best = None
+            for o in ps:
+                d = o["line"].distance(Point(pt))
+                if d > 150:
+                    continue
+                q = o["line"].interpolate(o["line"].project(Point(pt)))
+                dz = elev(q.x, q.y) - zp
+                if (end == "top" and dz <= 3) or (end == "bottom" and dz >= -3):
+                    if best is None or d < best[0]:
+                        best = (d, o, "ski")
+            if best is None:
+                o = min(ps, key=lambda o: o["line"].distance(Point(pt)), default=None)
+                if o is not None and o["line"].distance(Point(pt)) <= 100:
+                    best = (o["line"].distance(Point(pt)), o, "walk")
+            if best is None:
+                continue
+            d, o, how = best
+            n_end = G.node(pt)
+            if how == "ski":
+                links.append((n_end, cut(o, pt), "x", False) if end == "top" else (cut(o, pt), n_end, "x", False))
+            else:
+                links.append((n_end, cut(o, pt), "w", True))
+            rule_joins.append(f"{nm} ({end}) {how} {d:.0f} m")
+    if rule_joins:
+        print("lift ends joined by rule:", "; ".join(rule_joins))
+
     def snap_walk(pt, nid, maxd=90):
         best = min(ww, key=lambda o: o["line"].distance(Point(pt)), default=None)
         if best is not None and best["line"].distance(Point(pt)) < maxd:
@@ -871,6 +940,8 @@ def main():
                       "pts": flat([pa, pb])})
 
     join_cut_off(G, edges, trails, elev)
+    if cfg.get("auto"):
+        join_dead_ends(G, edges, trails, elev)
     report(G, edges, trails, lift_out, pois)
 
     # ---- parks (geometry derived from the trail they sit on)
@@ -922,6 +993,7 @@ def main():
         },
         "sources": {
             "terrain": cfg.get("terrain_source", "USGS 3DEP 1 m LiDAR DEM (public domain)"),
+            **({"terrainRes": cfg["terrain_res"]} if cfg.get("terrain_res") else {}),
             "map": "© OpenStreetMap contributors (ODbL)",
             **({"zones": cfg["zones_source"]} if cfg.get("zones_source") else {}),
         },
@@ -1073,6 +1145,13 @@ def drop_duplicates(trails, ways, elev, on_list=lambda n: None, separate=(), sha
                                                                   and on_list(t["name"]) is not None)))
                     and k["_line"].distance(a) < tol]
             if near and key is None and holds_others(i, nd, near, tol):
+                near = []
+            # a short piece whose two ends are both shared with other runs is the link between them, not a copy:
+            # it lies within `tol` of its neighbours only because it touches them (Tremblant's 10-25 m joins
+            # between two pieces of Chalumeau, Nansen Bas and Panache were left out, so the run stopped short)
+            if (near and nd and len(nd) >= 2 and a.length < 2 * tol + 10
+                    and all(users[n_] - {i} for n_ in (nd[0], nd[-1]))
+                    and not any(k["_line"].distance(a.interpolate(0.5, normalized=True)) < 3 for k in near)):
                 near = []
             if near:
                 cov = cover(a, near, tol)
@@ -1259,6 +1338,28 @@ class GraphBuilder:
         return len(self.pts) - 1
 
 
+def repair_edges(h, depth=3):
+    """Mend a broken outermost row or column of the height grid (metres, row 0 = south), in place. The edge line can
+    come out averaged partly over empty ground beyond the elevation model, hundreds of metres too low all along one
+    side (Vail, Keystone, Loon, Okemo, Sugarloaf, Mammoth and Tignes were built so). Same rule as the app's
+    repairEdges (src/seam.js): of the outer `depth` lines, the deepest whose median jump to the next line in is more
+    than three times the next jump plus 2 m, and every line outside it, take the slope of the two good lines inside
+    them carried outward."""
+    fixed = {}
+    ny, nx = h.shape
+    if nx < depth + 3 or ny < depth + 3:
+        return fixed
+    views = {"S": h, "N": h[::-1, :], "W": h.T, "E": h.T[::-1, :]}   # each with the side's outer line as row 0
+    for name, v in views.items():
+        jump = lambda d: float(np.median(np.abs(v[d] - v[d + 1])))
+        bad = max([d + 1 for d in range(depth) if jump(d) > 3 * jump(d + 1) + 2], default=0)
+        for d in range(bad - 1, -1, -1):
+            v[d] = 2 * v[d + 1] - v[d + 2]
+        if bad:
+            fixed[name] = bad
+    return fixed
+
+
 def coarse_elev(xs, ys, crs, Z=12):
     """Elevation at projected points from the Mapzen/AWS Terrarium tiles (about 30 m)."""
     import io
@@ -1327,6 +1428,87 @@ def report(G, edges, trails, lifts, pois):
             print(f"  lift {lifts[e['r']]['name']}: base reachable {e['a'] in r}, top leads back to that base {tram['a'] in reach(e['b'])}")
     print("  POIs off-network:", [P["name"] for P in pois if P["n"] < 0],
           "| unreachable:", [P["name"] for P in pois if P["n"] >= 0 and P["n"] not in r])
+
+
+def join_dead_ends(G, edges, trails, elev, ski_max=300.0, walk_max=150.0):
+    """Automatic configs only (issue #45, phase 4): a run whose bottom leads to no lift (a dead end) is joined from its
+    bottom to the nearest point from which a lift can be reached: skied when that point is no more than 3 m above the
+    bottom and within 300 m, else walked (both ways) within 150 m. As for cut-off tops, every join is printed; ends
+    further away stay dead ends for the card and the quality gate. The 60 hand-checked maps had these joins chosen
+    one by one along the terrain (docs/ADDING_MOUNTAINS.md, "Joins from a run's bottom")."""
+    def pairs(e):
+        return [(e["pts"][i], e["pts"][i + 1]) for i in range(0, len(e["pts"]), 2)]
+
+    def leads():
+        back = {}
+        for e in edges:
+            back.setdefault(e["b"], []).append(e["a"])
+            if e["bi"]:
+                back.setdefault(e["a"], []).append(e["b"])
+        st = [e["a"] for e in edges if e["k"] == "l"] + [e["b"] for e in edges if e["k"] == "l" and e["bi"]]
+        seen = set(st)
+        while st:
+            for v in back.get(st.pop(), ()):
+                if v not in seen:
+                    seen.add(v)
+                    st.append(v)
+        return seen
+
+    def split(i, k):
+        e = edges[i]
+        P = pairs(e)
+        if k == 0:
+            return e["a"]
+        if k == len(P) - 1:
+            return e["b"]
+        nid = G.node(P[k], merge=False)
+        edges[i] = dict(e, b=nid, pts=flat(P[:k + 1]), len=round(LineString(P[:k + 1]).length, 1))
+        edges.append(dict(e, a=nid, pts=flat(P[k:]), len=round(LineString(P[k:]).length, 1)))
+        return nid
+
+    tried, done = set(), []
+    while True:
+        ok = leads()
+        ends = {}
+        for e in edges:
+            if e["k"] == "p" and (e["r"] not in ends or elev(*G.pts[e["b"]]) < elev(*G.pts[ends[e["r"]]])):
+                ends[e["r"]] = e["b"]
+        dead = [T for T in trails if T["id"] in ends and ends[T["id"]] not in ok and T["id"] not in tried]
+        if not dead:
+            break
+        T = min(dead, key=lambda T: T["bot"])
+        tried.add(T["id"])
+        bot = ends[T["id"]]
+        pt, zb = G.pts[bot], elev(*G.pts[bot])
+        best = {"ski": (ski_max + 1, None), "walk": (walk_max + 1, None)}
+        for i, e in enumerate(edges):
+            if e["k"] == "p" and e["r"] != T["id"] and e["b"] in ok:
+                for k, q in enumerate(pairs(e)):
+                    d = math.dist(q, pt)
+                    if d < best["walk"][0]:
+                        best["walk"] = (d, (i, k))
+                    if d < best["ski"][0] and elev(*q) <= zb + 3:
+                        best["ski"] = (d, (i, k))
+            elif e["k"] == "l" and e["a"] in ok:
+                q = G.pts[e["a"]]
+                d = math.dist(q, pt)
+                if d < best["walk"][0]:
+                    best["walk"] = (d, ("n", e["a"]))
+                if d < best["ski"][0] and elev(*q) <= zb + 3:
+                    best["ski"] = (d, ("n", e["a"]))
+        (ds, s), (dw, w) = best["ski"], best["walk"]
+        how, d, at = ("ski", ds, s) if s else ("walk", dw, w) if w else (None, 0, None)
+        if not how:
+            continue
+        nid = at[1] if at[0] == "n" else split(*at)
+        if nid == bot:
+            continue
+        q = G.pts[nid]
+        edges.append({"a": bot, "b": nid, "k": "x" if how == "ski" else "w", "r": -1, "len": round(max(d, 1), 1),
+                      "bi": how == "walk", "pts": flat([pt, q])})
+        done.append(f"{T['name'] or 'unnamed#%d' % T['id']} {how} {d:.0f} m")
+    if done:
+        print("dead-end runs joined to the nearest way to a lift:", "; ".join(done))
 
 
 def join_cut_off(G, edges, trails, elev):
