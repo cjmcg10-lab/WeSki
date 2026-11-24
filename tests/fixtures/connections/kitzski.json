@@ -1,0 +1,16 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Obwiesen": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus (config dead_end_notes)",
+  "Pengelstein Süd": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus (config dead_end_notes)",
+  "Skiroute Alte Wacht": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus (config dead_end_notes)",
+  "Giggling": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus (config dead_end_notes)",
+  "Golf": "looked at 2026-11-24: a valley run or ski route that ends in a village away from any lift; skiers return by ski bus (config dead_end_notes)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {}
+}

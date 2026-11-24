@@ -251,7 +251,9 @@ def merge_built(records, built_rows):
     by_id = {r["id"]: r for r in records}
     absorbed, report, folds = set(), [], {}
     for row in built_rows:
-        match = best_match(row, [r for r in by_id.values() if r["id"] not in absorbed])
+        # (a built resort is never matched to, or folded into, another built one: with the 2026-11-23 data Aspen
+        # Snowmass took in Aspen Mountain's entry)
+        match = best_match(row, [r for r in by_id.values() if r["id"] not in absorbed and not r.get("hasMap")])
         rec = {
             "id": row["id"], "osd": None, "name": row["name"], "aliases": [], "towns": [], "region": "", "country": "",
             "cc": None, "lat": round(row["lat"], 3), "lon": round(row["lon"], 3), "hasMap": True, "flags": [],
@@ -268,7 +270,7 @@ def merge_built(records, built_rows):
                        towns=area["towns"], region=area["region"], country=area["country"], cc=area["cc"],
                        website=area["website"], sectors=area["sectors"])
             for other in by_id.values():
-                if other["id"] in absorbed or metres(area["lat"], area["lon"], other["lat"], other["lon"]) > 6_000:
+                if other["id"] in absorbed or other.get("hasMap") or metres(area["lat"], area["lon"], other["lat"], other["lon"]) > 6_000:
                     continue
                 other_sim = len(tokens(other["name"]) & tokens(row["name"])) / max(1, min(len(tokens(other["name"])), len(tokens(row["name"]))))
                 if other_sim >= 0.99 and tokens(other["name"]):

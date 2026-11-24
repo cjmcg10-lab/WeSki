@@ -1,0 +1,28 @@
+{
+ "id": "arizona-snowbowl",
+ "reachable": [
+  56,
+  56
+ ],
+ "auto_joins": 5,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  59,
+  76,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 96.8,
+  "10m": 3.2
+ },
+ "notes": [
+  "the resort's outline relation/3187211 has no name or is not in the download: the build starts from the resort's lifts instead (include_ways)"
+ ],
+ "seconds": 16,
+ "failed": null,
+ "built": "2026-11-24"
+}

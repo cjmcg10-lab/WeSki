@@ -1,0 +1,52 @@
+{
+ "source": "Beech Mountain Resort trail map (Bad Smith), skimap.org map 45675 (2025): printed trail legend with difficulty symbols; lifts are numbered, not named",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Carolina Caribbean": 0,
+  "Crossover": 1,
+  "Crossway": 1,
+  "Freestyle": 0,
+  "Lower Powder Bowl": 1,
+  "Lower Robbin's Run": 1,
+  "Lower Shawneehaw": 1,
+  "Lower Southern Star": 2,
+  "Lower White Lightning": 2,
+  "Play Yard": 0,
+  "Southern Star": 2,
+  "Upper Powder Bowl": 1,
+  "Upper Robbin's Run": 1,
+  "Upper Shawneehaw": 1,
+  "Upper Southern Star": 2,
+  "Upper White Lightning": 2,
+  "West Bowl": 1,
+  "White Lightning": 2,
+  "Robbin's Run": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "For Pete's Sake": "freestyle terrain (orange symbol, no trail rating)",
+  "Tubing": "tubing hill, not a ski run"
+ },
+ "lifts": [
+  "Lift 1",
+  "Lift 2",
+  "Lift 3",
+  "Lift 4",
+  "Lift 5",
+  "Lift 6",
+  "Lift 7",
+  "Lift 8",
+  "Lift 10"
+ ],
+ "same_as": {
+  "Lower Southern Star": "Southern Star",
+  "Upper Southern Star": "Southern Star",
+  "Lower White Lightning": "White Lightning",
+  "Upper White Lightning": "White Lightning"
+ },
+ "lifts_explained": {
+  "Lift 2": "magic carpet at Carolina Caribbean (the map numbers its lifts 1-10); not matched by name: OpenStreetMap has one unnamed magic carpet (164 m), possibly this one",
+  "Lift 10": "tow rope at For Pete's Sake terrain park; not in OpenStreetMap",
+  "Lift 9": "tubing lift, not for skiing"
+ }
+}

@@ -1,0 +1,51 @@
+{
+ "source": "Wisp Resort trail map, skimap.org map 43999, read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Ace's Run": 1,
+  "Backbone Pass": 0,
+  "Bear Paw": 1,
+  "Beaver": 1,
+  "Big Dipper": 0,
+  "Bobcat Bowl": 2,
+  "Boulder Run": 1,
+  "Deer Run": 1,
+  "Devil's Drop": 2,
+  "Down Under": 1,
+  "Eye Opener": 2,
+  "Fox Way": 1,
+  "Grouse Way": 1,
+  "Happy Camper": 0,
+  "Highline Pass": 2,
+  "Little Dipper": 0,
+  "Logger's Way": 0,
+  "Long View": 1,
+  "Main Street": 2,
+  "Muskrat": 1,
+  "Odin's Chute": 2,
+  "Over the Edge": 2,
+  "Possum": 0,
+  "Randal's Run": 1,
+  "Ridge Run": 0,
+  "Road Runner": 1,
+  "Slider": 1,
+  "Squirrel Cage": 2,
+  "Sunset Blvd.": 0,
+  "The Face": 2,
+  "Whip Saw": 1,
+  "Wisp Trail": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Central Park Terrain Park": "terrain park (freestyle terrain, no trail rating)"
+ },
+ "lifts": [
+  "Chair 1",
+  "Chair 2",
+  "Chair 3",
+  "Chair 4",
+  "Chair 5",
+  "Chair 6",
+  "Chair 7"
+ ]
+}

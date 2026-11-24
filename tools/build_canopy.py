@@ -32,6 +32,7 @@ from rasterio.merge import merge
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHM = "/vsicurl/https://dataforgood-fb-data.s3.amazonaws.com/forests/v1/alsgedi_global_v6_float/chm/{}.tif"
 TREE_M = 3.0          # taller than this counts as a tree
+MAX_PX = 60e6       # read the canopy coarser above this many pixels (memory)
 ENV = {"GDAL_HTTP_USERAGENT": "weski-build", "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR", "GDAL_HTTP_MAX_RETRY": "4",
        "GDAL_HTTP_RETRY_DELAY": "2", "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif"}
 
@@ -70,7 +71,12 @@ def build(rid):
     keys = sorted({quadkey(lo, la) for lo in (lon.min(), lon.max()) for la in (lat.min(), lat.max())})
     with rasterio.Env(**ENV):
         srcs = [rasterio.open(CHM.format(k)) for k in keys]
-        chm, tf = merge(srcs, bounds=bounds, nodata=0)
+        # A big resort read at the full 1 m needs more memory than the machine has (KitzSki and Verbier were killed,
+        # 2026-11-24): above MAX_PX pixels the canopy is read coarser, still several pixels per canopy cell.
+        area = (bounds[2] - bounds[0]) * (bounds[3] - bounds[1])
+        native = srcs[0].res[0]
+        res = max(native, (area / MAX_PX) ** 0.5)
+        chm, tf = merge(srcs, bounds=bounds, nodata=0, res=res if res > native else None)
         for s in srcs:
             s.close()
     chm = np.nan_to_num(chm[0].astype(np.float32), nan=0.0, posinf=0.0, neginf=0.0)   # gaps between tiles: no trees

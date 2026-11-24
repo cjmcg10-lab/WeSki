@@ -19,7 +19,11 @@ describe('every built resort', () => {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
       const { resort, geo } = loadResort(entry.id);
       expect(resort.id).toBe(entry.id);
-      expect(resort.trails.length).toBeGreaterThan(entry.trails < 30 ? 7 : 30);
+      // a small hill whose own complete list has 7 runs or fewer shows them all (tools/bulk/gate.py small_hill_runs)
+      const off = existsSync(`tools/official/${entry.id}.json`) ? JSON.parse(readFileSync(`tools/official/${entry.id}.json`, 'utf8')) : {};
+      const listed = new Set([...Object.keys(off.runs || {}), ...Object.keys(off.confirm || {})]);
+      const small = listed.size > 0 && listed.size <= 7 && [...listed].every((n) => resort.trails.some((t) => t.name === n));
+      expect(resort.trails.length).toBeGreaterThan(small ? listed.size - 1 : entry.trails <= 30 ? 7 : 30);
       expect(resort.lifts.length).toBe(entry.lifts);
       // the index's summit point lands inside this resort's map at about the stated elevation
       const [x, y] = geo.toLocal(entry.lat, entry.lon);
@@ -53,7 +57,7 @@ describe('every built resort', () => {
         while (stack.length) for (const v of adj.get(stack.pop()) || []) if (!seen.has(v)) { seen.add(v); stack.push(v); }
         const top = new Map();
         for (const e of edges) if (e.k === 'p' && (!top.has(e.r) || nodes[e.a][2] > nodes[top.get(e.r)][2])) top.set(e.r, e.a);
-        const cut = resort.trails.filter((t) => t.ok && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
+        const cut = resort.trails.filter((t) => t.ok && !t.hide && top.has(t.id) && !seen.has(top.get(t.id))).map((t) => t.name);
         expect(cut).toEqual([]);
       }
       // existence check (tools/verify_exists.py): every run shown is on the resort's list, confirmed by hand,

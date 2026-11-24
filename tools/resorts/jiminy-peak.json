@@ -1,0 +1,60 @@
+{
+ "id": "jiminy-peak",
+ "name": "Jiminy Peak",
+ "region": "Massachusetts, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1021872776",
+ "include_ways": [
+  143873076,
+  143873077,
+  143873081,
+  143873082,
+  143873083,
+  143873084,
+  205006654,
+  205006657
+ ],
+ "osm_bbox": [
+  -73.3033,
+  42.5381,
+  -73.2684,
+  42.5595
+ ],
+ "openskimap": {
+  "id": "c72edda705173b26fcdc210933239a43de5fc7b9",
+  "cc": "US",
+  "runs": 40,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 443,
+  "web": "https://www.jiminypeak.com/"
+ },
+ "area_name": "Jiminy Peak Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Racoon's Den": "Raccoon's Den",
+  "Upper Liftline": "Upper Lift Line"
+ },
+ "extra_trails": [
+  {
+   "name": "Jiminy Cricket",
+   "pts": [
+    [-73.287756, 42.55524],
+    [-73.287839, 42.555457],
+    [-73.287922, 42.555673],
+    [-73.288005, 42.55589],
+    [-73.288088, 42.556107],
+    [-73.288171, 42.556323],
+    [-73.288253, 42.55654],
+    [-73.288336, 42.556756]
+   ],
+   "note": "not in OpenStreetMap; the trail map (2026) draws it beside the Cricket Triple (lift E), on its east side: drawn as the lift line moved 35 m east (approximate)"
+  }
+ ]
+}

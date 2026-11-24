@@ -1,0 +1,95 @@
+{
+ "id": "wilmot-mountain",
+ "name": "Wilmot Mountain",
+ "region": "Wisconsin, USA",
+ "tz": "America/Chicago",
+ "auto": true,
+ "area_osm": "way/1183389371",
+ "include_ways": [
+  132554405,
+  132554406,
+  132555206,
+  132555208,
+  132555209,
+  132555210,
+  181662476,
+  798496301,
+  798496318,
+  798496319,
+  798496324,
+  798496327,
+  798496328
+ ],
+ "osm_bbox": [
+  -88.2022,
+  42.4922,
+  -88.1821,
+  42.5074
+ ],
+ "openskimap": {
+  "id": "5a1a80c1675044a1264bf0701081f570067d0251",
+  "cc": "US",
+  "runs": 24,
+  "lifts": 13,
+  "rated": 0.917,
+  "skimap": 165,
+  "web": "https://www.wilmotmountain.com/"
+ },
+ "area_name": "Wilmot Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Magic carpet"
+ ],
+ "isolated_notes": {
+  "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ },
+ "extra_trails": [
+  {
+   "name": "Heartland",
+   "pts": [
+    [
+     -88.191406,
+     42.49907
+    ],
+    [
+     -88.191292,
+     42.499252
+    ],
+    [
+     -88.191178,
+     42.499435
+    ],
+    [
+     -88.191064,
+     42.499617
+    ],
+    [
+     -88.19095,
+     42.4998
+    ],
+    [
+     -88.190837,
+     42.499982
+    ],
+    [
+     -88.190723,
+     42.500165
+    ],
+    [
+     -88.190609,
+     42.500348
+    ],
+    [
+     -88.190494,
+     42.50053
+    ]
+   ],
+   "why": "on the 2025-26 trail map between Competition and chair 5, not in OpenStreetMap; drawn halfway between the two (approximate)"
+  }
+ ]
+}

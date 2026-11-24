@@ -1,0 +1,47 @@
+{
+ "id": "brandywine",
+ "name": "Brandywine",
+ "region": "Ohio, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/391698033",
+ "include_ways": [
+  256778782,
+  256778783,
+  256778784,
+  256778785,
+  256778786,
+  256778787,
+  256778788,
+  256778790,
+  498268554
+ ],
+ "osm_bbox": [
+  -81.5665,
+  41.2784,
+  -81.5446,
+  41.2908
+ ],
+ "openskimap": {
+  "id": "abc97db78f6238663faf95a23b1bce2f4f6bf1c6",
+  "cc": "US",
+  "runs": 9,
+  "lifts": 9,
+  "rated": 1.0,
+  "skimap": 2987,
+  "web": "https://www.bmbw.com/"
+ },
+ "area_name": "Brandywine Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing Carpet Lift"
+ ],
+ "isolated_notes": {
+  "Tubing Carpet Lift": "rule: tubing or sledding lift"
+ }
+}

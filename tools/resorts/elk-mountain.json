@@ -1,0 +1,42 @@
+{
+ "id": "elk-mountain",
+ "name": "Elk Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/422321232",
+ "include_ways": [
+  96605542,
+  96605544,
+  96605546,
+  96605548,
+  96605549,
+  96605551,
+  208860939
+ ],
+ "osm_bbox": [
+  -75.5702,
+  41.7083,
+  -75.5464,
+  41.7311
+ ],
+ "openskimap": {
+  "id": "6be6628be711e925f71a19ff354cdd0acc2e9220",
+  "cc": "US",
+  "runs": 28,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 251,
+  "web": "https://www.elkskier.com/"
+ },
+ "area_name": "Elk Mountain Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Mohican": "Mahican"
+ }
+}

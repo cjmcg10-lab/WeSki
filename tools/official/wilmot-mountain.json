@@ -1,0 +1,46 @@
+{
+ "source": "Wilmot trail map 2025-26 (VistaMap; skimap.org map 41910, the resort's PDF), read by hand at 300 dpi",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Broadway": 0,
+  "Bunny East": 0,
+  "Bunny West": 0,
+  "Competition": 2,
+  "Exhibition": 2,
+  "Heartland": 2,
+  "Inspiration": 1,
+  "Lower Cat Trail": 0,
+  "Meadows": 0,
+  "Paradise": 1,
+  "Ridge Run": 2,
+  "Shenanigan": 1,
+  "Sidewinder": 2,
+  "Snowbowl": 2,
+  "Stateline": 1,
+  "Sundance": 1,
+  "Sunnyside": 1,
+  "Superior": 2,
+  "Turtle": 0,
+  "Upper Cat Trail": 0,
+  "Walter's Folly": 1
+ },
+ "blue_black": [],
+ "not_runs": {},
+ "lifts": [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6"
+ ],
+ "confirm": {
+  "The Gully": "terrain park on the resort's map (no rating): shown with OpenStreetMap's line",
+  "The Rope": "terrain park on the resort's map (no rating): shown with OpenStreetMap's line",
+  "The Pasture": "terrain park on the resort's map (no rating): shown with OpenStreetMap's line",
+  "Progression Park": "terrain park on the resort's map (no rating): shown with OpenStreetMap's line"
+ },
+ "lifts_explained": {
+  "1": "chairs are numbered 1 to 6 on the map and in OpenStreetMap"
+ }
+}

@@ -1,0 +1,73 @@
+{
+ "id": "niseko-united",
+ "name": "Niseko United",
+ "region": "Hokkaido Prefecture, Japan",
+ "tz": "Asia/Tokyo",
+ "auto": true,
+ "area_osm": "relation/14756845",
+ "include_ways": [
+  22650015,
+  22650040,
+  22650058,
+  22650071,
+  22650074,
+  22650086,
+  22650107,
+  22650110,
+  22650115,
+  22650153,
+  22650190,
+  22650208,
+  159119369,
+  194602310,
+  194602314,
+  194602316,
+  194602318,
+  194602319,
+  457906857,
+  457906859,
+  457906860,
+  457906871,
+  506403453,
+  690316044,
+  967692896,
+  967692897,
+  1109178099,
+  1155795494,
+  1368331021
+ ],
+ "osm_bbox": [
+  140.641,
+  42.8348,
+  140.7077,
+  42.8963
+ ],
+ "dem": {
+  "source": "gsi"
+ },
+ "openskimap": {
+  "id": "7467b4b92b34f135e5a3258eee64b992f39c95f0",
+  "cc": "JP",
+  "runs": 164,
+  "lifts": 29,
+  "rated": 1.0,
+  "skimap": 2776,
+  "web": "https://www.niseko.ne.jp/"
+ },
+ "area_name": "ニセコユナイテッド",
+ "area_buffer": 300,
+ "terrain_source": "GSI Japan 5 m DEM (other 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "other": 100.0
+ },
+ "way_names": {
+  "457906875": "Dynamic (Annupuri)",
+  "1231853688": "Dynamic (Annupuri)",
+  "213556383": "Shirakaba (Hirafu)",
+  "1261369269": "Shirakaba (Hirafu)"
+ },
+ "rename": {
+  "Don't Bliink": "Don't Blink"
+ }
+}

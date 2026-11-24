@@ -1,0 +1,41 @@
+{
+ "id": "beech-mountain",
+ "name": "Beech Mountain",
+ "region": "North Carolina, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "relation/5886546",
+ "include_ways": [
+  256770662,
+  256770663,
+  256770664,
+  256770665,
+  256770666,
+  256770667,
+  256770668,
+  1249783571
+ ],
+ "osm_bbox": [
+  -81.8919,
+  36.1825,
+  -81.8735,
+  36.1991
+ ],
+ "openskimap": {
+  "id": "8e7cf171ad25ff857bfb2d7f3c8a50b2faf3a47b",
+  "cc": "US",
+  "runs": 12,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 287,
+  "web": "https://www.beechmountainresort.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Robin's Run": "Robbin's Run"
+ }
+}
