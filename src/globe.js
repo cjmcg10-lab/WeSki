@@ -21,83 +21,61 @@ const ll = (lat, lon, r = 1) => {
   return new THREE.Vector3(-Math.cos(phi) * c * r, Math.sin(THREE.MathUtils.degToRad(lat)) * r, Math.sin(phi) * c * r);
 };
 
-// Resort peaks. Colours: built mountains in the app's teal, mountains not added yet in a muted slate.
-const BUILT = '#2fd3b3', LATER = '#8e9ab3', SNOW = '#f6fbff';
+// Resort peaks: only mountains with a map are shown (owner, 2026-11-24), all alike: rock grey with a snow cap.
+const ROCK = '#7d8794', SNOW = '#f6fbff';
 const MAX_PEAK = 0.075; // the tallest peak's height in globe radii at scale 1 (the old dots were 0.012 across)
 
 /**
- * The shape of one mountain: a main low-poly peak with uneven, faceted sides and a lower shoulder peak beside it,
- * 1 tall, about 0.6 across, base at y = 0. Plain triangles (no index) so every facet is lit flat.
+ * The shape of one mountain: a seven-sided cone with slightly uneven, faceted sides, 1 tall and 0.6 across,
+ * base at y = 0. Plain triangles (no index) so every facet is lit flat. 42 triangles, so thousands stay cheap.
  */
 function mountainGeo() {
-  const parts = [];
   const hash = (x) => { const v = Math.sin(x * 127.1) * 43758.5453; return v - Math.floor(v); };
-  const peak = (r, h, segs, ox, oz, seed) => {
-    let g = new THREE.ConeGeometry(r, h, segs, 3, true);
-    g.translate(0, h / 2, 0);
-    const pos = g.attributes.position;
-    for (let i = 0; i < pos.count; i++) {
-      const y = pos.getY(i);
-      if (y > h * 0.98) continue;                                   // keep the summit sharp
-      const ang = Math.atan2(pos.getZ(i), pos.getX(i));
-      const k = 1 + 0.32 * (hash(seed + Math.round(ang * 10) * 3.1 + Math.round(y * 9)) - 0.5); // ragged ridges
-      pos.setXYZ(i, pos.getX(i) * k + ox, y, pos.getZ(i) * k + oz);
-    }
-    g = g.toNonIndexed();
-    g.computeVertexNormals();
-    parts.push(g);
-  };
-  peak(0.3, 1, 7, 0, 0, 1);
-  peak(0.22, 0.58, 6, 0.24, 0.1, 7);
-  peak(0.18, 0.42, 5, -0.2, -0.12, 13);
-  const n = parts.reduce((t, g) => t + g.attributes.position.count, 0);
-  const P = new Float32Array(n * 3), N = new Float32Array(n * 3);
-  let o = 0;
-  for (const g of parts) { P.set(g.attributes.position.array, o); N.set(g.attributes.normal.array, o); o += g.attributes.position.array.length; }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(P, 3));
-  geo.setAttribute('normal', new THREE.BufferAttribute(N, 3));
-  return geo;
+  let g = new THREE.ConeGeometry(0.3, 1, 7, 3, true);
+  g.translate(0, 0.5, 0);
+  const pos = g.attributes.position;
+  for (let i = 0; i < pos.count; i++) {
+    const y = pos.getY(i);
+    if (y > 0.98) continue;                                         // keep the summit sharp
+    const ang = Math.atan2(pos.getZ(i), pos.getX(i));
+    const k = 1 + 0.3 * (hash(1 + Math.round(ang * 10) * 3.1 + Math.round(y * 9)) - 0.5); // ragged ridges
+    pos.setXYZ(i, pos.getX(i) * k, y, pos.getZ(i) * k);
+  }
+  g = g.toNonIndexed();
+  g.computeVertexNormals();
+  return g;
 }
 
 /**
- * One InstancedMesh for many peaks. Each is a small 3D mountain standing on the globe (owner, 2026-11-24: "as I scroll
- * north or south the perspective should translate as though I was looking at an actual mountain"): its sides and its
- * light turn with the globe, so it is seen from the angle the viewer really looks at it. It leans part of the way toward
- * the top of the screen (uLean), or a mountain in the middle of the globe, seen from straight above, would read as a dot
- * and heights could not be compared. Real 3D shapes at their real depth, so a nearer mountain covers a farther one.
- * The whole set is slid toward the camera by the same share (uPull), which keeps every mountain's place on screen and
- * their front-to-back order, and lifts them clear of the curved surface near the globe's edge.
+ * One InstancedMesh for many peaks. Each is a small 3D mountain standing straight out from the centre of the Earth
+ * (owner, 2026-11-24): a real object on the globe, lit with it and seen from the angle the viewer really looks at it,
+ * so a mountain near the middle of the globe is seen from above and one near the edge from the side. It is drawn at
+ * its real depth, with the globe's own surface hiding what is behind it, so a nearer mountain covers a farther one.
+ * Height and base both grow with the vertical drop, so a big mountain still reads as big when seen from above.
  * Per peak the instance matrix holds: [0][1] a turn so neighbours differ, [1][1] the height (0-1), [3] the spot on the globe.
  */
 function makePeaks(list, order = 2) {
   const geo = mountainGeo();
   const mat = new THREE.ShaderMaterial({
-    uniforms: { uScale: { value: 1 }, uPull: { value: 1 }, uMax: { value: MAX_PEAK }, uLean: { value: 2.2 }, uSnow: { value: new THREE.Color(SNOW) } },
+    uniforms: { uScale: { value: 1 }, uMax: { value: MAX_PEAK }, uSnow: { value: new THREE.Color(SNOW) } },
     vertexShader: `
-      uniform float uScale, uMax, uPull, uLean;
+      uniform float uScale, uMax;
       varying vec3 vCol; varying float vLight, vY, vAng, vH;
       void main() {
         vec3 anchor = instanceMatrix[3].xyz;
         float h = instanceMatrix[1][1], yaw = instanceMatrix[0][1];
-        vec4 a = modelViewMatrix * vec4(anchor, 1.0);
-        vec3 up = normalize(normalMatrix * normalize(anchor));        // the ground's upward direction, as seen
-        // shrink away on the far side of the globe
-        float s = uScale * smoothstep(0.0, 0.12, dot(up, normalize(-a.xyz)));
-        // the mountain's own axes: Y up out of the ground (leaning toward the top of the screen), X east on the globe
-        vec3 Y = normalize(up + uLean * vec3(0.0, 1.0, 0.0));
-        vec3 east = normalMatrix * normalize(cross(vec3(0.0, 1.0, 0.0), anchor) + vec3(1e-5, 0.0, 0.0));
-        vec3 X = normalize(east - dot(east, Y) * Y), Z = cross(X, Y);
+        // the mountain's own axes on the globe: Y straight up from the Earth's centre, X east, Z north
+        vec3 Y = normalize(anchor);
+        vec3 X = normalize(cross(vec3(0.0, 1.0, 0.0), Y) + vec3(1e-5, 0.0, 0.0)), Z = cross(X, Y);
         float c = cos(yaw), sn = sin(yaw);
         vec3 p = vec3(c * position.x + sn * position.z, position.y, -sn * position.x + c * position.z);
         vec3 nr = vec3(c * normal.x + sn * normal.z, normal.y, -sn * normal.x + c * normal.z);
-        vec3 sc = vec3(0.6 + 0.3 * h, h, 0.6 + 0.3 * h);             // taller peaks a little broader too
+        vec3 sc = vec3(0.45 + 0.75 * h, h, 0.45 + 0.75 * h);         // a bigger drop: taller and broader
         p *= sc; nr = normalize(nr / sc);
-        vec3 v = a.xyz + (X * p.x + Y * p.y + Z * p.z) * uMax * s;
-        vec3 n = normalize(X * nr.x + Y * nr.y + Z * nr.z);
-        float pull = min(0.5, (sqrt(2.0 * uMax * uPull) + 0.001) / length(a.xyz));
-        v *= 1.0 - pull;
-        gl_Position = projectionMatrix * vec4(v, 1.0);
+        // set a hair into the ground so the low-poly globe's flat facets never show a gap under it
+        vec3 w = Y * (1.0 - 0.002) + (X * p.x + Y * p.y + Z * p.z) * uMax * uScale;
+        vec3 n = normalize(normalMatrix * (X * nr.x + Y * nr.y + Z * nr.z));
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 1.0);
         vCol = instanceColor;
         vLight = 0.42 + 0.75 * max(0.0, dot(n, normalize(vec3(-0.5, 0.65, 0.55))));
         vY = position.y; vAng = atan(position.z, position.x); vH = h;
@@ -119,7 +97,7 @@ function makePeaks(list, order = 2) {
   mesh.renderOrder = order;
   const col = new THREE.Color();
   list.forEach((p, i) => { setPeak(mesh, i, p); mesh.setColorAt(i, col.set(p.color)); });
-  if (!list.length) mesh.setColorAt(0, col.set(LATER));
+  if (!list.length) mesh.setColorAt(0, col.set(ROCK));
   return mesh;
 }
 
@@ -131,7 +109,9 @@ function setPeak(mesh, i, { at, h }) {
   mesh.setMatrixAt(i, m);
 }
 
-const MIN_DIST = 1.035, ZOOM_STEP = 0.36; // tap-to-zoom: each tap brings the camera this much closer, down to ~220 km up
+// tap-to-zoom: each tap brings the camera this much closer, down to ~220 km up; TILT: how far (radians) the camera
+// tilts to look across the ground once zoomed in
+const MIN_DIST = 1.035, ZOOM_STEP = 0.36, TILT = 0.75;
 const CARD_DIST = 1.6, CARD_LIFT = 0.13, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
 
 export class Globe {
@@ -183,10 +163,10 @@ export class Globe {
     this.scene.add(new THREE.Mesh(new THREE.SphereGeometry(1.06, 40, 24), new THREE.MeshBasicMaterial({ color: '#7fc4ff', transparent: true, opacity: 0.13, side: THREE.BackSide })));
     // Each resort is a little snow-capped peak standing on the globe; its height shows the vertical drop.
     // Mountains with a map are teal; mountains not added yet (coming soon, and the Forecast-only ones) are muted slate.
-    this.pins = resorts.map((rs) => ({ rs, at: ll(rs.lat, rs.lon, 1), h: peakHeight(dropOf(rs)), visible: true }));
-    this.peaks = makePeaks(this.pins.map((p) => ({ at: p.at, h: p.h, color: p.rs.available ? BUILT : LATER })));
+    this.pins = resorts.filter((rs) => rs.available).map((rs) => ({ rs, at: ll(rs.lat, rs.lon, 1), h: peakHeight(dropOf(rs)), visible: true }));
+    this.peaks = makePeaks(this.pins.map((p) => ({ at: p.at, h: p.h, color: ROCK })));
     g.add(this.peaks);
-    this.others = null; this.peakScale = 1;
+    this.peakScale = 1;
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.026, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide, transparent: true }));
     this.ring.visible = false;
     g.add(this.ring);
@@ -332,7 +312,7 @@ export class Globe {
       v.copy(at).applyMatrix4(this.globe.matrixWorld);
       // behind the globe: the mountain faces away from the camera
       if (v.clone().normalize().dot(cam.clone().sub(v)) <= 0) continue;
-      v.y += lift * h;                               // aim at the middle of the peak, which stands straight up on screen
+      v.addScaledVector(v.clone().normalize(), lift * h); // aim at the middle of the peak, which stands straight out from the Earth
       v.project(this.camera);
       out.push({ rs, px: Math.hypot((v.x + 1) / 2 * w - x, (1 - v.y) / 2 * h0 - y) });
     }
@@ -366,24 +346,6 @@ export class Globe {
     if (!this.zoomed) return;
     this.zoomed = false; this.onZoom?.(false);
     this.go({ d: this.home, l: this.homeLift }, 0.9, { zoom: true }).then(() => { if (!this.focused && !this.zoomed) this.spin = true; });
-  }
-
-  /**
-   * Add what the Forecast catalogue knows: drops for coming-soon mountains that had none (id -> metres), and the
-   * Forecast-only mountains ([{lat, lon, drop}]), shown as smaller slate peaks once zoomed in. They cannot be tapped.
-   */
-  addCatalog(drops, others) {
-    if (!this.alive) return;
-    this.pins.forEach((p, i) => {
-      const d = drops.get(p.rs.id);
-      if (d == null || dropOf(p.rs) != null) return;
-      p.h = peakHeight(d);
-      setPeak(this.peaks, i, { at: p.at, h: p.h });
-    });
-    this.peaks.instanceMatrix.needsUpdate = true;
-    if (this.others || !others.length) return;
-    this.others = makePeaks(others.map((o) => ({ at: ll(o.lat, o.lon, 1), h: peakHeight(o.drop), color: LATER })), 1);
-    this.globe.add(this.others);
   }
 
   /** Show (or with null, hide) the viewer's own position on the globe. */
@@ -515,14 +477,6 @@ export class Globe {
     for (const p of this.pins) p.visible = shown;
     this.peaks.visible = shown;
     this.peaks.material.uniforms.uScale.value = ps;
-    this.peaks.material.uniforms.uPull.value = ps;
-    if (this.others) {
-      // the Forecast-only mountains appear once zoomed in a little, smaller than the others, so the whole globe stays clear
-      const k = Math.min(1, Math.max(0, (2.3 - this.dist) / 0.5));
-      this.others.visible = shown && k > 0;
-      this.others.material.uniforms.uScale.value = ps * 0.6 * k;
-      this.others.material.uniforms.uPull.value = ps;
-    }
     if (this.me.visible) {
       this.globe.updateMatrixWorld();
       const mw = this.me.getWorldPosition(new THREE.Vector3());
@@ -537,8 +491,19 @@ export class Globe {
     this.camera.near = Math.max(0.00002, (d - 1) * 0.4);
     this.camera.updateProjectionMatrix();
     // `lift` slides the globe up the screen so the list / resort card has room underneath
-    this.camera.position.set(0, -this.lift * (d - 1), d);
-    this.camera.lookAt(0, -this.lift * (d - 1), 0);
+    const L = this.lift * (d - 1);
+    this.camera.position.set(0, -L, d);
+    this.camera.lookAt(0, -L, 0);
+    // Zoomed in by tapping, the camera tilts to look across the ground from the south, as a 3D map does, so the
+    // mountains (which stand straight out from the Earth) show their height instead of being seen from straight above.
+    // It turns about the spot in the middle of the screen, which stays where it was. Eased, so zooming never jumps.
+    const want = this.zoomed && !this.diving && !this.focused ? TILT * Math.min(1, Math.max(0, (1.6 - d) / 0.45)) : 0;
+    this.tilt = (this.tilt ?? 0) + (want - (this.tilt ?? 0)) * Math.min(1, dt * 6);
+    if (this.tilt > 0.002 && Math.abs(L) < 1) {
+      const pz = Math.sqrt(1 - L * L), r = d - pz;               // the spot under the middle of the screen, and how far off
+      this.camera.position.set(0, -L - Math.sin(this.tilt) * r, pz + Math.cos(this.tilt) * r);
+      this.camera.lookAt(0, -L, pz);
+    }
     this.renderer.render(this.scene, this.camera);
   }
 
