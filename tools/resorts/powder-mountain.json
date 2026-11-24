@@ -43,7 +43,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "lifts 9 of OpenSkiMap's 14; only 9 of the 14 lifts OpenSkiMap assigns are on the map; 49 runs no lift reaches; 71 dead-end runs; 10 runs climb more than 12 m",
  "rename": {
   "Breakaway": "Break Away",
   "Candy L:and": "Candy Land",
@@ -57,5 +56,54 @@
   "3 Mile": "Amy's 3 Mile",
   "Left is Right": "Lefty's Right",
   "Powder Chamber": "Powder Chamber 1"
- }
+ },
+ "links": [
+  [
+   "Lightning Ridge (top)",
+   "trail:James Face",
+   "hike"
+  ],
+  [
+   "Village Quad (base)",
+   "trail:Lodge Trail",
+   "hike"
+  ],
+  [
+   "trail:Spring Creek (bottom)",
+   "Village Quad (base)"
+  ],
+  [
+   "trail:Colt 45 (bottom)",
+   "Village Quad (base)"
+  ]
+ ],
+ "links_notes": {
+  "Lightning Ridge (top)": "James Peak adventure terrain (gate hours 9:00-2:15 on the 2026 trail map): along the ridge from Cobabe Peak (the top of Lightning Ridge) and up the uptrack drawn to James Peak; the James Peak runs (James Face, Carpe Diem, Shug'r Bowl, Y Chute, K2) start there",
+  "Village Quad (base)": "Lefty's Canyon is marked 'No lift access, hiking out required' on the 2026 trail map (Village is a member lift): the uptrack 'Uptrack Exiting Lefty's Canyon' climbs from the canyon floor at the bottom of Village up beside Ojeebus to the Skylodge and Hidden Lake Lodge, where Lodge Trail starts",
+  "trail:Spring Creek (bottom)": "the lower uptrack on the 2026 trail map ('Uptrack Exiting Lefty's Canyon', dash-dot with arrows) climbs from the canyon floor where Spring Creek and Colt 45 end up to the gate at the bottom of Village (walked)",
+  "trail:Colt 45 (bottom)": "the lower uptrack on the 2026 trail map ('Uptrack Exiting Lefty's Canyon', dash-dot with arrows) climbs from the canyon floor where Spring Creek and Colt 45 end up to the gate at the bottom of Village (walked)"
+ },
+ "dead_end_notes": {
+  "Baldy Face": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Cut Run": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Dakine": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Dead Horse": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Eden View": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Faceshot": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Freeride": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Moose Hollow": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Powder Country Boundary": "Powder Country: the uptrack along the Powder Country boundary (dotted on the 2026 trail map) to the tops of Baldy Face and Eden View; everything below it ends at the Powder Country shuttle stop, and a bus takes skiers back",
+  "Powder Hog": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Pumphouse": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Sounder Ridge": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back",
+  "Southface": "Powder Country: ends at the Powder Country shuttle stop on the road (Shuttle Pickup on the 2026 trail map); a bus, not a lift, takes skiers back"
+ },
+ "split_ways": {
+  "1132346824": [
+   [-111.739492, 41.372678],
+   "Lay of the Land",
+   ""
+  ]
+ },
+ "split_ways_note": "Wonderland (way 1132346824) runs from the top of Mary's along the ridge, past the tops of Yin, Yang and Bluebell, then down Mary's Bowl. The ridge part is the top of Lay of the Land on the 2026 trail map (public); the Mary's Bowl part is member terrain and hidden (official json 'hide')."
 }

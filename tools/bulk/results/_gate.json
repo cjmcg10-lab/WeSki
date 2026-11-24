@@ -2394,31 +2394,27 @@
   "name": "Powder Mountain",
   "region": "Utah, USA",
   "seconds": 206,
-  "hold": [
-   "lifts 9 of OpenSkiMap's 14",
-   "only 9 of the 14 lifts OpenSkiMap assigns are on the map",
-   "49 runs no lift reaches",
-   "71 dead-end runs",
-   "10 runs climb more than 12 m"
+  "hold": [],
+  "soft": [
+   "13 dead ends explained in the config (dead_end_notes)"
   ],
-  "soft": [],
   "osk_lifts": 14,
   "osk_runs": 155,
   "lifts": 9,
-  "runs": 225,
-  "named": 205,
-  "km": 189.1,
+  "runs": 172,
+  "named": 150,
+  "km": 136.0,
   "osk_lift_ids_on_map": [
-   9,
+   14,
    14
   ],
   "reachable": [
-   213,
-   225
+   226,
+   229
   ],
   "conn": {
-   "unreachable": 49,
-   "dead_end": 71,
+   "unreachable": 3,
+   "dead_end": 13,
    "outside_core": 0,
    "lift_end": 0,
    "uphill": 0,
@@ -2427,7 +2423,7 @@
   "guess_pct": 0,
   "ratings": "resort feed (Powder Mountain (Powder Haven) 2026 trai)",
   "terrain_res": 1,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "purgatory",

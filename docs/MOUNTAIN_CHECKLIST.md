@@ -238,8 +238,12 @@ Mt Seymour, Mt. Spokane, Northstar, Pajarito, Panorama, Pico, Powder Mountain, P
 Revelstoke, Sandia Peak, Ski Santa Fe, Schweitzer, Seven Springs, Sierra-at-Tahoe, Silver Mountain and SilverStar now have
 `tools/official/<id>.json` (ratings and lift list read by hand from each resort's trail map on skimap.org, with the
 easier-than-OpenStreetMap readings looked at a second time), connections checked with reasons in
-`tests/fixtures/connections/<id>.json`, and patrol numbers where the trail map prints one. 19 pass the gate; Powder
-Mountain stays held (five lifts are private, homeowners only, in OpenStreetMap). Still to do at all 20: the runs each card
+`tests/fixtures/connections/<id>.json`, and patrol numbers where the trail map prints one. All 20 pass the gate. Powder
+Mountain (follow-up 2026-11-24, branch `claude/45-powder-mountain`, owner's decision): its five member lifts (Village,
+Mary's, Raintree, Primetime, Foxtrot) are hidden with the terrain only they reach (Primetime and Raintree areas, Mary's
+Bowl, the east side of Lefty's Canyon below the Village top); James Peak is joined by the hike from Lightning Ridge and
+Lefty's Canyon by its uptracks; the 13 Powder Country runs end at the shuttle stop (a bus, not a lift) and are explained
+in the config's `dead_end_notes`, which `tools/bulk/gate.py` no longer counts against the dead-end limit. Still to do at all 20: the runs each card
 lists as "on the resort's list but not on the map" (not traced), photos, browser close-ups.
 
 ## Runs on the resort's list but not yet on the map (2026-11-19)

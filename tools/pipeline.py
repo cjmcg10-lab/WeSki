@@ -662,7 +662,11 @@ def one(rid, opt):
     run(["node", "tools/check_downhill.mjs", rid, "--json", dj], log)
     try:
         d = json.load(open(dj))
-        logs["downhill_json"] = d
+        # a run the existence check hides is not on the map: its climb neither needs a look nor counts at the gate
+        T = json.load(open(f"{ROOT}/public/data/{rid}/resort.json"))["trails"]
+        hid = {(t.get("osm"), t.get("name")) for t in T if t.get("hide")}
+        shown = {(t.get("osm"), t.get("name")) for t in T if not t.get("hide")}
+        logs["downhill_json"] = [r for r in d if (r.get("osm"), r.get("name")) not in hid - shown]
     except Exception:
         pass
     result = card(rid, cfg, logs, before, tnote, notes)

@@ -20,7 +20,8 @@ Hard limits (a map that fails one can send a skier wrong, or fails the app's own
   - every lift end can be reached from the rest and can get back (tests/resorts.test.js fails otherwise);
   - runs reachable from a lift: at least 90% of run pieces (build_data's count) and connection check "unreachable"
     at most 5% of the shown runs;
-  - dead ends (a run whose bottom leads to no lift) at most 5% of shown runs; uphill ski joins none;
+  - dead ends (a run whose bottom leads to no lift) at most 5% of shown runs, not counting those a person explained
+    in the config's "dead_end_notes" {run: reason} (terrain left by shuttle bus); uphill ski joins none;
   - runs drawn twice on the same ground ("doubled") at most 2, or 2% of the shown runs at a big resort;
   - lifts the build isolated by rule (not joined to the rest): at most one, a short one (under 1 km), not counting
     surface lifts under 150 m; more means an area is cut off;
@@ -95,7 +96,12 @@ def judge(rid, conn):
     row["conn"] = {k: len(c.get(k, [])) for k in ("unreachable", "dead_end", "outside_core", "lift_end", "uphill", "doubled")}
     if row["conn"]["unreachable"] > 0.05 * n:
         row["hold"].append(f"{row['conn']['unreachable']} runs no lift reaches")
-    if row["conn"]["dead_end"] > 0.05 * n:
+    # a dead end a person explained in the config (terrain left by shuttle bus, e.g. Powder Mountain's Powder Country)
+    # is real and known: it stays in the connection fixture but does not count against the limit
+    known = [d for d in c.get("dead_end", []) if d in cfg.get("dead_end_notes", {})]
+    if known:
+        row["soft"].append(f"{len(known)} dead ends explained in the config (dead_end_notes)")
+    if row["conn"]["dead_end"] - len(known) > 0.05 * n:
         row["hold"].append(f"{row['conn']['dead_end']} dead-end runs")
     if row["conn"]["uphill"]:
         row["hold"].append(f"{row['conn']['uphill']} uphill ski joins")

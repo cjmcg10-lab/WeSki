@@ -665,6 +665,14 @@
    "note": "The resort asks guests to alert its slope rescue through the free EchoSOS app.",
    "checked": "2026-11-23"
   },
+  "powder-mountain": {
+   "country": "US",
+   "phone": "(801) 745-3772 ext. 3",
+   "tel": "+18017453772,3",
+   "label": "Powder Mountain Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/42540",
+   "checked": "2026-11-24"
+  },
   "powder-ridge": {
    "country": "US",
    "phone": "860-876-9063",

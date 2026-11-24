@@ -1661,6 +1661,23 @@
   "checked": true
  },
  {
+  "id": "powder-mountain",
+  "name": "Powder Mountain",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 41.39146,
+  "lon": -111.79246,
+  "baseLat": 41.41306,
+  "baseLon": -111.74108,
+  "top": 2864,
+  "base": 2018,
+  "trails": 205,
+  "lifts": 14,
+  "zones": false,
+  "bytes": 2040442,
+  "checked": true
+ },
+ {
   "id": "powder-ridge",
   "name": "Powder Ridge",
   "region": "Connecticut, USA",
