@@ -600,4 +600,5 @@ export default {
   1546: "Las pistas o remontes no se conectan aquí",
   1547: "Debería ser:",
   1548: "Elige cuál debería ser la dificultad.",
+  1580: "Hecha a partir de nuestro mapa 3D",
 };

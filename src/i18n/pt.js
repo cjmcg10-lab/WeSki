@@ -600,4 +600,5 @@ export default {
   1546: "Pistas ou teleféricos não se ligam aqui",
   1547: "Deveria ser:",
   1548: "Escolha qual deveria ser a dificuldade.",
+  1580: "Feita a partir do nosso mapa 3D",
 };

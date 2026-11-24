@@ -600,4 +600,5 @@ export default {
   1546: "Les pistes ou remontées ne se rejoignent pas ici",
   1547: "Elle devrait être :",
   1548: "Choisissez quel devrait être le niveau.",
+  1580: "Réalisée à partir de notre carte 3D",
 };

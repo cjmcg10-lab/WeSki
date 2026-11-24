@@ -99,6 +99,11 @@ In Norway: alerts from <a href="https://api.met.no/">MET Norway</a> (MetAlerts),
 <h2>Mountain photos</h2>
 <p>The photos on the mountain list come from Wikimedia Commons:</p>
 <ul id="photos"><li class="note">Loading…</li></ul>
+<p>Mountains with no free photo show a picture made from the app's own map data instead: a view of that mountain's 3D
+map with its runs and lifts, and its key numbers (summit, vertical, runs by rating, lifts) taken from the same map. These
+pictures are not photos. They are made from the sources credited above: runs, lifts and buildings from OpenStreetMap
+contributors (ODbL), ratings from the resorts' published trail lists where we have them, and the terrain sources listed
+under Terrain. Mountains shown this way: <span id="cards">loading…</span></p>
 
 <h2>Software</h2>
 <p>three.js (MIT), Vite (MIT), Montserrat and Nunito Sans fonts (SIL Open Font License), and other open-source packages under their
@@ -116,5 +121,8 @@ fetch('/photos/credits.json').then((r) => r.json()).then((c) => {
     return `<li>${esc(id.replace(/-/g, ' '))}: “<a href="https://commons.wikimedia.org/wiki/File:${encodeURIComponent(file.replace(/ /g, '_'))}">${esc(file)}</a>” by ${esc(p.artist || 'unknown')}, ${esc(p.lic || '')}</li>`;
   }).join('');
 }).catch(() => { document.getElementById('photos').innerHTML = '<li>See each photo on Wikimedia Commons.</li>'; });
+fetch('/photos/cards.json').then((r) => r.json()).then((c) => {
+  document.getElementById('cards').textContent = Object.keys(c).map((id) => id.replace(/-/g, ' ')).join(', ') || 'none';
+}).catch(() => { document.getElementById('cards').textContent = 'see the mountain list'; });
 </script>
 </main></body></html>

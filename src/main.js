@@ -152,9 +152,12 @@ function avatarSvg(type, color) {
 let PLACES = [];            // every resort in the picker; the ones with `available` have a built map
 const fetchOk = (u) => fetch(u).then((r) => { if (!r.ok) throw new Error(u); return r; });
 let PHOTOS = {};          // resort id -> {artist, lic, title} for the real photo in /photos (credited on the card)
+let CARDS = {};           // resort id -> {made} for a picture made from our own map where no photo exists (tools/mountain_cards.mjs)
 async function loadPlaces() {
   if (PLACES.length) return;
-  fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; if (!$('#start').classList.contains('hidden')) renderResortList(); }).catch(() => {});
+  const relist = () => { if (!$('#start').classList.contains('hidden')) renderResortList(); };
+  fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; relist(); }).catch(() => {});
+  fetch('/photos/cards.json').then((r) => (r.ok ? r.json() : {})).then((p) => { CARDS = p; relist(); }).catch(() => {});
   const built = await fetchOk('/data/index.json').then((r) => r.json());
   const have = new Set(built.map((r) => r.id));
   // a coming-soon entry is left out once a built mountain has its id or sits within 15 km (built under another id)
@@ -595,19 +598,22 @@ function thumbSvg(r) {
     <path d="${trees}" fill="#1d4a3a"/><path d="M0 52h104v4H0z" fill="#eef5fb"/></g></svg>`;
 }
 
-/** The real photo of a mountain when we have one (freely licensed, credited), else the painted one. */
+/** The real photo of a mountain when we have one (freely licensed, credited), else a picture made from our own 3D
+ *  map (tools/mountain_cards.mjs), else the painted one. A real photo always wins. */
+const hasPic = (id) => !!(PHOTOS[id] || CARDS[id]);
 function thumbPic(r) {
-  return PHOTOS[r.id] ? `<img class="thumb photo" src="/photos/${r.id}-s.jpg" alt="" loading="lazy" />` : thumbSvg(r);
+  return hasPic(r.id) ? `<img class="thumb photo" src="/photos/${r.id}-s.jpg" alt="" loading="lazy" />` : thumbSvg(r);
 }
 function photoCredit(id) {
   const c = PHOTOS[id];
-  return c ? `Photo: ${esc(c.artist || 'Wikimedia Commons')} · ${esc(c.lic)} · Wikimedia Commons` : '';
+  if (!c) return CARDS[id] ? 'Made from our 3D map · © OpenStreetMap contributors' : '';
+  return `Photo: ${esc(c.artist || 'Wikimedia Commons')} · ${esc(c.lic)} · Wikimedia Commons`;
 }
 
 const STAR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><path d="M12 3.200l2.700 5.600 6.100.8-4.500 4.200 1.100 6.100L12 17l-5.400 2.900 1.100-6.100L3.200 9.600l6.100-.8z"/></svg>';
 function resortCard(r) {
   const fav = S.favs.has(r.id);
-  const photo = PHOTOS[r.id] ? `<div class="photo-big"><img src="/photos/${r.id}.jpg" alt="${esc(r.name)}" /><small>${photoCredit(r.id)}</small></div>` : '';
+  const photo = hasPic(r.id) ? `<div class="photo-big"><img src="/photos/${r.id}.jpg" alt="${esc(r.name)}" /><small>${photoCredit(r.id)}</small></div>` : '';
   return `<button class="back" data-act="resort-back">‹ All mountains</button>${photo}
     <div class="head">${photo ? '' : thumbSvg(r)}<div class="grow"><h2>${esc(r.name)}</h2><p class="region">${esc(r.region)}</p></div><button class="fav ${fav ? 'on' : ''}" data-act="fav" data-id="${r.id}">${STAR}${fav ? 'Favorite' : 'Favorite'}</button></div>
     ${r.available ? `<div class="facts"><div><b>${fmtVert(r.top)}</b><span>Summit</span></div><div><b>${fmtVert(r.top - r.base)}</b><span>Vertical</span></div><div><b>${r.trails}</b><span>Trails</span></div><div><b>${r.lifts}</b><span>Lifts</span></div></div>

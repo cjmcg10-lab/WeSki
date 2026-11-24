@@ -70,6 +70,14 @@ for (const id of ids) {
   console.log(`${id}: ${n} map files uploaded to preview/data/${id}/`);
 }
 
+// 2b. pictures made from our own maps (public/photos/cards.json and its images), which the live site may not have yet
+if (existsSync('public/photos/cards.json')) {
+  const cards = Object.keys(JSON.parse(readFileSync('public/photos/cards.json', 'utf8')));
+  put('preview/photos/cards.json', 'public/photos/cards.json', 'application/json');
+  for (const id of cards) for (const f of [`${id}.jpg`, `${id}-s.jpg`]) if (existsSync(`public/photos/${f}`)) put(`preview/photos/${f}`, `public/photos/${f}`, 'image/jpeg');
+  console.log(`${cards.length} mountain cards uploaded to preview/photos/`);
+}
+
 // 3. the Worker
 execFileSync('npx', ['wrangler', 'deploy', '-c', 'tools/preview/wrangler.jsonc'], {
   stdio: 'inherit', env: { ...process.env, CLOUDFLARE_API_TOKEN: TOKEN, CLOUDFLARE_ACCOUNT_ID: ACCOUNT },
