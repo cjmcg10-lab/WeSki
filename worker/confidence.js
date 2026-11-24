@@ -37,6 +37,11 @@ export const CONFIDENCE = {
   absencePoints: 1,       // "does not exist" / "closed for good" on a run with no published ski days
   skiedPoints: -1,        // "does not exist" / "closed for good" on a run skied on K_ANON or more days
 
+  // Replies to a known problem (#112, step 5): "This spot is fine" and "It's been fixed, thanks" (kinds fine, fixed).
+  // Each phone's newest reply takes away up to this many points from the problem it answers, fading and counting more
+  // from near the spot like a report. One phone counts once per problem, so one person cannot cancel several phones.
+  counterPoints: { fine: 1, fixed: 1 },
+
   ratingOtherFactor: 0.5, // wrong rating: a phone naming a different "should be" than the most-voted one counts this much
 
   levels: { medium: 1.5, high: 3 }, // score at or above which a problem is "medium" or "high" confidence
@@ -48,12 +53,15 @@ const OFF_RUN_KINDS = new Set(['missing', 'wrong_place']);
 const RUN_ABSENCE_KINDS = new Set(['not_real', 'closed_for_good']);
 // Kinds that are about a place, never about the run the pin happens to sit on, with the CONFIDENCE key of their radius.
 const SPOT_KINDS = { missing: 'missingM', no_connection: 'spotM' };
+// Replies to a problem, not problems (worker/evidence.js COUNTER_KINDS). They carry `about`: the problem's kind.
+const COUNTER_KINDS = new Set(['fine', 'fixed']);
 const DAY = 86400e3;
 
 export const KIND_NAMES = {
   missing: 'Run or lift missing', not_real: 'Run does not exist', wrong_rating: 'Wrong rating',
   wrong_place: 'Drawn in the wrong place', closed_for_good: 'Closed for good', wrong_name: 'The name is wrong',
   no_connection: 'Runs or lifts don\'t connect here', other: 'Something else',
+  fine: 'Reply: this spot is fine', fixed: 'Reply: it has been fixed',
 };
 
 /** The name of a "should be" rating: 'Black', or for a colour resort 'Red'. */
@@ -66,7 +74,8 @@ export const ratingName = (scale, v) => (RATING_SCALES[scale || 'us'] || RATING_
  * skipped (OSM way ids of ski runs are far larger) and the name still groups those reports.
  */
 export function thingKeys(r) {
-  if (SPOT_KINDS[r.kind]) return [];
+  // a reply ("fine", "fixed") is about what its problem is about, so it is keyed by the problem's kind
+  if (SPOT_KINDS[r.about || r.kind]) return [];
   const keys = [];
   const ref = String(r.ref || '').trim();
   const lift = ref.startsWith('lift:');
@@ -176,12 +185,36 @@ export function votesText(v) {
   return v.votes.map(([val, n], i) => `${i === 0 ? plural(n, 'phone') : n} ${n === 1 ? 'says' : 'say'} ${ratingName(v.scale, val)}`).join(', ');
 }
 
-/** Score one group of reports. `heat` is the public map-help totals ({days, runs, cells}) or null. */
-export function scoreGroup(g, heat, now, c = CONFIDENCE) {
+/**
+ * The replies ("fine", "fixed") that answer one problem: same problem kind (`about`), and the same run or lift (a shared
+ * key) for a problem about a run or lift, or within the problem's radius of its centre for a problem about a spot.
+ */
+export function repliesFor(g, replies) {
+  return replies.filter((r) => {
+    if (r.about !== g.kind) return false;
+    const keys = thingKeys(r);
+    if (g.by === 'thing') return keys.some((k) => g.keys.has(k));
+    return !keys.length && Math.hypot(g.x - r.x, g.y - r.y) <= g.radius;
+  });
+}
+
+/** Score one group of reports. `heat` is the public map-help totals ({days, runs, cells}) or null. `replies`: the
+ *  "fine"/"fixed" replies that answer it (repliesFor). */
+export function scoreGroup(g, heat, now, c = CONFIDENCE, replies = []) {
   const why = [];
   const votes = g.kind === 'wrong_rating' ? ratingVotes(g.reports.filter((r) => ageWeight(r.at, now, c) > 0)) : null;
   // one weight per phone: its strongest report (newest, and near the spot if any was)
   const byDevice = new Map();
+  // each phone's newest reply; a phone whose reply is newer than its own report has changed its mind: its report no
+  // longer counts. Replies always carry an install id (the server refuses one without).
+  const reply = new Map();
+  for (const r of replies) {
+    if (!r.dev || ageWeight(r.at, now, c) <= 0) continue;
+    if (!reply.has(r.dev) || r.at >= reply.get(r.dev).at) reply.set(r.dev, r);
+  }
+  const lastReport = new Map();
+  for (const r of g.reports) if (r.dev) lastReport.set(r.dev, Math.max(lastReport.get(r.dev) || 0, r.at));
+  for (const [dev, r] of [...reply]) if ((lastReport.get(dev) || 0) > r.at) reply.delete(dev);
   let unknown = 0, near = 0, live = 0;
   for (const r of g.reports) {
     const w0 = ageWeight(r.at, now, c);
@@ -193,9 +226,18 @@ export function scoreGroup(g, heat, now, c = CONFIDENCE) {
     const other = votes && Number.isInteger(r.should) && r.should !== votes.top;
     const w = w0 * (isNear ? c.nearFactor : 1) * (other ? c.ratingOtherFactor : 1);
     if (!r.dev) { unknown += w * c.unknownDevice; continue; }
+    if (reply.has(r.dev)) continue;
     byDevice.set(r.dev, Math.max(byDevice.get(r.dev) || 0, w));
   }
   const devices = byDevice.size;
+  let replyPts = 0;
+  const replyCount = { fine: 0, fixed: 0 };
+  for (const r of reply.values()) {
+    const isNear = Number.isFinite(r.near) && r.near <= c.nearM;
+    replyPts += ageWeight(r.at, now, c) * (isNear ? c.nearFactor : 1) * (c.counterPoints[r.kind] || 0);
+    replyCount[r.kind] = (replyCount[r.kind] || 0) + 1;
+  }
+  replyPts = Math.round(replyPts * 100) / 100;
   const reportPts = [...byDevice.values()].reduce((s, w) => s + w, 0) + unknown;
   const noId = g.reports.filter((r) => !r.dev && ageWeight(r.at, now, c) > 0).length;
   why.push(`${plural(live, 'report')} in the last ${c.fadeDays} days` + (devices ? ` from ${plural(devices, 'phone')}` : '') +
@@ -206,6 +248,11 @@ export function scoreGroup(g, heat, now, c = CONFIDENCE) {
     if (far > c.spotM) why.push(`Grouped by the ${[...g.keys].some((k) => k.startsWith('lift')) ? 'lift' : 'run'}: reports sent up to ${Math.round(far)} m apart along it`);
   }
   if (near) why.push(`${plural(near, 'report')} sent from within ${c.nearM} m of the spot`);
+  if (reply.size) {
+    const said = [replyCount.fine && `${plural(replyCount.fine, 'phone')} ${replyCount.fine === 1 ? 'says' : 'say'} the spot is fine`,
+      replyCount.fixed && `${plural(replyCount.fixed, 'phone')} ${replyCount.fixed === 1 ? 'says' : 'say'} it has been fixed`].filter(Boolean);
+    why.push(`${said.join(', ')} (-${replyPts})`);
+  }
   if (votes) why.push(`It should be ${ratingName(votes.scale, votes.top)}: ${votesText(votes)}`);
 
   // map-help evidence
@@ -229,7 +276,7 @@ export function scoreGroup(g, heat, now, c = CONFIDENCE) {
     }
   } else if (g.kind === 'wrong_rating') why.push('Ratings are never judged from GPS: check against the resort\'s own trail list');
 
-  const score = Math.round(Math.max(0, reportPts + gpsPts) * 100) / 100;
+  const score = Math.round(Math.max(0, reportPts + gpsPts - replyPts) * 100) / 100;
   const level = score >= c.levels.high ? 'high' : score >= c.levels.medium ? 'medium' : 'low';
   const newest = g.reports.reduce((a, r) => (r.at > a.at ? r : a), g.reports[0]);
   const named = [...g.reports].reverse().find((r) => r.name);
@@ -242,8 +289,12 @@ export function scoreGroup(g, heat, now, c = CONFIDENCE) {
     runs: runIds,
     should: votes ? { scale: votes.scale, top: votes.top, name: ratingName(votes.scale, votes.top), agree: votes.agree, votes: votes.votes } : null,
     score, level,
-    parts: { reports: Math.round(reportPts * 100) / 100, gps: gpsPts },
+    parts: { reports: Math.round(reportPts * 100) / 100, gps: gpsPts, replies: replyPts ? -replyPts : 0 },
     reports: g.reports.map((r) => r.id), phones: devices, near, latest: newest.at,
+    // for the phone's "N other skiers reported this" (src/reportmatch.js): how many phones and older reports still
+    // count, what the problem is about (OSM ids and names, already public in the report list) and a spot's radius
+    people: devices + noId, keys: g.by === 'thing' ? [...g.keys] : [], radius: g.by === 'spot' ? g.radius : null,
+    replies: { fine: replyCount.fine, fixed: replyCount.fixed, ids: replies.map((r) => r.id) },
     why,
   };
 }
@@ -251,5 +302,7 @@ export function scoreGroup(g, heat, now, c = CONFIDENCE) {
 /** Every open problem at one mountain, highest score first. Reports past fadeDays are left out entirely. */
 export function scoreProblems(reports, heat, now = Date.now(), c = CONFIDENCE) {
   const live = reports.filter((r) => (r.status || 'open') === 'open' && ageWeight(r.at, now, c) > 0);
-  return groupReports(live, c).map((g) => scoreGroup(g, heat, now, c)).sort((a, b) => b.score - a.score || b.latest - a.latest);
+  const replies = live.filter((r) => COUNTER_KINDS.has(r.kind));
+  const problems = live.filter((r) => !COUNTER_KINDS.has(r.kind));
+  return groupReports(problems, c).map((g) => scoreGroup(g, heat, now, c, repliesFor(g, replies))).sort((a, b) => b.score - a.score || b.latest - a.latest);
 }

@@ -5,6 +5,7 @@ import { fetchHeights, fetchCanopy, fetchLandcover } from './heights.js';
 import { repairEdges } from './seam.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
+import { matchProblem, problemsAt, sentByMe } from './reportmatch.js';
 import { daySummary, blockedPlaces, contribBody } from './contrib.js';
 import { Router, suggestMeetingPoint, DIFF_NAMES, TOLERANCE, GRADE_NAMES } from './routing.js';
 import { Guide, Speaker } from './voice.js';
@@ -2131,12 +2132,63 @@ function sheetReport() {
   const rc = ratingChoices();
   const should = kind === 'wrong_rating' ? `<label class="lbl">${t('It should be:')}</label><div class="seg wrap" id="report-should">${rc.list.map((r) => `<button data-act="report-should" data-v="${r.v}" class="${S.reportShould === r.v ? 'on' : ''}"><span class="${r.css}">${r.sym}</span> ${r.name}</button>`).join('')}</div>` : '';
   const where = tg.lift ? ` · ${t('On {0}', `<span translate="no">${esc(tg.name)}</span>`)}` : tg.on ? ` · ${t('On {0}', esc(tg.on.t.name || t('a connecting run')))}` : '';
+  // the same problem already reported by others (#112): say so, so people need not send duplicates
+  loadProblems();
+  const dup = matchProblem(knownProblems(), { kind, ref: tg.ref, name: tg.name, x: p.x, y: p.y });
+  const mine = dup && sentByMe(prefs.get('myReports', []), dup);
+  const others = dup ? Math.max(0, dup.people - (mine ? 1 : 0)) : 0;
+  const othersText = others === 1 ? t('1 other skier reported this') : t('{0} other skiers reported this', others);
+  const dupCard = !dup ? '' : `<div class="report-dup">${mine ? `<b>${t('You reported this already')}</b>${others ? `<p class="sub">${othersText}</p>` : ''}<p class="sub">${t('Sending it again does not count twice.')}</p>`
+    : `<b>${othersText}</b><p class="sub">${t('You can add yours: it counts as agreeing and helps get it fixed sooner.')}</p>`}</div>`;
+  const buttons = dup ? `<button class="btn" data-act="report-send">${t('Add my report too')}</button><button class="btn alt" data-act="report-dup-ok">${t('Already reported, thanks')}</button>`
+    : '<button class="btn" data-act="report-send">Send report</button>';
   return ['Report a map mistake', `<div class="card"><p class="sub">${S.pin ? t('At the pin') : t('Where you are')}${where}</p>
     <div class="seg wrap">${REPORT_KINDS.map(([k, n]) => `<button data-act="report-kind" data-v="${k}" class="${kind === k ? 'on' : ''}">${n}</button>`).join('')}</div>
     ${should}
+    ${dupCard}
     <label class="lbl">What is wrong? (optional)</label><textarea class="field" id="f-report" maxlength="500" rows="3" placeholder="For example: the run turns left here, at the trees">${esc(S.reportText || '')}</textarea>
-    <button class="btn" data-act="report-send">Send report</button>
+    ${buttons}
     <p class="note">Reports are public notes on the map, so leave out your name and contact details. We check every report against the resort’s map and aerial photos before changing anything.</p></div>`];
+}
+
+// ---------- known map problems (#112, step 5): "N other skiers reported this", and quick replies on a pin
+/** The mountain's open problems (GET /api/reports/<id>/problems: public counts and reasons, nothing about any phone),
+ *  fetched at most every 5 minutes, or at once after this phone sent something. Re-renders the sheet when they arrive. */
+function loadProblems(force) {
+  const id = S.place?.id, cur = S.problems;
+  if (!id || navigator.onLine === false) return;
+  if (!force && cur?.id === id && (cur.loading || Date.now() - cur.at < 300000)) return;
+  S.problems = { id, at: Date.now(), loading: true, list: cur?.id === id ? cur.list : [] };
+  fetch(`/api/reports/${encodeURIComponent(id)}/problems`).then((r) => (r.ok ? r.json() : null)).catch(() => null).then((j) => {
+    if (S.problems?.id !== id) return;
+    S.problems = { id, at: Date.now(), list: Array.isArray(j?.problems) ? j.problems : S.problems.list };
+    if (S.sheet === 'report' || (S.sheet === 'place' && S.sheetArg?.type === 'pin')) {
+      if ($('#f-report')) S.reportText = $('#f-report').value;
+      renderSheet();
+    }
+  });
+}
+const knownProblems = () => (S.problems?.id === S.place?.id ? S.problems.list : []);
+/** What this phone sent (kept on the phone only, last 60 days), so it does not count itself as "another skier". */
+function rememberSent(key, item) {
+  const list = prefs.get(key, []).filter((m) => Date.now() - (m.at || 0) < 60 * 86400e3);
+  list.push({ ...item, at: Date.now() });
+  prefs.set(key, list.slice(-40));
+}
+const kindLabel = (k) => (REPORT_KINDS.find(([v]) => v === k) || [k, k])[1];
+/** On a dropped pin: the known problems a reply from here would answer, with "This spot is fine" and
+ *  "It's been fixed, thanks". The replies lower the problem's confidence on the server (worker/confidence.js). */
+function knownProblemCard(p) {
+  if (!S.resort || !p) return '';
+  loadProblems();
+  const tg = reportTarget(p);
+  const known = problemsAt(knownProblems(), { ref: tg.ref, name: tg.name, x: p.x, y: p.y });
+  if (!known.length) return '';
+  const replied = known.every((k) => sentByMe(prefs.get('myReplies', []), k));
+  return `<div class="card known-prob"><h4>${t('Known map problem here')}</h4>
+    ${known.map((k) => `<p class="sub">${kindLabel(k.kind)}${k.name ? ` · <span translate="no">${esc(k.name)}</span>` : ''} · ${k.people === 1 ? t('1 skier reported it') : t('{0} skiers reported it', k.people)}</p>`).join('')}
+    ${replied ? `<p class="ok-text">${t('Thanks for letting us know.')}</p>`
+    : `<p class="sub">${t('Does it look right to you now?')}</p><div class="cols2"><button class="btn alt sm" data-act="report-reply" data-v="fine">${t('This spot is fine')}</button><button class="btn alt sm" data-act="report-reply" data-v="fixed">${t('It’s been fixed, thanks')}</button></div>`}</div>`;
 }
 
 function sheetSafety() {
@@ -2362,6 +2414,7 @@ function sheetPlace(ev) {
     ${S.group ? '<button class="btn alt" data-act="meet-here">Make this the group meeting point</button>' : ''}
     ${S.testMode ? '<button class="btn alt" data-act="sim-here">Put me here (test mode)</button>' : ''}
     <button class="btn alt" data-act="remove-pin">Remove pin</button>
+    ${knownProblemCard(p)}
     <button class="learn" data-act="report-open">Report a map mistake here</button>`, true];
 }
 
@@ -2802,7 +2855,25 @@ async function onClick(e) {
       if (kind === 'wrong_rating') Object.assign(body, { should: S.reportShould, scale: ratingChoices().scale });
       const r = await fetch('/api/reports', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
       toast(r?.ok ? 'Thank you. The report was sent.' : r?.status === 429 ? 'Too many reports today. Try again tomorrow.' : 'Could not send. Check your connection.');
-      if (r?.ok) { S.reportText = ''; closeSheet(); } else b.disabled = false;
+      if (r?.ok) { rememberSent('myReports', { kind, ref: tg.ref, name: tg.name, x: p.x, y: p.y }); loadProblems(true); S.reportText = ''; closeSheet(); } else b.disabled = false;
+      break;
+    }
+    case 'report-dup-ok': S.reportText = ''; toast(t('Thanks. It is already on our list.')); closeSheet(); break;
+    case 'report-reply': {
+      // "This spot is fine" / "It's been fixed, thanks" on a pin: one reply per known problem there (#112)
+      const p = S.pin;
+      if (!p || !['fine', 'fixed'].includes(d.v)) break;
+      const tg = reportTarget(p), known = problemsAt(knownProblems(), { ref: tg.ref, name: tg.name, x: p.x, y: p.y });
+      if (!known.length) break;
+      b.disabled = true;
+      const extras = reportExtras(p, tg.on);
+      delete extras.run;   // a reply carries no run number
+      const sent = await Promise.all(known.map((k) => fetch('/api/reports', { method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ resort: S.place.id, kind: d.v, about: k.kind, x: p.x, y: p.y, ref: tg.ref, name: tg.name, ...extras }) }).catch(() => null)));
+      const ok = sent.some((r) => r?.ok);
+      if (ok) { for (const k of known) rememberSent('myReplies', { kind: k.kind, ref: tg.ref, name: tg.name, x: p.x, y: p.y, reply: d.v }); loadProblems(true); }
+      toast(ok ? t('Thanks for letting us know.') : sent.some((r) => r?.status === 429) ? 'Too many reports today. Try again tomorrow.' : 'Could not send. Check your connection.');
+      renderSheet();
       break;
     }
     case 'safety-ok': prefs.set('safetyAccepted', Date.now()); closeSheet(); break;

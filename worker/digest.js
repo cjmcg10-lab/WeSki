@@ -120,7 +120,11 @@ export function buildDigest(parts, now = Date.now()) {
   for (const p of withNew) {
     const name = resortName(p.resort);
     const byReport = new Map();
-    for (const pr of p.problems || []) for (const id of pr.reports) byReport.set(id, pr);
+    const byReply = new Map();
+    for (const pr of p.problems || []) {
+      for (const id of pr.reports) byReport.set(id, pr);
+      for (const id of pr.replies?.ids || []) byReply.set(id, pr);
+    }
     L.push('');
     L.push(`== ${name} (${p.resort}): ${plural(p.reports.length, 'new report')} ==`);
     L.push(`Open the mountain in the app: ${appLink(p.resort)}`);
@@ -128,6 +132,16 @@ export function buildDigest(parts, now = Date.now()) {
     if (shown.length < p.reports.length) L.push(`(Showing the newest ${shown.length}; the full list is at ${SITE}/api/reports/${p.resort})`);
     shown.forEach((r, i) => {
       L.push('');
+      if (r.about) {
+        // a reply to a known problem: "this spot is fine" or "it has been fixed" (lowers the problem's confidence)
+        L.push(`${i + 1}. ${KIND_NAMES[r.kind] || r.kind}, about "${KIND_NAMES[r.about] || r.about}"${r.name ? `: ${oneLine(r.name)}` : ''}  [report #${r.id}, ${when(r.at)}]`);
+        L.push(`   Spot: ${spotText(r)}`);
+        L.push(`   Reporter's GPS: ${Number.isFinite(r.near) ? `${r.near} m from the spot when sent` : 'not known'}`);
+        const pr = byReply.get(r.id);
+        L.push(pr ? `   Answers the problem with reports ${pr.reports.map((id) => '#' + id).join(', ')}, now ${pr.level.toUpperCase()} (score ${pr.score})`
+          : '   Answers no open problem (it was closed or its reports are too old)');
+        return;
+      }
       L.push(`${i + 1}. ${KIND_NAMES[r.kind] || r.kind}${r.name ? `: ${oneLine(r.name)}` : ' (not on a named run)'}  [report #${r.id}, ${when(r.at)}]`);
       if (Number.isInteger(r.should)) L.push(`   It should be: ${ratingName(r.scale, r.should)}`);
       if (r.text) L.push(`   Note: "${oneLine(r.text)}"`);
