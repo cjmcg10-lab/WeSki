@@ -1,10 +1,7 @@
 {
  "id": "val-gardena-groden-gherdeina",
- "reachable": [
-  194,
-  195
- ],
- "auto_joins": 12,
+ "reachable": null,
+ "auto_joins": 0,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 0,
@@ -15,7 +12,7 @@
   "30m": 100.0
  },
  "notes": [],
- "seconds": 330,
+ "seconds": 27,
  "failed": null,
  "built": "2026-11-24"
 }
