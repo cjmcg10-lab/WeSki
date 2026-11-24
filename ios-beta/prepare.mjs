@@ -10,9 +10,9 @@ replace(main,"import { Locator } from './location.js';","import { PhoneLocator a
 replace(main,'function renderChrome() {','function renderChrome() {\n  S.loc?.setBackground(Boolean(S.session || S.sharing || S.nav));');
 replace(main,"function sheetPass(why) {","function sheetPass(why) {\n  return ['Free TestFlight beta', '<div class=\"card\"><p>All ski features are free during this beta.</p></div>'];");
 replace(main,"Free during the preview · plans and prices","Free during the TestFlight beta");
-replace(main,"const cache = await caches.open('weski-map');","// Native map requests are saved to IndexedDB as each file arrives.");
-replace(main,'await cache.put(at, res);','// The bundled shell and local maps are already available offline.');
-replace(main,"const list = (await (await fetch('/offline.json', { cache: 'no-store' })).json()).concat(","const list = [].concat(");
+replace(main,"const store = await caches.open(MAP_CACHE);","// Native map requests are saved to IndexedDB as each file arrives.");
+replace(main,'await store.put(at, res);','// The bundled shell and local maps are already available offline.');
+replace(main,"const app = await (await fetch('/offline.json', { cache: 'no-store' })).json();","const app = [];");
 replace(main,"location.origin, S.group.code","'https://skiwithme.builtbyroger.app', S.group.code");
 replace('src/group.js','new WebSocket(`${proto}://${location.host}/api/groups/${this.code}/ws`)','new WebSocket(`wss://skiwithme.builtbyroger.app/api/groups/${this.code}/ws`)');
 replace('src/account.js','export const setSimFree = (on) => { simFree = !!on; };','export const setSimFree = () => { simFree = false; };');

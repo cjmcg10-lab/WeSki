@@ -77,6 +77,14 @@ No account or address is stored with them. 10 a day per network. Listed at `GET 
 To review: fetch the list per mountain, check each against the trail map and photos, fix, then mark it done
 (status column; a review script is still to write).
 
+## Offline maps and locked days (on the phone only, 2026-11-23)
+
+Two small lists in the phone's settings, never sent: `openedMaps` {mountain id: local date it was opened today} and
+`offlineMaps` {mountain id: {at, bytes}} for downloads. Without a pass, map files of mountains opened on an earlier day
+are deleted from the phone's `weski-map` cache at the next start-up with a server answer. Saved ski days are never
+deleted for lack of a pass: earlier days are only shown locked (`historyView` in `src/passrules.js`).
+`public/legal/privacy.html` ("What stays only on your phone") says the same.
+
 ## Accounts and payments
 
 See `docs/PAID_TIER.md`. Email, hashed session keys, first 80 characters of the browser name per signed-in phone,
