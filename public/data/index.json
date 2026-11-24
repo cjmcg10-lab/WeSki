@@ -13,8 +13,8 @@
   "trails": 83,
   "lifts": 7,
   "zones": false,
-  "bytes": 750789,
-  "checked": false
+  "bytes": 751750,
+  "checked": true
  },
  {
   "id": "afton-alps",
@@ -30,8 +30,8 @@
   "trails": 37,
   "lifts": 20,
   "zones": false,
-  "bytes": 273669,
-  "checked": false
+  "bytes": 273886,
+  "checked": true
  },
  {
   "id": "alta",
@@ -64,8 +64,8 @@
   "trails": 92,
   "lifts": 7,
   "zones": true,
-  "bytes": 561862,
-  "checked": false
+  "bytes": 563018,
+  "checked": true
  },
  {
   "id": "angel-fire",
@@ -75,14 +75,14 @@
   "lat": 36.37265,
   "lon": -105.22256,
   "baseLat": 36.38677,
-  "baseLon": -105.27306,
+  "baseLon": -105.27434,
   "top": 3290,
-  "base": 2617,
-  "trails": 93,
-  "lifts": 8,
+  "base": 2610,
+  "trails": 94,
+  "lifts": 9,
   "zones": false,
-  "bytes": 844686,
-  "checked": false
+  "bytes": 847584,
+  "checked": true
  },
  {
   "id": "apex-mountain",
@@ -98,9 +98,26 @@
   "trails": 63,
   "lifts": 4,
   "zones": true,
-  "bytes": 619629,
-  "checked": false,
+  "bytes": 620778,
+  "checked": true,
   "coarse": true
+ },
+ {
+  "id": "aspen-highlands",
+  "name": "Aspen Highlands",
+  "region": "Colorado, USA",
+  "tz": "America/Denver",
+  "lat": 39.12922,
+  "lon": -106.8769,
+  "baseLat": 39.18771,
+  "baseLon": -106.8475,
+  "top": 3774,
+  "base": 2459,
+  "trails": 111,
+  "lifts": 6,
+  "zones": false,
+  "bytes": 1100930,
+  "checked": true
  },
  {
   "id": "aspen-mountain",
@@ -113,11 +130,11 @@
   "baseLon": -106.81821,
   "top": 3433,
   "base": 2423,
-  "trails": 144,
+  "trails": 143,
   "lifts": 6,
   "zones": false,
-  "bytes": 1010947,
-  "checked": false
+  "bytes": 1014105,
+  "checked": true
  },
  {
   "id": "aspen-snowmass",
@@ -130,11 +147,11 @@
   "baseLon": -106.92061,
   "top": 3815,
   "base": 2473,
-  "trails": 130,
+  "trails": 129,
   "lifts": 18,
   "zones": true,
-  "bytes": 1941764,
-  "checked": false
+  "bytes": 1943272,
+  "checked": true
  },
  {
   "id": "attitash-mountain",
@@ -150,8 +167,8 @@
   "trails": 72,
   "lifts": 8,
   "zones": true,
-  "bytes": 546131,
-  "checked": false
+  "bytes": 543280,
+  "checked": true
  },
  {
   "id": "banff-sunshine-village",
@@ -187,6 +204,23 @@
   "zones": false,
   "bytes": 2675656,
   "checked": false
+ },
+ {
+  "id": "belleayre-mountain-center",
+  "name": "Belleayre Mountain Ski Center",
+  "region": "New York, USA",
+  "tz": "America/New_York",
+  "lat": 42.12834,
+  "lon": -74.51857,
+  "baseLat": 42.14055,
+  "baseLon": -74.50068,
+  "top": 1044,
+  "base": 628,
+  "trails": 62,
+  "lifts": 8,
+  "zones": true,
+  "bytes": 542673,
+  "checked": true
  },
  {
   "id": "berkshire-east",
@@ -251,10 +285,10 @@
   "baseLon": -80.31319,
   "top": 451,
   "base": 231,
-  "trails": 57,
-  "lifts": 14,
+  "trails": 51,
+  "lifts": 13,
   "zones": true,
-  "bytes": 667405,
+  "bytes": 585782,
   "checked": true
  },
  {
@@ -288,8 +322,8 @@
   "trails": 106,
   "lifts": 11,
   "zones": false,
-  "bytes": 975241,
-  "checked": false
+  "bytes": 972271,
+  "checked": true
  },
  {
   "id": "bolton-valley",
@@ -322,8 +356,8 @@
   "trails": 62,
   "lifts": 10,
   "zones": false,
-  "bytes": 428742,
-  "checked": false
+  "bytes": 428168,
+  "checked": true
  },
  {
   "id": "breckenridge",
@@ -357,6 +391,23 @@
   "lifts": 9,
   "zones": false,
   "bytes": 608903,
+  "checked": true
+ },
+ {
+  "id": "brian-head",
+  "name": "Brian Head",
+  "region": "Utah, USA",
+  "tz": "America/Denver",
+  "lat": 37.68352,
+  "lon": -112.83547,
+  "baseLat": 37.70204,
+  "baseLon": -112.84905,
+  "top": 3325,
+  "base": 2929,
+  "trails": 59,
+  "lifts": 13,
+  "zones": false,
+  "bytes": 579535,
   "checked": true
  },
  {

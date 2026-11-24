@@ -1,6 +1,6 @@
 # Big White (big-white)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **128 runs (106 named, 99.2 km), 16 lifts. 3 things to look at.**
 
@@ -14,6 +14,5 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   Magic Carpet 2.0 (bottom) ski 146 m
 - info: audit: flat black: 1, no rating: 1, run climbs: 1
 - info: same counts as the previous build
-- info: lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Mega Snow Coaster Tube Ride
 - pass: reachable from the base: 128 of 128 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)

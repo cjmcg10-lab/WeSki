@@ -37,5 +37,19 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Here's Too...": "Here's To...",
+  "International": "International Road",
+  "Kleenex Cornner": "Kleenex Corner",
+  "Lazy8 Gully": "Lazy 8 Gully",
+  "Legel Tender": "Legal Tender",
+  "Niagara": "Niagra",
+  "Powerline I": "Powerline",
+  "Pumphouse Hill": "Pump House Hill",
+  "Star Walk": "Starwalk",
+  "West 5th Ave": "W 5th Ave",
+  "Cutoff": "Buckhorn Cutoff",
+  "Powerline II": "Powerline"
  }
 }

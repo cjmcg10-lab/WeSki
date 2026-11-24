@@ -114,7 +114,13 @@ def lookup(off):
     for n in off["runs"]:
         quals.setdefault(loose(n), set()).add(qual(n))
 
+    # "not_same": map run names that only look like a listed run (A-Basin's East Wall chutes "The Humbugs" against the
+    # blue "Humbug" on the front side): never rated from the list.
+    apart = {key(n) for n in off.get("not_same", [])}
+
     def f(name):
+        if key(name) in apart:
+            return None
         if key(name) in exact:
             return exact[key(name)]
         g = groups.get(loose(name))

@@ -1,22 +1,27 @@
 {
  "id": "afton-alps",
  "reachable": [
-  54,
-  54
+  53,
+  53
  ],
  "auto_joins": 0,
  "rule_joins": [],
  "stuck_lift_ends": [],
  "climbing_runs": 0,
  "raised": 0,
- "official": null,
+ "official": [
+  32,
+  60,
+  0
+ ],
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
  },
  "notes": [],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 43,
- "rebuild_seconds": 9
+ "rebuild_seconds": 9,
+ "seconds": 10
 }

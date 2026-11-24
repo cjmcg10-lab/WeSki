@@ -19,7 +19,8 @@
   "resort feed mtnpowder 76 gave no trail list: KeyError: 'MountainAreas'"
  ],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 73,
- "rebuild_seconds": 26
+ "rebuild_seconds": 26,
+ "seconds": 35
 }

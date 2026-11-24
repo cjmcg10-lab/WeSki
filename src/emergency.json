@@ -92,19 +92,35 @@
   },
   "angel-fire": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "apex-mountain": {
    "country": "CA",
    "checked": "2026-11-23"
   },
+  "aspen-highlands": {
+   "country": "US",
+   "phone": "970-544-3052",
+   "tel": "+19705443052",
+   "label": "Aspen Highlands emergency phone",
+   "source": "https://skimap.org/skimaps/view/49175 (the resort's own trail map, phone printed on it)",
+   "checked": "2026-11-24"
+  },
   "aspen-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24",
+   "phone": "970-920-0723",
+   "tel": "+19709200723",
+   "label": "Aspen Mountain emergency phone",
+   "source": "https://skimap.org/skimaps/view/49174 (the resort's own trail map, phone printed on it)"
   },
   "aspen-snowmass": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24",
+   "phone": "970-923-0530",
+   "tel": "+19709230530",
+   "label": "Snowmass emergency phone",
+   "source": "https://skimap.org/skimaps/view/49176 (the resort's own trail map, phone printed on it)"
   },
   "attitash-mountain": {
    "country": "US",
@@ -117,6 +133,14 @@
   "beaver-creek-arrowhead-mountain": {
    "country": "US",
    "checked": "2026-11-23"
+  },
+  "belleayre-mountain-center": {
+   "country": "US",
+   "checked": "2026-11-24",
+   "phone": "845-254-6064",
+   "tel": "+18452546064",
+   "label": "Belleayre Summit Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/39221 (the resort's own trail map, phone printed on it)"
   },
   "berkshire-east": {
    "country": "US",
@@ -179,6 +203,10 @@
    "label": "Bretton Woods Ski Patrol / First Aid",
    "source": "https://www.brettonwoods.com/alpine-map-signage/",
    "checked": "2026-11-23"
+  },
+  "brian-head": {
+   "country": "US",
+   "checked": "2026-11-24"
   },
   "brighton": {
    "country": "US",

@@ -17,11 +17,10 @@
   "1m": 0.0,
   "30m": 100.0
  },
- "notes": [
-  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Mega Snow Coaster Tube Ride"
- ],
+ "notes": [],
  "failed": null,
- "built": "2026-11-23",
+ "built": "2026-11-24",
  "first_build_seconds": 82,
- "rebuild_seconds": 25
+ "rebuild_seconds": 25,
+ "seconds": 46
 }

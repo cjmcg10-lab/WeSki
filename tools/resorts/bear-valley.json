@@ -38,5 +38,11 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "19 dead-end runs"
+ "hold": "19 dead-end runs",
+ "rename": {
+  "Murry's Meadow": "Maury's Meadow",
+  "Porrige Bowl": "Porridge Bowl",
+  "Red Barron": "Red Baron",
+  "Sea of Hunt": "Sea Hunt"
+ }
 }

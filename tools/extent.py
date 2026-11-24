@@ -111,7 +111,11 @@ def resort(feats, areas, cfg, buffer_m=None):
     buf = (cfg.get("area_buffer", 150) if buffer_m is None else buffer_m)
     if own:
         # a lift just outside the outline may be a neighbour's (Deer Valley's Empire Express at Park City)
-        seed = {f["id"] for f in feats if in_area(f, own) or (not f["lift"] and near_ring(f, own, buf, kx, ky))}
+        # (a run near our outline but inside a neighbour's named outline is the neighbour's: Craigleith Ski Club's
+        # runs beside Blue Mountain, 2026-11-23)
+        foreign_rings = [r for n, rs in foreign for r in rs]
+        seed = {f["id"] for f in feats if in_area(f, own) or (not f["lift"] and near_ring(f, own, buf, kx, ky)
+                                                               and not in_area(f, foreign_rings))}
     elif cfg.get("area_bbox"):
         w, s, e, n = cfg["area_bbox"]
         bx, by = buf / kx, buf / ky

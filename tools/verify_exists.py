@@ -75,6 +75,8 @@ T, L = R["trails"], R["lifts"]
 # 1. runs that are never shown
 for t in T:
     r = HIDE.get(t["name"]) if t["name"] else None
+    # "way <osm id>": one piece of a name the resort uses elsewhere (Belleayre's second "Esopus" on the old Highmount slope)
+    r = r or HIDE.get(f"way {t.get('osm')}")
     r = r and f"hidden by hand: {r}"
     if not r and not t.get("ok") and t["name"] not in CONFIRM:
         r = tag_reason(t)

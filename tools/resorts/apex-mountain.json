@@ -36,5 +36,29 @@
  "terrain_shares": {
   "1m": 26.7,
   "30m": 73.3
+ },
+ "rename": {
+  "Dawdler1": "Dawdler 1",
+  "Dawdler2": "Dawdler 2",
+  "Dude ney Trail": "Dude'ney Trail",
+  "Grommit": "Gromit",
+  "Pea Shooter": "Peashooter"
+ },
+ "links": [
+  [
+   "trail:Grandfather's Trail",
+   "trail:Twenty Two"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Gunbarrel"
+  ],
+  [
+   "trail:Grandfather's Trail",
+   "trail:Peashooter"
+  ]
+ ],
+ "links_notes": {
+  "Twenty Two, Gunbarrel, Peashooter": "the trail map draws these three leaving Grandfather's Trail along the ridge; OpenStreetMap starts them just below it"
  }
 }

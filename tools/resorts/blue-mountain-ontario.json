@@ -49,10 +49,8 @@
   "1m": 98.3,
   "30m": 1.7
  },
- "isolated_lifts": [
-  "V-Hill"
- ],
- "isolated_notes": {
-  "V-Hill": "rule: not joined to the rest of the lifts on the map"
+ "rename": {
+  "Hell;s Half Acre": "Hell's Half Acre",
+  "Senator/Laraway": "Senator / Larway"
  }
 }

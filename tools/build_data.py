@@ -262,7 +262,17 @@ def main():
         import extent
         feats, areas = extent.load(osm_path)
         keep, added = extent.resort(feats, areas, cfg)
-        inside_area = lambda w: area is not None and sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1])
+        # A way inside another resort's named outline is not "inside" ours just because it lies within the buffer
+        # around our outline (automatic configs use 300 m): Blue Mountain took in Craigleith Ski Club's V-Hill chair
+        # and its six runs next door (2026-11-23). What the search above kept (keep) is unaffected.
+        _own = {cfg.get("area_name")} | set(cfg.get("area_names", []))
+        _foreign = [Polygon([tf.transform(x, y) for x, y in r]) for n, rs in areas if n not in _own for r in rs if len(r) > 3]
+        _foreign = [p if p.is_valid else p.buffer(0) for p in _foreign]
+
+        def _in_foreign(w):
+            return bool(_foreign) and sum(any(p.contains(Point(nodes[i])) for p in _foreign) for i in w[1]) >= 0.5 * len(w[1])
+        inside_area = lambda w: area is not None and sum(area.contains(Point(nodes[i])) for i in w[1]) >= 0.5 * len(w[1]) \
+            and not _in_foreign(w)
         # runs drawn by hand (extra_trails, ids from 9e9) are always the resort's own, even just outside its outline
         ours = lambda w: str(w[0]).startswith("x") or int(w[0]) >= 9_000_000_000 or int(w[0]) in keep or inside_area(w)
         joined = sorted({w[2].get("name") or f"way {w[0]}" for w in lifts if not str(w[0]).startswith("x") and int(w[0]) in added and not inside_area(w)})

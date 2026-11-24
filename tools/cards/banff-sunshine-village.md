@@ -1,6 +1,6 @@
 # Banff Sunshine Village (banff-sunshine-village)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **200 runs (160 named, 94.0 km), 14 lifts. 4 things to look at.**
 

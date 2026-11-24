@@ -35,5 +35,13 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Benandrus Way": "Ben-Andras Way",
+  "Gritz": "Griz",
+  "Hobbit Forrest": "Hobbit Forest",
+  "Mineshaft": "Mine Shaft",
+  "Silver Drife": "Silver Drift",
+  "Wolf Den": "Wolf's Den"
  }
 }
