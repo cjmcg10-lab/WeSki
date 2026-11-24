@@ -1,7 +1,7 @@
 import '@fontsource-variable/montserrat';
 import '@fontsource-variable/nunito-sans';
 import { Geo, nearestOnLine } from './geo.js';
-import { fetchHeights, fetchCanopy } from './heights.js';
+import { fetchHeights, fetchCanopy, fetchLandcover } from './heights.js';
 import { repairEdges } from './seam.js';
 const noZ16 = new Set();
 import { trailAt } from './ontrail.js';
@@ -200,11 +200,13 @@ function initMap(id) {
     const pl = placeById(id);
     if (!pl?.available) throw new Error('no map for ' + id);
     const resortP = fetchOk(`/data/${id}/resort.json`).then((r) => r.json());
-    const [resort, buf, sur, canopy] = await Promise.all([
+    const [resort, buf, sur, canopy, landcover] = await Promise.all([
       resortP,
       fetchHeights(`/data/${id}/terrain`, resortP.then((R) => R.grid), undefined, noZ16),
       fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
       fetchCanopy(`/data/${id}/canopy`),         // real tree cover; older maps have none and keep the old trees
+      // what covers the land around the map (forest, fields, water), for maps built with it
+      resortP.then((R) => (R.sources?.landcover ? fetchLandcover(`/data/${id}/landcover`) : null)),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     const heights = new Uint16Array(buf);
@@ -226,8 +228,8 @@ function initMap(id) {
     S.closures = new Set(prefs.get(pkey('closures'), id === 'jay-peak' ? prefs.get('closures', []) : []));
     S.me = null; S.pin = null; S.nav = null; S.wx = null; S.history = null; S.historyLoaded = false; S.crumbRec = null;
     const q0 = S.map?.q || 0;   // keep the quality step the phone settled on at the last resort
-    S.hasCanopy = !!canopy;
-    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy, { prep, antialias: smoothEdges() });
+    S.hasCanopy = !!canopy; S.hasLandcover = !!landcover;
+    S.map = new SkiMap($('#map'), resort, S.geo, sur ? new Uint16Array(sur) : null, canopy, { prep, antialias: smoothEdges(), landcover });
     if (import.meta.env.DEV) window.__map = S.map;   // for local browser checks only
     S.map.maxFps = S.fps120 ? 120 : 60;
     if (q0) S.map.setQuality(q0);
