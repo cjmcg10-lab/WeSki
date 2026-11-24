@@ -1,6 +1,6 @@
 # Apex Mountain (apex-mountain)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **75 runs (63 named, 47.1 km), 4 lifts. 1 things to look at.**
 

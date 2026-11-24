@@ -1,6 +1,6 @@
 # Afton Alps (afton-alps)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **50 runs (37 named, 12.9 km), 20 lifts. 3 things to look at.**
 

@@ -109,7 +109,9 @@ def judge(rid, conn):
         row["hold"].append(f"{row['guess_pct']}% of the run length has no rating in OpenStreetMap")
     if cfg.get("area_access") in ("private", "members"):   # "customers" means paying skiers: every resort
         row["hold"].append(f"the resort's outline is tagged access={cfg['area_access']} (a private club)")
-    rule_iso = [l for l in R["lifts"] if cfg.get("isolated_notes", {}).get(l["name"], "").startswith("rule: not joined")]
+    # (a lift hidden by the existence check is not on the map at all: Aspen Highlands' Five Trees, not the resort's)
+    rule_iso = [l for l in R["lifts"] if not l.get("hide")
+                and cfg.get("isolated_notes", {}).get(l["name"], "").startswith("rule: not joined")]
     big_iso = [l["name"] for l in rule_iso if l.get("kind") not in ("carpet", "surface") and l.get("len", 0) >= 150]
     if len(big_iso) >= 2 or any(l.get("len", 0) > 1000 for l in rule_iso):
         row["hold"].append("lifts not joined to the rest of the map (isolated by rule): " + ", ".join(big_iso)[:200])

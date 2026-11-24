@@ -40,5 +40,26 @@
   "Cheechacko": "Cheechako",
   "Klondike Cutoff": "Klondike Cut-Off",
   "Perseverence": "Perseverance"
+ },
+ "links": [
+  [
+   "Glacier Bowl Express (top)",
+   "trail:Money 1",
+   "hike"
+  ],
+  [
+   "Glacier Bowl Express (top)",
+   "trail:Money 2",
+   "hike"
+  ],
+  [
+   "trail:High Traverse",
+   "trail:Max's Traverse",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "Money 1, Money 2": "their tops lie about 100 m above the Glacier Bowl Express top, reached on foot through the access gates the trail map marks above Glacier Bowl",
+  "Max's Traverse": "leaves the end of High Traverse and climbs about 45 m out to Max's (trail map); joined as a walk, since directions do not ski uphill"
  }
 }

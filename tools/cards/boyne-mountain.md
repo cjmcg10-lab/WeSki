@@ -1,6 +1,6 @@
 # Boyne Mountain (boyne-mountain)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **62 runs (62 named, 26.4 km), 10 lifts. 1 things to look at.**
 
@@ -8,7 +8,7 @@ Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
   Dave's Glade, Easy Out, Estelle's Way, Patty Lane (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - info: 1 joins made automatically (look at the longest ones on the map)  
   Johnny Mac top ski 107 m
-- info: change from the previous build: runs 63 -> 62
+- info: same counts as the previous build
 - pass: ratings checked against the resort's own list  
   62 on the list, 100 matched, 0 corrected from OpenStreetMap
 - pass: lifts on the resort's list: 9 of 9 on the map

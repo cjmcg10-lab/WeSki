@@ -105,5 +105,8 @@
  ],
  "same_as": {
   "Emerys Bowls": "Nugget Bowls / Emory's Bowls"
+ },
+ "hide": {
+  "Waterfall": "a line in OpenStreetMap that the Bogus Basin day map does not show, and no lift reaches its top"
  }
 }

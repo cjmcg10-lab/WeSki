@@ -1,6 +1,6 @@
 # Arapahoe Basin (arapahoe-basin)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **169 runs (164 named, 69.7 km), 9 lifts. 3 things to look at.**
 

@@ -111,5 +111,13 @@
   "Polar Express",
   "Pooh Bear",
   "Super Cub"
- ]
+ ],
+ "patrol_phone": {
+  "phone": "(209) 753-2301 ext. 669",
+  "tel": "+12097532301,669",
+  "label": "Bear Valley Ski Patrol",
+  "source": "https://skimap.org/skimaps/view/45900 (printed on the 2025 trail map)",
+  "checked": "2026-11-24",
+  "note": "for src/emergency.json once Bear Valley is published (held by the gate for now)"
+ }
 }

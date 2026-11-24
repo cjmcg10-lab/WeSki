@@ -38,7 +38,6 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "only 105 of 129 run pieces reachable from a lift; 23 runs no lift reaches; lifts not joined to the rest of the map (isolated by rule): Five Trees",
  "rename": {
   "Exibition": "Exhibition",
   "Face of Olly": "Face of Oly",

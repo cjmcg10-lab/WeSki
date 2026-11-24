@@ -1,6 +1,6 @@
 # Aspen Snowmass (aspen-snowmass)
 
-Built 2026-11-23 by tools/pipeline.py. Terrain: reused from the work folder.
+Built 2026-11-24 by tools/pipeline.py. Terrain: reused from the work folder.
 
 **146 runs (129 named, 143.7 km), 18 lifts. 2 things to look at.**
 
