@@ -203,3 +203,16 @@ describe('daily digest job', () => {
     expect(state.lastDay).toBeNull();
   });
 });
+
+describe('daily email schedule', () => {
+  it('both Worker configs run the MeteoSwiss step and the daily email, and the Worker tells them apart', async () => {
+    const { readFileSync } = await import('node:fs');
+    const cron = readFileSync('worker/index.js', 'utf8').match(/export const DIGEST_CRON = '([^']+)'/)?.[1];
+    expect(cron).toBe('23 11 * * *');
+    for (const f of ['wrangler.jsonc', 'wrangler.assets.jsonc']) {
+      const crons = JSON.parse(readFileSync(f, 'utf8').match(/"crons":\s*(\[[^\]]*\])/)[1]);
+      expect(crons).toContain('*/5 * * * *');
+      expect(crons).toContain(cron);
+    }
+  });
+});

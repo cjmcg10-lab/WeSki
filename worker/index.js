@@ -6,11 +6,14 @@ import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
-import { weatherResponse, historyResponse } from './capture.js';
+import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
 import { runDigest, DIGEST_INDEX } from './digest.js';
+
+/** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
+export const DIGEST_CRON = '23 11 * * *';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
@@ -154,12 +157,30 @@ async function api(request, env, url, ctx) {
   return null;
 }
 
+/** The scheduled job (cron in wrangler.assets.jsonc): one step of reading MeteoSwiss ensemble files (worker/meteoswiss.js). */
+export async function runEnsemble(env, now = Date.now()) {
+  try {
+    const out = await env.FORECASTHIST.get(env.FORECASTHIST.idFromName(ENSEMBLE_STORE)).ensembleStep(now);
+    if (out.action !== 'none') console.log('meteoswiss', out);
+    return out;
+  } catch (e) {
+    console.error('meteoswiss step failed', { message: e.message });
+    return { action: 'error', message: e.message };
+  }
+}
+
 export default {
-  // Cron Trigger (wrangler.assets.jsonc "triggers"): the daily email of new map-mistake reports (worker/digest.js)
+  // Cron Triggers (wrangler configs "triggers"): every 5 minutes a MeteoSwiss ensemble step (worker/meteoswiss.js);
+  // once a day (DIGEST_CRON) the email of new map-mistake reports (worker/digest.js).
   async scheduled(controller, env, ctx) {
-    ctx.waitUntil(runDigest(env, resortLog, controller.scheduledTime || Date.now())
-      .then((r) => console.log('report digest', JSON.stringify(r)))
-      .catch((e) => console.error('report digest failed', e?.message || e)));
+    const now = controller.scheduledTime || Date.now();
+    if (controller.cron === DIGEST_CRON) {
+      ctx.waitUntil(runDigest(env, resortLog, now)
+        .then((r) => console.log('report digest', JSON.stringify(r)))
+        .catch((e) => console.error('report digest failed', e?.message || e)));
+      return;
+    }
+    ctx.waitUntil(runEnsemble(env, now));
   },
 
   async fetch(request, env, ctx) {

@@ -1,11 +1,13 @@
 import { ASSUMED_HOURS, daysBetween, scoreDay } from './day.js';
 import { scoreHours } from './hour.js';
 import { SCORING_VERSION } from './version.js';
+import { addRanges, mergeEnsemble, firstDateOf } from './ensemble.js';
 
 export { SCORING_VERSION } from './version.js';
 export { roundHalfUp, ASSUMED_HOURS, DAY_WEIGHTS, WINDOW_HOURS, MIN_HOURS_WITH_DATA, detailLevel, DETAIL_MAX_DAYS_AHEAD } from './day.js';
 export { WEIGHTS } from './components.js';
 export { ALL_CODES, CODES } from './codes.js';
+export { RANGE_DAYS, SCENARIOS, ensembleDates, mergeEnsemble } from './ensemble.js';
 
 const GROOM_LOOKBACK_MS = 24 * 3600e3;
 const labelMs = (t) => Date.UTC(+t.slice(0, 4), +t.slice(5, 7) - 1, +t.slice(8, 10), +t.slice(11, 13), +t.slice(14, 16) || 0);
@@ -39,7 +41,7 @@ function sourceInputs(resort, weather, opts) {
   };
 }
 
-export function scoreForecast(resort, weather, opts = {}) {
+function scoreCore(resort, weather, opts) {
   const window = opts.hours ? { from: opts.hours.from, to: opts.hours.to, assumed: !!opts.hours.assumed } : { ...ASSUMED_HOURS, assumed: true };
   const groomedAt = groomedHours(opts.grooming, weather);
   const { rows, sites, history } = scoreHours(resort, weather ?? {}, groomedAt, opts.history);
@@ -64,4 +66,16 @@ export function scoreForecast(resort, weather, opts = {}) {
     }));
   const inputs = { ...source, historyHours: history.hours, observedHours: history.observed };
   return { version: SCORING_VERSION, resortId: resort.id, siteMode: sites.mode, siteReason: sites.reason, ageHours: source.ageHours, hours: window, inputs, days };
+}
+
+/**
+ * Scores a forecast. With `weather.ensemble` (MeteoSwiss, Swiss resorts) the ensemble's central hours replace the main
+ * source's from day 6 on, and the days it covers get `range: { low, high }` and `uncertainty` (half the range).
+ */
+export function scoreForecast(resort, weather, opts = {}) {
+  const today = opts.today ?? firstDateOf(weather);
+  const merged = weather?.ensemble ? mergeEnsemble(weather, today) : null;
+  if (!merged) return scoreCore(resort, weather, opts);
+  const out = scoreCore(resort, merged.weather, opts);
+  return addRanges(out, weather, today, (w) => scoreCore(resort, w, opts));
 }

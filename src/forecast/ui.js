@@ -3,12 +3,13 @@ import { prefs } from '../store.js';
 import { roundHalfUp } from './score/index.js';
 import { SNOW_HISTORY_MIN_HOURS } from './score/explain.js';
 import { loadCatalog, searchResorts, sameName, resortFor, canForecast, hasHeights } from './resorts.js';
-import { VIEW_KEY, loadList, saveList, syncList, add, insertAt, sortRows, topPickId } from './watchlist.js';
+import { VIEW_KEY, loadList, saveList, syncList, add, insertAt, sortRows, topPickId, closeCallIds } from './watchlist.js';
 import { loadHistory } from '../weather.js';
 import { createPinScreen } from './pinscreen.js';
 import { createTripScreen } from './tripscreen.js';
 import { MATCH_KM } from './pin.js';
 import { loadForecast, withHistory, sourceAgeHours, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
+import { forecastActionPaid, tasteResort, tasteDates, forecastDayOpen } from '../passrules.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit', 'fcpin', 'fctrip'];
@@ -55,6 +56,11 @@ function current(resort) {
   }
   return entry(resort.id);
 }
+// Part of the SkiWithMe Pass (owner, 2026-11-23): without one, a free taste of one mountain's today and tomorrow.
+const hasPass = () => host.pass?.() ?? true;
+const tasteOf = () => tasteResort(fc.here, fc.list);
+const todayOf = (r) => (r?.tz ? localToday(r.tz) : null);
+
 // The mountain the skier is at, when the Forecast opens from inside a resort (setHere): shown first, tagged
 // "You're here", even when it is not on their list; "Keep on my list" saves it.
 const hereExtra = () => (fc.here && !fc.list.some((r) => r.id === fc.here.id) ? [fc.here] : []);
@@ -197,6 +203,7 @@ function credits(forecasts) {
   const out = [];
   if (sources.has('nws')) out.push(`<a href="https://www.weather.gov/" target="_blank" rel="noopener">${t('Weather: US National Weather Service')}</a>`);
   if (sources.has('met')) out.push(`<a href="https://api.met.no/" target="_blank" rel="noopener">${t('Weather data from MET Norway')}</a> · ${t('gusts estimated')}`);
+  if (forecasts.some((f) => f?.scored?.ensemble)) out.push(`<a href="https://www.meteoswiss.admin.ch/services-and-publications/service/open-data.html" target="_blank" rel="noopener">${t('Ranges for days 6 to 8. Source: MeteoSwiss')}</a>`);
   return out.length ? `<p class="fc-credit">${out.join('<br>')}</p>` : '';
 }
 
@@ -230,15 +237,18 @@ function cellHtml(row, date) {
   if (day.status === 'insufficient') return plain('insuff', '–', t('Insufficient data'));
   const { shown, band, label: word } = bandOf(day.score);
   const w = windowSummary(day);
-  const winText = windowText(w);
   const level = CONF_LEVEL[day.confidence.level];
-  const aria = w.kind === 'hidden'
+  const range = day.range ? [roundHalfUp(day.range.low), roundHalfUp(day.range.high)] : null;
+  const winText = range ? `${range[0]}–${range[1]}` : windowText(w);
+  const aria = range
+    ? t('{0}, {1}: ski score {2}, {3}. Likely range {4} to {5}. Confidence {6}.', label, long, shown, t(word), range[0], range[1], t(day.confidence.level))
+    : w.kind === 'hidden'
     ? t('{0}, {1}: ski score {2}, {3}. Confidence {4}.', label, long, shown, t(word), t(day.confidence.level))
     : t('{0}, {1}: ski score {2}, {3}. Best window {4}. Confidence {5}.', label, long, shown, t(word), winText, t(day.confidence.level));
   return `<td><button class="fc-cell b${band}" ${open} aria-label="${esc(aria)}"><span class="sc"><b>${shown}</b><span class="lb">${t(word)}</span></span><span class="win" aria-hidden="true">${esc(winText)}</span><span class="conf" aria-hidden="true">${bars(level)}${confWord(day.confidence.level, true)}</span></button></td>`;
 }
 
-function rowHtml(row, dates, topId) {
+function rowHtml(row, dates, topId, closeIds = null) {
   const { resort, entry: e } = row;
   const flash = fc.flash?.id === resort.id ? ` flash` : '';
   const newTag = fc.flash?.id === resort.id && fc.flash.isNew ? `<span class="tag fc-new">${t('New')}</span>` : '';
@@ -246,7 +256,7 @@ function rowHtml(row, dates, topId) {
     ? `<span class="tag fc-here">${t('You’re here')}</span>${fc.list.some((r) => r.id === resort.id) ? '' : `<button class="btn sm alt fc-keep" data-act="fc-keep" data-r="${esc(resort.id)}">${t('Keep on my list')}</button>`}`
     : '';
   const age = row.forecast ? `<small class="fc-age${isStale(ageHoursOf(row.forecast.at)) || row.forecast.serverStale ? ' old' : ''}">${ageLine(row.forecast)}</small>` : '';
-  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.pin ? coords(resort) : resort.region)}</small>${pinTags(resort)}${age}${topId === resort.id ? tag('Top pick') : ''}${newTag}${here}</th>`;
+  const head = `<th scope="row" class="fc-rowhead${flash}" data-row="${esc(resort.id)}" tabindex="-1"><b translate="no">${esc(resort.name)}</b><small translate="no">${esc(resort.pin ? coords(resort) : resort.region)}</small>${pinTags(resort)}${age}${topId === resort.id ? tag('Top pick') : ''}${closeIds?.includes(resort.id) ? tag('Close call') : ''}${newTag}${here}</th>`;
   if (e.state === 'nodata') return `<tr>${head}<td colspan="${dates.length}" class="fc-failed"><span>${esc(unavailableText(resort))}</span></td></tr>`;
   if (e.state === 'error') {
     const msg = online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.');
@@ -259,7 +269,47 @@ function emptyCalendar() {
   return `<div class="card fc-empty"><h3>${t('Where should you ski?')}</h3><p class="sub">${t('Add mountains to your list and compare their ski scores for the week.')}</p><button class="btn" data-act="fc-add">${t('Add a mountain')}</button></div>`;
 }
 
+/** The free taste: today's and tomorrow's score for one mountain, then the way to the full forecast. */
+function tasteDayCard(resort, forecast, date, i) {
+  const label = i === 0 ? t('Today') : t('Tomorrow');
+  const day = dayOf(forecast, date);
+  const open = `data-act="fc-day" data-r="${esc(resort.id)}" data-d="${date}"`;
+  if (!day || day.status === 'closed' || day.status === 'insufficient') {
+    const word = !day ? t('No forecast') : day.status === 'closed' ? t('Closed') : t('Insufficient data');
+    return `<button class="fc-cell none fc-taste-day" ${open}><span class="win">${label} · ${esc(fmtShortDate(date))}</span><b class="st">${esc(word)}</b></button>`;
+  }
+  const { shown, band, label: word } = bandOf(day.score);
+  const w = windowSummary(day);
+  return `<button class="fc-cell b${band} fc-taste-day" ${open} aria-label="${esc(t('{0}, {1}: ski score {2}, {3}. Confidence {4}.', resort.name, fmtLongDate(date), shown, t(word), t(day.confidence.level)))}"><span class="win">${label} · ${esc(fmtShortDate(date))}</span><span class="sc"><b>${shown}</b><span class="lb">${t(word)}</span></span>${w.kind === 'hidden' ? '' : `<span class="win" aria-hidden="true">${esc(windowText(w))}</span>`}</button>`;
+}
+
+function sheetTaste() {
+  const resort = tasteOf();
+  const lockCard = `<div class="card fc-lock"><h3>${t('See the full week, calendar and trip planner with a pass')}</h3><p class="sub">${t('Free: today and tomorrow at one mountain. With a pass: every mountain on your list, the whole week hour by hour, sorting by day and the trip planner.')}</p><button class="btn" data-act="fc-upsell">${t('See the full forecast')} <span class="pass-badge">${t('Pass')}</span></button></div>`;
+  if (!resort) return [t('Forecast'), `${emptyCalendar()}${lockCard}`, false];
+  if (!fc.started) { fc.started = true; syncWatchlist(); }
+  if (!fc.data.has(resort.id)) { setEntry(resort, { state: 'loading' }); loadOne(resort, false); }
+  const e = current(resort);
+  const forecast = e.fc;
+  let body;
+  if (e.state === 'nodata') body = `<div class="card"><p class="sub">${esc(unavailableText(resort))}</p></div>`;
+  else if (!forecast && e.state === 'loading') body = `<div class="card"><span class="sk big"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
+  else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  else {
+    const dates = tasteDates(forecast.scored.days.map((d) => d.date), todayOf(resort));
+    body = dates.length
+      ? `<div class="fc-taste">${dates.map((d, i) => tasteDayCard(resort, forecast, d, i)).join('')}</div><p class="fc-legend">${t('Score out of 100')} · ${t('Tap a score for hourly detail')}</p>`
+      : `<div class="card"><p class="sub">${t('No forecast')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  }
+  const here = fc.hereId === resort.id ? `<span class="tag fc-here">${t('You’re here')}</span>` : '';
+  const more = fc.list.length > 1 || (fc.here && fc.list.length) ? `<p class="fc-note">${t('Your other mountains are kept on your list for when you have a pass.')}</p>` : '';
+  return [t('Forecast'), `${offlineBanner()}
+    <div class="card fc-taste-head"><b translate="no">${esc(resort.name)}</b> <small translate="no">${esc(resort.pin ? coords(resort) : resort.region || '')}</small> ${here}</div>
+    ${body}${more}${lockCard}${forecast ? credits([forecast]) : ''}`, false];
+}
+
 export function sheetCalendar() {
+  if (!hasPass()) return sheetTaste();
   start();
   if (!fc.list.length && !fc.here && !fc.editRows.some((r) => r.removed)) return [t('Forecast'), emptyCalendar(), false];
   const all = rows();
@@ -270,13 +320,14 @@ export function sheetCalendar() {
   // in your own order, the mountain you are at comes first
   const hi = !sortDate && fc.hereId ? shown.findIndex((r) => r.resort.id === fc.hereId) : -1;
   if (hi > 0) shown.unshift(...shown.splice(hi, 1));
-  const topId = sortDate ? topPickId(all, sortDate) : null;
+  const closeIds = sortDate ? closeCallIds(all, sortDate) : null;
+  const topId = sortDate && !closeIds ? topPickId(all, sortDate) : null;
   const failedAll = all.length > 0 && all.every((r) => r.entry.state === 'error');
   const todays = [...hereExtra(), ...fc.list].filter((r) => r.tz).map((r) => localToday(r.tz)).sort();
   const dayLabel = (d) => (d === todays[0] ? t('Today') : d === nextDay(todays[0]) ? t('Tomorrow') : fmtWeekday(d));
   const head = dates.map((d) => `<th scope="col" aria-sort="${d === sortDate ? 'descending' : 'none'}"><button class="fc-datehead${d === sortDate ? ' on' : ''}" data-act="fc-sort" data-d="${d}"><span>${dayLabel(d)}</span><b>${fmtDayNumber(d)}</b><i aria-hidden="true">${d === sortDate ? '↓' : '↕'}</i></button></th>`).join('');
   const table = dates.length
-    ? `<div class="fc-scroll"><table class="fc-grid"><caption class="sr">${t('Ski score for each mountain on your list, by date')}</caption><thead><tr><th scope="col" class="fc-corner"><span class="sr">${t('Mountain')}</span></th>${head}</tr></thead><tbody>${shown.map((r) => rowHtml(r, dates, topId)).join('')}</tbody></table></div>`
+    ? `<div class="fc-scroll"><table class="fc-grid"><caption class="sr">${t('Ski score for each mountain on your list, by date')}</caption><thead><tr><th scope="col" class="fc-corner"><span class="sr">${t('Mountain')}</span></th>${head}</tr></thead><tbody>${shown.map((r) => rowHtml(r, dates, topId, closeIds)).join('')}</tbody></table></div>`
     : `<div class="fc-scroll"><table class="fc-grid"><tbody>${shown.map((r) => rowHtml(r, ['·'], null)).join('')}</tbody></table></div>`;
   const sortLine = sortDate
     ? `<p class="fc-sortline">${t('Sorted by {0}', fmtShortDate(sortDate))} <button class="btn sm alt" data-act="fc-unsort">${t('Show your order')}</button></p>`
@@ -376,9 +427,10 @@ function dayBody(resort, forecast, day) {
   const statusOld = forecast.status && !forecast.status.assumed && isStale(statusAgeHours(forecast.status, Date.now()));
   const noSeason = seasonUnknown(forecast);
   return `
-    <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span><span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
+    <div class="fc-hero b${band}"><div class="score"><b>${shown}</b><span>${t(label)}</span></div><div class="meta"><span>${t('Score out of 100')}</span>${day.range ? `<span>${t('Likely range: {0}–{1}', roundHalfUp(day.range.low), roundHalfUp(day.range.high))}</span>` : ''}<span>${t('Confidence: {0}', t(day.confidence.level))} ${bars(CONF_LEVEL[day.confidence.level])}</span></div></div>
     <p class="fc-why">${esc(codeText(day.explain))}</p>
     <p class="fc-note">${esc(codeText(day.confidence.reason))}</p>
+    ${day.range ? `<p class="fc-note">${t('The range shows how the score moves if the temperature, snow or wind ends up at the low or high end of the MeteoSwiss ensemble forecast.')}</p>` : ''}
     ${(day.notes ?? []).map((n) => `<p class="fc-notice">${esc(codeText(noteShown(n)))}</p>`).join('')}
     ${statusOld ? `<p class="fc-notice">${t('Opening hours and closures are from an older check, so they are treated as assumed.')}</p>` : ''}
     ${noSeason ? `<p class="fc-note">${t('Season dates unknown. This score assumes the lifts are running.')}</p>` : ''}
@@ -392,17 +444,21 @@ export function sheetDay(arg) {
   // the mountain you're at opens like any on your list, without having to keep it first
   const resort = fc.list.find((r) => r.id === arg?.id) ?? (fc.here?.id === arg?.id ? fc.here : null);
   if (!resort) return sheetCalendar();
-  start();
+  const free = !hasPass();
+  if (free && tasteOf()?.id !== resort.id) return sheetCalendar();
+  if (!free) start();
   const e = current(resort);
   const forecast = e.fc;
   const dates = forecast ? forecast.scored.days.map((d) => d.date) : [];
   const i = dates.indexOf(arg.date);
-  const step = (dir, d) => (d ? `<button class="btn sm alt" data-act="fc-step" data-dir="${dir}" data-r="${esc(resort.id)}" data-d="${d}" aria-label="${esc(t(dir === 'prev' ? 'Previous day, {0}' : 'Next day, {0}', fmtLongDate(d)))}">${dir === 'prev' ? `‹ ${esc(fmtWeekday(d))}` : `${esc(fmtWeekday(d))} ›`}</button>` : '<span></span>');
+  const locked = (d) => free && !forecastDayOpen(false, dates, d, todayOf(resort));
+  const step = (dir, d) => (d && locked(d) ? `<button class="btn sm alt" data-act="fc-upsell">${esc(fmtWeekday(d))} › <span class="pass-badge">${t('Pass')}</span></button>` : d ? `<button class="btn sm alt" data-act="fc-step" data-dir="${dir}" data-r="${esc(resort.id)}" data-d="${d}" aria-label="${esc(t(dir === 'prev' ? 'Previous day, {0}' : 'Next day, {0}', fmtLongDate(d)))}">${dir === 'prev' ? `‹ ${esc(fmtWeekday(d))}` : `${esc(fmtWeekday(d))} ›`}</button>` : '<span></span>');
   const stepper = i >= 0 || forecast ? `<div class="fc-stepper" role="group" aria-label="${esc(t('Change day'))}">${step('prev', dates[i - 1])}${step('next', dates[i + 1])}</div>` : '';
   let body;
   if (e.state === 'nodata') body = `<div class="card"><p class="sub">${esc(unavailableText(resort))}</p></div>`;
   else if (e.state === 'loading' && !forecast) body = `<div class="card"><span class="sk big"></span><span class="sk"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
   else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load this day. Check your connection and try again.') : t('This day isn’t saved on this device. It will load when you’re back online.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  else if (locked(arg.date)) body = `<div class="card fc-lock"><p>${t('See the full week, calendar and trip planner with a pass')}</p><button class="btn" data-act="fc-upsell">${t('See the full forecast')} <span class="pass-badge">${t('Pass')}</span></button></div>`;
   else body = dayBody(resort, forecast, dayOf(forecast, arg.date));
   const hours = forecast ? ageHoursOf(forecast.at) : 0;
   const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageLine(forecast)}</b>${isStale(hours) || forecast.serverStale ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
@@ -619,8 +675,15 @@ function useCatalog(catalogId, pinId, fromPinScreen) {
   if (fromPinScreen) { fc.pinDraft = null; showNew(resort.id); } else { host.render(); focusSel('[data-act="fc-home"]'); }
 }
 
+/** Paid parts of the Forecast without a pass (rules in src/passrules.js). */
+function paidAction(act) {
+  const shown = fc.list.length + (fc.here && !fc.list.some((r) => r.id === fc.here.id) ? 1 : 0);
+  return forecastActionPaid(act, hasPass(), { shown, listed: fc.list.length });
+}
+
 export function onClick(b) {
   const d = b.dataset;
+  if (paidAction(d.act)) { host.upsell?.('forecast'); return; }
   if (pin.onClick(d.act, d) || trip.onClick(d.act, d)) return;
   switch (d.act) {
     case 'fc-home': {

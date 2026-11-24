@@ -91,6 +91,14 @@ Added 2026-11-24 for the confidence scores (#112), kept on the server and never 
 - Reports older than 60 days no longer count; the scores (`GET /api/reports/<id>/problems`) show counts and reasons only:
   report ids, number of phones, number sent from near the spot, map-help counts of 5 or more.
 
+## Offline maps and locked days (on the phone only, 2026-11-23)
+
+Two small lists in the phone's settings, never sent: `openedMaps` {mountain id: local date it was opened today} and
+`offlineMaps` {mountain id: {at, bytes}} for downloads. Without a pass, map files of mountains opened on an earlier day
+are deleted from the phone's `weski-map` cache at the next start-up with a server answer. Saved ski days are never
+deleted for lack of a pass: earlier days are only shown locked (`historyView` in `src/passrules.js`).
+`public/legal/privacy.html` ("What stays only on your phone") says the same.
+
 ## Accounts and payments
 
 See `docs/PAID_TIER.md`. Email, hashed session keys, first 80 characters of the browser name per signed-in phone,

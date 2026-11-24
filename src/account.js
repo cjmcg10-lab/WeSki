@@ -1,7 +1,7 @@
 // The SkiWithMe pass on this phone: what the server says about the signed-in account.
 // The server is the only judge of a pass. Paid features that matter (directions data, creating groups) are refused
 // by the server without one; this file only decides what to show.
-let cfg = null, me = null;
+let cfg = null, me = null, cfgOk = false, meOk = false;
 
 const get = async (url) => {
   const r = await fetch(url, { credentials: 'same-origin', cache: 'no-store' });
@@ -17,13 +17,13 @@ const post = async (url, body = {}) => {
 
 /** Prices and switches from the server. Offline or no server (local preview): everything open. */
 export async function loadConfig() {
-  try { cfg = await get('/api/config'); } catch { cfg = cfg || { paywall: false, signIn: false, paddle: null, plans: {} }; }
+  try { cfg = await get('/api/config'); cfgOk = true; } catch { cfg = cfg || { paywall: false, signIn: false, paddle: null, plans: {} }; }
   return cfg;
 }
 export const config = () => cfg || { paywall: false, signIn: false, paddle: null, plans: {} };
 
 export async function refreshMe() {
-  try { me = await get('/api/me'); } catch { /* offline: keep what we knew */ }
+  try { me = await get('/api/me'); meOk = true; } catch { /* offline: keep what we knew */ }
   return me;
 }
 export const account = () => me;
@@ -39,6 +39,10 @@ export function hasPass() {
   if (!config().paywall) return true;
   return !!me?.pass?.active;
 }
+
+/** Has the server answered about this phone's pass in this session? Nothing is removed from the phone on a guess
+ *  (offline, a failed request, or "Simulate free tier" only change what is shown). */
+export const passKnown = () => !simFree && cfgOk && (!cfg?.paywall || meOk);
 
 export const startSignIn = (email) => post('/api/auth/start', { email });
 /** Keep a record on our server that this account agreed to terms version v (only when signed in). */

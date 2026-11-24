@@ -3,6 +3,7 @@ import { forecastRows, pendingRows } from './history.js';
 import { resortPlace } from './catalog.js';
 import { siteObservations } from './observations.js';
 import { forecast, placeFrom } from './weather.js';
+import { ensembleForResponse, hasEnsemble } from './meteoswiss.js';
 
 const RECORD_GATE_S = 1800;
 const FRESH_CACHE = 'public, max-age=900';
@@ -12,6 +13,7 @@ const HISTORY_CACHE = 'public, max-age=300';
 const respond = (data, status = 200, cache = 'no-store') =>
   new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', 'cache-control': cache } });
 const store = (env, id) => env.FORECASTHIST.get(env.FORECASTHIST.idFromName(id));
+export const ENSEMBLE_STORE = '_meteoswiss';
 const watchedId = (url) => (RESORT_RE.test(url.searchParams.get('id') || '') ? url.searchParams.get('id') : null);
 
 const gateKey = (id, now) => new Request(`https://history.invalid/gate/${id}/${Math.floor(now / (RECORD_GATE_S * 1000))}`);
@@ -102,7 +104,22 @@ export async function weatherResponse(url, env, ctx, { forecastFn = forecast, ob
   if (id) ctx.waitUntil(capture(env, id, url, result, now, observe, resolve));
   const out = { ...result };
   delete out.hours;
+  const ensemble = id && hasEnsemble(id) ? await ensembleFor(env, id, url, now, resolve) : null;
+  if (ensemble) out.ensemble = ensemble;
   return respond(out, 200, FRESH_CACHE);
+}
+
+/** MeteoSwiss ranges for days 6 to 8 (issue #57): only for a Swiss resort on the list, asked for its own listed place. */
+async function ensembleFor(env, id, url, now, resolve) {
+  try {
+    const listed = await resolve(env, id, now);
+    if (!listed || !hasEnsemble(listed.id) || !samePlace(listed.place, placeFrom(url))) return null;
+    const record = await store(env, ENSEMBLE_STORE).ensembleFor(listed.id, now);
+    return record ? ensembleForResponse(record, listed.place.tz) : null;
+  } catch (e) {
+    console.error('ensemble read failed', { id, message: e.message });
+    return null;
+  }
 }
 
 async function staleFor(env, id, url, now, resolve) {
