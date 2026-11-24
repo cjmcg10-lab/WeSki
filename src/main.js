@@ -966,27 +966,28 @@ function fitStartToKeyboard() {
     p.style.setProperty('--kb-h', Math.round(vv.height) + 'px');
   } else { p.style.removeProperty('--kb-top'); p.style.removeProperty('--kb-h'); }
 }
-// Panels (sheets) with a text field get the same treatment (owner, 2026-11-23): while the keyboard is up the panel is
-// pinned to the part of the screen the keyboard leaves visible, and the page is kept unscrolled. Panels that list
-// results as you type (search, Forecast "add a mountain", closures) also keep one fixed height, the tallest they can
-// be, so the list does not shrink and drop under the keyboard as fewer results match: results sit at the top
-// (LIST_SHEETS, near the top of this file).
+// Panels (sheets) with a text field (owner, 2026-11-23, changed 2026-11-24): while the keyboard is up the panel keeps
+// its full size and place and the keyboard covers its lower part (cutting the panel off at the keyboard let the mountain
+// show through around it). The page is kept unscrolled, the panel's content gets room to scroll clear of the keyboard
+// (--kb-cover), and the field being typed in is scrolled into view inside the panel. Panels that list results as you
+// type (search, Forecast "add a mountain", closures) keep one fixed height, the tallest they can be, so the list does
+// not shrink as fewer results match: results sit at the top, under the field (LIST_SHEETS, near the top of this file).
 /** The text field the person is typing in, when it is inside the panel. */
 function sheetField() {
   const a = document.activeElement;
   return a && $('#sheet').contains(a) && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && !['checkbox', 'radio', 'range', 'date', 'button'].includes(a.type))) ? a : null;
 }
-/** While the on-screen keyboard is up and a panel field has focus, keep the panel inside the visible part of the screen. */
+/** While the on-screen keyboard is up and a panel field has focus, keep that field and the content above the keyboard. */
 function fitSheetToKeyboard() {
-  const sh = $('#sheet'), vv = window.visualViewport;
-  const kb = !!vv && !!sheetField() && !COLUMN.matches && !sh.classList.contains('hidden') && window.innerHeight - vv.height > 120;
+  const sh = $('#sheet'), vv = window.visualViewport, f = sheetField();
+  const kb = !!vv && !!f && !COLUMN.matches && !sh.classList.contains('hidden') && window.innerHeight - vv.height > 120;
   sh.classList.toggle('kb', kb);
-  if (kb) {
-    const top = Math.max(0, Math.round(vv.offsetTop)), h = Math.round(vv.height);
-    sh.style.setProperty('--kb-top', top + 'px');
-    sh.style.setProperty('--kb-h', h + 'px');
-    sh.style.setProperty('--kb-bottom', Math.max(0, $('#app').clientHeight - top - h) + 'px');
-  } else { for (const k of ['--kb-top', '--kb-h', '--kb-bottom']) sh.style.removeProperty(k); }
+  if (!kb) { sh.style.removeProperty('--kb-cover'); return; }
+  const seen = vv.offsetTop + vv.height;                         // bottom of the part of the screen the keyboard leaves
+  sh.style.setProperty('--kb-cover', Math.max(0, Math.round(sh.getBoundingClientRect().bottom - seen)) + 'px');
+  const body = $('#sheet-body'), r = f.getBoundingClientRect(), top = Math.max(body.getBoundingClientRect().top, vv.offsetTop);
+  if (r.bottom > seen - 12) body.scrollTop += r.bottom - (seen - 12);          // field hidden by the keyboard: lift it
+  else if (r.top < top + 4) body.scrollTop -= top + 4 - r.top;                  // above the panel's visible part
 }
 $('#sheet').addEventListener('focusin', () => { if (sheetField()) { unscrollPage(); fitSheetToKeyboard(); } });
 $('#sheet').addEventListener('focusout', () => setTimeout(fitSheetToKeyboard, 0));

@@ -886,10 +886,12 @@ textarea.field { resize: vertical; font: inherit; }
 /* Panels that list results as you type keep one height, the tallest a panel can be, so the list does not shrink and
    drop under the keyboard as fewer results match; results sit at the top with empty space below. */
 #sheet.fill { height: calc(var(--app-h) - var(--tabs) - var(--sat) - 24px); max-height: calc(var(--app-h) - var(--tabs) - var(--sat) - 24px); }
-/* main.js (fitSheetToKeyboard) pins the panel to the part of the screen the keyboard leaves visible: a list panel fills
-   all of it, any other panel sits right on top of the keyboard with its own height. */
-#sheet.kb:not(.dragging) { bottom: var(--kb-bottom, 0px); max-height: calc(var(--kb-h, 100%) - var(--sat) - 8px); transition: none; }
-#sheet.fill.kb:not(.dragging) { top: calc(var(--kb-top, 0px) + var(--sat) + 8px); height: auto; }
+/* While the keyboard is up the panel keeps its full size and place: the keyboard simply covers its lower part
+   (owner, 2026-11-24: cutting the panel off at the keyboard let the mountain show through around the keyboard).
+   main.js (fitSheetToKeyboard) sets --kb-cover, how much of the panel the keyboard hides, so the panel's content can
+   scroll clear of the keyboard, and scrolls the field being typed in into view. */
+#sheet.kb:not(.dragging) { transition: none; }
+#sheet.kb #sheet-body { padding-bottom: calc(var(--kb-cover, 0px) + 22px); }
 
 /* ---------- clear (X) button in text fields (src/clearfield.js) */
 .clr { position: relative; display: block; }

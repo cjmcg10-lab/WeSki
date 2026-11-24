@@ -1,11 +1,12 @@
 // Typing in a mountain's panels, in headless Chrome at iPhone size (run by `npm run smoke`, issue #113):
 //  1. The search inside a mountain keeps one height while typing (it used to shrink as fewer results matched and drop
-//     under the keyboard), and while a (simulated) keyboard is up it fills the visible part of the screen, with the
+//     under the keyboard), and while a (simulated) keyboard is up the panel keeps its full size and place (the keyboard
+//     covers its lower part; cutting it off let the mountain show through, owner 2026-11-24), with the field and the
 //     results at its top, above the keyboard.
 //  2. Every text field has a clear (X) button: shown only with text, it empties the field, keeps the focus and resets
 //     the results. The browser's own clear button on search fields is hidden.
-//  3. The same keyboard rule for the Forecast "add a mountain" search, and a non-list panel (Join with a code) sits on
-//     top of the keyboard.
+//  3. The same keyboard rule for the Forecast "add a mountain" search, and a non-list panel (Join with a code) keeps
+//     its size and place with its field lifted above the keyboard.
 // A real iPhone keyboard cannot be reproduced here: it is imitated by shrinking a stand-in for window.visualViewport,
 // which is what the app listens to (the same stand-in as start.mjs).
 // SHOT_DIR=<folder> keeps screenshots of the search with many results, with one, and fields showing the X.
@@ -110,7 +111,7 @@ try {
   await page.evaluate((kb) => window.__kbSet(kb), KB);
   await page.waitForTimeout(150);
   const pinned = await rect('#sheet');
-  if (pinned.top < 0 || pinned.top > 20 || Math.abs(pinned.bottom - KB.height) > 1) fail(`with the keyboard up the search is not filling the visible part (top ${pinned.top}, bottom ${pinned.bottom}; want about 8 and ${KB.height})`);
+  if (Math.abs(pinned.top - open.top) > 1 || Math.abs(pinned.bottom - open.bottom) > 1) fail(`with the keyboard up the search panel was cut or moved (${open.top}-${open.bottom} -> ${pinned.top}-${pinned.bottom}); it should keep its size and place`);
   const f = await rect('#f-search');
   if (f.top < 0 || f.bottom > KB.height) fail(`with the keyboard up the search field is not visible (top ${f.top}, bottom ${f.bottom})`);
   await page.locator('#f-search').pressSequentially('a', { delay: 20 });
@@ -166,7 +167,10 @@ try {
   await page.locator('#fc-q').fill('jay peak');
   await page.waitForTimeout(300);
   const fb = await rect('#sheet');
-  if (Math.abs(fa.height - fb.height) > 1 || Math.abs(fa.bottom - KB.height) > 1) fail(`Forecast add search did not keep its height above the keyboard (${fa.top}-${fa.bottom} -> ${fb.top}-${fb.bottom})`);
+  if (Math.abs(fa.height - fb.height) > 1 || Math.abs(fa.top - fb.top) > 1) fail(`Forecast add search did not keep its height (${fa.top}-${fa.bottom} -> ${fb.top}-${fb.bottom})`);
+  if (fa.bottom < KB.height + 100) fail(`Forecast add search was cut off at the keyboard (bottom ${fa.bottom}, keyboard from ${KB.height})`);
+  const fq = await rect('#fc-q');
+  if (fq.top < 0 || fq.bottom > KB.height) fail(`Forecast search field hidden by the keyboard (top ${fq.top}, bottom ${fq.bottom})`);
   if (!(await page.locator('#sheet .clr.has-val .clr-x').isVisible())) fail('Forecast search shows no X');
   await page.evaluate(() => { document.activeElement?.blur(); window.__kbSet(null); });
   await page.locator('#sheet [data-act="close-sheet"]').click();
@@ -174,16 +178,15 @@ try {
   // ---- 3b. a panel without a list: Join with a code sits on top of the keyboard
   await page.locator('#tabs [data-act="tab"][data-tab="group"]').click();
   await page.locator('#f-code').waitFor({ state: 'visible', timeout: 10000 });
+  const g0 = await rect('#sheet');
   await page.locator('#f-code').focus();
   await page.evaluate((kb) => window.__kbSet(kb), KB);
   await page.locator('#f-code').fill('ABC');
   await page.waitForTimeout(200);
   const g = await rect('#sheet'), gf = await rect('#f-code');
-  if (Math.abs(g.bottom - KB.height) > 1 || g.top < 0) fail(`group panel not on top of the keyboard (top ${g.top}, bottom ${g.bottom})`);
-  if (gf.top < g.top || gf.bottom > KB.height) {
-    // the field may need scrolling into view inside the panel; the browser does that for the focused field
-    await page.locator('#f-code').scrollIntoViewIfNeeded();
-  }
+  if (Math.abs(g.bottom - g0.bottom) > 1 || Math.abs(g.top - g0.top) > 1) fail(`group panel was cut or moved by the keyboard (${g0.top}-${g0.bottom} -> ${g.top}-${g.bottom})`);
+  if (gf.top < g.top || gf.bottom > KB.height) fail(`group code field hidden by the keyboard (top ${gf.top}, bottom ${gf.bottom}, keyboard from ${KB.height})`);
+  await shot('group-keyboard');
   if (!(await page.locator('#sheet .clr.has-val .clr-x').first().isVisible())) fail('group code field shows no X');
   await page.evaluate(() => window.__kbSet(null));
   await page.waitForTimeout(150);
