@@ -42,5 +42,15 @@
   "1m": 90.6,
   "30m": 9.4
  },
- "hold": "7 runs no lift reaches; 19% of the run length has no rating in OpenStreetMap"
+ "drop_ways": {
+  "993520846": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528429": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528430": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528431": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528435": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993587817": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528432": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528433": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain",
+  "993528434": "an off-piste zone (named Hors-piste, groomed: backcountry) that no lift or run reaches in OpenStreetMap; left off the map rather than sending directions into ungroomed off-piste terrain"
+ }
 }

@@ -38,5 +38,42 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "7 runs no lift reaches"
+ "links": [
+  [
+   "Breezeway (top)",
+   "trail:Orcs",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:Mirkwood Bowl",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:Southbound",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:Mirkwood Trees",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:Elation Ridge",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:East Trees",
+   "hike"
+  ],
+  [
+   "Breezeway (top)",
+   "trail:Staircase",
+   "hike"
+  ]
+ ],
+ "links_notes": "Mirkwood Basin and the ridge east of it are hike-to terrain from the top of Breezeway (tops 470-920 m from it, 0-77 m higher); no lift reaches them"
 }

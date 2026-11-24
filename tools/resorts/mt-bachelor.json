@@ -49,5 +49,20 @@
  ],
  "isolated_notes": {
   "Lava Tube Carpet": "rule: tubing or sledding lift"
- }
+ },
+ "links": [
+  [
+   "Summit Express (top)",
+   "trail:West Catchline"
+  ],
+  [
+   "Summit Express (top)",
+   "trail:East Catchline"
+  ],
+  [
+   "Summit Express (top)",
+   "trail:The Low East"
+  ]
+ ],
+ "links_notes": "the catch lines (West and East Catchline, The Low East, Sunrise Getback) gather skiers who come down the open slopes all round the summit from the top of Summit Express (skied, 1 km and 430 m down); no lift reaches their tops directly"
 }

@@ -1,10 +1,10 @@
 {
  "id": "mont-tremblant-mont-tremblant",
  "reachable": [
-  152,
-  152
+  154,
+  154
  ],
- "auto_joins": 3,
+ "auto_joins": 0,
  "rule_joins": [
   "L'Hymne des Trembles (top) ski 128 m"
  ],
@@ -13,7 +13,7 @@
  "raised": 0,
  "official": [
   125,
-  147,
+  184,
   0
  ],
  "terrain_res": 1,
@@ -24,5 +24,6 @@
  "failed": null,
  "built": "2026-11-23",
  "first_build_seconds": 125,
- "rebuild_seconds": 161
+ "rebuild_seconds": 161,
+ "seconds": 38
 }

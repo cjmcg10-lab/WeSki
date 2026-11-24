@@ -423,6 +423,14 @@
    "country": "CA",
    "checked": "2026-11-23"
   },
+  "le-massif": {
+   "country": "CA",
+   "phone": "418-632-5876 ext. 911",
+   "tel": "+14186325876,911",
+   "label": "Le Massif emergency line",
+   "source": "https://skimap.org/skimaps/view/45251",
+   "checked": "2026-11-23"
+  },
   "les-arcs": {
    "country": "FR",
    "phone": "+33 4 79 07 85 66",
@@ -451,12 +459,20 @@
    "country": "US",
    "checked": "2026-11-23"
   },
+  "loveland-basin": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "lutsen-mountains": {
    "country": "US",
    "checked": "2026-11-23"
   },
   "mad-river-glen": {
    "country": "US",
+   "phone": "802-989-0012",
+   "tel": "+18029890012",
+   "label": "Mad River Glen Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/35347",
    "checked": "2026-11-23"
   },
   "magic-mountain": {
@@ -487,6 +503,10 @@
    "source": "https://www.mohawkmtn.com/mountain-services/ski-patrol/",
    "checked": "2026-11-23"
   },
+  "monarch-mountain": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
   "mont-sainte-anne": {
    "country": "CA",
    "checked": "2026-11-23"
@@ -497,9 +517,17 @@
   },
   "mont-tremblant-mont-tremblant": {
    "country": "CA",
+   "phone": "819-681-5911",
+   "tel": "+18196815911",
+   "label": "Tremblant Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/34847",
    "checked": "2026-11-23"
   },
   "montana-snowbowl": {
+   "country": "US",
+   "checked": "2026-11-23"
+  },
+  "mount-ashland": {
    "country": "US",
    "checked": "2026-11-23"
   },
@@ -526,6 +554,10 @@
   },
   "mount-washington-alpine": {
    "country": "CA",
+   "phone": "250-334-5741",
+   "tel": "+12503345741",
+   "label": "Mount Washington First Aid",
+   "source": "https://skimap.org/skimaps/view/30655",
    "checked": "2026-11-23"
   },
   "mt-bachelor": {

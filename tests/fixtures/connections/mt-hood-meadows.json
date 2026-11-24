@@ -1,14 +1,9 @@
 {
  "checked": "2026-11-23",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
- "unreachable": {
-  "Dallas Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Chute 225": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Gold Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
-  "Diamond Bowl": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
- },
+ "unreachable": {},
  "dead_end": {
-  "Sunrise Parking Runout": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+  "Sunrise Parking Runout": "ends at the Sunrise parking lot, a separate car park below the resort (skiers ride a shuttle back), 684 m from the nearest run. Looked at by a person 2026-11-23"
  },
  "outside_core": {},
  "lift_end": {},

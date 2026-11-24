@@ -34,5 +34,12 @@
   "1m": 2.9,
   "10m": 97.1
  },
- "hold": "24% of the run length has no rating in OpenStreetMap"
+ "rename": {
+  "Chute 1": "1st Chute",
+  "Chute 2": "2nd Chute",
+  "Chute 3": "3rd Chute",
+  "Chute 4": "4th Chute",
+  "Chute 5": "5th Chute",
+  "Second Bowl": "2nd Bowl"
+ }
 }

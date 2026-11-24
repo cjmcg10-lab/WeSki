@@ -38,5 +38,15 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Goose Bumps": "Goosebumps",
+  "Sunrise Glade": "Sunrise Glades",
+  "Hansen Chase": "Hansen-Chase",
+  "Lower Hansen Chase": "Hansen-Chase",
+  "Upper Hansen Chase": "Upper Hansen-Chase",
+  "Lower Flying Goose": "Flying Goose",
+  "Smooth Sail'n": "Smooth Sailin'",
+  "Fly Way": "Flyway"
  }
 }

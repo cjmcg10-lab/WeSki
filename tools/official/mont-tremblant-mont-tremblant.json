@@ -287,5 +287,30 @@
    "Vertigo Bas",
    "Vertigo Haut"
   ]
+ },
+ "not_runs": {
+  "Algonquin (Ascension)": "uphill route (Alpine Touring & Snowshoeing area of the trail report)",
+  "Beauchemin (Ascension)": "uphill route (Alpine Touring & Snowshoeing)",
+  "Nansen (Ascension)": "uphill route (Alpine Touring & Snowshoeing)",
+  "Caps": "backcountry ski-touring trail (Alpine Touring & Snowshoeing), not a lift-served run",
+  "Grand-Nord": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Nord-Sud": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Parben": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Sasquatch Bas": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Sasquatch Haut": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Sommets": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Tour du Timber": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Vertigo Bas": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Vertigo Haut": "backcountry ski-touring trail (Alpine Touring & Snowshoeing)",
+  "Orée": "the new Orée learning zone at the Versant Soleil base (2026-27 trail map, skimap.org 49178); not yet in OpenStreetMap"
+ },
+ "lifts_explained": {
+  "Tapis Magique Équilibre 1": "on the map as Équilibre I (magic carpet, south base)",
+  "Tapis Magique Équilibre 2": "on the map as Équilibre II (magic carpet, south base)",
+  "Tapis Magique Orée": "carpet of the new Orée learning zone at the Versant Soleil base (2026-27); not yet in OpenStreetMap"
+ },
+ "hide": {
+  "L'Hymne des Trembles": "a chair mapped in OpenStreetMap in 2026 near the Versant Soleil base, but on neither the resort's lift list nor its 2025-26 or 2026-27 trail maps",
+  "Rescue Practice Area": "a ski patrol evacuation practice chair (Centre d'évac), not a public lift and not on the resort's lift list or trail map"
  }
 }

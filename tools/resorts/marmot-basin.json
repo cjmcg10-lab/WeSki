@@ -38,5 +38,18 @@
  "terrain_shares": {
   "1m": 24.6,
   "30m": 75.4
- }
+ },
+ "links": [
+  [
+   "Knob Quad (top)",
+   "trail:Marmot 2 Right",
+   "hike"
+  ],
+  [
+   "Knob Quad (top)",
+   "trail:Marmot 2 Centre",
+   "hike"
+  ]
+ ],
+ "links_notes": "Marmot Cirque (opened 2023, skimap.org 24831/24832) is hike-to terrain from the top of the Knob Quad (650-730 m away, about level)"
 }

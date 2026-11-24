@@ -74,10 +74,13 @@ def judge(rid, conn):
     lifts = [l for l in R["lifts"] if not l.get("hide")]
     row.update(lifts=len(lifts), runs=len(shown), named=len({t["name"] for t in shown if t.get("name")}),
                km=round(sum(t.get("len", 0) for t in shown) / 1000, 1))
-    have = {l.get("osm") for l in lifts}
+    # a lift hidden by hand (official json "hide": checked by a person against the resort's own lift list, e.g. an
+    # old chair still standing beside its replacement) counts as accounted for in the two lift checks
+    by_hand = [l for l in R["lifts"] if str(l.get("hide", "")).startswith("hidden by hand")]
+    have = {l.get("osm") for l in lifts + by_hand}
     want = cfg.get("include_ways", [])
     row["osk_lift_ids_on_map"] = [len([w for w in want if w in have]), len(want)]
-    if osk.get("lifts") and len(lifts) < 0.8 * osk["lifts"]:
+    if osk.get("lifts") and len(lifts) + len(by_hand) < 0.8 * osk["lifts"]:
         row["hold"].append(f"lifts {len(lifts)} of OpenSkiMap's {osk['lifts']}")
     if want and len([w for w in want if w in have]) < 0.8 * len(want):
         row["hold"].append(f"only {len([w for w in want if w in have])} of the {len(want)} lifts OpenSkiMap assigns are on the map")
