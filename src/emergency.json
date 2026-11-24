@@ -210,15 +210,19 @@
   },
   "brighton": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "bromley-mountain-bromley-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "bromont-montagne-d-experience": {
    "country": "CA",
-   "checked": "2026-11-23"
+   "phone": "1-866-276-6668 ext. 2100 (then option 5)",
+   "tel": "+18662766668,2100",
+   "label": "Bromont Ski Patrol (during opening hours; otherwise 911)",
+   "source": "https://skimap.org/skimaps/view/39088",
+   "checked": "2026-11-24"
   },
   "brundage": {
    "country": "US",
@@ -240,7 +244,7 @@
   },
   "camelback-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "cannon-mountain": {
    "country": "US",
@@ -252,11 +256,11 @@
   },
   "cascade-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "castle-mountain": {
    "country": "CA",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "catamount": {
    "country": "US",
@@ -269,7 +273,7 @@
   },
   "china-peak-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "copper-mountain": {
    "country": "US",
@@ -281,7 +285,7 @@
   },
   "cranmore-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "crystal-mountain": {
    "country": "US",
@@ -293,7 +297,7 @@
   },
   "cypress-mountain": {
    "country": "CA",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "deer-valley": {
    "country": "US",
@@ -305,11 +309,15 @@
   },
   "dodge-ridge": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "eldora": {
    "country": "US",
-   "checked": "2026-11-23"
+   "phone": "303-258-8102",
+   "tel": "+13032588102",
+   "label": "Eldora Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/45873",
+   "checked": "2026-11-24"
   },
   "geto-kogen": {
    "country": "JP",
@@ -317,19 +325,27 @@
   },
   "gore-mountain": {
    "country": "US",
-   "checked": "2026-11-23"
+   "phone": "(518) 251-3838",
+   "tel": "+15182513838",
+   "label": "Gore Mountain daytime emergency number (ski patrol)",
+   "source": "https://skimap.org/skimaps/view/36591",
+   "checked": "2026-11-24"
   },
   "grand-targhee": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "great-divide": {
    "country": "US",
-   "checked": "2026-11-23"
+   "phone": "406-430-0100",
+   "tel": "+14064300100",
+   "label": "Great Divide Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/32012",
+   "checked": "2026-11-24"
   },
   "gunstock-recreation": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "heavenly": {
    "country": "US",
@@ -341,11 +357,11 @@
   },
   "holiday-valley": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "homewood": {
    "country": "US",
-   "checked": "2026-11-23"
+   "checked": "2026-11-24"
   },
   "hunter-mountain": {
    "country": "US",
@@ -957,6 +973,30 @@
    "source": "https://www.zermatt.swiss/en/info/emergency-numbers",
    "note": "On the Italian side (Cervinia), 112 works too.",
    "checked": "2026-11-23"
+  },
+  "bridger-bowl": {
+   "country": "US",
+   "phone": "406-556-5678",
+   "tel": "+14065565678",
+   "label": "Bridger Bowl emergency number (ski patrol)",
+   "source": "https://skimap.org/skimaps/view/37947",
+   "checked": "2026-11-24"
+  },
+  "crested-butte-mountain": {
+   "country": "US",
+   "phone": "(970) 349-2236",
+   "tel": "+19703492236",
+   "label": "Crested Butte Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/36782",
+   "checked": "2026-11-24"
+  },
+  "fernie-alpine": {
+   "country": "CA",
+   "phone": "250.423.2426",
+   "tel": "+12504232426",
+   "label": "Fernie Patrol / Dispatch",
+   "source": "https://skimap.org/skimaps/view/41906",
+   "checked": "2026-11-24"
   }
  }
 }

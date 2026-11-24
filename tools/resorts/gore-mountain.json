@@ -42,5 +42,18 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Chatimac Glades": "Chatiemac Glades",
+  "Forever Wild": "Forever Wild Glade",
+  "Lower Sleighride(Park)": "Lower Sleighride",
+  "McIntyre Glades": "MacIntyre Glades",
+  "Potluck": "Pot Luck",
+  "Santinoni": "Santanoni",
+  "The Trench": "The Trench Glade",
+  "Double Barrel(Left Barrell)": "Double Barrel",
+  "Double Barrell(Right Barrel)": "Double Barrel",
+  "High Pines": "High Pines Glades",
+  "Mica Park": "Mica"
  }
 }

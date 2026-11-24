@@ -51,5 +51,13 @@
  "isolated_notes": {
   "Tubing I": "rule: tubing or sledding lift",
   "Tubing II": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Bactrain": "Bactrian",
+  "Basalisk": "Basilisk",
+  "Cool Moor": "Coolmoor",
+  "Julius Caeser": "Julius Caesar",
+  "Little Ceasar": "Little Caesar",
+  "Old Main Lane": "Old Main Line"
  }
 }

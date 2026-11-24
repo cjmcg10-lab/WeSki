@@ -12,13 +12,14 @@
   40040374,
   40040629,
   40040634,
-  258201046
+  258201046,
+  866809044
  ],
  "osm_bbox": [
-  -123.2188,
+  -123.2253,
   49.371,
-  -123.1646,
-  49.4133
+  -123.068,
+  49.4175
  ],
  "dem": {
   "source": "canada"
@@ -34,10 +35,24 @@
  },
  "area_name": "Cypress Mountain",
  "area_buffer": 300,
- "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 61%, 1 m lidar 39%)",
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 70%, 1 m lidar 30%)",
  "terrain_res": 30,
  "terrain_shares": {
-  "1m": 39.2,
-  "30m": 60.8
+  "1m": 29.8,
+  "30m": 70.2
+ },
+ "rename": {
+  "Rideout": "Ride Out",
+  "Ripcord": "Rip Cord",
+  "Shoreline": "Shore Line",
+  "Un Run": "Unrun",
+  "Alexandre Bilodeau's (Moguls Run)": "Bilodeau's Gold",
+  "Horsefly": "Horsefly Canyon"
+ },
+ "isolated_lifts": [
+  "Magic Carpet"
+ ],
+ "isolated_notes": {
+  "Magic Carpet": "rule: not joined to the rest of the lifts on the map"
  }
 }

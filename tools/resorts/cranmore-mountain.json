@@ -42,5 +42,11 @@
  ],
  "isolated_notes": {
   "Magic carpet": "rule: not joined to the rest of the lifts on the map"
+ },
+ "rename": {
+  "Beginner's Basin": "Beginner Basin",
+  "Gibson Chutes": "Gibson Chutes Glades",
+  "Jughandle": "Jughandle Glade",
+  "Roundabout": "Roundabout Glade"
  }
 }

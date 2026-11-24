@@ -44,5 +44,107 @@
  "terrain_shares": {
   "1m": 100.0
  },
- "hold": "16 dead-end runs"
+ "rename": {
+  "Gunsight Pass Road": "Gunsight Pass",
+  "Little Lizzie": "Little Lizzy",
+  "Halfpipe": "Halfpipe Gully",
+  "Lower Canaan / Family Cross": "Lower Canaan",
+  "Teo 2 Traverse": "Teo 2"
+ },
+ "links": [
+  [
+   "trail:Jack in the Box Glades (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Liars Bench (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Morning Woods (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Wolf's Lair (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Whatever (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Ghost Rider (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Down And Out (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Marley's Glades (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Land of Many Names (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Nunya Glades (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Rockets (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Many Names Traverse (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Traverse Glade (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Schnoid's (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Digger's (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "trail:Teo Tongue (bottom)",
+   "trail:Schofield Road"
+  ],
+  [
+   "The High Lift (top)",
+   "trail:The Peak",
+   "hike"
+  ]
+ ],
+ "links_notes": {
+  "trail:Jack in the Box Glades (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Liars Bench (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Morning Woods (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Wolf's Lair (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Whatever (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Ghost Rider (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Down And Out (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Marley's Glades (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Land of Many Names (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Nunya Glades (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Rockets (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Many Names Traverse (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Traverse Glade (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Schnoid's (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Digger's (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "trail:Teo Tongue (bottom) -> trail:Schofield Road": "2026-11-23: Teocalli Bowls; the 2025-26 trail map says this terrain 'requires a 15 minutes+ hike out of the bottom to return to the Paradise Bowl area': drawn as a walk out to Schofield Road",
+  "The High Lift (top) -> trail:The Peak": "2026-11-23: the Peak is hike-to extreme terrain above the High Lift (hike-to line on the trail map)"
+ },
+ "shared_runs": [
+  [
+   "Funnel",
+   "Deep Throat"
+  ]
+ ]
 }
