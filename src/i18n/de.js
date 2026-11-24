@@ -616,4 +616,8 @@ export default {
   1613: "Meine Meldung auch senden",
   1614: "Schon gemeldet, danke",
   1615: "Danke. Das steht schon auf unserer Liste.",
+  1616: "Simulation kostenlose Version",
+  1617: "Die Simulation der kostenlosen Version ist an: Dieses Telefon verhält sich, als hätte es keinen Pass. Dein Pass bleibt unverändert.",
+  1618: "Ausschalten",
+  1619: "Simulation der kostenlosen Version an, bis du die App schließt: Bezahlfunktionen zeigen jetzt das Pass-Fenster.",
 };

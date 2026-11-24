@@ -1122,4 +1122,8 @@ export default {
   1613: "Add my report too",
   1614: "Already reported, thanks",
   1615: "Thanks. It is already on our list.",
+  1616: "Free tier simulation",
+  1617: "Free tier simulation is on, so this phone acts as if it had no pass. Your pass is not affected.",
+  1618: "Turn off",
+  1619: "Free tier simulation on until you close the app: paid features now show the pass pop-up.",
 };

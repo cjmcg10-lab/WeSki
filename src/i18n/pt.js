@@ -616,4 +616,8 @@ export default {
   1613: "Adicionar meu relato também",
   1614: "Já relatado, obrigado",
   1615: "Obrigado. Já está na nossa lista.",
+  1616: "Simulação da versão gratuita",
+  1617: "A simulação da versão gratuita está ligada: este telefone age como se não tivesse passe. O seu passe não é afetado.",
+  1618: "Desligar",
+  1619: "Simulação da versão gratuita ligada até fechar a app: as funções pagas mostram agora a janela do passe.",
 };
