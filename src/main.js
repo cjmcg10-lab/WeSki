@@ -2095,15 +2095,35 @@ function reportExtras(p, on) {
   return out;
 }
 
-const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'This run does not exist'], ['wrong_rating', 'Wrong rating'], ['wrong_place', 'Drawn in the wrong place'], ['closed_for_good', 'Closed for good'], ['other', 'Something else']];
+const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'This run does not exist'], ['wrong_rating', 'Wrong rating'], ['wrong_place', 'Drawn in the wrong place'], ['closed_for_good', 'Closed for good'], ['wrong_name', 'The name is wrong'], ['no_connection', 'Runs or lifts don’t connect here'], ['other', 'Something else']];
+/** What a report is about (#112): the run at the spot, or a lift when the spot is on a lift line and nearer to it than
+ *  to any run. The server groups reports by the run's OpenStreetMap id or name, or by "lift:<OSM id or name>", never by
+ *  the run number, which changes between map builds. */
+function reportTarget(p) {
+  const on = trailAt(S.resort, p.x, p.y);
+  const lift = nearestLift(S.resort, p.x, p.y, 25);
+  if (lift && (!on || lift.d < on.d)) return { lift, ref: `lift:${lift.osm || lift.name}`, name: lift.name };
+  if (on) return { on, ref: on.t.osm ? String(on.t.osm) : '', name: on.t.name || '' };
+  return { ref: '', name: '' };
+}
+/** "It should be:" choices for a wrong rating, on this resort's own scale: green/blue/black/double black, or the
+ *  European and Japanese piste colours. Sent as `should` (resort.json `d`, or the colour class `c`) with `scale`. */
+function ratingChoices() {
+  const sc = scheme(S.resort);
+  return { scale: sc.id === 'us' ? 'us' : 'colour', list: sc.names.map((n, i) => ({ v: i, name: n, sym: sc.syms[i], css: sc.css[i] })) };
+}
 function sheetReport() {
   const p = S.pin || S.me;
   if (!p) return ['Report a map mistake', '<div class="card"><p class="sub">Tap the map where the mistake is to drop a pin, then choose “Report a map mistake” on the pin.</p></div>'];
-  const on = trailAt(S.resort, p.x, p.y);
+  const tg = reportTarget(p);
   const kind = S.reportKind || 'wrong_place';
-  return ['Report a map mistake', `<div class="card"><p class="sub">${S.pin ? t('At the pin') : t('Where you are')}${on ? ` · ${t('On {0}', esc(on.t.name || t('a connecting run')))}` : ''}</p>
+  const rc = ratingChoices();
+  const should = kind === 'wrong_rating' ? `<label class="lbl">${t('It should be:')}</label><div class="seg wrap" id="report-should">${rc.list.map((r) => `<button data-act="report-should" data-v="${r.v}" class="${S.reportShould === r.v ? 'on' : ''}"><span class="${r.css}">${r.sym}</span> ${r.name}</button>`).join('')}</div>` : '';
+  const where = tg.lift ? ` · ${t('On {0}', `<span translate="no">${esc(tg.name)}</span>`)}` : tg.on ? ` · ${t('On {0}', esc(tg.on.t.name || t('a connecting run')))}` : '';
+  return ['Report a map mistake', `<div class="card"><p class="sub">${S.pin ? t('At the pin') : t('Where you are')}${where}</p>
     <div class="seg wrap">${REPORT_KINDS.map(([k, n]) => `<button data-act="report-kind" data-v="${k}" class="${kind === k ? 'on' : ''}">${n}</button>`).join('')}</div>
-    <label class="lbl">What is wrong? (optional)</label><textarea class="field" id="f-report" maxlength="500" rows="3" placeholder="For example: the run turns left here, at the trees"></textarea>
+    ${should}
+    <label class="lbl">What is wrong? (optional)</label><textarea class="field" id="f-report" maxlength="500" rows="3" placeholder="For example: the run turns left here, at the trees">${esc(S.reportText || '')}</textarea>
     <button class="btn" data-act="report-send">Send report</button>
     <p class="note">Reports are public notes on the map, so leave out your name and contact details. We check every report against the resort’s map and aerial photos before changing anything.</p></div>`];
 }
@@ -2777,22 +2797,26 @@ async function onClick(e) {
       const r = await acct.setCrew(emails).catch(() => ({}));
       toast(r.ok ? 'Crew saved.' : (r.error || 'Could not save the crew.')); renderSheet(); break;
     }
-    case 'report-open': S.reportKind = null; openSheet('report'); break;
+    case 'report-open': S.reportKind = null; S.reportShould = null; S.reportText = ''; openSheet('report'); break;
     case 'report-fab':
-      S.reportKind = null;
+      S.reportKind = null; S.reportShould = null; S.reportText = '';
       if (!S.pin && S.me) openSheet('report');
       else if (S.pin) openSheet('report');
       else toast('Tap the map where the mistake is, then tap this button again (or “Report a map mistake here” on the pin).', 5000);
       break;
-    case 'report-kind': S.reportKind = d.v; renderSheet(); break;
+    case 'report-kind': S.reportText = $('#f-report')?.value || ''; S.reportKind = d.v; renderSheet(); break;
+    case 'report-should': S.reportText = $('#f-report')?.value || ''; S.reportShould = Number(d.v); renderSheet(); break;
     case 'report-send': {
-      const p = S.pin || S.me, on = p && trailAt(S.resort, p.x, p.y);
+      const p = S.pin || S.me;
       if (!p) break;
+      const tg = reportTarget(p), kind = S.reportKind || 'wrong_place';
+      if (kind === 'wrong_rating' && !Number.isInteger(S.reportShould)) { toast(t('Choose what the rating should be.')); break; }
       b.disabled = true;
-      const body = { resort: S.place.id, kind: S.reportKind || 'wrong_place', x: p.x, y: p.y, ref: on ? String(on.t.osm || on.t.id) : '', name: on?.t.name || '', text: $('#f-report').value || '', ...reportExtras(p, on) };
+      const body = { resort: S.place.id, kind, x: p.x, y: p.y, ref: tg.ref, name: tg.name, text: $('#f-report').value || '', ...reportExtras(p, tg.on) };
+      if (kind === 'wrong_rating') Object.assign(body, { should: S.reportShould, scale: ratingChoices().scale });
       const r = await fetch('/api/reports', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) }).catch(() => null);
       toast(r?.ok ? 'Thank you. The report was sent.' : r?.status === 429 ? 'Too many reports today. Try again tomorrow.' : 'Could not send. Check your connection.');
-      if (r?.ok) closeSheet(); else b.disabled = false;
+      if (r?.ok) { S.reportText = ''; closeSheet(); } else b.disabled = false;
       break;
     }
     case 'safety-ok': prefs.set('safetyAccepted', Date.now()); closeSheet(); break;

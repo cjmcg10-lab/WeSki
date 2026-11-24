@@ -1,16 +1,16 @@
 // Daily email of new "Report a map mistake" reports to the owner (issue #112, step 1).
 //
-// Sent once a day by the Worker's Cron Trigger (wrangler.assets.jsonc "triggers"), through Cloudflare's own email
-// sending: a `send_email` binding called REPORT_MAIL, which can only send to addresses verified in the Cloudflare
-// dashboard (Email Routing → Destination addresses). See docs/MAP_REPORTS.md for what the owner sets up.
-// Without the binding (or without an address) nothing is sent and nothing is marked as sent, so reports wait for the
-// first digest after it is switched on. Days with nothing new send nothing.
+// Sent once a day by the Worker's Cron Trigger (wrangler configs "triggers") through Resend, the same mail account
+// that sends the sign-in codes (RESEND_API_KEY secret, MAIL_FROM), to REPORT_DIGEST_TO (hello@builtbyroger.app, which
+// the owner forwards to their own inbox). See docs/MAP_REPORTS.md. Without the key, the sender or the inbox nothing
+// is sent and nothing is marked as sent, so reports wait for the first digest after it is switched on. When Resend
+// refuses, nothing is marked either and the reports come again the next day. Days with nothing new send nothing.
 //
 // Bookkeeping lives in the ResortLog Durable Objects that already hold the reports:
 // - the instance named DIGEST_INDEX (not a valid resort id) lists mountains with reports not yet emailed, and the
 //   date of the last digest, so a retried cron run on the same day sends nothing twice;
 // - each mountain keeps the highest report id already emailed.
-import { KIND_NAMES } from './confidence.js';
+import { KIND_NAMES, ratingName } from './confidence.js';
 import places from '../public/data/index.json';
 
 export const DIGEST_INDEX = '_digest';
@@ -53,6 +53,8 @@ export function buildDigest(parts, now = Date.now()) {
   L.push('Confidence says how sure we are that a problem is real: low, medium or high. It counts separate phones that');
   L.push('reported it, whether a reporter was standing near the spot, map-help GPS counts (only places reached by 5 or');
   L.push('more ski days), and age (reports fade out over 60 days). Nothing on the map changes automatically yet.');
+  L.push('Reports about a run or lift are one problem per run or lift, wherever on it they were sent; reports about no');
+  L.push('run or lift (a missing run, runs that do not connect) are one problem per spot.');
   for (const p of withNew) {
     const name = resortName(p.resort);
     const byReport = new Map();
@@ -65,6 +67,7 @@ export function buildDigest(parts, now = Date.now()) {
     shown.forEach((r, i) => {
       L.push('');
       L.push(`${i + 1}. ${KIND_NAMES[r.kind] || r.kind}${r.name ? `: ${oneLine(r.name)}` : ' (not on a named run)'}  [report #${r.id}, ${when(r.at)}]`);
+      if (Number.isInteger(r.should)) L.push(`   It should be: ${ratingName(r.scale, r.should)}`);
       if (r.text) L.push(`   Note: "${oneLine(r.text)}"`);
       L.push(`   Spot: ${spotText(r)}`);
       L.push(`   Reporter's GPS: ${Number.isFinite(r.near) ? `${r.near} m from the spot when sent` : 'not known'}`);
@@ -77,8 +80,8 @@ export function buildDigest(parts, now = Date.now()) {
       L.push('');
       L.push(`Open problems at ${name} (all reports from the last 60 days, most certain first; ${plural(p.days || 0, 'map-help ski day')} so far):`);
       for (const pr of probs) {
-        L.push(`- ${pr.level.toUpperCase()} ${pr.score}  ${KIND_NAMES[pr.kind] || pr.kind}${pr.name ? `: ${oneLine(pr.name)}` : ''}  (reports ${pr.reports.map((id) => '#' + id).join(', ')})`);
-        L.push(`    Spot: ${spotText(pr)}`);
+        L.push(`- ${pr.level.toUpperCase()} ${pr.score}  ${KIND_NAMES[pr.kind] || pr.kind}${pr.name ? `: ${oneLine(pr.name)}${pr.lift ? ' (lift)' : ''}` : ''}${pr.should ? ` -> should be ${pr.should.name}` : ''}  (reports ${pr.reports.map((id) => '#' + id).join(', ')})`);
+        L.push(`    ${pr.by === 'thing' && Number.isFinite(pr.lat) ? 'Latest spot' : 'Spot'}: ${spotText(pr)}`);
         for (const w of pr.why) L.push(`    ${w}`);
       }
       if ((p.problems || []).length > probs.length) L.push(`  ...and ${p.problems.length - probs.length} more: ${SITE}/api/reports/${p.resort}/problems`);
@@ -91,46 +94,26 @@ export function buildDigest(parts, now = Date.now()) {
   return { subject, text: L.join('\n') + '\n' };
 }
 
-// ---------------------------------------------------------------- the email itself (plain text, UTF-8)
-const b64 = (s) => {
-  const bytes = new TextEncoder().encode(s);
-  let bin = '';
-  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
-  return btoa(bin);
-};
-const encodeWord = (s) => (/^[\x20-\x7e]*$/.test(s) ? s : `=?UTF-8?B?${b64(s)}?=`);
+// ---------------------------------------------------------------- sending, through Resend (as the sign-in emails)
+export const RESEND_URL = 'https://api.resend.com/emails';
 
-/** A raw RFC 5322 message, as Cloudflare's EmailMessage expects. */
-export function mimeMessage({ from, to, subject, text, now = Date.now(), id = crypto.randomUUID() }) {
-  const domain = String(from).split('@')[1]?.replace(/[>\s].*$/, '') || 'localhost';
-  const body = b64(text).replace(/.{76}/g, '$&\r\n');
-  return [
-    `From: SkiWithMe map reports <${from}>`,
-    `To: ${to}`,
-    `Subject: ${encodeWord(oneLine(subject))}`,
-    `Date: ${new Date(now).toUTCString().replace('GMT', '+0000')}`,
-    `Message-ID: <${id}@${domain}>`,
-    'MIME-Version: 1.0',
-    'Content-Type: text/plain; charset=UTF-8',
-    'Content-Transfer-Encoding: base64',
-    '',
-    body,
-  ].join('\r\n');
-}
-
-/** Is the digest switched on? Needs the REPORT_MAIL binding, a sender and an inbox. */
+/** Is the digest switched on? Needs the sign-in mail account (RESEND_API_KEY secret, MAIL_FROM) and an inbox. */
 export function digestConfig(env) {
-  const to = env.REPORT_DIGEST_INBOX || env.REPORT_DIGEST_TO;   // the secret, when set, wins over the plain setting
-  const from = env.REPORT_DIGEST_FROM;
-  if (!env.REPORT_MAIL || typeof env.REPORT_MAIL.send !== 'function' || !to || !from) return null;
-  return { to, from };
+  const to = env.REPORT_DIGEST_TO, from = env.MAIL_FROM, key = env.RESEND_API_KEY;
+  if (!key || !from || !to) return null;
+  return { to, from, key };
 }
 
-async function sendMail(env, cfg, mail, now) {
-  const raw = mimeMessage({ from: cfg.from, to: cfg.to, subject: mail.subject, text: mail.text, now });
-  const { EmailMessage } = await import('cloudflare:email');
-  await env.REPORT_MAIL.send(new EmailMessage(cfg.from, cfg.to, raw));
+/** One plain-text email through Resend. Throws when Resend does not accept it, so nothing is marked as sent. */
+export async function sendMail(env, cfg, mail, _now, fetchFn = fetch) {
+  const res = await fetchFn(RESEND_URL, {
+    method: 'POST',
+    headers: { authorization: `Bearer ${cfg.key}`, 'content-type': 'application/json', 'user-agent': 'weski-build' },
+    body: JSON.stringify({ from: cfg.from, to: [cfg.to], subject: oneLine(mail.subject), text: mail.text }),
+  });
+  if (!res.ok) throw new Error(`Resend answered ${res.status}`);
 }
+
 
 /**
  * The daily job. `log(env, id)` returns the ResortLog stub for a mountain (or the index). `send` is replaceable for tests.
@@ -138,7 +121,7 @@ async function sendMail(env, cfg, mail, now) {
  */
 export async function runDigest(env, log, now = Date.now(), send = sendMail) {
   const cfg = digestConfig(env);
-  if (!cfg) return { sent: false, why: 'switched off (no REPORT_MAIL binding or address)' };
+  if (!cfg) return { sent: false, why: 'switched off (no RESEND_API_KEY, MAIL_FROM or REPORT_DIGEST_TO)' };
   const index = log(env, DIGEST_INDEX);
   const state = await index.digestDue(day(now));
   if (state.sentToday) return { sent: false, why: 'already sent today' };
