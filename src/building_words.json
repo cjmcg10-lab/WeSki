@@ -1,0 +1,62 @@
+{
+  "_about": "Name keywords that choose a building's look (src/buildingstyle.js and tools/building_style.py read this same file). Names are compared lower-case with accents removed. 'words' must match a whole word of the name; 'parts' may appear anywhere in it (long stems, compound words, Japanese).",
+  "tower": {
+    "words": ["tower", "clocktower", "turm", "torre", "campanile", "belfry", "beffroi"],
+    "parts": ["clock tower", "glockenturm", "uhrturm", "kirchturm", "時計台"]
+  },
+  "chapel": {
+    "words": ["chapel", "church", "kirche", "kapelle", "chapelle", "eglise", "chiesa", "cappella", "capilla", "iglesia", "chiesetta", "oratoire", "kirchlein"],
+    "parts": ["kirche", "kapelle", "chapelle", "chapel", "教会", "礼拝堂"]
+  },
+  "parking": {
+    "words": ["parking", "parkade", "carpark", "parkhaus", "parcheggio", "stationnement", "parkplatz", "tiefgarage"],
+    "parts": ["parking garage", "parking structure", "parkhaus", "tiefgarage", "駐車"]
+  },
+  "garage": {
+    "words": ["garage", "garages"],
+    "parts": []
+  },
+  "lodge_strong": {
+    "words": ["ticket", "tickets", "rental", "rentals", "kasse", "billetterie", "biglietteria", "taquilla", "noleggio", "verleih"],
+    "parts": ["base lodge", "day lodge", "base area", "base camp", "ski school", "snowsports school", "snow sports school", "skischule", "schischule", "ecole de ski", "scuola sci", "escuela de esqui", "guest services", "guest service", "welcome center", "welcome centre", "skiverleih", "sportverleih", "センターハウス", "レンタル", "スキースクール"]
+  },
+  "patrol": {
+    "words": ["patrol", "firstaid", "medical", "clinic", "rescue", "secours", "soccorso", "ambulance", "infirmary"],
+    "parts": ["first aid", "ski patrol", "bergwacht", "pistenrettung", "pistendienst", "救護"]
+  },
+  "hotel": {
+    "words": ["hotel", "hotels", "inn", "condo", "condos", "condominium", "condominiums", "suites", "apartments", "apartment", "residence", "residences", "residenz", "appartements", "appartement", "albergo", "hostel", "motel", "aparthotel", "pension", "townhomes", "townhouses", "lofts", "chambres"],
+    "parts": ["hotel", "旅館", "ホテル", "ペンション"]
+  },
+  "restaurant": {
+    "words": ["restaurant", "restaurants", "cafe", "bar", "pub", "grill", "bistro", "kitchen", "cafeteria", "eatery", "tavern", "saloon", "stube", "stubli", "beizli", "ristorante", "trattoria", "buvette", "brasserie", "creperie", "pizzeria", "taverna", "dining", "diner", "deli", "bakery", "cantina", "osteria", "raclette", "fondue"],
+    "parts": ["restaurant", "stube", "ristorante", "gasthof", "gasthaus", "beizli", "レストラン", "食堂", "カフェ"]
+  },
+  "hut": {
+    "words": ["hut", "huts", "cabin", "cabins", "chalet", "chalets", "refuge", "refugio", "rifugio", "cabane", "baita", "alm", "alpe", "shelter", "yurt", "warming", "shack", "cottage", "bothy"],
+    "parts": ["hutte", "huette", "山小屋", "ヒュッテ", "小屋"]
+  },
+  "lodge": {
+    "words": ["lodge", "lodges", "center", "centre", "clubhouse"],
+    "parts": ["lodge", "センター"]
+  },
+  "service": {
+    "words": ["maintenance", "workshop", "shed", "utility", "pump", "pumphouse", "snowmaking", "storage", "warehouse", "vehicle", "vehicles", "grooming", "groomer", "compressor", "substation", "transformer", "boiler", "depot", "werkstatt", "lager", "schuppen", "atelier", "magazzino", "rimessa", "station", "talstation", "bergstation", "mittelstation", "gare", "stazione", "terminal", "barn", "stable", "stables", "hangar", "silo", "reservoir", "operations"],
+    "parts": ["werkstatt", "pistenfahrzeug", "pistenbully", "talstation", "bergstation", "mittelstation", "pump house", "lift house", "倉庫", "車庫", "機械"]
+  },
+  "tags": {
+    "tower": ["tower", "bell_tower", "clock_tower", "campanile"],
+    "chapel": ["chapel", "church", "cathedral", "shrine", "temple", "religious", "wayside_shrine"],
+    "parking": ["parking", "multi-storey", "multistorey_car_park"],
+    "garage": ["garage", "garages", "carport"],
+    "hotel": ["hotel", "apartments", "dormitory", "residential", "terrace"],
+    "hut": ["hut", "cabin", "chalet", "house", "detached", "bungalow", "semidetached_house", "farm", "static_caravan", "alpine_hut", "wilderness_hut"],
+    "service": ["industrial", "warehouse", "service", "shed", "hangar", "storage_tank", "transformer_tower", "barn", "farm_auxiliary", "roof", "utility", "garbage_shed", "stable", "cowshed", "boathouse", "construction", "silo", "bunker", "train_station", "transportation", "aerialway", "kiosk", "toilets"],
+    "public": ["commercial", "retail", "civic", "public", "office", "school", "sports_centre", "sports_hall", "college", "university", "government", "hospital"],
+    "food_amenity": ["restaurant", "cafe", "bar", "pub", "fast_food", "food_court", "biergarten", "ice_cream"],
+    "hotel_tourism": ["hotel", "apartment", "motel", "hostel", "guest_house", "chalet_hotel"],
+    "hut_tourism": ["alpine_hut", "wilderness_hut", "chalet"],
+    "patrol_amenity": ["first_aid", "clinic", "doctors", "hospital", "ambulance_station", "mountain_rescue"],
+    "service_amenity": ["fire_station", "recycling", "waste_disposal", "toilets", "fuel"]
+  }
+}

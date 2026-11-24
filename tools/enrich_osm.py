@@ -13,6 +13,8 @@ OpenStreetMap extract downloaded in tiles with tools/dev/osmget.py into $PIPE_WO
   roofCol    roof:colour, or a colour for roof:material (metal, tiles, slate, wood)
   wallCol    building:colour, or a colour for building:material (wood, stone, brick, concrete, glass, metal)
   levels     building:levels
+  st         the building's look (tools/building_style.py: lodge, rest, hut, hotel, chapel, tower, service, garage),
+             from its tags, named points inside it, size, and whether it stands at a lift station or a summit
 Writes public/data/<id>/resort.json in place (the routing graph is kept) and prints what it added.
 Re-runnable: fields are replaced each time. Requests use the User-Agent weski-build.
 """
@@ -28,6 +30,9 @@ import subprocess
 import xml.etree.ElementTree as ET
 
 import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import building_style  # noqa: E402  (tools/building_style.py: the building looks)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UA = {"User-Agent": "weski-build"}
@@ -71,11 +76,15 @@ def basis(a, b):
 
 
 def buildings(rid, w, s, e, n):
-    """[(lon, lat, tags)] of every building in the box: Overpass, or an extract from the main API."""
-    q = f'[out:json][timeout:120];way["building"]({s},{w},{n},{e});out tags center;'
+    """([(lon, lat, tags)] of every building in the box, [(lon, lat, tags)] of named or amenity / tourism / shop /
+    leisure points, which often sit inside an untagged building): Overpass, or an extract from the main API."""
+    q = (f'[out:json][timeout:120];(way["building"]({s},{w},{n},{e});node["amenity"]({s},{w},{n},{e});'
+         f'node["tourism"]({s},{w},{n},{e});node["shop"]({s},{w},{n},{e});node["leisure"]({s},{w},{n},{e}););out tags center;')
     try:
         j = get("https://overpass-api.de/api/interpreter", data=urllib.parse.urlencode({"data": q}).encode(), tries=1)
-        return [(el["center"]["lon"], el["center"]["lat"], el.get("tags", {})) for el in j.get("elements", []) if el.get("center")]
+        els = j.get("elements", [])
+        return ([(el["center"]["lon"], el["center"]["lat"], el.get("tags", {})) for el in els if el["type"] == "way" and el.get("center")],
+                [(el["lon"], el["lat"], el.get("tags", {})) for el in els if el["type"] == "node" and "lon" in el])
     except Exception as err:
         print(f"  overpass did not answer ({err}); downloading an extract instead")
     work = os.environ.get("PIPE_WORK", "/tmp/weski-pipe")
@@ -85,7 +94,13 @@ def buildings(rid, w, s, e, n):
         split = max(2, round(max((e - w) * 111 * math.cos(math.radians((s + n) / 2)), (n - s) * 111) / 3))
         subprocess.run([sys.executable, f"{ROOT}/tools/dev/osmget.py", osm, str(w), str(s), str(e), str(n), str(split)], check=True)
     root = ET.parse(osm).getroot()
-    nodes = {nd.get("id"): (float(nd.get("lon")), float(nd.get("lat"))) for nd in root.iter("node")}
+    nodes, points = {}, []
+    for nd in root.iter("node"):
+        ll = (float(nd.get("lon")), float(nd.get("lat")))
+        nodes[nd.get("id")] = ll
+        t = {tg.get("k"): tg.get("v") for tg in nd.findall("tag")}
+        if any(k in t for k in ("amenity", "tourism", "shop", "leisure")):
+            points.append((*ll, t))
     out = []
     for way in root.iter("way"):
         t = {tg.get("k"): tg.get("v") for tg in way.findall("tag")}
@@ -94,7 +109,7 @@ def buildings(rid, w, s, e, n):
         p = [nodes[r.get("ref")] for r in way.findall("nd") if r.get("ref") in nodes]
         if p:
             out.append((sum(x for x, _ in p) / len(p), sum(y for _, y in p) / len(p), t))
-    return out
+    return out, points
 
 
 def enrich(rid):
@@ -131,12 +146,16 @@ def enrich(rid):
     corners = [to_ll(0, 0), to_ll((g["nx"] - 1) * g["cell"], (g["ny"] - 1) * g["cell"])]
     s, w = min(c[1] for c in corners), min(c[0] for c in corners)
     n, e = max(c[1] for c in corners), max(c[0] for c in corners)
-    osm_b = [(*to_local(lon, lat), t) for lon, lat, t in buildings(rid, w, s, e, n)]
+    blist, plist = buildings(rid, w, s, e, n)
+    osm_b = [(*to_local(lon, lat), t) for lon, lat, t in blist]
+    points = [(*to_local(lon, lat), t) for lon, lat, t in plist]
+    b_tags = []
     pts = np.array([(x, y) for x, y, _ in osm_b]) if osm_b else np.zeros((0, 2))
     n_b = {"matched": 0, "roofShape": 0, "roofCol": 0, "wallCol": 0, "levels": 0}
     for b in R["buildings"]:
-        for k in ("roofShape", "roofCol", "wallCol", "levels"):
+        for k in ("roofShape", "roofCol", "wallCol", "levels", "st"):
             b.pop(k, None)
+        b_tags.append({"name": b.get("name") or "", "building": "roof" if b.get("roof") else "hotel" if b.get("kind") == "hotel" else "yes"})
         xs, ys = b["pts"][0::2], b["pts"][1::2]
         cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
         if not len(pts):
@@ -146,6 +165,7 @@ def enrich(rid):
         if d[k] > 12:      # maps nudged onto the aerial photos (shift_m) can sit up to ~10 m off OpenStreetMap
             continue
         t = osm_b[k][2]
+        b_tags[-1] = {**t, "name": t.get("name") or b.get("name") or ""}
         n_b["matched"] += 1
         shape = t.get("roof:shape")
         if shape:
@@ -159,11 +179,13 @@ def enrich(rid):
         lv = t.get("building:levels", "")
         if lv.isdigit() and 1 <= int(lv) <= 60:
             b["levels"] = int(lv); n_b["levels"] += 1
+    # the look of each building (tools/building_style.py), from its tags, the points inside it, size and place
+    styles = building_style.add_styles(R["buildings"], b_tags, R["lifts"], R["pois"], points)
     with open(path, "w") as f:
         json.dump(R, f, separators=(",", ":"))
     print(f"{rid}: lifts {len(R['lifts'])} (seats fixed {n_l['seats']}, capacity {n_l['cap']}, bubble {n_l['bubble']}, "
           f"heated {n_l['heat']}, detachable {n_l['detach']}); buildings {len(R['buildings'])} (matched {n_b['matched']}, "
-          f"roof shape {n_b['roofShape']}, roof colour {n_b['roofCol']}, wall colour {n_b['wallCol']}, levels {n_b['levels']})")
+          f"roof shape {n_b['roofShape']}, roof colour {n_b['roofCol']}, wall colour {n_b['wallCol']}, levels {n_b['levels']}); styles {styles}")
 
 
 if __name__ == "__main__":

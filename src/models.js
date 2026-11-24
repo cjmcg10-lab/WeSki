@@ -761,64 +761,96 @@ export function makeFlag(color) {
  * A building from its footprint. ring: [[x,z],...] counter-clockwise seen from above (world X/Z), base: ground y,
  * h: wall height. shape: 'flat', 'hipped' (slopes on every side) or 'gabled' (a ridge along the building's long
  * side, triangular gable ends in the wall colour). `roof` is the roof's colour as seen (snow on it already mixed in
- * by the caller). Pitched roofs overhang the walls (eaves). o.storey: storey height for the rows of windows, which
- * the building material draws from the `win` attribute (along-wall metres, height above the ground, storey height,
- * wall height; zeros on roofs). o.chimney: a stone chimney on a pitched roof. Appends to out.pos / out.col / out.win
- * for one merged mesh.
+ * by the caller). Pitched roofs overhang the walls (eaves). Appends to out.pos / out.col / out.win (and out.sty when
+ * given) for one merged mesh.
+ *
+ * out.win per vertex: along-wall metres, height above the ground, storey height, wall height (zeros on roofs).
+ * out.sty per vertex: wall material code (upper + 16 x lower, MAT in src/buildingstyle.js), height where the lower
+ * material ends, window pattern (WIN), and a seed from 0 to 1. The building material paints both (no triangles).
+ *
+ * o.storey: storey height; o.chimney: a stone chimney on a pitched roof; o.pitch: roof steepness (1 = usual; 3 makes
+ * a hipped roof a steep pyramid). o.style (from buildingstyle.js LOOK): { upper, lower, low, win, front, seed,
+ * dir: [x, z] downhill or null, deck: 'upper' | 'band', belfry, clock, door, trim (Color), accent (Color) }.
  */
 export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped', o = {}) {
-  const n = ring.length, flat = shape === 'flat';
+  const n = ring.length, flat = shape === 'flat', S = o.style || null;
   let cx = 0, cz = 0, area = 0;
   for (const [x, z] of ring) { cx += x; cz += z; }
   cx /= n; cz /= n;
   for (let i = 0; i < n; i++) { const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n]; area += x0 * z1 - x1 * z0; }
   const sgn = area >= 0 ? 1 : -1;
   area = Math.abs(area) / 2;
-  const top = base + h, peak = top + (flat ? 0.4 : Math.min(4.5, 1.5 + h * 0.22));
+  // walls: length, outward normal, where each starts along the building
+  const walls = [];
+  let u = 0, longest = 0, lw = 0;
+  for (let i = 0; i < n; i++) {
+    const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0) || 1e-6;
+    walls.push({ x0, z0, x1, z1, L, u, dx: (x1 - x0) / L, dz: (z1 - z0) / L, nx: (sgn * (z1 - z0)) / L, nz: (-sgn * (x1 - x0)) / L });
+    if (L > longest) { longest = L; lw = i; }
+    u += L;
+  }
+  const width = Math.max(2, Math.min(longest, area / longest));   // about the short side
+  const pitch = o.pitch ?? 1, usual = Math.min(4.5, 1.5 + h * 0.22);
+  const rise = flat ? 0.4 : pitch === 1 ? usual : Math.max(0.8, Math.min(pitch > 1 ? 14 : usual, width * 0.35 * pitch));
+  const top = base + h, peak = top + rise;
   // eaves: the roof starts a little outside the walls (mitred at the corners) and a little lower than their top
-  const e = flat ? 0 : Math.min(0.8, Math.sqrt(area) * 0.06), eaveY = flat ? top : top - 0.15;
+  const e = flat ? 0 : Math.min(0.8, Math.sqrt(area) * 0.06) * (pitch > 2 ? 0.4 : 1), eaveY = flat ? top : top - 0.15;
   const eave = e ? ring.map(([x, z], i) => {
-    const [xp, zp] = ring[(i + n - 1) % n], [xn, zn] = ring[(i + 1) % n];
-    const l1 = Math.hypot(x - xp, z - zp) || 1, l2 = Math.hypot(xn - x, zn - z) || 1;
-    const n1x = (sgn * (z - zp)) / l1, n1z = (-sgn * (x - xp)) / l1, n2x = (sgn * (zn - z)) / l2, n2z = (-sgn * (xn - x)) / l2;
-    const k = e / Math.max(0.4, 1 + n1x * n2x + n1z * n2z);
-    return [x + (n1x + n2x) * k, z + (n1z + n2z) * k];
+    const a = walls[(i + n - 1) % n], b = walls[i];
+    const k = e / Math.max(0.4, 1 + a.nx * b.nx + a.nz * b.nz);
+    return [x + (a.nx + b.nx) * k, z + (a.nz + b.nz) * k];
   }) : ring;
   let inset, ridge = null;
   if (shape === 'gabled') {
     // the ridge runs along the longest wall, through the middle; every corner rises to the point of the ridge level with it
-    let ax = 1, az = 0, best = -1;
-    for (let i = 0; i < n; i++) {
-      const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0);
-      if (L > best) { best = L; ax = (x1 - x0) / L; az = (z1 - z0) / L; }
-    }
-    ridge = [ax, az];
-    inset = eave.map(([x, z]) => { const t = (x - cx) * ax + (z - cz) * az; return [cx + ax * t, cz + az * t]; });
-  } else inset = eave.map(([x, z]) => [cx + (x - cx) * 0.45, cz + (z - cz) * 0.45]);
-  const Z = [0, 0, 0, 0];
-  const push = (a, b, c, col, wa = Z, wb = Z, wc = Z) => {
+    ridge = [walls[lw].dx, walls[lw].dz];
+    inset = eave.map(([x, z]) => { const t = (x - cx) * ridge[0] + (z - cz) * ridge[1]; return [cx + ridge[0] * t, cz + ridge[1] * t]; });
+  } else {
+    const k = pitch > 2 ? 0.06 : 0.45;
+    inset = eave.map(([x, z]) => [cx + (x - cx) * k, cz + (z - cz) * k]);
+  }
+  const Z = [0, 0, 0, 0], st = o.storey || 3, seed = S ? S.seed : 0;
+  // windows only on walls of a real building (not a shed or a kiosk)
+  const real = h >= 2.6 && area >= 25;
+  const code = S ? S.upper + 16 * S.lower : 0, low = S ? S.low : 0;
+  // which wall faces downhill (the glazed front, the deck): the longer walls facing most down the slope
+  let front = -1;
+  if (S && (S.front !== S.win || S.deck)) {
+    let best = -Infinity;
+    walls.forEach((w, i) => {
+      if (w.L < 0.45 * longest) return;
+      const s = S.dir ? (w.nx * S.dir[0] + w.nz * S.dir[1]) * Math.min(w.L, 30) : w.L;
+      if (s > best) { best = s; front = i; }
+    });
+  }
+  const push = (a, b, c, col, wa = Z, wb = Z, wc = Z, sa = Z) => {
     out.pos.push(...a, ...b, ...c);
     for (let i = 0; i < 3; i++) out.col.push(col.r, col.g, col.b);
     if (out.win) out.win.push(...wa, ...wb, ...wc);
+    if (out.sty) out.sty.push(...sa, ...sa, ...sa);
   };
-  // windows only on walls of a real building (not a shed or a kiosk)
-  const st = o.storey || 3, wh = h >= 2.6 && area >= 25 ? h : 0;
-  let u = 0;
-  for (let i = 0; i < n; i++) {
-    const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % n], L = Math.hypot(x1 - x0, z1 - z0);
-    const W = (uu, vv) => [uu, vv, st, wh];
-    // wall quad (two winding orders are both emitted via DoubleSide material, so order is not critical)
-    push([x0, base - 2, z0], [x1, base - 2, z1], [x1, top, z1], wall, W(u, -2), W(u + L, -2), W(u + L, h));
-    push([x0, base - 2, z0], [x1, top, z1], [x0, top, z0], wall, W(u, -2), W(u + L, h), W(u, h));
-    u += L;
-  }
+  const quad = (a, b, c, d, col, wa, wb, wc, wd, sa) => { push(a, b, c, col, wa, wb, wc, sa); push(a, c, d, col, wa, wc, wd, sa); };
+  walls.forEach((w, i) => {
+    const W = (uu, vv) => [uu, vv, st, h];
+    const kind = !S || !real ? (S ? 0 : real ? 1 : 0) : i === front ? S.front : S.win;
+    const sa = [code, low, kind, seed];
+    quad([w.x0, base - 2, w.z0], [w.x1, base - 2, w.z1], [w.x1, top, w.z1], [w.x0, top, w.z0], wall,
+      W(w.u, -2), W(w.u + w.L, -2), W(w.u + w.L, h), W(w.u, h), sa);
+  });
   for (let i = 0; i < n; i++) {
     const [x0, z0] = eave[i], [x1, z1] = eave[(i + 1) % n];
     const [u0, w0] = inset[i], [u1, w1] = inset[(i + 1) % n];
     // roof slope; on a gabled roof the end walls (both corners rise to one ridge point) are wall, not roof
     const gableEnd = shape === 'gabled' && Math.hypot(u1 - u0, w1 - w0) < 0.05 * Math.hypot(x1 - x0, z1 - z0);
-    push([x0, eaveY, z0], [x1, eaveY, z1], [u1, peak, w1], gableEnd ? wall : roof);
-    if (!gableEnd) push([x0, eaveY, z0], [u1, peak, w1], [u0, peak, w0], roof);
+    if (gableEnd) {
+      // the gable carries the wall's material (timber boards up to the ridge), never windows
+      const w = walls[i], along = (x, z) => w.u + (x - w.x0) * w.dx + (z - w.z0) * w.dz;
+      const W = (x, y, z) => [along(x, z), y - base, st, h];
+      push([x0, eaveY, z0], [x1, eaveY, z1], [u1, peak, w1], wall, W(x0, eaveY, z0), W(x1, eaveY, z1), W(u1, peak, w1), [code, low, 0, seed]);
+    } else {
+      push([x0, eaveY, z0], [x1, eaveY, z1], [u1, peak, w1], roof);
+      push([x0, eaveY, z0], [u1, peak, w1], [u0, peak, w0], roof);
+    }
   }
   if (o.chimney && !flat) {
     // on the ridge (gabled) or the flat top of the hipped roof, a third of the way towards the first corner
@@ -835,15 +867,186 @@ export function addBuilding(out, ring, base, h, wall, roof, shape = 'hipped', o 
     push([c[0][0], y1, c[0][1]], [c[1][0], y1, c[1][1]], [c[2][0], y1, c[2][1]], cap);
     push([c[0][0], y1, c[0][1]], [c[2][0], y1, c[2][1]], [c[3][0], y1, c[3][1]], cap);
   }
-  if (shape === 'gabled') return;
-  const tris = THREE.ShapeUtils.triangulateShape(inset.map(([x, z]) => new THREE.Vector2(x, z)), []);
-  for (const [a, b, c] of tris) push([inset[a][0], peak, inset[a][1]], [inset[b][0], peak, inset[b][1]], [inset[c][0], peak, inset[c][1]], roof);
+  if (shape !== 'gabled') {
+    const tris = THREE.ShapeUtils.triangulateShape(inset.map(([x, z]) => new THREE.Vector2(x, z)), []);
+    for (const [a, b, c] of tris) push([inset[a][0], peak, inset[a][1]], [inset[b][0], peak, inset[b][1]], [inset[c][0], peak, inset[c][1]], roof);
+  }
+  if (!S) return;
+  const trim = S.trim || new THREE.Color(0x3b2a1e), accent = S.accent || new THREE.Color(0x9aa0a4);
+  // a timber deck along the front: on the first floor of a base lodge, on top of the stone base of a restaurant
+  // (on the ground when the building has one storey)
+  if (S.deck && front >= 0 && real && walls[front].L >= 6) {
+    const w = walls[front], D = Math.max(1.6, Math.min(3, Math.sqrt(area) * 0.1));
+    const y = S.deck === 'upper' && h >= 1.7 * st ? base + st : S.deck === 'band' && low >= 2.2 && h - low >= 2.2 ? base + low : base + 0.45;
+    const o0 = 0.2, a0 = [w.x0 + w.dx * o0, w.z0 + w.dz * o0], a1 = [w.x1 - w.dx * o0, w.z1 - w.dz * o0];
+    const b0 = [a0[0] + w.nx * D, a0[1] + w.nz * D], b1 = [a1[0] + w.nx * D, a1[1] + w.nz * D];
+    const P = (p, yy) => [p[0], yy, p[1]], t = 0.3, wood = [MAT_TIMBER, 0, 0, seed];
+    const deckCol = trim.clone().lerp(wall, 0.35);
+    quad(P(a0, y), P(a1, y), P(b1, y), P(b0, y), deckCol);                                   // floor
+    quad(P(b0, y - t), P(b1, y - t), P(b1, y), P(b0, y), trim);                             // its edge
+    // railing: boards on the outer edge and both ends
+    const R = (p, q, l0) => { const L = Math.hypot(q[0] - p[0], q[1] - p[1]); quad(P(p, y), P(q, y), P(q, y + 1.05), P(p, y + 1.05), trim, [l0, 0, st, 1.05], [l0 + L, 0, st, 1.05], [l0 + L, 1.05, st, 1.05], [l0, 1.05, st, 1.05], wood); };
+    R(b0, b1, 0); R(a0, b0, 0); R(b1, a1, 0);
+    // posts down to the ground at the corners and every 6 m
+    if (y > base + 1) {
+      const k = Math.max(1, Math.round(w.L / 6));
+      for (let j = 0; j <= k; j++) {
+        const f = j / k, px = b0[0] + (b1[0] - b0[0]) * f - w.nx * 0.15, pz = b0[1] + (b1[1] - b0[1]) * f - w.nz * 0.15, r = 0.14;
+        quad([px - r * w.dx, base - 1, pz - r * w.dz], [px + r * w.dx, base - 1, pz + r * w.dz], [px + r * w.dx, y, pz + r * w.dz], [px - r * w.dx, y, pz - r * w.dz], trim);
+        quad([px - r * w.nx, base - 1, pz - r * w.nz], [px + r * w.nx, base - 1, pz + r * w.nz], [px + r * w.nx, y, pz + r * w.nz], [px - r * w.nx, y, pz - r * w.nz], trim);
+      }
+    }
+  }
+  // a small belfry on one end of a chapel's ridge, with louvred openings and a spire
+  if (S.belfry && !flat) {
+    const s = Math.max(1.6, Math.min(3.6, width * 0.32)), ax = ridge || [walls[lw].dx, walls[lw].dz];
+    const half = walls[lw].L / 2, t = Math.max(0, half - s * 0.75);
+    const bx = cx + ax[0] * t, bz = cz + ax[1] * t, y0 = top - 0.5, y1 = peak + Math.max(1.6, s * 0.9), H = y1 - y0;
+    const c = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([p, q]) => [bx + (ax[0] * p - ax[1] * q) * s / 2, bz + (ax[1] * p + ax[0] * q) * s / 2]);
+    for (let i = 0; i < 4; i++) {
+      const [px, pz] = c[i], [qx, qz] = c[(i + 1) % 4];
+      quad([px, y0, pz], [qx, y0, qz], [qx, y1, qz], [px, y1, pz], wall, [0, 0, s, H], [s, 0, s, H], [s, H, s, H], [0, H, s, H], [MAT_LOUVRE, 0, 0, seed]);
+    }
+    const tip = [bx, y1 + s * 1.7, bz];
+    for (let i = 0; i < 4; i++) push([c[i][0], y1, c[i][1]], [c[(i + 1) % 4][0], y1, c[(i + 1) % 4][1]], tip, roof);
+  }
+  // clock faces near the top of every wall of a tower that is wide enough
+  if (S.clock) {
+    const faces = walls.filter((w) => w.L >= 2).sort((a, b) => b.L - a.L).slice(0, 4);
+    for (const w of faces) {
+      const r = Math.min(0.36 * w.L, 1.4, 0.16 * h), mx = (w.x0 + w.x1) / 2 + w.nx * 0.15, mz = (w.z0 + w.z1) / 2 + w.nz * 0.15, y = top - r - 0.6;
+      const P = (a, b) => [mx + w.dx * a * r, y + b * r, mz + w.dz * a * r];
+      quad(P(-1, -1), P(1, -1), P(1, 1), P(-1, 1), wall, [-1, -1, 0, 0], [1, -1, 0, 0], [1, 1, 0, 0], [-1, 1, 0, 0], [MAT_CLOCK, 0, 0, seed]);
+    }
+  }
+  // roll-up doors on the longest wall of a service building
+  if (S.door && real && longest >= 5 && h >= 3.2) {
+    const w = walls[lw], k = w.L > 24 ? 2 : 1, dw = Math.min(4.2, w.L * 0.32), dh = Math.min(4.2, h - 0.9);
+    for (let j = 0; j < k; j++) {
+      const f = (j + 1) / (k + 1), mx = w.x0 + w.dx * w.L * f + w.nx * 0.12, mz = w.z0 + w.dz * w.L * f + w.nz * 0.12;
+      const P = (a, yy) => [mx + w.dx * a * dw / 2, base + yy, mz + w.dz * a * dw / 2];
+      quad(P(-1, -1), P(1, -1), P(1, dh), P(-1, dh), accent, [0, 0, dw, dh], [dw, 0, dw, dh], [dw, dh + 1, dw, dh], [0, dh + 1, dw, dh], [MAT_DOOR, 0, 0, seed]);
+    }
+  }
 }
+const MAT_TIMBER = 1, MAT_DOOR = 7, MAT_CLOCK = 8, MAT_LOUVRE = 9;
+
+// The wall painting of the building material, after the vertex colour (see addBuilding for vWin and vSty).
+// Patterns are in metres on the wall; each fades into its average colour where it gets smaller than a pixel or two,
+// so far-away buildings do not shimmer. Colours here are linear (three.js works in linear light).
+const BUILDING_FRAG = `
+  winMask = 0.0;
+  {
+    float code = floor(vSty.x + 0.5), k = floor(vSty.z + 0.5);
+    float u = vWin.x, v = vWin.y, S = max(vWin.z, 2.0), H = vWin.w, seed = vSty.w;
+    float mpp = max(fwidth(u), fwidth(v));                         // metres a pixel
+    float fine = 1.0 - smoothstep(0.05, 0.16, mpp);                 // boards, stones, ribs
+    float far = smoothstep(0.35, 0.9, mpp);                         // windows
+    float lo = floor(code / 16.0 + 0.01), up = code - lo * 16.0;
+    bool lower = v < vSty.y;
+    float m = lower ? lo : up;
+    vec3 base = diffuseColor.rgb, c = base;
+    if (m == 1.0) {            // timber boards, 28 cm, dark joints, a tone per board
+      float row = floor(v / 0.28), f = fract(v / 0.28);
+      float tone = bhash(vec2(row, floor(u / 3.7 + row * 0.37))) - 0.5;
+      c = mix(base * 0.94, base * (1.0 + 0.24 * tone) * (f < 0.13 ? 0.6 : 1.0), fine);
+    } else if (m == 2.0) {     // stone courses with staggered blocks and light mortar
+      vec3 stone = lower ? vec3(0.21, 0.195, 0.17) * (0.85 + 0.3 * seed) : base;
+      float row = floor(v / 0.42), bu = u / 0.8 + 0.5 * mod(row, 2.0);
+      vec2 f = vec2(fract(bu), fract(v / 0.42));
+      float mortar = 1.0 - step(0.07, f.x) * step(f.x, 0.93) * step(0.12, f.y) * step(f.y, 0.88);
+      vec3 d = mix(stone * (1.0 + 0.45 * (bhash(vec2(floor(bu), row)) - 0.5)), stone * 1.6, mortar);
+      c = mix(stone * 1.08, d, fine);
+    } else if (m == 4.0) {     // metal cladding: vertical ribs every 50 cm
+      float f = abs(fract(u / 0.5) - 0.5) * 2.0;
+      c = mix(base, base * (0.8 + 0.35 * smoothstep(0.6, 0.95, f)), fine);
+    } else if (m == 5.0) {     // glass curtain wall: mullions 1.5 m by the storey, sky reflected higher up
+      vec2 f = vec2(fract(u / 1.5), fract(v / S));
+      float mul = 1.0 - step(0.05, f.x) * step(f.x, 0.95) * step(0.06, f.y) * step(f.y, 0.94);
+      vec3 gl = mix(vec3(0.05, 0.08, 0.12), vec3(0.22, 0.3, 0.38), clamp(v / max(H, 1.0), 0.0, 1.0) * 0.7 + 0.15 * f.y);
+      c = mix(mix(gl, base * 0.5, mul), mix(gl, base * 0.5, 0.15), far);
+      winMask = (1.0 - mul) * (1.0 - far * 0.6) * 0.8;
+    } else if (m == 6.0) {     // parking garage: a concrete slab band each floor, dark openings between columns
+      float fy = mod(v, S);
+      bool solid = fy > S - 0.95 || fy < 0.12 || v > H - 1.0 || v < 0.25 || fract(u / 7.5) < 0.08;
+      vec3 dark = vec3(0.025, 0.025, 0.03);
+      c = mix(solid ? base : dark, mix(base, dark, 0.42), far);
+    } else if (m == 10.0) {    // concrete plinth
+      c = vec3(0.3, 0.29, 0.27);
+    } else if (m == 7.0) {     // roll-up door: horizontal slats in a dark frame
+      float f = fract(v / 0.24);
+      bool frame = u < 0.15 || u > S - 0.15 || v > H - 0.15;
+      c = frame ? base * 0.35 : mix(base * 0.9, base * (f < 0.18 ? 0.7 : 1.0), fine);
+    } else if (m == 8.0) {     // clock face: white dial, dark rim and hour marks, hands at ten past ten
+      vec2 p = vWin.xy; float r = length(p);
+      vec3 dial = vec3(0.85, 0.83, 0.78), ink = vec3(0.02, 0.02, 0.025);
+      float a = atan(p.x, p.y), tick = step(0.92, abs(cos(a * 6.0))) * step(0.62, r) * step(r, 0.78);
+      vec2 hh = vec2(-0.866, 0.5) * 0.45, mh = vec2(0.5, 0.866) * 0.68;
+      float dh = length(p - hh * clamp(dot(p, hh) / dot(hh, hh), 0.0, 1.0));
+      float dm = length(p - mh * clamp(dot(p, mh) / dot(mh, mh), 0.0, 1.0));
+      float ink1 = max(max(tick, step(dh, 0.07)), step(dm, 0.045));
+      vec3 face = r < 0.82 ? mix(dial, ink, ink1) : r < 0.97 ? vec3(0.08, 0.07, 0.05) : base;
+      c = mix(face, r < 0.97 ? mix(dial, ink, 0.2) : base, far);
+      winMask = r < 0.82 ? (1.0 - ink1) * 0.6 : 0.0;
+    } else if (m == 9.0) {     // belfry: louvred openings near the top of each face
+      bool open = u > 0.25 * S && u < 0.75 * S && v > H - 2.1 && v < H - 0.5;
+      c = open ? mix(vec3(0.03, 0.025, 0.02) * (fract(v / 0.3) < 0.35 ? 2.5 : 1.0), base * 0.4, far) : base;
+    }
+    // windows
+    float wm = 0.0, sh = 0.0, rail = 0.0, slab = 0.0, cover = 0.2;
+    if (k > 0.5 && v > 0.5 && v < H - 0.45) {
+      if (k == 1.0) {          // plain rows
+        vec2 f = fract(vec2(u / 2.6, v / S));
+        wm = step(0.22, f.x) * step(f.x, 0.78) * step(0.34, f.y) * step(f.y, 0.8);
+      } else if (k == 2.0) {   // small windows with shutters, a few left out
+        vec2 cell = vec2(u / 3.4, v / S), f = fract(cell);
+        float keep = step(0.18, bhash(floor(cell) + seed * 17.0));
+        float yy = step(0.36, f.y) * step(f.y, 0.76) * keep;
+        wm = step(0.38, f.x) * step(f.x, 0.62) * yy;
+        sh = (step(0.22, f.x) * step(f.x, 0.37) + step(0.63, f.x) * step(f.x, 0.78)) * yy;
+        cover = 0.1;
+      } else if (k == 3.0) {   // hotel: a tall window every 3 m on every floor, balcony rails above the ground floor
+        vec2 f = fract(vec2(u / 3.0, v / S));
+        wm = step(0.25, f.x) * step(f.x, 0.75) * step(0.2, f.y) * step(f.y, 0.82);
+        float upf = step(S * 0.9, v);
+        rail = upf * step(f.y, 0.33) * step(0.05, f.y);
+        slab = upf * step(f.y, 0.05) + upf * step(0.31, f.y) * step(f.y, 0.34);
+        cover = 0.25;
+      } else if (k == 4.0) {   // base lodge front: the ground floor glazed between slim mullions, wide windows above
+        if (v < S) wm = step(0.06, fract(u / 1.6)) * step(fract(u / 1.6), 0.94) * step(0.3, v) * step(v, S - 0.3);
+        else { vec2 f = fract(vec2(u / 2.2, v / S)); wm = step(0.08, f.x) * step(f.x, 0.92) * step(0.24, f.y) * step(f.y, 0.86); }
+        cover = 0.55;
+      } else if (k == 5.0) {   // service: a few small windows high up
+        float f = fract(u / 7.0);
+        wm = step(0.42, f) * step(f, 0.6) * step(H - 1.7, v) * step(v, H - 0.9);
+        cover = 0.04;
+      } else if (k == 6.0) {   // chapel: tall narrow windows with round heads
+        float f = fract(u / 3.6), top = H - 1.4, x = (f - 0.5) * 3.6;
+        wm = step(abs(x), 0.36) * step(1.3, v) * step(v, top) * step(length(vec2(x, max(v - top + 0.36, 0.0))), 0.36);
+        cover = 0.08;
+      } else if (k == 7.0) {   // panorama: wide windows above, small ones in a stone ground floor
+        if (lower) { vec2 f = fract(vec2(u / 3.0, v / S)); wm = step(0.32, f.x) * step(f.x, 0.68) * step(0.38, f.y) * step(f.y, 0.76); }
+        else { vec2 f = fract(vec2(u / 2.2, v / S)); wm = step(0.08, f.x) * step(f.x, 0.92) * step(0.24, f.y) * step(f.y, 0.84); }
+        cover = 0.4;
+      }
+      wm = mix(wm, cover, far); sh = mix(sh, 0.1, far); rail = mix(rail, 0.12, far); slab = mix(slab, 0.03, far);
+      float ty = fract(v / S);
+      vec3 glass = mix(vec3(0.07, 0.1, 0.15), vec3(0.2, 0.26, 0.33), ty * 0.6);
+      vec3 shutter = seed < 0.33 ? vec3(0.04, 0.1, 0.05) : seed < 0.66 ? vec3(0.17, 0.03, 0.02) : vec3(0.06, 0.035, 0.02);
+      c = mix(c, shutter, sh * (1.0 - wm));
+      c = mix(c, glass, wm);
+      c = mix(c, seed < 0.5 ? vec3(0.13, 0.075, 0.04) : vec3(0.24, 0.28, 0.3), rail * 0.7);
+      c = mix(c, vec3(0.72, 0.71, 0.67), slab);
+      winMask = wm * (1.0 - rail * 0.6);
+    }
+    diffuseColor.rgb = c;
+  }`;
 
 /**
- * The material buildings are drawn with: flat-shaded vertex colours, plus rows of windows painted on the walls
- * from the `win` attribute (no extra triangles). Far away, where a window would be smaller than about a pixel,
- * they fade into the wall instead of shimmering. `uniforms.glow` (0 by day, 1 at night) lights them warm.
+ * The material buildings are drawn with: flat-shaded vertex colours, plus wall materials and windows painted from
+ * the `win` and `sty` attributes (no extra triangles). Far away, where a pattern would be smaller than about a
+ * pixel, it fades into its average colour instead of shimmering. `uniforms.glow` (0 by day, 1 at night) lights the
+ * windows warm.
  */
 export function buildingMaterial() {
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
@@ -852,21 +1055,16 @@ export function buildingMaterial() {
   mat.onBeforeCompile = (sh) => {
     sh.uniforms.uGlow = glow;
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nattribute vec4 win;\nvarying vec4 vWin;')
-      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWin = win;');
+      .replace('#include <common>', '#include <common>\nattribute vec4 win;\nattribute vec4 sty;\nvarying vec4 vWin;\nvarying vec4 vSty;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvWin = win;\nvSty = sty;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec4 vWin;\nuniform float uGlow;\nfloat winMask;')
-      .replace('#include <color_fragment>', `#include <color_fragment>
-        winMask = 0.0;
-        if (vWin.w > 0.0 && vWin.y > 0.6 && vWin.y < vWin.w - 0.5) {
-          vec2 cell = vec2(vWin.x / 2.6, vWin.y / vWin.z);
-          vec2 f = fract(cell);
-          float m = step(0.22, f.x) * step(f.x, 0.78) * step(0.34, f.y) * step(f.y, 0.8);
-          // fade out where the pattern gets smaller than about two pixels
-          float px = max(fwidth(cell.x), fwidth(cell.y));
-          winMask = mix(m, 0.2, smoothstep(0.25, 0.6, px));
-          diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.16, 0.22, 0.3), winMask);
-        }`)
+      .replace('#include <common>', `#include <common>
+        varying vec4 vWin;
+        varying vec4 vSty;
+        uniform float uGlow;
+        float winMask;
+        float bhash(vec2 p) { vec3 q = fract(vec3(p.xyx) * 0.1031); q += dot(q, q.yzx + 33.33); return fract((q.x + q.y) * q.z); }`)
+      .replace('#include <color_fragment>', `#include <color_fragment>\n${BUILDING_FRAG}`)
       .replace('#include <opaque_fragment>', 'outgoingLight += vec3(1.0, 0.72, 0.36) * winMask * uGlow * 0.9;\n#include <opaque_fragment>');
   };
   return mat;

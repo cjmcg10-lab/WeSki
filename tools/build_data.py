@@ -513,7 +513,7 @@ def main():
     # ---- buildings
     from shapely.ops import unary_union
     ski_zone = unary_union([T["_line"] for T in trails] + [L["_line"] for L in lift_out]).buffer(cfg.get("building_range", 350)) if cfg.get("building_range", 350) else None
-    buildings = []
+    buildings, building_tags = [], []
     for wid, nd, t in ways:
         if "building" not in t or nd[0] != nd[-1] or len(nd) < 4:
             continue
@@ -544,6 +544,7 @@ def main():
             ht = 6.5
         buildings.append({"name": t.get("name"), "h": ht, "pts": flat(pts), "roof": bt == "roof",
                           "kind": "hotel" if t.get("tourism") == "hotel" or bt in ("hotel", "apartments") else "bldg"})
+        building_tags.append(t)
 
     # ---- POIs
     pois = []
@@ -587,6 +588,12 @@ def main():
         p = L["pts"]
         add_poi(f"{L['name']} (base)", "lift", (p[0], p[1]))
         add_poi(f"{L['name']} (top)", "lifttop", (p[-2], p[-1]))
+
+    # ---- building looks (tools/building_style.py): from tags, name, size and place
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import building_style
+    poi_points = [(*loc(i), t) for i, t in node_tags.items() if any(k in t for k in building_style.POI_KEYS) or "name" in t]
+    print("building styles", building_style.add_styles(buildings, building_tags, lift_out, pois, poi_points))
 
     # ---- routing graph
     G = GraphBuilder(elev)
