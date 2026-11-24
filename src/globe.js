@@ -54,9 +54,10 @@ function mountainGeo() {
  * Height and base both grow with the vertical drop, so a big mountain still reads as big when seen from above.
  * Per peak the instance matrix holds: [0][1] a turn so neighbours differ, [1][1] the height (0-1), [3] the spot on the globe.
  */
-function makePeaks(list, order = 2) {
+function makePeaks(list, order = 11) {
   const geo = mountainGeo();
   const mat = new THREE.ShaderMaterial({
+    transparent: true,               // drawn in the last pass (see the globe's constructor); fully opaque all the same
     uniforms: { uScale: { value: 1 }, uMax: { value: MAX_PEAK }, uSnow: { value: new THREE.Color(SNOW) } },
     vertexShader: `
       uniform float uScale, uMax;
@@ -73,7 +74,10 @@ function makePeaks(list, order = 2) {
         vec3 sc = vec3(0.45 + 0.75 * h, h, 0.45 + 0.75 * h);         // a bigger drop: taller and broader
         p *= sc; nr = normalize(nr / sc);
         // set a hair into the ground so the low-poly globe's flat facets never show a gap under it
-        vec3 w = Y * (1.0 - 0.002) + (X * p.x + Y * p.y + Z * p.z) * uMax * uScale;
+        // shrink away toward the edge and on the far side of the globe (the globe does not hide them: see the constructor)
+        vec4 a = modelViewMatrix * vec4(anchor, 1.0);
+        float s = uScale * smoothstep(0.0, 0.12, dot(normalize(normalMatrix * Y), normalize(-a.xyz)));
+        vec3 w = Y * (1.0 - 0.002) + (X * p.x + Y * p.y + Z * p.z) * uMax * s;
         vec3 n = normalize(normalMatrix * (X * nr.x + Y * nr.y + Z * nr.z));
         gl_Position = projectionMatrix * modelViewMatrix * vec4(w, 1.0);
         vCol = instanceColor;
@@ -112,6 +116,7 @@ function setPeak(mesh, i, { at, h }) {
 // tap-to-zoom: each tap brings the camera this much closer, down to ~220 km up; TILT: how far (radians) the camera
 // tilts to look across the ground once zoomed in
 const MIN_DIST = 1.035, ZOOM_STEP = 0.36, TILT = 0.75;
+const PEAK_MIN = (1.2 - 0.995) / 2.4;    // the peaks' smallest size: what they have at 0.2 radii (~1,300 km) up
 const CARD_DIST = 1.6, CARD_LIFT = 0.13, SURFACE_DIST = 1.00012; // 1.00012 radii = ~750 m above the ground
 
 export class Globe {
@@ -165,7 +170,14 @@ export class Globe {
     // Mountains with a map are teal; mountains not added yet (coming soon, and the Forecast-only ones) are muted slate.
     this.pins = resorts.filter((rs) => rs.available).map((rs) => ({ rs, at: ll(rs.lat, rs.lon, 1), h: peakHeight(dropOf(rs)), visible: true }));
     this.peaks = makePeaks(this.pins.map((p) => ({ at: p.at, h: p.h, color: ROCK })));
-    g.add(this.peaks);
+    // The globe is a ball of flat facets, which dip up to ~10 km below the true surface: zoomed in, a facet hid the small
+    // mountains standing on it. So the mountains are drawn last of all (in the see-through pass, after the globe and its
+    // outlines) and the depth is cleared just before them; mountains on the far side are already hidden by their shader.
+    const clear = new THREE.Mesh(new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, 0, 0, 0, 0, 0, 0], 3)),
+      new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false, depthTest: false, transparent: true }));
+    clear.frustumCulled = false; clear.renderOrder = 10;
+    clear.onBeforeRender = (renderer) => renderer.clearDepth();
+    g.add(clear, this.peaks);
     this.peakScale = 1;
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.02, 0.026, 32), new THREE.MeshBasicMaterial({ color: '#ffffff', side: THREE.DoubleSide, transparent: true }));
     this.ring.visible = false;
@@ -180,7 +192,7 @@ export class Globe {
     this.meHalo.position.z = -0.0002;
     this.me.add(this.meHalo);
     // drawn over the peaks; hidden in loop() while on the far side of the globe
-    this.me.traverse((o) => { if (o.material) { o.material.depthTest = false; o.renderOrder = 3; } });
+    this.me.traverse((o) => { if (o.material) { o.material.depthTest = false; o.material.transparent = true; o.renderOrder = 12; } }); // drawn after the mountains
     this.me.visible = false;
     g.add(this.me);
     g.rotation.order = 'XYZ';
@@ -471,7 +483,8 @@ export class Globe {
     // resort dots shrink away before the camera reaches them
     let ps = Math.min(1, Math.max(0, (this.dist - 1.25) / 0.4)) * Math.min(2.6, Math.max(0.35, (this.dist - 0.95) / 2.4));
     // zoomed in by tapping (or flying to a resort card from there): the dots stay about the same size on screen
-    if (this.zoomed || (this.focused && this.dist < 1.6 && !this.diving)) ps = Math.min(2.6, Math.max(0.012, (this.dist - 0.995) / 2.4));
+    // (owner, 2026-11-24) closer in than about 1,300 km up they stop shrinking: PEAK_MIN keeps them clearly visible
+    if (this.zoomed || (this.focused && this.dist < 1.6 && !this.diving)) ps = Math.min(2.6, Math.max(PEAK_MIN, (this.dist - 0.995) / 2.4));
     this.peakScale = ps;
     const shown = ps > 0.001;
     for (const p of this.pins) p.visible = shown;
