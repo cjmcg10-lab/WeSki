@@ -4,9 +4,7 @@
  "unreachable": {},
  "dead_end": {},
  "outside_core": {},
- "lift_end": {
-  "Cricket Triple (base)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
- },
+ "lift_end": {},
  "uphill": {},
  "doubled": {}
 }
