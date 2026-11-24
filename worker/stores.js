@@ -360,7 +360,7 @@ export class ResortLog extends DurableObject {
   /** Clears the mountains just handled (only reports noted before `before`), and records the day when one was sent. */
   digestDone(resorts, sentDay, before) {
     for (const r of resorts) this.sql.exec('DELETE FROM digest_due WHERE resort = ? AND at <= ?', r, before);
-    if (sentDay) this.kvSet('lastDigestDay', sentDay);
-    this.kvSet('digestClaim', 0);
+    // only the run's final call frees the day's claim (clearing leftovers mid-run must not let a second run in)
+    if (sentDay) { this.kvSet('lastDigestDay', sentDay); this.kvSet('digestClaim', 0); }
   }
 }

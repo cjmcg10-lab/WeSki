@@ -2105,7 +2105,8 @@ const REPORT_KINDS = [['missing', 'A run or lift is missing'], ['not_real', 'Thi
 function reportTarget(p) {
   const on = trailAt(S.resort, p.x, p.y);
   const lift = nearestLift(S.resort, p.x, p.y, 25);
-  if (lift && (!on || lift.d < (on.edge ?? on.d))) return { lift, ref: `lift:${lift.osm || lift.name}`, name: lift.name };
+  // the lift wins when the pin is on its line (8 m), or nearer its line than a run's middle while outside every run
+  if (lift && (!on || lift.d <= 8 || (on.edge > 0 && lift.d < on.d))) return { lift, ref: `lift:${lift.osm || lift.name}`, name: lift.name };
   if (on) return { on, ref: on.t.osm ? String(on.t.osm) : '', name: on.t.name || '' };
   return { ref: '', name: '' };
 }
