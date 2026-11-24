@@ -35,5 +35,16 @@
  "terrain_shares": {
   "1m": 96.8,
   "10m": 3.2
- }
+ },
+ "rename": {
+  "Day Dreamer": "Daydreamer"
+ },
+ "links": [
+  [
+   "trail:Upper Sundance",
+   "trail:Rustler",
+   "hike"
+  ]
+ ],
+ "links_note": "Rustler (double black, far skier's left on the 2025 trail map) starts about 500 m across the slope from the top of Upper Sundance at the same height: reached on foot, drawn as a walk"
 }
