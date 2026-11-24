@@ -22,6 +22,10 @@ session needs that the README does not: the rules, the state of the work, and wh
 - **Never upload maps to live R2 without the owner's approval.** `tools/pipeline.py` uploads only with `--r2` (since
   2026-11-23; before, it uploaded every R2 resort it rebuilt, which once put five unreviewed maps live). Show rebuilt
   maps on the preview (`tools/preview/deploy.mjs`, R2 `preview/data/<id>/`) and push them with `tools/maps_r2.mjs push` once approved.
+- **The preview follows the live app (#142):** every live deploy also puts main on the preview (`deploy.mjs --main`,
+  clearing preview map copies that have since gone live; maps newer than live stay). `deploy.mjs` refuses a branch that
+  lacks the latest main: `git fetch origin main && git merge origin/main` first. A branch on the preview is replaced by
+  the next release; put it back with `deploy.mjs` after merging main.
 
 ## Starting a new session (read this first)
 
@@ -422,6 +426,13 @@ must not reach `main` before that push. Their ratings come from OpenStreetMap (3
 "not yet checked against the resort's own list"; 17 sit on 30 m terrain (British Columbia, Alberta) with a note.
 Rule-based fixes run only for configs with `"auto": true`; the 60 hand-checked maps are unchanged.
 
+**Batch 2 (2026-11-24), the owner's list of 50** (Mountain Creek to Niseko United; Courchevel and Méribel as one map,
+Chamonix as three, Val Gardena and Alta Badia as two, Boston Mills and Brandywine as two): 54 maps, 40 publish, 14 held.
+Table, matching notes and the builder fixes it needed (umbrella outlines such as Les 3 Vallées and Ski Arlberg,
+avalanche ropeways, canopy memory, forecast catalog folding): `tools/bulk/batch-2.md`. Maps are on disk in that
+session only, not on R2 or the preview; the committed index lists the 40, so they must be built again (or fetched) and
+pushed before the branch reaches `main`. `build_globe.py` needs `GLOBE_NPM_DIR` here (cdn.jsdelivr.net is not reachable).
+
 ## Existence check (2026-11-20)
 
 The owner found a lift and runs at Sunday River (Merrill Hill II and runs toward it) that are not on the resort's map.
@@ -647,7 +658,10 @@ phones.
    the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Built 2026-11-21 with the new pipeline (the owner asked to work up toward 2,000+):
    Palisades Tahoe, Deer Valley, Solitude, Crystal Mountain, Snowshoe, Big Sky, Jackson Hole, Snowbird, Alta, Telluride
    (60 in all). Next: Aspen Snowmass, Beaver Creek, Northstar, Tremblant, Blue Mountain, Bear Mountain, June, Taos,
-   Brighton, Sun Valley.
+   Brighton, Sun Valley. On 2026-11-24 the owner approved a list of 50 picked by a score (skiers 35%, people within
+   2.5 h 25%, big pass or sister 15%, how much a map helps 15%, ease of build 10%; see "Choosing which mountains to add
+   next" in `docs/ADDING_MOUNTAINS.md`): **use that score every time the owner asks for more mountains**, and batches
+   picked this way go live without a preview check (owner's waiver), as long as they pass the gate and the tests.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.
 7. Open questions from the owner's phone: frame rate dropped from 120 to 30 fps at times; motion is now capped

@@ -1,0 +1,50 @@
+{
+ "id": "arizona-snowbowl",
+ "name": "Arizona Snowbowl",
+ "region": "Arizona, USA",
+ "tz": "America/Phoenix",
+ "auto": true,
+ "area_osm": "relation/3187211",
+ "include_ways": [
+  16829173,
+  141682844,
+  141682848,
+  608752598,
+  608752599,
+  657700204,
+  657700205,
+  868878244
+ ],
+ "osm_bbox": [
+  -111.7225,
+  35.3184,
+  -111.6713,
+  35.3429
+ ],
+ "openskimap": {
+  "id": "baea9cfef6687ce48eab4290f136798ab2791ea9",
+  "cc": "US",
+  "runs": 53,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 548,
+  "web": "http://www.arizonasnowbowl.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 97%, 10 m national model 3%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 96.8,
+  "10m": 3.2
+ },
+ "rename": {
+  "Day Dreamer": "Daydreamer"
+ },
+ "links": [
+  [
+   "trail:Upper Sundance",
+   "trail:Rustler",
+   "hike"
+  ]
+ ],
+ "links_note": "Rustler (double black, far skier's left on the 2025 trail map) starts about 500 m across the slope from the top of Upper Sundance at the same height: reached on foot, drawn as a walk"
+}

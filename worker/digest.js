@@ -19,6 +19,8 @@ import { K_ANON } from './evidence.js';
 import places from '../public/data/index.json';
 
 export const DIGEST_INDEX = '_digest';
+/** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
+export const DIGEST_CRON = '23 11 * * *';
 export const SITE = 'https://skiwithme.builtbyroger.app';
 export const MAX_REPORTS_PER_MOUNTAIN = 40;
 export const MAX_PROBLEMS_PER_MOUNTAIN = 10;

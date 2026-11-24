@@ -1,0 +1,41 @@
+{
+ "id": "touristique-stoneham",
+ "name": "Stoneham",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "way/422827842",
+ "include_ways": [
+  199289104,
+  199289106,
+  199289107,
+  199289108,
+  199289109,
+  199289110
+ ],
+ "osm_bbox": [
+  -71.4126,
+  47.0112,
+  -71.3762,
+  47.047
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "baa17f751db10c008667bd32ac5a284689e8e857",
+  "cc": "CA",
+  "runs": 55,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 100,
+  "web": "https://www.ski-stoneham.com"
+ },
+ "area_name": "Station touristique Stoneham",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

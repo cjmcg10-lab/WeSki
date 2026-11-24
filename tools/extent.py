@@ -24,7 +24,7 @@ LIFT_LINK = 250     # a lift station is often a little away from the run lines
 RUN_HOPS = 4        # runs followed through other runs only this many steps from a lift of the resort
 GONE = ("abandoned", "disused", "removed", "razed", "demolished", "planned", "proposed", "construction",
         "piste:abandoned", "aerialway:abandoned")
-SKIP_LIFTS = ("pylon", "station", "goods", "zip_line")
+SKIP_LIFTS = ("pylon", "station", "goods", "zip_line", "avalanche", "explosive")   # avalanche: blasting ropeways (St. Anton)
 
 
 def load(osm):
@@ -154,6 +154,15 @@ def resort(feats, areas, cfg, buffer_m=None):
     if mine:
         seed |= {f["id"] for f in feats for n, rs in foreign if n in mine and in_area(f, rs)}
     foreign = [(n, rs) for n, rs in foreign if n not in mine]
+    # With no outline of its own, an outline around (nearly) all of the resort's own lifts that also holds many
+    # other lifts is an umbrella over several resorts (Les 3 Vallées around Courchevel and Méribel, Ski Arlberg
+    # around St. Anton), not a neighbour: it neither seeds nor blocks the search. Before 2026-11-24 it blocked every
+    # run, and Courchevel and Méribel were built with no runs at all, St. Anton with 16 of its 700.
+    if not own and incl:
+        own_lifts = [f for f in feats if f["lift"] and f["id"] in incl]
+        if own_lifts:
+            foreign = [(n, rs) for n, rs in foreign
+                       if sum(in_area(f, rs) for f in own_lifts) < 0.8 * len(own_lifts)]
     other = {f["id"]: n for f in feats if f["id"] not in seed for n, rs in foreign if in_area(f, rs)}
     # The resort's own lift list (official json "lifts"): a lift outside the outline joins the resort only when
     # its name is on it. Any other lift is a neighbour's (La Plagne / Les Arcs, Park City / Deer Valley): the

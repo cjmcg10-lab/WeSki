@@ -1,0 +1,28 @@
+{
+ "id": "mad-river-mountain",
+ "reachable": [
+  14,
+  14
+ ],
+ "auto_joins": 0,
+ "rule_joins": [
+  "Carpet Lift (bottom) ski 126 m",
+  "Bunny Hill (bottom) ski 139 m"
+ ],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": [
+  11,
+  15,
+  0
+ ],
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "notes": [],
+ "seconds": 29,
+ "failed": null,
+ "built": "2026-11-24"
+}

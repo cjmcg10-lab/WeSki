@@ -1,0 +1,18 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "(unnamed run 97)": "116 m unnamed OpenStreetMap piece (way 247870832) beside Village, touching it only at its lower end; appeared after the 2026-11-24 rebuild with the official list, harmless (directions never start there)"
+ },
+ "dead_end": {
+  "Le Gua": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "outside_core": {},
+ "lift_end": {
+  "Vaujany-Alpette (base)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "uphill": {},
+ "doubled": {
+  "Marcel’s Farm ~ Snowpark de Marcel": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ }
+}

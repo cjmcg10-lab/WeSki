@@ -1,0 +1,47 @@
+{
+ "id": "wintergreen",
+ "name": "Wintergreen",
+ "region": "Virginia, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1023791593",
+ "include_ways": [
+  168743507,
+  168743508,
+  168743509,
+  256745746,
+  256746578,
+  256746579,
+  256746691,
+  747145349,
+  747145350
+ ],
+ "osm_bbox": [
+  -78.9504,
+  37.9088,
+  -78.9293,
+  37.9267
+ ],
+ "openskimap": {
+  "id": "f5682086c3b44e006c6a9e21c553a662f538add8",
+  "cc": "US",
+  "runs": 21,
+  "lifts": 9,
+  "rated": 0.905,
+  "skimap": 199,
+  "web": "https://www.wintergreenresort.com"
+ },
+ "area_name": "Wintergreen Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Logger Alley": "Loggers Alley",
+  "Lower Cross Trail": "Lower Crosstrail",
+  "Upper Cross Trail": "Upper Crosstrail",
+  "Upper Diamond": "Upper Diamond Hill"
+ }
+}

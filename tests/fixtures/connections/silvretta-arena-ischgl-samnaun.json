@@ -1,0 +1,16 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Skiweg Laret-West": "looked at 2026-11-24: ends at Samnaun Laret, a hamlet with no lift; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts (config dead_end_notes)",
+  "60 Alp Trida-Samnaun Laret": "looked at 2026-11-24: ends at Samnaun Laret, a hamlet with no lift; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts (config dead_end_notes)",
+  "61": "looked at 2026-11-24: ends at Samnaun Laret, a hamlet with no lift; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts (config dead_end_notes)",
+  "(unnamed run 301)": "looked at 2026-11-24: ends at Samnaun Laret, a hamlet with no lift; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts (config dead_end_notes)",
+  "Skiweg Compatsch": "looked at 2026-11-24: ends at Samnaun Laret, a hamlet with no lift; skiers ride the free ski bus back to Samnaun Dorf and the Ravaisch lifts (config dead_end_notes)"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {}
+}

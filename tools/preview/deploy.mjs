@@ -1,6 +1,11 @@
 // Put the current branch on the preview site, without touching the live app:
 //
 //   node tools/preview/deploy.mjs [<resort id> ...]
+//   node tools/preview/deploy.mjs --main      (run by the Deploy workflow after every live deploy)
+//
+// The preview is always built on the current live app (#142): after every live deploy the Deploy workflow puts main
+// on the preview with --main, which also clears the preview's card pictures and every preview map copy that has since
+// gone live, so it shows the live app (maps still waiting for approval stay). A branch is only put on the preview once it contains the latest main (merge main into it first).
 //
 // 1. builds the app (npm run build:assets) and bundles it into the preview Worker (tools/preview/worker.js);
 // 2. uploads the map files of the resorts named (as they are on disk in public/data/<id>, e.g. with a new
@@ -15,7 +20,19 @@ import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync,
 import { join, relative, extname } from 'node:path';
 import { packResort } from '../heights_pack.mjs';
 
-const ids = process.argv.slice(2);
+const MAIN = process.argv.includes('--main');
+const ids = process.argv.slice(2).filter((a) => a !== '--main');
+if (MAIN && ids.length) throw new Error('--main puts the live app on the preview; it takes no resort ids');
+// a branch must hold every change already live, so what is tried on the preview is what will be released
+if (!MAIN) {
+  const git = (...a) => execFileSync('git', a, { stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim();
+  git('fetch', '-q', 'origin', 'main');
+  try { git('merge-base', '--is-ancestor', 'origin/main', 'HEAD'); } catch {
+    console.error('This branch does not have the latest live app (origin/main). Bring it up to date first:\n' +
+      '  git fetch origin main && git merge origin/main\nthen run this again.');
+    process.exit(1);
+  }
+}
 const TOKEN = process.env.CLOUDFLARE_API_TOKEN || 'proxy-injected';
 const AUTH = ['-H', `Authorization: Bearer ${TOKEN}`, '-A', 'weski-build'];
 const curl = (args) => execFileSync('curl', ['-s', '--fail-with-body', ...AUTH, ...args], { maxBuffer: 1 << 26 }).toString();
@@ -70,8 +87,38 @@ for (const id of ids) {
   console.log(`${id}: ${n} map files uploaded to preview/data/${id}/`);
 }
 
+// With --main the preview shows the live app. Its card pictures are removed (they are kept in git), and so is every
+// preview map copy that went live afterwards (the live resort.json is newer). A preview map newer than the live one is
+// kept: it can be the only copy of a map waiting for the owner's approval (tools/preview/maps.mjs fetch).
+if (MAIN) {
+  const API = `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT}/r2/buckets/${BUCKET}/objects`;
+  const list = (prefix) => {
+    const all = [];
+    let cursor = '';
+    do {
+      const j = JSON.parse(curl([`${API}?prefix=${encodeURIComponent(prefix)}&per_page=1000${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ''}`]));
+      all.push(...(j.result || []));
+      cursor = j.result_info?.is_truncated ? j.result_info.cursor : '';
+    } while (cursor);
+    return all;
+  };
+  const del = (k) => curl(['-X', 'DELETE', `${API}/${k.split('/').map(encodeURIComponent).join('/')}`]);
+  const prev = list('preview/');
+  let gone = 0, kept = 0;
+  for (const o of prev) if (o.key.startsWith('preview/photos/')) { del(o.key); gone++; }
+  const ids = new Set(prev.map((o) => o.key.match(/^preview\/data\/([^/]+)\//)?.[1]).filter(Boolean));
+  for (const id of ids) {
+    const mine = prev.find((o) => o.key === `preview/data/${id}/resort.json`);
+    const live = list(`data/${id}/resort.json`).find((o) => o.key === `data/${id}/resort.json`);
+    if (live && (!mine || Date.parse(live.last_modified) > Date.parse(mine.last_modified))) {
+      for (const o of prev) if (o.key.startsWith(`preview/data/${id}/`)) { del(o.key); gone++; }
+    } else kept++;
+  }
+  console.log(`preview: ${gone} copies removed that are live now or kept in git; ${kept} map(s) newer than live kept (awaiting approval)`);
+}
+
 // 2b. pictures made from our own maps (public/photos/cards.json and its images), which the live site may not have yet
-if (existsSync('public/photos/cards.json')) {
+if (!MAIN && existsSync('public/photos/cards.json')) {
   const cards = Object.keys(JSON.parse(readFileSync('public/photos/cards.json', 'utf8')));
   put('preview/photos/cards.json', 'public/photos/cards.json', 'application/json');
   for (const id of cards) for (const f of [`${id}.jpg`, `${id}-s.jpg`]) if (existsSync(`public/photos/${f}`)) put(`preview/photos/${f}`, `public/photos/${f}`, 'image/jpeg');

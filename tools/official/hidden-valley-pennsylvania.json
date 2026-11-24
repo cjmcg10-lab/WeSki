@@ -1,0 +1,57 @@
+{
+ "source": "Hidden Valley Resort (Pennsylvania) trail map, skimap.org map 30652 (2024), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Angel's Elbow": 1,
+  "Barracuda": 2,
+  "Blazer": 1,
+  "Bobcat": 0,
+  "Charger": 2,
+  "Cherokee": 1,
+  "Cobra": 1,
+  "Cobra Glades": 2,
+  "Continental Glades": 2,
+  "Cougar": 1,
+  "Firebird": 2,
+  "Imperial": 1,
+  "Lower Comet": 0,
+  "Lower Continental": 0,
+  "Model-T": 0,
+  "Mustang": 1,
+  "Outback": 1,
+  "Rambler": 0,
+  "Rippers Run Beginner Area": 0,
+  "Riviera": 1,
+  "Road Runner": 2,
+  "Stingray": 1,
+  "The Bug": 1,
+  "Thunderbird": 2,
+  "Tracker": 0,
+  "Upper Comet": 1,
+  "Upper Continental": 1,
+  "Viper": 2,
+  "Voyager": 0,
+  "Voyager Glades": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Jaguar Terrain Park": "terrain park",
+  "Continental Terrain Park": "terrain park"
+ },
+ "lifts": [
+  "Avalanche Lift",
+  "Blizzard Lift",
+  "Bobcat",
+  "Crossover",
+  "Jaguar",
+  "Rippers",
+  "Sunrise Lift",
+  "Sunset Lift"
+ ],
+ "lifts_explained": {
+  "Crossover": "the rope tow beside Tracker at the summit; OpenStreetMap calls it Tracker Tow",
+  "Bobcat": "conveyor at the base (one of the two carpets OpenStreetMap leaves unnamed)",
+  "Rippers": "conveyor at the Rippers Run beginner area (one of the two unnamed carpets)",
+  "Jaguar": "rope tow for the Jaguar terrain park; not in OpenStreetMap"
+ }
+}

@@ -1,0 +1,27 @@
+{
+ "source": "Boston Mills trail map 2025-26 (skimap.org map 38726, the resort's PDF), read by hand at 200 dpi",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Buttermilk": 1,
+  "Croyle": 2,
+  "Jug Handle": 1,
+  "North Bowl": 2,
+  "Summit": 0,
+  "Tiger": 2
+ },
+ "blue_black": [],
+ "not_runs": {},
+ "lifts": [
+  "Buena Vista",
+  "Carpet Lift",
+  "Lift 1",
+  "Lift 2",
+  "Lift 3",
+  "Lift 4",
+  "Lift 6"
+ ],
+ "confirm": {
+  "Peter's Pride": "terrain park on the resort's map (freestyle terrain, no rating): shown with OpenStreetMap's rating"
+ },
+ "note": "Boston Mills and Brandywine are one resort (one ticket, one ski patrol: 800-875-4241) about 1.5 km apart; each has its own map here."
+}

@@ -1,0 +1,25 @@
+{
+ "id": "brevent-flegere-chamonix",
+ "reachable": [
+  66,
+  66
+ ],
+ "auto_joins": 2,
+ "rule_joins": [
+  "Planpraz (bottom) ski 132 m"
+ ],
+ "stuck_lift_ends": [],
+ "climbing_runs": 0,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 1,
+ "terrain_shares": {
+  "other": 100.0
+ },
+ "notes": [
+  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Liaison Brévent - Flégère (rides both ways)"
+ ],
+ "seconds": 114,
+ "failed": null,
+ "built": "2026-11-24"
+}

@@ -1,0 +1,41 @@
+{
+ "source": "Jack Frost trail map (JFBB), skimap.org map 45652 (2024), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Challenge": 2,
+  "Dematte's Demise": 1,
+  "Easy Rider": 1,
+  "Exhibition": 1,
+  "Floyd's Folly": 2,
+  "Frosty": 0,
+  "Jane's Lane": 1,
+  "Lehigh": 1,
+  "Lightning": 2,
+  "Powder Puff": 0,
+  "Ridge Run": 1,
+  "River Shot": 2,
+  "Ski School": 0,
+  "Snow Chute": 1,
+  "Snowflake": 0,
+  "Solitude": 2,
+  "Telstar": 2,
+  "Thunderbolt": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "One Park": "terrain park (freestyle terrain symbol)"
+ },
+ "lifts": [
+  "A-Lift",
+  "Di-Lift",
+  "Paradise",
+  "Pocono",
+  "Tobyhanna"
+ ],
+ "same_as": {
+  "Ski School": "Ski School Discovery Slope"
+ },
+ "lifts_explained": {
+  "Di-Lift": "two parallel chairs labelled Di-Lift on the map; OpenStreetMap: D-Lift I and D-Lift II"
+ }
+}

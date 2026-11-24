@@ -1,0 +1,49 @@
+{
+ "source": "Perfect North Slopes trail map 2024 (skimap.org map 30452), read by hand with enlarged crops",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Backstage": 1,
+  "Broadway": 0,
+  "Call Back": 0,
+  "Cat Walk": 0,
+  "Center Stage": 2,
+  "Clyde's Super Slide": 1,
+  "Deception": 2,
+  "Ella Mae Way": 1,
+  "Hollywood": 3,
+  "Hoyt Connection": 1,
+  "Intermission": 1,
+  "Jam Session - Hillside": 1,
+  "Jam Session - Lake Side": 1,
+  "Prime Time": 2,
+  "Rehearsal": 0,
+  "Rewind": 1,
+  "Runway": 1,
+  "Ski Wiz": 1,
+  "Special Effects": 2,
+  "The Far Side": 1,
+  "The Meadow": 1,
+  "Tuff Enuff": 1,
+  "Understudy": 0
+ },
+ "blue_black": [
+  "Intermission"
+ ],
+ "not_runs": {},
+ "lifts": [
+  "Blue Chair",
+  "Green Chair",
+  "Orange Chair",
+  "Red Chair",
+  "White Chair"
+ ],
+ "confirm": {
+  "Audition": "Audition Terrain Park on the resort's map (no rating): shown with OpenStreetMap's line"
+ },
+ "note": "The map labels both Jam Session slopes (left of the beginner terrain park) with a blue square; OpenStreetMap's two pieces are Hillside and Lake Side. Special Effects carries a single black diamond, Intermission the 'advanced intermediate' blue square with a diamond.",
+ "left_untraced": {
+  "Broadway": "short beginner run on the 2024 map; not in OpenStreetMap and not traced",
+  "Call Back": "short beginner run on the 2024 map; not in OpenStreetMap and not traced",
+  "Cat Walk": "short beginner run on the 2024 map; not in OpenStreetMap and not traced"
+ }
+}

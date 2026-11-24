@@ -1,0 +1,53 @@
+{
+ "id": "roundtop-mountain",
+ "name": "Roundtop Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/390539624",
+ "include_ways": [
+  153641293,
+  153641294,
+  153641297,
+  153641300,
+  153641302,
+  256717306,
+  256717307,
+  256717308,
+  256717309
+ ],
+ "osm_bbox": [
+  -76.9435,
+  40.0986,
+  -76.9138,
+  40.1177
+ ],
+ "openskimap": {
+  "id": "67139981d789d29cdb4da8f3c4818ab3b10e579e",
+  "cc": "US",
+  "runs": 29,
+  "lifts": 9,
+  "rated": 0.828,
+  "skimap": 242,
+  "web": "roundtopmountainresort.com"
+ },
+ "area_name": "Roundtop Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Snow Tubing Lift"
+ ],
+ "isolated_notes": {
+  "Snow Tubing Lift": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Lower Lafeyette Leap": "Lower Lafayette's Leap",
+  "Upper Lafeyette Leap": "Upper Lafayette's Leap",
+  "Palisade": "Palisade Glade",
+  "Fife and Drum": "Fife & Drum"
+ }
+}
