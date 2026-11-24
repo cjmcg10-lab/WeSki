@@ -40,5 +40,11 @@
  "terrain_shares": {
   "1m": 30.8,
   "30m": 69.2
+ },
+ "rename": {
+  "Centenial": "Centennial"
+ },
+ "way_names": {
+  "1349428610": "Mountain Highway"
  }
 }
