@@ -118,6 +118,19 @@ try {
   await page.locator('#start-panel .grab').tap();
   await page.waitForTimeout(600);
   if (await page.locator('#start-panel.full').count()) fail('tapping the grab bar did not bring the list back down');
+  // sliding the bar up much further than the screen: the list stops at the top and never goes past it (#138)
+  {
+    const g = await page.locator('#start-panel .grab').boundingBox();
+    await page.evaluate(() => { window.__up = []; const p = document.querySelector('#start-panel'), t0 = performance.now(), f = () => { window.__up.push(p.getBoundingClientRect().top); if (performance.now() - t0 < 1400) requestAnimationFrame(f); }; f(); });
+    await page.evaluate(async ({ x, y }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
+      ev('pointerdown', y); for (let i = 1; i <= 12; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y - 900 * i / 12); } ev('pointerup', y - 900); }, { x: g.x + g.width / 2, y: g.y + g.height / 2 });
+    await page.waitForTimeout(1500);
+    const up = await page.evaluate(() => window.__up);
+    if (up.some((t) => t < 0)) fail(`sliding the list up took it past the top of the screen (lowest top ${Math.min(...up)})`);
+    if (!(await page.locator('#start-panel.full').count())) fail('sliding the list up did not open it to the whole screen');
+    await page.locator('#start-panel .grab').tap();
+    await page.waitForTimeout(600);
+  }
 
   // ---- 2. picking a mountain: no map building during the globe's turn (1.8 s)
   // its files fetched once first, so they come from the cache and the map could otherwise be built straight away
