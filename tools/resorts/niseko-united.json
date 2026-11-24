@@ -60,5 +60,14 @@
  "terrain_res": 1,
  "terrain_shares": {
   "other": 100.0
+ },
+ "way_names": {
+  "457906875": "Dynamic (Annupuri)",
+  "1231853688": "Dynamic (Annupuri)",
+  "213556383": "Shirakaba (Hirafu)",
+  "1261369269": "Shirakaba (Hirafu)"
+ },
+ "rename": {
+  "Don't Bliink": "Don't Blink"
  }
 }
