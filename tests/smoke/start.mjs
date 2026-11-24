@@ -7,7 +7,7 @@
 //     and Ski Here still opens the mountain.
 import { chromium } from 'playwright';
 import { spawn } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 
 // any free port (4173 is smoke.mjs's, and another checkout on the same machine may be using a fixed one)
@@ -37,9 +37,11 @@ try {
   browser = await chromium.launch({ executablePath: process.env.PW_CHROMIUM || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
   const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
   await context.route('**/api/**', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: '{}' }));
-  await context.addInitScript(() => {
+  // the terms version the app asks for, read from the app, so a terms change does not stop this test
+  const termsV = readFileSync('src/main.js', 'utf8').match(/TERMS_V = '([^']+)'/)[1];
+  await context.addInitScript((termsV) => {
     localStorage.setItem('weski:installSeen', 'true');
-    localStorage.setItem('weski:consent', JSON.stringify({ v: '2026-11-23', at: Date.now() }));
+    localStorage.setItem('weski:consent', JSON.stringify({ v: termsV, at: Date.now() }));
     // A stand-in for window.visualViewport whose size the test can change, to imitate the on-screen keyboard.
     const real = window.visualViewport;
     const fake = new EventTarget();
@@ -49,7 +51,7 @@ try {
     }
     Object.defineProperty(window, 'visualViewport', { configurable: true, get: () => fake });
     window.__kbSet = (kb) => { window.__kb = kb; fake.dispatchEvent(new Event('resize')); fake.dispatchEvent(new Event('scroll')); };
-  });
+  }, termsV);
   page = await context.newPage();
   page.on('pageerror', (e) => fail(`page error: ${e.message}`));
   await page.goto(ORIGIN);
