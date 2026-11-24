@@ -98,10 +98,33 @@ describe('buildings', () => {
     for (let i = 0; i < w.length; i += 4) { if (w[i + 3] > 0) { walls++; expect(w[i + 2]).toBe(3.5); } else roofs++; }
     expect(walls).toBe(4 * 6);
     expect(roofs).toBeGreaterThan(0);
-    // a shed gets no windows
-    const shed = { pos: [], col: [], win: [] };
-    M.addBuilding(shed, [[0, 0], [3, 0], [3, 3], [0, 3]], 0, 2.4, new THREE.Color(), new THREE.Color(), 'gabled');
-    expect(shed.win.every((v, i) => i % 4 !== 3 || v === 0)).toBe(true);
+    // a shed gets no windows (pattern 0), a house its style's
+    const look = { upper: 1, lower: 2, low: 0.9, win: 2, front: 2, seed: 0.3 };
+    const shed = { pos: [], col: [], win: [], sty: [] };
+    M.addBuilding(shed, [[0, 0], [3, 0], [3, 3], [0, 3]], 0, 2.4, new THREE.Color(), new THREE.Color(), 'gabled', { style: look });
+    expect(shed.sty.length).toBe(shed.win.length);
+    expect(shed.sty.every((v, i) => i % 4 !== 2 || v === 0)).toBe(true);
+    const house = { pos: [], col: [], win: [], sty: [] };
+    M.addBuilding(house, square, 0, 6, new THREE.Color(), new THREE.Color(), 'gabled', { style: look });
+    expect(house.sty.some((v, i) => i % 4 === 2 && v === 2)).toBe(true);
+    expect(house.sty.some((v, i) => i % 4 === 0 && v === 1 + 16 * 2)).toBe(true);
+  });
+
+  it('style features: a deck, a belfry, clock faces and doors add a few triangles each', () => {
+    const tris = (style, shape = 'gabled', pitch = 1) => {
+      const out = { pos: [], col: [], win: [], sty: [] };
+      M.addBuilding(out, [[0, 0], [20, 0], [20, 12], [0, 12]], 0, 7, new THREE.Color(), new THREE.Color(), shape, { style: { upper: 1, lower: 2, low: 1, win: 1, front: 4, seed: 0.5, dir: [0, -1], ...style }, pitch });
+      return out.pos.length / 9;
+    };
+    const plain = tris({});
+    for (const f of [{ deck: 'upper' }, { belfry: true }, { clock: true }, { door: true }]) {
+      const n = tris(f) - plain;
+      expect(n).toBeGreaterThan(0);
+      expect(n).toBeLessThan(40);
+    }
+    // a steep pyramid roof (a tower) rises higher than the usual one
+    const top = (pitch) => { const out = { pos: [], col: [], win: [], sty: [] }; M.addBuilding(out, [[0, 0], [5, 0], [5, 5], [0, 5]], 0, 15, new THREE.Color(), new THREE.Color(), 'hipped', { pitch }); return Math.max(...out.pos.filter((_, i) => i % 3 === 1)); };
+    expect(top(3)).toBeGreaterThan(top(1) + 0.5);
   });
 
   it('windows are dark by day and lit at night', () => {

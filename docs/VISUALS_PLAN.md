@@ -84,3 +84,52 @@ on a real phone.
 - Snowcats or other vehicles: there is no data saying where they are.
 - Roof snow shapes beyond the existing snow colour mixed into each roof.
 - Detailed models of the moving parts in 2D mode (the 2D map is seen from straight above).
+
+## Building styles (2026-11-24)
+
+Every building keeps its real footprint and wall height from OpenStreetMap; what changes is its skin. Each one gets
+one of eight looks, chosen by code with no work per resort or per building:
+
+| Style | Look | Chosen for |
+| --- | --- | --- |
+| `lodge` base lodge | timber upper walls on a stone plinth, the downhill long wall glazed on the ground floor, wide windows above, a timber deck with railing and posts on the first floor | "base lodge", ski school, rentals, tickets, guest services, a big restaurant at a lift base, unnamed big buildings at a lift base, shops and public buildings |
+| `rest` mountain restaurant | stone ground floor with small windows, timber above with wide panorama windows, a balcony band on the downhill side | restaurants, cafés, bars (several languages), any building of 80 m² or more at a lift top or a summit |
+| `hut` alpine hut, chalet | dark timber, stone plinth, small windows with shutters (green, red or brown), gabled roof, stone chimney | huts (Hütte, refuge, rifugio, cabane, 山小屋 ...), cabins, chalets, houses, small unnamed buildings (under 350 m²) |
+| `hotel` hotel, condo | rendered walls in light colours, a tall window every 3 m on every floor, balcony rails and slab lines above the ground floor | hotels, inns, condos, apartments, residences, 3+ storeys, large unnamed buildings |
+| `chapel` | white render, steep roof, tall round-headed windows, a belfry with louvres and a spire on one end of the ridge | chapel / church tags and names (Kapelle, chapelle, chiesa, 教会 ...) unless the name is also a hotel's |
+| `tower` | stone lower third, rendered above, clock faces near the top of each side, steep pyramid roof | tower tags, "tower / Turm / torre" names on small footprints, tall narrow footprints |
+| `service` | ribbed metal cladding, concrete plinth, a few small high windows, one or two roll-up doors on the longest wall | maintenance, workshops, sheds, lift stations, barns, industrial tags, single garages, tiny unnamed buildings |
+| `garage` | concrete slab band each floor with dark openings between columns, flat roof | parking garages (`building=parking`, `amenity=parking`, "parking" in the name, big `garage` buildings) |
+
+How it is chosen: `tools/building_style.py` (`classify`) runs in `tools/build_data.py` on every build and in
+`tools/enrich_osm.py`, and stores the result as `st` on each building in `resort.json`. It reads the building's
+OpenStreetMap tags (`building`, `amenity`, `tourism`, `man_made`, `shop`, `leisure`), the tags and names of
+OpenStreetMap points inside its footprint (restaurants are often a point in an untagged building), name keywords from
+`src/building_words.json` (lower case, accents removed; "words" match whole words so "bar" does not match "Barn",
+"parts" match inside compound words like "Skistube"), footprint area, height, storeys, and whether it stands within
+90 m of a chair, gondola, tram or funicular end (bottom or top) or 150 m of a summit. The rules run top to bottom and
+the first that fits wins (tower, chapel, parking, base-area services, patrol, hotel, food, hut, lodge, service, other
+tags, place, size). Maps without `st` (built before) are classified in the app by `src/buildingstyle.js`
+(`classifyBuilding`), the same rules from what resort.json keeps (name, hotel kind, size, place).
+`tests/fixtures/building_styles.json` holds shared cases that both must pass (`tests/buildingstyle.test.js` runs both).
+
+How it is drawn: still one merged mesh and one draw call. `addBuilding` in `src/models.js` writes a second per-vertex
+record `sty` (wall material upper + 16 x lower, the height where the lower one ends, window pattern, a seed), and the
+building material paints boards, stone courses, metal ribs, glass, garage bands, doors, clocks and louvres from it, in
+metres on the wall, fading each into its average colour where it would be smaller than a pixel or two (no shimmer).
+Colours come from each style's list in `LOOK` (`src/buildingstyle.js`), picked by a stable seed from the footprint's
+first corner and varied a little in brightness, so neighbours differ but a building looks the same after a rebuild.
+OpenStreetMap's own wall colour, roof colour and roof shape still win where they exist. Night lights still light all
+windows (and the clock dials). Extra triangles only where they matter: a deck (about 20), a belfry (12), a clock face
+(2 per side), a roll-up door (2).
+
+Adding a style: add its name to `STYLES` in both files, a rule in `classify` and `classifyBuilding` at the right place
+in the order, its keywords to `src/building_words.json`, its look to `LOOK` (walls, roofs, materials, windows, roof
+shape and pitch, features), and cases to the fixture. A new wall material or window pattern is a new number in `MAT` /
+`WIN` and a branch in the building shader (`BUILDING_FRAG` in `src/models.js`).
+
+Regenerating the stored styles: `python3 -I tools/enrich_osm.py <id> [<id> ...]` (all resorts:
+`python3 -I tools/enrich_osm.py $(ls public/data | grep -v '\.')` after `node tools/maps_r2.mjs pull --all`). It needs
+the network (Overpass, or an OpenStreetMap extract downloaded into `$PIPE_WORK`), also refreshes the lift and roof
+details it always adds, and changes only resort.json. Until a map is regenerated the app classifies its buildings
+itself, with less to go on (no tags), so nothing breaks.

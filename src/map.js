@@ -9,6 +9,7 @@ import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import * as M from './models.js';
+import { buildingStyle, buildingSeed, LOOK, MAT, pick } from './buildingstyle.js';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { loopTimer, detachSegments, shuttle, swing, tramRide, stationClashes } from './liftmotion.js';
 import { RideGroups, liftCapacity } from './liftgroups.js';
@@ -1213,40 +1214,55 @@ diffuseColor.rgb = landColour(diffuseColor.rgb, vec2(vLPos.x + uMapO.x, uMapO.y 
   }
 
   buildBuildings() {
-    const out = { pos: [], col: [], win: [] };
-    const walls = ['#c9b79c', '#b89f7f', '#d8cdb9', '#a98a69'].map((c) => new THREE.Color(c));
-    const roofs = ['#4c5563', '#6b3b33', '#3f4a45'].map((c) => new THREE.Color(c));
+    const out = { pos: [], col: [], win: [], sty: [] };
     const snow = new THREE.Color('#eef3f6');
-    this.resort.buildings.forEach((b, bi) => {
+    const R = this.resort;
+    this.buildingStyles = R.buildings.map((b) => buildingStyle(b, R.lifts, R.pois));
+    R.buildings.forEach((b, bi) => {
       if (this.skipBuildings?.has(bi)) return;   // a lift's own terminal model stands here (buildLifts)
       const ring = [];
-      let base = Infinity, area = 0;
+      let base = Infinity, area = 0, cx = 0, cz = 0;
       for (let i = 0; i < b.pts.length; i += 2) {
         const p = this.world(b.pts[i], b.pts[i + 1], 0);
-        ring.push([p.x, p.z]); base = Math.min(base, p.y);
+        ring.push([p.x, p.z]); base = Math.min(base, p.y); cx += p.x; cz += p.z;
       }
+      cx /= ring.length; cz /= ring.length;
       for (let i = 0; i < ring.length; i++) { const [x0, z0] = ring[i], [x1, z1] = ring[(i + 1) % ring.length]; area += x0 * z1 - x1 * z0; }
       area = Math.abs(area) / 2;
       // local y north -> world -z flips the winding; restore counter-clockwise for the roof triangulation
       ring.reverse();
-      // Roof: the shape OpenStreetMap records where it has one (tools/enrich_osm.py); otherwise a gabled roof on
-      // chalet-sized buildings and the old rule (flat when tall or tagged) on the rest. Pitched roofs carry snow.
+      // The look: a style chosen from OpenStreetMap's tags, the name, size and place (src/buildingstyle.js), its
+      // colours varied by a stable seed so neighbours of one style differ.
+      const st = this.buildingStyles[bi], L = LOOK[st], seed = buildingSeed(b), seed2 = (seed * 7.31) % 1;
+      const h = b.levels ? Math.max(b.h, b.levels * 3) : b.h;   // about 3 m a storey
+      // Roof: the shape OpenStreetMap records where it has one (tools/enrich_osm.py), otherwise the style's.
+      // Pitched roofs carry snow.
       const tag = b.roofShape || '';
       const shape = tag === 'flat' ? 'flat' : /gabled|gambrel|saltbox|round|mansard/.test(tag) ? 'gabled'
         : /hipped|pyramidal|dome|onion|cone/.test(tag) ? 'hipped' : tag ? 'gabled'
-        : (b.roof || b.h > 12) ? 'flat' : area < 900 ? 'gabled' : 'hipped';
-      const h = b.levels ? Math.max(b.h, b.levels * 3) : b.h;   // about 3 m a storey
-      const wall = b.wallCol ? new THREE.Color(b.wallCol) : walls[bi % walls.length];
-      const roof = (b.roofCol ? new THREE.Color(b.roofCol) : roofs[bi % roofs.length].clone()).lerp(snow, shape === 'flat' ? 0.35 : 0.7);
-      // rows of windows one storey apart (the storey count from OpenStreetMap where it has one); a chimney on
-      // most chalet-sized pitched roofs
+        : b.roof ? 'flat' : L.roof(area, h);
+      const wall = b.wallCol ? new THREE.Color(b.wallCol) : new THREE.Color(pick(L.walls, seed)).multiplyScalar(0.92 + 0.16 * seed2);
+      const roof = (b.roofCol ? new THREE.Color(b.roofCol) : new THREE.Color(pick(L.roofs, seed2))).lerp(snow, shape === 'flat' ? 0.35 : 0.7);
+      // rows of windows one storey apart (the storey count from OpenStreetMap where it has one)
       const storey = b.levels ? h / b.levels : 3;
-      M.addBuilding(out, ring, base, h, wall, roof, shape, { storey, chimney: shape !== 'flat' && area > 40 && area < 1500 && bi % 3 !== 2 });
+      // the downhill direction, for a lodge's glazed front and the decks (none on flat ground)
+      const d = 12, gx = this.groundY(cx + d, cz) - this.groundY(cx - d, cz), gz = this.groundY(cx, cz + d) - this.groundY(cx, cz - d);
+      const gl = Math.hypot(gx, gz);
+      const style = {
+        upper: shape === 'flat' && st === 'lodge' && h > 9 ? MAT.glass : L.upper, lower: L.lower, low: L.low(h, storey),
+        win: L.win, front: L.front, seed, dir: gl > 0.04 * 2 * d ? [-gx / gl, -gz / gl] : null,
+        deck: L.deck, belfry: L.belfry, clock: L.clock, door: L.door,
+        trim: new THREE.Color(seed < 0.5 ? '#3b2a1e' : '#4a3626'), accent: new THREE.Color(pick(['#a8adb0', '#8e9599', '#b5a58a', '#6f7f78'], seed2)),
+      };
+      // a chimney on every pitched hut roof and on most chalet-sized lodges, restaurants and hotels
+      const chimney = shape !== 'flat' && area > 30 && area < 1500 && (L.chimney || (/lodge|rest|hotel/.test(st) && bi % 3 !== 2));
+      M.addBuilding(out, ring, base, h, wall, roof, shape, { storey, chimney, pitch: L.pitch, style });
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(out.pos, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(out.col, 3));
     g.setAttribute('win', new THREE.Float32BufferAttribute(out.win, 4));
+    g.setAttribute('sty', new THREE.Float32BufferAttribute(out.sty, 4));
     g.computeVertexNormals();
     this.buildingMat = M.buildingMaterial();
     this.scene.add(new THREE.Mesh(g, this.buildingMat));
