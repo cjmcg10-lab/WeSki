@@ -4,8 +4,8 @@ The 50 mountains the owner picked, in their order (Mountain Creek to Niseko Unit
 `tools/bulk/run_batch.py`, then `tools/bulk/gate.py --write --table`. The maps are on disk only: nothing was uploaded to
 R2, live or preview. Some of the 50 are more than one OpenSkiMap area, so the table has 54 maps.
 
-**Result: 40 of 54 maps publish through the gate, 14 held.** By the owner's numbering, 37 of the 50 pass completely,
-and 13 have at least one held map.
+**Result: 40 of 54 maps publish through the gate, 14 held.** By the owner's numbering, 36 of the 50 pass completely,
+and 14 have at least one held map.
 
 How the 50 were matched to OpenSkiMap's list (`tools/bulk/candidates.json`):
 - Arapahoe Basin was already built (held since batch 1, 11 dead ends); rebuilt, still held.
