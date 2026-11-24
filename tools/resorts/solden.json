@@ -74,8 +74,14 @@
   "Surface lift"
  ],
  "isolated_notes": {
-  "Seiterjöchl": "rule: not joined to the rest of the lifts on the map",
-  "Surface lift": "rule: not joined to the rest of the lifts on the map"
+  "Seiterjöchl": "looked at 2026-11-24: the T-bar (E64) on the Rettenbach glacier is on the resort's lift list, but OpenStreetMap draws its bottom station about 450 m from the nearest mapped run, so the map cannot say how skiers reach it; left out of directions until its bottom area is mapped",
+  "Surface lift": "looked at 2026-11-24: an unnamed 67 m tow in the valley, not on the resort's lift list and joined to no run"
  },
- "hold": "lifts not joined to the rest of the map (isolated by rule): "
+ "links": [
+  [
+   "trail:21a (bottom)",
+   "Giggijochbahn (base)"
+  ]
+ ],
+ "links_note": "21a ends in the village south of the Giggijochbahn; skiers walk the last 400 m to the gondola"
 }
