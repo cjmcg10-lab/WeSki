@@ -1,0 +1,45 @@
+{
+ "source": "Roundtop Mountain Resort 60th anniversary trail map, skimap.org map 30641 (2024), read by hand (the key has one diamond level; paired diamonds on Upper Gunbarrel and Upper Ramrod taken as most difficult)",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Barrett's Trail": 2,
+  "Bunker Hill": 2,
+  "Discovery Area": 0,
+  "Drummer Boy": 0,
+  "Fanny Hill": 0,
+  "Fife & Drum": 1,
+  "Lower Exhibition": 1,
+  "Lower Gunbarrel": 2,
+  "Lower Lafayette's Leap": 1,
+  "Lower Ramrod": 2,
+  "Minuteman": 1,
+  "Palisade Glade": 2,
+  "Powderhorn": 0,
+  "Recruit": 2,
+  "Susquehanna": 1,
+  "Upper Exhibition": 2,
+  "Upper Gunbarrel": 2,
+  "Upper Lafayette's Leap": 2,
+  "Upper Ramrod": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "J-Bar Park": "terrain park",
+  "Snow Tubing": "tubing park, not a ski run"
+ },
+ "lifts": [
+  "Drummer Boy Quad Chair",
+  "Exhibition Quad Chair",
+  "Fife & Drum Triple Chair",
+  "J-Bar",
+  "Magic Mountain",
+  "Minuteman Quad Chair",
+  "Ramrod Triple Chair",
+  "Revere's Ride",
+  "Surface Lift"
+ ],
+ "lifts_explained": {
+  "Magic Mountain": "the map's \"Magic Mtn. Lift\" (a carpet)",
+  "J-Bar": "surface lift for the J-Bar Park; not in OpenStreetMap"
+ }
+}

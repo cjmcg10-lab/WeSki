@@ -1,14 +1,16 @@
 # Roundtop Mountain (roundtop-mountain)
 
-Built 2026-11-24 by tools/pipeline.py. Terrain: USGS PA_17County_D24 (gaps filled from PA Sandy 2014, PA South Central B1 2017, 10 m national elevation model (1/3 arc-second)).
+Built 2026-11-24 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
 
-**32 runs (21 named, 7.8 km), 9 lifts. 1 things to look at.**
+**27 runs (21 named, 7.6 km), 9 lifts. Ready.**
 
-- **LOOK**: ratings NOT checked: not ready to go live  
-  make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)
-- info: audit: no rating: 5, run missing: 1
-- info: lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Snow Tubing Lift
+- info: 1 run pieces hidden (not on the resort's list and not a link)  
+  (no name) (153784273, 60 m): unnamed piece, not on the resort's list, leads nowhere on it
+- info: audit: no rating: 1
+- info: same counts as the previous build
+- pass: ratings checked against the resort's own list  
+  19 on the list, 30 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 9 of 9 on the map
 - pass: 0 shown runs rated by guess
-- pass: reachable from the base: 32 of 32 run pieces
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
 - pass: 0 runs climb more than 12 m

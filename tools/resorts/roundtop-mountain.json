@@ -43,5 +43,11 @@
  ],
  "isolated_notes": {
   "Snow Tubing Lift": "rule: tubing or sledding lift"
+ },
+ "rename": {
+  "Lower Lafeyette Leap": "Lower Lafayette's Leap",
+  "Upper Lafeyette Leap": "Upper Lafayette's Leap",
+  "Palisade": "Palisade Glade",
+  "Fife and Drum": "Fife & Drum"
  }
 }
