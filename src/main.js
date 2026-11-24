@@ -152,7 +152,9 @@ async function loadPlaces() {
   fetch('/photos/credits.json').then((r) => (r.ok ? r.json() : {})).then((p) => { PHOTOS = p; if (!$('#start').classList.contains('hidden')) renderResortList(); }).catch(() => {});
   const built = await fetchOk('/data/index.json').then((r) => r.json());
   const have = new Set(built.map((r) => r.id));
-  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id))];
+  // a coming-soon entry is left out once a built mountain has its id or sits within 15 km (built under another id)
+  const near = (r) => built.some((b) => Math.hypot((b.lat - r.lat) * 111, (b.lon - r.lon) * 111 * Math.cos(r.lat * Math.PI / 180)) < 15);
+  PLACES = [...built.map((r) => ({ ...r, available: true })), ...COMING_SOON.filter((r) => !have.has(r.id) && !near(r))];
 }
 const placeById = (id) => PLACES.find((r) => r.id === id);
 /** Settings that belong to one mountain (closures, saved routes, tracks...) are stored per resort. */
