@@ -2,7 +2,7 @@
 
 Built 2026-11-24 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
 
-**198 runs (83 named, 102.8 km), 40 lifts. 2 things to look at.**
+**198 runs (83 named, 102.5 km), 40 lifts. 2 things to look at.**
 
 - **LOOK**: 1 runs on the resort's list are not on the map  
   Piste Rauzlift (draw them, or explain them in the official json: same_as / not_runs / elsewhere)

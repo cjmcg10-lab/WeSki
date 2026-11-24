@@ -1,9 +1,7 @@
 {
  "checked": "2026-11-24",
  "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
- "unreachable": {
-  "Valfagehrjoch": "looked at 2026-11-24: OpenStreetMap's way for run 85 starts 230 m up the ridge south of where the run from the Schindlergratbahn top (the other Valfagehrjoch piece) meets it; everything below that junction is reachable, only the short top stub is not"
- },
+ "unreachable": {},
  "dead_end": {},
  "outside_core": {},
  "lift_end": {},

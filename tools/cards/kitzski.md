@@ -6,8 +6,8 @@ Built 2026-11-24 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
 
 - **LOOK**: 14 runs on the resort's list are not on the map  
   26b Kaser-Krin, 42 Rennstrecke Gaisberg, 72c Hanglalm-Hartkaser, 73a Hartkaser-Hanglalm, 74a Hartkaser-Zweitausender, Alte Mittelstation bis Kälberpoint, Bichling Abfahrt, Kasbühelweg, Schiweg Mayerhof, Skiroute Hampfer, Skiroute Pengelstein, Skiroute Schrandl, Trapberg Abfahrt, Übungswiese Reith II (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
-- **LOOK**: 7 runs climb more than 12 m  
-  Pass Thurn Direktabfahrt 13 m; Giggling 21 m; Asten 13 m; Golf 39 m; Unterberg 21 m; Hornköpfl-Süd 12 m; Raintal 17 m
+- **LOOK**: 6 runs climb more than 12 m  
+  Pass Thurn Direktabfahrt 13 m; Giggling 21 m; Asten 14 m; Unterberg 21 m; Golf 39 m; Raintal 17 m
 - info: 8 run pieces hidden (not on the resort's list and not a link)  
   (no name) (510433891, 615 m): OpenStreetMap: backcountry, no name (not a resort run); Walde (956695992, 503 m): hidden by hand: an unlisted OpenStreetMap piece named Walde lying on the Streif Familienabfahrt for its whole length (the same ground drawn twice); (no name) (1037424942, 342 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (1354443792, 224 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (1472107191, 182 m): OpenStreetMap: backcountry, n
 - info: 8 lifts flagged for review were already on the previous build (checked then)

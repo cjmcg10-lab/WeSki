@@ -283,8 +283,8 @@
   "Resterkogel",
   "Hanglalm",
   "Hartkaser",
-  "Panoramabahn I",
-  "Panoramabahn II",
+  "Panoramabahn Kitzbüheler Alpen I",
+  "Panoramabahn Kitzbüheler Alpen II",
   "Maierlbahn",
   "Ministreif",
   "Ochsalm",
@@ -308,7 +308,7 @@
   "3-S-Bahn",
   "Streiteckmulde"
  ],
- "lifts_source": "winter.intermaps.com/kitzski/data (lifts), lift numbers removed, fetched 2026-11-24",
+ "lifts_source": "winter.intermaps.com/kitzski/data (lifts), lift numbers removed, fetched 2026-11-24; Panoramabahn I and II written with OpenStreetMap's full names (the short name matched an unrelated Panoramabahn chair far to the north-east)",
  "numbers_note": "numbers whose pieces carry different colours are matched by name only: 21, 75, 120",
  "lifts_note": "The KitzSki map also shows Westendorf's lifts (110 to 126), which belong to the SkiWelt map; they are left off this list: Alpenrosenbahn I, Alpenrosenbahn II, Choralmbahn, Talkaserbahn, Laubkogellift, Fleidingbahn, Windaubergbahn, Gampenkogelbahn, Ki-Westbahn, Sammerlift, Schneebergbahn",
  "runs_note": "Entries the resort prints as a pair ('16 Streiteck+16a Streiteck') are stored under the first name: 16 Streiteck+16a Streiteck -> 16 Streiteck; 26 Kaser + 26a Kaser -> 26 Kaser; 27 Brunn + 27a Brunn -> 27 Brunn; 28 Silberstube+28a Silberstube -> 28 Silberstube; 29 Kasereck+29a Kasereck -> 29 Kasereck; 32 Hieslegg+32a Hieslegg -> 32 Hieslegg",
@@ -369,8 +369,6 @@
  "lifts_explained": {
   "Reith I": "the map's Übungslift Reith (OpenStreetMap ref E3), the practice lift at Reith",
   "Reith II": "the map's Sun Cord Reith (OpenStreetMap ref E4), the moving carpet at Reith",
-  "Panoramabahn I": "the map's Panoramabahn Kitzbüheler Alpen I (ref G8)",
-  "Panoramabahn II": "the map's Panoramabahn Kitzbüheler Alpen II (ref G9)",
   "Brunellenfeld": "the map's Brunelle chair (ref H5)",
   "Streiteckmulde": "the map's 'B6 Förderband / magic carpet' (ref B6), a moving carpet",
   "Pulverturm": "a moving carpet in the Hahnenkamm children's area (resort's A7); OpenStreetMap's carpets there are named Starthaus (A6) and Märchenwald (A7), so it is one of those"
