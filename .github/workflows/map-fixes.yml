@@ -1,0 +1,105 @@
+# Once a week: turn skiers' map help and map-mistake reports into suggested map fixes (issue #112).
+#
+# Runs tools/map_fixes.mjs on every mountain, reading only the live app's public counts (/api/heat/<id>,
+# /api/reports/<id>/problems, /data/<id>/resort.json). Safe fixes are written into the resort configs
+# (tools/resorts/<id>.json, tools/official/<id>.json); when any config changed it opens a DRAFT pull request labelled
+# "map-fixes" for a person to review. Every mountain's report is kept as a download on the run ("map-fix-reports").
+#
+# What it never does: deploy, upload maps to R2, use a Cloudflare token, push to main or merge. It needs no secrets
+# beyond the run's own GITHUB_TOKEN. It does not rebuild the maps either: a rebuild needs OpenStreetMap extracts and
+# terrain downloads that are too big for this job, so the pull request carries the config changes and the reports,
+# and a person (or a session) rebuilds the mountains named in it with tools/pipeline.py (without --r2), looks at the
+# preview, and pushes the maps once the owner approves (see docs/MAP_REPORTS.md). Merging the pull request on its own
+# changes nothing on the live map.
+#
+# Repository settings this needs (owner's decision): Settings -> Actions -> General -> "Allow GitHub Actions to create
+# and approve pull requests". A pull request opened by this job does not start the "Checks" workflow by itself
+# (GitHub does not let a run's token trigger other runs); run "Checks" on its branch from the Actions tab, or close and
+# reopen the pull request, before merging.
+name: Weekly map fixes
+
+on:
+  schedule:
+    # every Monday at 08:17 UTC
+    - cron: "17 8 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: map-fixes
+  cancel-in-progress: false
+
+jobs:
+  suggest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # the whole history: the tool dates the live map from the last commit touching each mountain's configs
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # the aerial-photo check (tools/align_trails.py) reads photos with Pillow and numpy
+      - run: pip install numpy pillow
+
+      - name: Suggest fixes and write the safe ones
+        run: node tools/map_fixes.mjs --all --apply-safe --changed changed.txt
+
+      - name: Keep every report as a download
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: map-fix-reports
+          path: tools/fixes/*.md
+          if-no-files-found: ignore
+
+      - name: Open a draft pull request when a config changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ ! -s changed.txt ]; then echo "No safe fixes this week."; exit 0; fi
+          ids=$(tr '\n' ' ' < changed.txt)
+          branch="map-fixes/$(date -u +%F)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          # only the changed mountains' configs and reports (never maps, never anything else)
+          for id in $ids; do
+            for f in "tools/resorts/$id.json" "tools/official/$id.json" "tools/fixes/$id.md" "tools/fixes/$id.json"; do
+              if [ -f "$f" ]; then git add -- "$f"; fi
+            done
+          done
+          if git diff --cached --quiet; then echo "Nothing to commit."; exit 0; fi
+          git commit -m "Weekly map fixes from skiers' evidence: $ids" -m "Safe fixes written by tools/map_fixes.mjs --apply-safe. The maps are not rebuilt: see the pull request."
+          git push -u origin "$branch"
+          gh label create map-fixes --color 0e8a16 --description "Weekly map fixes from skiers' evidence (#112)" --force
+          {
+            echo "## What this changes for the user"
+            echo
+            echo "Nothing yet. These are config changes for: $ids. The live map only changes after the mountains are rebuilt and the owner approves the preview."
+            echo
+            echo "## Issue"
+            echo
+            echo "Part of #112. Opened by the weekly \"Weekly map fixes\" workflow."
+            echo
+            echo "## What is in it"
+            echo
+            echo "Only fixes in the safe class (worker/mapfixes.js): a run moved onto the strip skiers follow where the aerial photo agrees, or an unlisted connecting piece nobody skied over a whole season hidden. Each one is in tools/fixes/<id>.md with its evidence, and in tools/fixes/<id>.json so it can be undone. Fixes that need review are listed in the reports (download \"map-fix-reports\" from the run) and in the daily email."
+            echo
+            echo "## Before merging"
+            echo
+            echo "1. Run the \"Checks\" workflow on this branch (Actions tab), because a pull request opened by a workflow does not start it."
+            echo "2. Rebuild the mountains: \`python3 tools/pipeline.py $ids\` (without --r2), read the score cards, run \`npm test\`."
+            echo "3. Look at them on the preview (\`node tools/preview/maps.mjs $ids\`) and push the maps with \`node tools/maps_r2.mjs push\` once the owner approves."
+            echo
+            echo "This workflow never deploys, uploads maps or merges."
+          } > pr-body.md
+          gh pr create --draft --base main --head "$branch" --label map-fixes --title "Weekly map fixes: $ids" --body-file pr-body.md

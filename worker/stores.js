@@ -258,10 +258,10 @@ export class ResortLog extends DurableObject {
   // Each upload is stored as one row in "pending"; every few minutes they are added into the totals, which are
   // kept in 1 km bands. Few storage writes, and nothing is lost if the object is unloaded in between.
   load() {
-    const t = { runs: {}, cells: {}, days: 0 };
+    const t = { runs: {}, cells: {}, days: 0, daily: {} };
     for (const r of this.sql.exec('SELECT k, v FROM buckets')) {
       const v = JSON.parse(r.v);
-      if (r.k === 'meta') { t.runs = v.runs; t.days = v.days; } else Object.assign(t.cells, v);
+      if (r.k === 'meta') { t.runs = v.runs; t.days = v.days; } else if (r.k === 'daily') t.daily = v; else Object.assign(t.cells, v);
     }
     return t;
   }
@@ -269,7 +269,7 @@ export class ResortLog extends DurableObject {
   pendingRows() {
     return [...this.sql.exec('SELECT id, v FROM pending ORDER BY id')].map((r) => {
       const v = JSON.parse(r.v);
-      return { id: r.id, s: { runs: new Set(v.runs), cells: new Set(v.cells) } };
+      return { id: r.id, s: { runs: new Set(v.runs), cells: new Set(v.cells), day: v.day, on: v.on ?? null } };
     });
   }
 
@@ -278,7 +278,7 @@ export class ResortLog extends DurableObject {
     this.sql.exec('DELETE FROM seen WHERE at < ?', Date.now() - 3 * 86400e3);
     if ([...this.sql.exec('SELECT key FROM seen WHERE key = ?', s.key)].length) return { ok: true, duplicate: true };
     this.sql.exec('INSERT INTO seen VALUES (?, ?)', s.key, Date.now());
-    this.sql.exec('INSERT INTO pending (v) VALUES (?)', JSON.stringify({ runs: [...s.runs], cells: [...s.cells] }));
+    this.sql.exec('INSERT INTO pending (v) VALUES (?)', JSON.stringify({ runs: [...s.runs], cells: [...s.cells], day: s.day, on: s.on ?? null }));
     if (!(await this.ctx.storage.getAlarm())) await this.ctx.storage.setAlarm(Date.now() + 5 * 60e3);
     return { ok: true };
   }
@@ -288,6 +288,8 @@ export class ResortLog extends DurableObject {
     const band = (c) => Math.floor(Number(c.split(',')[0]) / (1000 / CELL_M));
     for (const { s } of rows) { addSummary(t, s); for (const c of s.cells) bands.add(band(c)); }
     this.sql.exec('INSERT OR REPLACE INTO buckets VALUES (?, ?)', 'meta', JSON.stringify({ runs: t.runs, days: t.days }));
+    // per-day totals for the on-map share (#112): small (one row of three numbers per day), rewritten whole
+    this.sql.exec('INSERT OR REPLACE INTO buckets VALUES (?, ?)', 'daily', JSON.stringify(t.daily));
     for (const b of bands) {
       const part = {};
       for (const [c, n] of Object.entries(t.cells)) if (band(c) === b) part[c] = n;
@@ -333,8 +335,10 @@ export class ResortLog extends DurableObject {
     // the first digest for a mountain sends only the last two days, not every report made before the email existed
     const since = this.kvGet('digestSent') == null ? now - 2 * 86400e3 : 0;
     const reports = [...this.sql.exec('SELECT id, at, kind, x, y, ref, name, text, near, run, lat, lon, should, scale FROM reports WHERE id > ? AND at >= ? ORDER BY id', sent, since)];
+    const heat = this.heat();
     const p = this.problems(now);
-    return { reports, problems: p.problems, days: p.days, maxId: reports.length ? reports[reports.length - 1].id : sent };
+    // heat: the public map-help counts (only what K_ANON or more ski days reached), for the email's map-help part
+    return { reports, problems: p.problems, days: p.days, heat, maxId: reports.length ? reports[reports.length - 1].id : sent };
   }
 
   digestSent(maxId) {

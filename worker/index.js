@@ -137,7 +137,12 @@ async function api(request, env, url, ctx) {
   if (path === '/api/contrib' && method === 'POST') {
     const s = cleanSummary(await readJson(request));
     if (s.error) return json({ error: s.error }, 400);
-    return json(await resortLog(env, s.resort).addDay(s, await ipKey(request, env)));
+    // only mountains in the app: made-up ids would each get a store of their own
+    if (!isKnownResort(s.resort)) return json({ error: 'unknown mountain' }, 400);
+    const out = await resortLog(env, s.resort).addDay(s, await ipKey(request, env));
+    // the daily email also covers mountains with new map-help days (on-map share, places people leave the map)
+    if (out.ok && !out.duplicate) ctx.waitUntil(resortLog(env, DIGEST_INDEX).digestNote(s.resort, Date.now()).catch(() => {}));
+    return json(out);
   }
   const heat = path.match(/^\/api\/heat\/([a-z0-9-]{2,40})$/);
   if (heat && method === 'GET') return json(await resortLog(env, heat[1]).heat());

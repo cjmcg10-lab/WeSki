@@ -13,7 +13,7 @@ Written 2026-11-20. The public version is `public/legal/privacy.html`; keep both
 
 ## Map help (opt-in, "Help improve the maps")
 
-On the phone (`flushContrib` and `daySummary` in `src/main.js`):
+On the phone (`flushContrib` in `src/main.js`, `daySummary` and `contribBody` in `src/contrib.js`):
 - Asked once, the first time location is turned on (`askMapHelp`): two buttons, "Yes, help improve the maps" (the
   main button) and "No thanks". Not pre-ticked: a pre-ticked box is not valid consent in the EU and UK, and several US
   state laws (Colorado, Connecticut and others) require an active opt-in for precise location. Also in More.
@@ -25,14 +25,21 @@ On the phone (`flushContrib` and `daySummary` in `src/main.js`):
   a day can start on the summit or end mid-run).
 - Each kept point becomes the run it is on (`trailAt`, run id on that map build), or, if it is off the shown runs and
   going downhill, a 20 m square in the map's local grid.
-- Body: `{resort, key (random 128 bits, new each upload), day, runs: [ids], cells: [[i, j]]}`. No times or order.
+- Squares skied on the shown runs (going downhill, same rules) are counted too, and only the count is sent (`on`, added
+  2026-11-24 for #112): which squares they were never leaves the phone. It lets the server say what share of the skiing
+  was on the drawn runs.
+- Body: `{resort, key (random 128 bits, new each upload), day, runs: [ids], cells: [[i, j]], on: number}`. No times or
+  order.
 
 On the server (`ResortLog` Durable Object, one per resort, `worker/stores.js`; rules in `worker/evidence.js`):
 - `seen`: upload keys, deleted after 3 days (drops a retried duplicate).
 - `pending`: the cleaned summary waits briefly, then an alarm merges it into `buckets` and deletes it.
   (Writing every summary straight into counts would cost many row writes; the free plan allows about 100,000 a day.)
-- `buckets`: counts per run and per 20 m square, grouped in 1 km bands. This is all that is kept.
-- `GET /api/heat/<id>` publishes only counts of at least 5.
+- `buckets`: counts per run and per 20 m square, grouped in 1 km bands, plus one row `daily`: per date, the number of
+  ski days that sent an on-run count and the sums of on-run and off-run squares (three numbers a day, newest 400 days).
+  This is all that is kept.
+- `GET /api/heat/<id>` publishes only counts of at least 5. The on-map share (`onMap`: date, ski days, percent) is
+  published only for dates with at least 5 ski days; other dates are left out entirely ("not enough ski days yet").
 - Rate limit: 30 summaries a day per network, keyed by a daily-salted hash of the IP that is never stored as an address.
 
 Size: a busy day is a few hundred squares, about 5 kB. 10,000 ski days at one mountain fit in well under a megabyte of
@@ -40,12 +47,14 @@ counts, since repeat visits add to the same squares.
 
 ## How the counts improve the maps
 
-`tools/evidence.py` (public OpenStreetMap GPS traces today) will read `/api/heat/<id>` as a second evidence source:
+Only the published counts (5+ ski days) are used, by `worker/mapgaps.js` and `worker/mapfixes.js` in the daily email
+and by the weekly `tools/map_fixes.mjs` (see `docs/MAP_REPORTS.md`); `tools/evidence.py` also reads them:
 - a run with many ski days: confirmed real and used (supports `unof` runs being real);
-- a band of squares off the mapped runs that many days cross: a missing run or a line in the wrong place, to check
+- a band of squares off the mapped runs that many days cross: a missing run or a line in the wrong place, checked
   against aerial photos and the trail map before anything is drawn;
-- a mapped run nobody skis over a whole season: a candidate for "closed for good" or a wrong line.
-Nothing changes on the map automatically: every change still passes `docs/MOUNTAIN_CHECKLIST.md`.
+- an unlisted connecting piece nobody skis over a whole season: hidden by a weekly pull request, after review;
+- the share of skied squares on the drawn runs per day: how well the map matches where people ski.
+Nothing changes on the live map automatically: a config change needs a rebuild, the preview and the owner's approval.
 
 ## Ski-day feedback ("How was it?", added for #9)
 
