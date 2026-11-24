@@ -1,0 +1,47 @@
+{
+ "id": "49-north-mountain",
+ "name": "49° North Mountain",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "way/884007908",
+ "include_ways": [
+  6205507,
+  6205510,
+  6205514,
+  54673424,
+  164662208,
+  198237525,
+  257544081
+ ],
+ "osm_bbox": [
+  -117.5984,
+  48.2791,
+  -117.5246,
+  48.3079
+ ],
+ "openskimap": {
+  "id": "714edf91084f6337747764d63aa21f3381be33e2",
+  "cc": "US",
+  "runs": 84,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 195,
+  "web": "https://www.ski49n.com"
+ },
+ "area_name": "49° North Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "rename": {
+  "Benandrus Way": "Ben-Andras Way",
+  "Gritz": "Griz",
+  "Hobbit Forrest": "Hobbit Forest",
+  "Mineshaft": "Mine Shaft",
+  "Silver Drife": "Silver Drift",
+  "Wolf Den": "Wolf's Den"
+ }
+}

@@ -410,6 +410,18 @@ Rendering rules learned the same day: runs show through trees but never through 
 runs once marking SEEN, trees skip SEEN pixels; #84, #88). A lift end on a mapped station building is drawn once
 (`stationClashes` in `src/liftmotion.js`: small building left out, big lodge kept and the terminal model left out).
 
+## Automatic builder: first batch of 100 (2026-11-23, #45, #104-#106)
+
+100 US and Canadian mountains were built with no hand edits (`tools/bulk/run_batch.py`: `autoconfig.py` config from
+OpenSkiMap, terrain by country, rule-based joins, steepness check) and scored by `tools/bulk/gate.py`: 79 publish, 21
+held (`"hold"` in the config keeps a mountain out of the committed index). Table, timings, storage and the free-plan
+estimate: `tools/bulk/batch-1.md`; how-to: "Building a batch" in `docs/ADDING_MOUNTAINS.md`. The maps are on the
+preview only (R2 `preview/data/<id>/`); they go live only after the owner approves: `node tools/preview/maps.mjs fetch
+<ids>` (copies them back from the preview if not on disk), `node tools/maps_r2.mjs push <ids>`, then merge. The index
+must not reach `main` before that push. Their ratings come from OpenStreetMap (3 from resort feeds) and the app says
+"not yet checked against the resort's own list"; 17 sit on 30 m terrain (British Columbia, Alberta) with a note.
+Rule-based fixes run only for configs with `"auto": true`; the 60 hand-checked maps are unchanged.
+
 ## Existence check (2026-11-20)
 
 The owner found a lift and runs at Sunday River (Merrill Hill II and runs toward it) that are not on the resort's map.

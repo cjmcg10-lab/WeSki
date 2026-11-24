@@ -1,0 +1,62 @@
+{
+ "id": "snow-valley-mountain",
+ "name": "Snow Valley Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/10534510",
+ "include_ways": [
+  7077209,
+  7153966,
+  104596000,
+  104596011,
+  104596018,
+  104596019,
+  257999884,
+  258003288,
+  258003289,
+  258004025,
+  330951556,
+  777214258,
+  1020039931
+ ],
+ "osm_bbox": [
+  -117.0501,
+  34.1942,
+  -117.0233,
+  34.2317
+ ],
+ "openskimap": {
+  "id": "11f2099ea10957844765b5bea3bbb1f13fd592b7",
+  "cc": "US",
+  "runs": 42,
+  "lifts": 13,
+  "rated": 0.929,
+  "skimap": 539,
+  "web": "https://snow-valley.com"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "links": [
+  [
+   "trail:Show Off",
+   "trail:Little Bowl"
+  ],
+  [
+   "trail:Little Bowl",
+   "trail:East Bowl"
+  ],
+  [
+   "trail:The Chute",
+   "trail:Show Off"
+  ]
+ ],
+ "links_notes": {
+  "trail:Show Off -> trail:Little Bowl": "2026-11-23: see The Chute -> Show Off",
+  "trail:Little Bowl -> trail:East Bowl": "2026-11-23: see The Chute -> Show Off",
+  "trail:The Chute -> trail:Show Off": "2026-11-23: on the 2026 trail map Show Off, Little Bowl and East Bowl branch off the open slope below The Chute and Big Bowl, across the Snow Valley Express and Chair 3; OpenStreetMap only joined them through a short unnamed piece the resort does not show (hidden). Joins are approximate (55-75 m)"
+ }
+}

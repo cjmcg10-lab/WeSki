@@ -1,0 +1,44 @@
+{
+ "id": "sun-valley-bald-mountain",
+ "name": "Sun Valley - Bald Mountain",
+ "region": "Idaho, USA",
+ "tz": "America/Boise",
+ "auto": true,
+ "area_osm": "way/1244099443",
+ "include_ways": [
+  58996544,
+  205816768,
+  205816791,
+  205819327,
+  205819328,
+  205819409,
+  234376244,
+  257191070,
+  1020102786,
+  1020102787,
+  1125537044,
+  1208395761
+ ],
+ "osm_bbox": [
+  -114.4193,
+  43.6362,
+  -114.3619,
+  43.6863
+ ],
+ "openskimap": {
+  "id": "b9ec1edd75823059c063c7c7b2a4078cf82542ab",
+  "cc": "US",
+  "runs": 143,
+  "lifts": 12,
+  "rated": 1.0,
+  "skimap": 480,
+  "web": "https://www.sunvalley.com/"
+ },
+ "area_name": "Sun Valley - Bald Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

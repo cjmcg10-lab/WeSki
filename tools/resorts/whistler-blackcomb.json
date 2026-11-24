@@ -1,0 +1,72 @@
+{
+ "id": "whistler-blackcomb",
+ "name": "Whistler Blackcomb",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "way/474288286",
+ "include_ways": [
+  29166965,
+  29166968,
+  29362437,
+  29473068,
+  29473069,
+  29473070,
+  29473072,
+  29512190,
+  29512562,
+  32774598,
+  32775403,
+  32775404,
+  32775428,
+  32775430,
+  32828959,
+  32828960,
+  47941921,
+  47941929,
+  48083101,
+  48083140,
+  244981854,
+  258644617,
+  258644618,
+  258644899,
+  258645935,
+  258646026,
+  258646027,
+  258646783,
+  682523542,
+  867166527,
+  1174906008,
+  1174906013,
+  1525849949,
+  1525850290,
+  1525851044,
+  1562634819
+ ],
+ "osm_bbox": [
+  -122.9976,
+  50.0365,
+  -122.8545,
+  50.1248
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "19291bcc85a3b6bda5a0817e6a20bf8b8b71a5c0",
+  "cc": "CA",
+  "runs": 618,
+  "lifts": 36,
+  "rated": 0.982,
+  "skimap": 28,
+  "web": "https://www.whistlerblackcomb.com"
+ },
+ "area_name": "Whistler Blackcomb",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 92%, 1 m lidar 8%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 8.0,
+  "30m": 92.0
+ }
+}

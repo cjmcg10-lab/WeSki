@@ -1,0 +1,61 @@
+{
+ "source": "China Peak 2025-26 trail map (skimap.org map 36418), read by hand with enlarged crops",
+ "fetched": "2026-11-23",
+ "runs": {
+  "Academy": 0,
+  "Avalanche": 3,
+  "Big Creek": 1,
+  "Boomer's": 1,
+  "Buckhorn": 3,
+  "China Bowl": 2,
+  "Copout": 1,
+  "Dick's": 2,
+  "Dynamite": 2,
+  "East Bowl": 3,
+  "Easy Street": 0,
+  "Exhibition": 1,
+  "Firebowl": 1,
+  "Grouse Creek": 2,
+  "Hokey Pokey": 0,
+  "Huntington": 2,
+  "Jack's Run": 1,
+  "Joanne's": 1,
+  "Joe's": 1,
+  "Juniper": 2,
+  "Kaiser": 1,
+  "Lakeview": 1,
+  "Mainstream": 2,
+  "Marmot": 1,
+  "Peter-built": 0,
+  "Rancheria": 2,
+  "Razorback": 2,
+  "Red Fir": 1,
+  "Stadium": 2,
+  "Sundown Ridge": 0,
+  "Tamarack": 1,
+  "The Canyon": 1,
+  "Toll House": 2,
+  "Tollhouse": 1,
+  "Ullman's Alley": 1,
+  "Waterfall": 3,
+  "Westridge": 1
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Waterfall Bowl": "area name (Waterfall runs through it)",
+  "The Face": "area name (Avalanche and Juniper are its runs)",
+  "The Park": "terrain park"
+ },
+ "lifts": [
+  "Chair 1 - Summit",
+  "Chair 2 - Buckhorn",
+  "Chair 4 - Park",
+  "Chair 5 - Peak",
+  "Chair 6 - Canyon",
+  "Chair 7 - Lakeview"
+ ],
+ "hide": {
+  "Waterfall Bowl": "the bowl Waterfall runs through: OpenStreetMap draws it on the same ground as Waterfall, and the trail map names the area only"
+ },
+ "lifts_source": "China Peak 2025-26 trail map (skimap.org map 36418): chairs 1, 2, 4, 5, 6 and 7 by name; the beginner carpets are drawn without names"
+}

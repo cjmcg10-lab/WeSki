@@ -1,0 +1,12 @@
+{
+ "checked": "2026-11-23",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {
+  "Home Again": "2026-11-23 AI pass: OpenStreetMap draws Home Again in two pieces; the lower one starts 39 m below the end of the upper one without touching it, so the check sees no way in (the build did not join it)"
+ },
+ "dead_end": {},
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {}
+}

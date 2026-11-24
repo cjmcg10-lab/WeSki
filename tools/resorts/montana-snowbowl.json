@@ -1,0 +1,38 @@
+{
+ "id": "montana-snowbowl",
+ "name": "Montana Snowbowl",
+ "region": "Montana, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1335348646",
+ "include_ways": [
+  5775944,
+  352692293,
+  352692320,
+  470368946,
+  766574851,
+  1129845407
+ ],
+ "osm_bbox": [
+  -114.0355,
+  47.0039,
+  -113.978,
+  47.0417
+ ],
+ "openskimap": {
+  "id": "1899d3be7b756dfaa8181c0c6970de5c6e3062b7",
+  "cc": "US",
+  "runs": 64,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 368,
+  "web": "https://www.montanasnowbowl.com/"
+ },
+ "area_name": "Montana Snowbowl",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

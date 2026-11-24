@@ -1,0 +1,45 @@
+{
+ "id": "mount-ashland",
+ "name": "Mount Ashland",
+ "region": "Oregon, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/4764744",
+ "include_ways": [
+  28713033,
+  28713040,
+  28713064,
+  164881924,
+  1211965314,
+  1579025666
+ ],
+ "osm_bbox": [
+  -122.7331,
+  42.0728,
+  -122.6915,
+  42.0959
+ ],
+ "openskimap": {
+  "id": "7d7c31b86551f249d73f2f29706ffd2b0a420621",
+  "cc": "US",
+  "runs": 64,
+  "lifts": 6,
+  "rated": 0.891,
+  "skimap": 274,
+  "web": "https://www.mtashland.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 97%, 1 m lidar 3%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "1m": 2.9,
+  "10m": 97.1
+ },
+ "rename": {
+  "Chute 1": "1st Chute",
+  "Chute 2": "2nd Chute",
+  "Chute 3": "3rd Chute",
+  "Chute 4": "4th Chute",
+  "Chute 5": "5th Chute",
+  "Second Bowl": "2nd Bowl"
+ }
+}

@@ -75,6 +75,8 @@ T, L = R["trails"], R["lifts"]
 # 1. runs that are never shown
 for t in T:
     r = HIDE.get(t["name"]) if t["name"] else None
+    # "way <osm id>": one piece of a name the resort uses elsewhere (Belleayre's second "Esopus" on the old Highmount slope)
+    r = r or HIDE.get(f"way {t.get('osm')}")
     r = r and f"hidden by hand: {r}"
     if not r and not t.get("ok") and t["name"] not in CONFIRM:
         r = tag_reason(t)
@@ -82,12 +84,16 @@ for t in T:
         t["hide"] = r
 listed = [t for t in T if (t.get("ok") or t["name"] in CONFIRM) and not t.get("hide")]
 LP = [pts(t) for t in listed]
+# Without the resort's own list (an automatic build, issue #45) there is nothing to check runs and lifts against:
+# only the tag rules above apply, and every other run stays as OpenStreetMap draws it (the app says the ratings
+# are not yet checked against the resort). Hiding or fading everything unlisted would hide the whole mountain.
+NO_LIST = not os.path.exists(offp)
 
 # 2. lifts: a listed run must start at the top, and listed terrain must reach the bottom (a lift at a summit that
 #    rises from an unopened valley, like Sunday River's Merrill Hill II, has the first but not the second)
 SURFACE = ("carpet", "magic_carpet", "rope_tow", "platter", "t-bar", "drag", "j-bar", "zip_line")
 cand = []
-for l in L:
+for l in ([] if NO_LIST else L):
     if l["name"] in HIDE:
         l["hide"] = f"hidden by hand: {HIDE[l['name']]}"; continue
     if l["name"] in CONFIRM_LIFTS:
@@ -124,7 +130,7 @@ shown_lifts = [l for l in L if not l.get("hide")]
 anchors = [(q, None) for q in LP] + [(pts(l), "lift") for l in shown_lifts]
 
 # 3. unlisted runs: keep the groups that link listed terrain at two or more places
-un = [t for t in T if not t.get("hide") and not (t.get("ok") or t["name"] in CONFIRM)]
+un = [] if NO_LIST else [t for t in T if not t.get("hide") and not (t.get("ok") or t["name"] in CONFIRM)]
 ends = {id(t): (pts(t)[0], pts(t)[-1]) for t in un}
 par = {id(t): id(t) for t in un}
 def find(x):
@@ -172,7 +178,9 @@ rev_l = [(l, l.pop("review")) for l in L if l.get("review")]
 summ = {"runs": len(T), "listed": len(listed), "unlisted links kept": nkept, "unofficial shown": nunof, "runs hidden": len(hid_t),
         "lifts": len(L), "lifts hidden": len(hid_l), "lifts to review": len(rev_l)}
 R.setdefault("sources", {})["checked"] = (f"every run and lift checked against the resort's own list: "
-                                          f"{len(hid_t)} runs and {len(hid_l)} lifts not shown")
+                                          f"{len(hid_t)} runs and {len(hid_l)} lifts not shown") if not NO_LIST else (
+    f"no list from the resort yet: runs and lifts as OpenStreetMap maps them ({len(hid_t)} private, touring or "
+    f"unnamed backcountry pieces not shown)")
 json.dump(R, open(f"{out}/resort.json", "w"), separators=(",", ":"), ensure_ascii=False)
 print(rid, summ)
 if LIST:

@@ -1,0 +1,53 @@
+{
+ "id": "sandia-peak",
+ "name": "Sandia Peak",
+ "region": "New Mexico, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "relation/4644818",
+ "include_ways": [
+  14410532,
+  151810726,
+  151810727,
+  151810731,
+  199295490
+ ],
+ "osm_bbox": [
+  -106.4827,
+  35.188,
+  -106.4107,
+  35.2103
+ ],
+ "openskimap": {
+  "id": "c3bdf2365be8731aa6cb20ce76de31e246dfab57",
+  "cc": "US",
+  "runs": 67,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 332,
+  "web": "https://www.sandia.ski/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (10 m national model 68%, 1 m lidar 32%)",
+ "terrain_res": 10,
+ "terrain_shares": {
+  "1m": 32.4,
+  "10m": 67.6
+ },
+ "rename": {
+  "Cibola Cutoff": "Cibola Cut Off",
+  "Upper Salom": "Slalom",
+  "South Upper Slalom": "Slalom"
+ },
+ "two_way_lifts": [
+  "Sandia Peak Aerial Tramway"
+ ],
+ "links": [
+  [
+   "Sandia Peak Aerial Tramway (top)",
+   "Chairlift #2 (top)"
+  ]
+ ],
+ "links_notes": {
+  "Sandia Peak Aerial Tramway (top) -> Chairlift #2 (top)": "2026-11-24: the tram's top station on the crest is about 40 m from the tops of Chairlifts #2 and #3; skiers can ride the tram up from Albuquerque and ski the area, and ride it back down (two ways). OpenStreetMap draws the tram's two track ropes as two ways; one (199295489) is left out so it is drawn once"
+ }
+}

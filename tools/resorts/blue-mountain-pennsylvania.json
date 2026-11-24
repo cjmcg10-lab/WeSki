@@ -1,0 +1,53 @@
+{
+ "id": "blue-mountain-pennsylvania",
+ "name": "Blue Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/390536570",
+ "include_ways": [
+  30280261,
+  30280279,
+  44526180,
+  44526207,
+  96595900,
+  256636932,
+  256636934,
+  1211956149,
+  1222144681,
+  1222144685,
+  1222144686,
+  1222144687,
+  1222144694,
+  1222144695,
+  1222144696
+ ],
+ "osm_bbox": [
+  -75.5299,
+  40.8055,
+  -75.4952,
+  40.8269
+ ],
+ "openskimap": {
+  "id": "4bca16dce4783e4eab06c9a39ee02168c67ca488",
+  "cc": "US",
+  "runs": 44,
+  "lifts": 15,
+  "rated": 1.0,
+  "skimap": 258,
+  "web": "https://www.skibluemt.com/"
+ },
+ "area_name": "Blue Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Tubing Conveyor"
+ ],
+ "isolated_notes": {
+  "Tubing Conveyor": "rule: tubing or sledding lift"
+ }
+}

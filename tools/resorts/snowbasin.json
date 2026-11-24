@@ -1,0 +1,45 @@
+{
+ "id": "snowbasin",
+ "name": "Snowbasin",
+ "region": "Utah, USA",
+ "tz": "America/Denver",
+ "auto": true,
+ "area_osm": "way/1201185853",
+ "include_ways": [
+  10203748,
+  136016336,
+  136016402,
+  136016424,
+  195798979,
+  195798981,
+  195798982,
+  195801396,
+  960196819,
+  1125736587,
+  1125736936,
+  1125736937,
+  1214120404
+ ],
+ "osm_bbox": [
+  -111.8884,
+  41.1791,
+  -111.837,
+  41.2217
+ ],
+ "openskimap": {
+  "id": "423504a1fa53bcfbe5bf956f0cd48c12868c7f06",
+  "cc": "US",
+  "runs": 157,
+  "lifts": 13,
+  "rated": 0.994,
+  "skimap": 219,
+  "web": "https://www.snowbasin.com/"
+ },
+ "area_name": "Snowbasin Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}
