@@ -1,0 +1,37 @@
+{
+ "id": "wildcat-mountain",
+ "name": "Wildcat Mountain",
+ "region": "New Hampshire, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/251260219",
+ "include_ways": [
+  18835574,
+  242375785,
+  242375786,
+  242375787
+ ],
+ "osm_bbox": [
+  -71.2504,
+  44.2458,
+  -71.2163,
+  44.2691
+ ],
+ "openskimap": {
+  "id": "0df6f2636ac79f4cfabf19a4d6954d6b8e00d01a",
+  "cc": "US",
+  "runs": 50,
+  "lifts": 4,
+  "rated": 1.0,
+  "skimap": 356,
+  "web": "https://www.skiwildcat.com/"
+ },
+ "area_name": "Wildcat Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "2 runs climb more than 12 m"
+}

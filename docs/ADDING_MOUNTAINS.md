@@ -329,6 +329,12 @@ python3 tools/build_index.py public/data                 # the committed index l
   stay out of the committed index (`build_index.py` without `--with-held`) and have no emergency entry; published ones
   get an emergency entry (country numbers only) and a connections allow-list of the problems the gate accepted.
   Per-mountain numbers are in `tools/bulk/results/<id>.json`; the table in `tools/bulk/batch-<n>.md`.
+- **Umbrella outlines and linked resorts** (batch 2, 2026-11-24): a resort with no outline of its own inside an outline
+  that covers several resorts (Les 3 Vallées, Ski Arlberg, Dolomiti Superski) is searched as if the umbrella were not
+  there (`tools/extent.py`). Two OpenSkiMap areas that share ridge tops (Courchevel and Méribel) cut each other off as
+  separate maps: build them as one config with both lift lists in `include_ways` and a `combined_note`.
+  A candidate under the 10-run minimum (Boston Mills, Brandywine) can be appended to `candidates.json` from a
+  `--min-runs 7` run of `candidates.py`, keeping the other ids as they are.
 - **Going live** after the owner approves the preview: `node tools/preview/maps.mjs fetch <ids>` (only if the maps are
   not on disk: it copies them back from the preview), then `node tools/maps_r2.mjs push <ids>`, then merge.
 

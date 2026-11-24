@@ -1,0 +1,43 @@
+{
+ "id": "mad-river-mountain",
+ "name": "Mad River Mountain",
+ "region": "Ohio, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/1263732880",
+ "include_ways": [
+  256776224,
+  256776225,
+  256776227,
+  256776228,
+  256776229,
+  256776230,
+  256776232,
+  256776233,
+  256776234,
+  451956491,
+  1126798756
+ ],
+ "osm_bbox": [
+  -83.6855,
+  40.3086,
+  -83.6663,
+  40.3225
+ ],
+ "openskimap": {
+  "id": "305c84e41152110f9e0e01dc6cc33932fc1579b7",
+  "cc": "US",
+  "runs": 10,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 278,
+  "web": "https://www.skimadriver.com/"
+ },
+ "area_name": "Mad River Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

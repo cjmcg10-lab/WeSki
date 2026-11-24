@@ -28,6 +28,7 @@ Hard limits (a map that fails one can send a skier wrong, or fails the app's own
   - runs that climb more than 12 m at most 3% of shown runs;
   - runs rated by guess (no rating in OpenStreetMap) at most 15% of the shown run length;
   - the resort's OpenStreetMap outline is not private (a members' club);
+  - more than 7 runs on the map (tests/resorts.test.js);
   - with a resort list (feed): no chair or gondola on it missing from the map.
 Soft notes (shown in the table, do not hold): 30 m terrain, ratings not checked against the resort, rule-based
 lift-end joins, automatic joins, runs raised by the steepness check.
@@ -81,6 +82,10 @@ def judge(rid, conn):
     have = {l.get("osm") for l in lifts + by_hand}
     want = cfg.get("include_ways", [])
     row["osk_lift_ids_on_map"] = [len([w for w in want if w in have]), len(want)]
+    # tests/resorts.test.js wants more than 7 runs on every published map (Boston Mills, 2026-11-24: OpenStreetMap
+    # has 7 of its runs)
+    if len(R["trails"]) <= 7:
+        row["hold"].append(f"only {len(R['trails'])} runs on the map (OpenStreetMap is missing most of them)")
     if osk.get("lifts") and len(lifts) + len(by_hand) < 0.8 * osk["lifts"]:
         row["hold"].append(f"lifts {len(lifts)} of OpenSkiMap's {osk['lifts']}")
     if want and len([w for w in want if w in have]) < 0.8 * len(want):
@@ -150,7 +155,10 @@ def judge(rid, conn):
 
 
 CC = {"USA": "US", "Canada": "CA"}
-GENERAL = {"CA": [{"phone": "911", "label": "Emergency services (police, fire, ambulance)", "tel": "911"}]}
+GENERAL = {"CA": [{"phone": "911", "label": "Emergency services (police, fire, ambulance)", "tel": "911"}],
+           # Italy: 112 is the single emergency number in every region (mountain rescue included, through the
+           # NUE 112 centres); Bolzano/South Tyrol and the Dolomites areas use it too
+           "IT": [{"phone": "112", "label": "European emergency number (also mountain rescue)", "tel": "112"}]}
 
 
 def emergency(rows):

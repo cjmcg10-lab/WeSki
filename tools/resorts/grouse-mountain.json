@@ -1,0 +1,44 @@
+{
+ "id": "grouse-mountain",
+ "name": "Grouse Mountain",
+ "region": "British Columbia, Canada",
+ "tz": "America/Vancouver",
+ "auto": true,
+ "area_osm": "relation/21277926",
+ "include_ways": [
+  38556750,
+  39504230,
+  39838288,
+  39838290,
+  456237945,
+  866809044,
+  1120473840,
+  1232218748
+ ],
+ "osm_bbox": [
+  -123.1036,
+  49.3683,
+  -123.0637,
+  49.3907
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "167ec497e42bcb658ecaa281e3569050cc073b65",
+  "cc": "CA",
+  "runs": 52,
+  "lifts": 8,
+  "rated": 0.904,
+  "skimap": 58,
+  "web": "https://www.grousemountain.com/"
+ },
+ "area_name": "Grouse Mountain",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (30 m 69%, 1 m lidar 31%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 30.8,
+  "30m": 69.2
+ }
+}

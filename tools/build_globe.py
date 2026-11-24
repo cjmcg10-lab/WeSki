@@ -13,6 +13,7 @@
 usage: build_globe.py <public/data dir>
 """
 import json
+import os
 import sys
 import urllib.request
 
@@ -21,6 +22,12 @@ SCALE = 180
 
 
 def get(name):
+    # GLOBE_NPM_DIR: folder holding the unpacked packages (`npm pack world-atlas@2 us-atlas@3`, then untar each into
+    # world-atlas/ and us-atlas/), for a network that reaches the npm registry but not cdn.jsdelivr.net
+    local = os.environ.get("GLOBE_NPM_DIR")
+    if local:
+        pkg, path = name.split("/", 1)
+        return json.load(open(os.path.join(local, pkg.rsplit("@", 1)[0], path)))
     req = urllib.request.Request(f"https://cdn.jsdelivr.net/npm/{name}", headers={"User-Agent": "weski-build"})
     return json.loads(urllib.request.urlopen(req, timeout=120).read())
 

@@ -1,0 +1,38 @@
+{
+ "id": "bristol-mountain",
+ "name": "Bristol Mountain",
+ "region": "New York, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/320434895",
+ "include_ways": [
+  143024812,
+  143024816,
+  143024822,
+  143024853,
+  143024877,
+  632013364
+ ],
+ "osm_bbox": [
+  -77.4304,
+  42.7311,
+  -77.3968,
+  42.7541
+ ],
+ "openskimap": {
+  "id": "69a316b32d68d678d82b8614d9c6b9e51e06cae9",
+  "cc": "US",
+  "runs": 39,
+  "lifts": 6,
+  "rated": 1.0,
+  "skimap": 313,
+  "web": "https://www.bristolmountain.com/"
+ },
+ "area_name": "Bristol Mountain Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

@@ -1,0 +1,39 @@
+{
+ "id": "granite-peak",
+ "name": "Granite Peak",
+ "region": "Wisconsin, USA",
+ "tz": "America/Chicago",
+ "auto": true,
+ "area_osm": "way/317142448",
+ "include_ways": [
+  148285762,
+  148285763,
+  148285766,
+  148286368,
+  256900698,
+  256900699,
+  256900700
+ ],
+ "osm_bbox": [
+  -89.6998,
+  44.9158,
+  -89.6704,
+  44.9369
+ ],
+ "openskimap": {
+  "id": "462af6084a39a9d577327662f54101082cade2f7",
+  "cc": "US",
+  "runs": 52,
+  "lifts": 7,
+  "rated": 0.942,
+  "skimap": 170,
+  "web": "https://www.skigranitepeak.com/"
+ },
+ "area_name": "Granite Peak Ski Area",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

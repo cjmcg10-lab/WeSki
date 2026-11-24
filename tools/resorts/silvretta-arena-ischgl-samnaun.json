@@ -1,0 +1,86 @@
+{
+ "id": "silvretta-arena-ischgl-samnaun",
+ "name": "Ischgl – Samnaun (Silvretta Arena)",
+ "region": "Tyrol, Austria",
+ "tz": "Europe/Vienna",
+ "auto": true,
+ "area_osm": "relation/3508010",
+ "include_ways": [
+  22995030,
+  22995063,
+  22995076,
+  22995077,
+  22995103,
+  22995104,
+  22995110,
+  22995115,
+  22995122,
+  22995123,
+  22995144,
+  22995152,
+  22995155,
+  22995164,
+  22995175,
+  22995179,
+  22995180,
+  22995188,
+  22995191,
+  26385251,
+  29132347,
+  29408062,
+  31909729,
+  32317428,
+  32320200,
+  32322742,
+  32345117,
+  32346046,
+  32595247,
+  83705826,
+  136937642,
+  142587941,
+  142587943,
+  142587944,
+  142587945,
+  142602713,
+  142602715,
+  142602716,
+  142605511,
+  245326282,
+  306691770,
+  337696666,
+  1453169986,
+  1453169988,
+  1547810647,
+  1547810965,
+  1582514768
+ ],
+ "osm_bbox": [
+  10.2281,
+  46.9148,
+  10.4151,
+  47.0204
+ ],
+ "dem": {
+  "source": "copernicus"
+ },
+ "openskimap": {
+  "id": "7c2f2690d339d9df6f820e7c6e596a9b0ba3dce5",
+  "cc": "AT",
+  "runs": 279,
+  "lifts": 47,
+  "rated": 0.996,
+  "skimap": 630,
+  "web": "https://www.ischgl.com/"
+ },
+ "terrain_source": "Copernicus DEM GLO-30, 30 m (produced using Copernicus WorldDEM-30, DLR e.V. and Airbus, provided under COPERNICUS by the European Union and ESA) (30 m 100%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Übungslift Mathon"
+ ],
+ "isolated_notes": {
+  "Übungslift Mathon": "rule: not joined to the rest of the lifts on the map"
+ }
+}

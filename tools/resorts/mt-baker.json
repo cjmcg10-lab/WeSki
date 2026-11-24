@@ -1,0 +1,43 @@
+{
+ "id": "mt-baker",
+ "name": "Mt. Baker",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/19108017",
+ "include_ways": [
+  147063466,
+  147063467,
+  147063469,
+  147063471,
+  147063473,
+  147063474,
+  147063475,
+  147063476,
+  1159356289,
+  1159356294
+ ],
+ "osm_bbox": [
+  -121.6903,
+  48.8432,
+  -121.6422,
+  48.8678
+ ],
+ "openskimap": {
+  "id": "d272da6efb174a96c70b157b6c4cf370f8d5da87",
+  "cc": "US",
+  "runs": 47,
+  "lifts": 10,
+  "rated": 1.0,
+  "skimap": 191,
+  "web": "https://www.mtbaker.us/"
+ },
+ "area_name": "Mt Baker",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 89%, 10 m national model 11%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 89.4,
+  "10m": 10.6
+ }
+}

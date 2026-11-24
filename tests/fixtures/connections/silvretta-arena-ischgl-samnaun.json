@@ -1,0 +1,20 @@
+{
+ "checked": "2026-11-24",
+ "note": "problems tools/check_connections.py lists for this mountain that are known and left, with the reason; tests/connections.test.js fails on any other",
+ "unreachable": {},
+ "dead_end": {
+  "Skiweg Laret-West": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "60 Alp Trida-Samnaun Laret": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "61": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "(unnamed run 301)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "(unnamed run 303)": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "Skiweg Compatsch": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ },
+ "outside_core": {},
+ "lift_end": {},
+ "uphill": {},
+ "doubled": {
+  "(unnamed run 90) ~ 3": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person",
+  "(unnamed run 255) ~ Samnaun valley – valley station Ravaisch": "automatic build: accepted by the quality gate (tools/bulk/gate.py) within its limits, not looked at by a person"
+ }
+}

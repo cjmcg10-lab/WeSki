@@ -1,0 +1,44 @@
+{
+ "id": "mt-brighton",
+ "name": "Mt. Brighton",
+ "region": "Michigan, USA",
+ "tz": "America/Detroit",
+ "auto": true,
+ "area_osm": "way/1057669089",
+ "include_ways": [
+  256916921,
+  256916922,
+  256916923,
+  256916924,
+  256916925,
+  1057669058,
+  1057669059,
+  1057669065,
+  1057669066,
+  1057669088,
+  1450795918,
+  1450795919
+ ],
+ "osm_bbox": [
+  -83.8166,
+  42.5342,
+  -83.8011,
+  42.5445
+ ],
+ "openskimap": {
+  "id": "eb22337964133d173cab93b1b85b22a41b27b611",
+  "cc": "US",
+  "runs": 23,
+  "lifts": 12,
+  "rated": 1.0,
+  "skimap": 430,
+  "web": "https://www.mtbrighton.com/"
+ },
+ "area_name": "Mt Brighton",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

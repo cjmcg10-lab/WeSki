@@ -422,6 +422,13 @@ must not reach `main` before that push. Their ratings come from OpenStreetMap (3
 "not yet checked against the resort's own list"; 17 sit on 30 m terrain (British Columbia, Alberta) with a note.
 Rule-based fixes run only for configs with `"auto": true`; the 60 hand-checked maps are unchanged.
 
+**Batch 2 (2026-11-24), the owner's list of 50** (Mountain Creek to Niseko United; Courchevel and Méribel as one map,
+Chamonix as three, Val Gardena and Alta Badia as two, Boston Mills and Brandywine as two): 54 maps, 40 publish, 14 held.
+Table, matching notes and the builder fixes it needed (umbrella outlines such as Les 3 Vallées and Ski Arlberg,
+avalanche ropeways, canopy memory, forecast catalog folding): `tools/bulk/batch-2.md`. Maps are on disk in that
+session only, not on R2 or the preview; the committed index lists the 40, so they must be built again (or fetched) and
+pushed before the branch reaches `main`. `build_globe.py` needs `GLOBE_NPM_DIR` here (cdn.jsdelivr.net is not reachable).
+
 ## Existence check (2026-11-20)
 
 The owner found a lift and runs at Sunday River (Merrill Hill II and runs toward it) that are not on the resort's map.

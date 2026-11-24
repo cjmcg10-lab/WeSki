@@ -1,0 +1,54 @@
+{
+ "id": "mountain-creek",
+ "name": "Mountain Creek",
+ "region": "New Jersey, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/972064114",
+ "include_ways": [
+  11761181,
+  11761564,
+  11763135,
+  80373979,
+  80373980,
+  80374423,
+  80568915,
+  80572466,
+  1199291366,
+  1199291367,
+  1199291408
+ ],
+ "osm_bbox": [
+  -74.5404,
+  41.1605,
+  -74.4913,
+  41.1956
+ ],
+ "openskimap": {
+  "id": "1925d141bfd550bffbf608b766ebb3bed43eaa48",
+  "cc": "US",
+  "runs": 44,
+  "lifts": 11,
+  "rated": 1.0,
+  "skimap": 339,
+  "web": "https://www.mountaincreek.com/"
+ },
+ "area_name": "Mountain Creek",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Bear Peak Express",
+  "South Peak Express",
+  "Surface lift"
+ ],
+ "isolated_notes": {
+  "Bear Peak Express": "rule: not joined to the rest of the lifts on the map",
+  "South Peak Express": "rule: not joined to the rest of the lifts on the map",
+  "Surface lift": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): South Peak Express, Bear Peak Express"
+}

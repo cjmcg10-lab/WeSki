@@ -1,0 +1,39 @@
+{
+ "id": "alpental",
+ "name": "Alpental",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/6855067",
+ "include_ways": [
+  31246070,
+  31246073,
+  31246074,
+  257784426,
+  1208396232,
+  1326369682
+ ],
+ "osm_bbox": [
+  -121.4561,
+  47.4266,
+  -121.4045,
+  47.4705
+ ],
+ "openskimap": {
+  "id": "012af6135e558d614d71a2af51f3b2a0f8fcf158",
+  "cc": "US",
+  "runs": 35,
+  "lifts": 6,
+  "rated": 0.914,
+  "skimap": null,
+  "web": "https://summitatsnoqualmie.com/"
+ },
+ "area_name": "Alpental",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "4 runs no lift reaches; 3 dead-end runs"
+}

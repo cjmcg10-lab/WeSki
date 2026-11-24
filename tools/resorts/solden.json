@@ -1,0 +1,81 @@
+{
+ "id": "solden",
+ "name": "Sölden",
+ "region": "Tyrol, Austria",
+ "tz": "Europe/Vienna",
+ "auto": true,
+ "area_osm": "relation/15961562",
+ "include_ways": [
+  24189362,
+  24189364,
+  24189365,
+  24189366,
+  24189367,
+  28523287,
+  28523289,
+  28523290,
+  28523291,
+  29330800,
+  30247778,
+  30247784,
+  30247788,
+  30247791,
+  30247796,
+  30247801,
+  30247809,
+  30247815,
+  30816314,
+  30816315,
+  30816316,
+  30816317,
+  33181584,
+  44044858,
+  44044859,
+  140592069,
+  197171962,
+  197790814,
+  197790815,
+  348445004,
+  348445005,
+  448535312,
+  448535313,
+  448535315,
+  705220570,
+  705220571,
+  777561186,
+  978725447,
+  1547800361
+ ],
+ "osm_bbox": [
+  10.9146,
+  46.9142,
+  11.0134,
+  46.9804
+ ],
+ "dem": {
+  "source": "copernicus"
+ },
+ "openskimap": {
+  "id": "78e5f98d8527df7216b08962f372659abcd4f711",
+  "cc": "AT",
+  "runs": 172,
+  "lifts": 39,
+  "rated": 0.988,
+  "skimap": 635,
+  "web": "https://www.soelden.com/"
+ },
+ "terrain_source": "Copernicus DEM GLO-30, 30 m (produced using Copernicus WorldDEM-30, DLR e.V. and Airbus, provided under COPERNICUS by the European Union and ESA) (30 m 100%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "30m": 100.0
+ },
+ "isolated_lifts": [
+  "Seiterjöchl",
+  "Surface lift"
+ ],
+ "isolated_notes": {
+  "Seiterjöchl": "rule: not joined to the rest of the lifts on the map",
+  "Surface lift": "rule: not joined to the rest of the lifts on the map"
+ },
+ "hold": "lifts not joined to the rest of the map (isolated by rule): "
+}

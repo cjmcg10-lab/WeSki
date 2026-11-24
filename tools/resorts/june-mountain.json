@@ -1,0 +1,40 @@
+{
+ "id": "june-mountain",
+ "name": "June Mountain",
+ "region": "California, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/4639999",
+ "include_ways": [
+  258025251,
+  258025252,
+  258025253,
+  258025254,
+  258025255,
+  258025256,
+  258025257
+ ],
+ "osm_bbox": [
+  -119.0932,
+  37.7376,
+  -119.0553,
+  37.7706
+ ],
+ "ratings_feed": {
+  "mtnpowder": 59
+ },
+ "openskimap": {
+  "id": "1f94daed2b308fa325be064eebc82535fcc3861b",
+  "cc": "US",
+  "runs": 36,
+  "lifts": 7,
+  "rated": 0.917,
+  "skimap": 540,
+  "web": "https://www.junemountain.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

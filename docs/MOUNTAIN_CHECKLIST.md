@@ -233,6 +233,10 @@ is in `tools/bulk/batch-1.md` (gate result, why held, numbers) and each one's ca
 this checklist only in part: ratings are OpenStreetMap's (not checked against the resort, and the app says so), no
 photo, no browser close-ups, and no person has looked at their joins.
 
+Automatic batch 2 (2026-11-24): the owner's list of 50 (54 maps) is in `tools/bulk/batch-2.md`, in the same state as
+batch 1 (OpenStreetMap ratings except Arapahoe Basin, Bear Mountain and June Mountain, which have resort feeds; no
+person has looked at the joins).
+
 AI checking pass, group 4 of 5 (2026-11-24, issue #45, branch `claude/45-ai-pass-4`): Mt. Hood Skibowl, Mt Norquay,
 Mt Seymour, Mt. Spokane, Northstar, Pajarito, Panorama, Pico, Powder Mountain, Purgatory, Red Mountain, Red River,
 Revelstoke, Sandia Peak, Ski Santa Fe, Schweitzer, Seven Springs, Sierra-at-Tahoe, Silver Mountain and SilverStar now have

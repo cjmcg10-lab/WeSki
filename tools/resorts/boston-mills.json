@@ -1,0 +1,40 @@
+{
+ "id": "boston-mills",
+ "name": "Boston Mills",
+ "region": "Ohio, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/452323654",
+ "include_ways": [
+  180853644,
+  180853645,
+  180853646,
+  180853647,
+  256778791,
+  256778792,
+  256778951
+ ],
+ "osm_bbox": [
+  -81.5731,
+  41.2582,
+  -81.5581,
+  41.2702
+ ],
+ "openskimap": {
+  "id": "cd7f28de9a4b85aff0761e9af449c5e6c9626168",
+  "cc": "US",
+  "runs": 7,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 276,
+  "web": "https://www.bmbw.com/"
+ },
+ "area_name": "Boston Mills Ski Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "only 7 runs on the map (OpenStreetMap is missing most of them)"
+}

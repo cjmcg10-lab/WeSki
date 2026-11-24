@@ -1,0 +1,40 @@
+{
+ "id": "mission-ridge",
+ "name": "Mission Ridge",
+ "region": "Washington, USA",
+ "tz": "America/Los_Angeles",
+ "auto": true,
+ "area_osm": "relation/15657511",
+ "include_ways": [
+  5847763,
+  5847765,
+  42016930,
+  42016931,
+  1047769647,
+  1047769648,
+  1159446485
+ ],
+ "osm_bbox": [
+  -120.4359,
+  47.2707,
+  -120.3831,
+  47.2958
+ ],
+ "openskimap": {
+  "id": "7d36a2d6c6dbcd0a0fb80e2bb65700cb3f6981da",
+  "cc": "US",
+  "runs": 54,
+  "lifts": 7,
+  "rated": 0.944,
+  "skimap": 186,
+  "web": "https://missionridge.com"
+ },
+ "area_name": "Mission Ridge",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "hold": "4 runs climb more than 12 m"
+}

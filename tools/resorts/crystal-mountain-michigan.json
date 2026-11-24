@@ -1,0 +1,40 @@
+{
+ "id": "crystal-mountain-michigan",
+ "name": "Crystal Mountain",
+ "region": "Michigan, USA",
+ "tz": "America/Detroit",
+ "auto": true,
+ "area_osm": "way/1155757094",
+ "include_ways": [
+  256966143,
+  256966144,
+  256966145,
+  256967160,
+  256967162,
+  256967163,
+  256967164,
+  562088687
+ ],
+ "osm_bbox": [
+  -86.0076,
+  44.515,
+  -85.9859,
+  44.533
+ ],
+ "openskimap": {
+  "id": "ab5c2ccfc1422ef1a91107df398e4978671a445f",
+  "cc": "US",
+  "runs": 55,
+  "lifts": 8,
+  "rated": 0.873,
+  "skimap": 429,
+  "web": "https://www.crystalmountain.com"
+ },
+ "area_name": "Crystal Mountain",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

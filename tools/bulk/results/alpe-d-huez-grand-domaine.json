@@ -1,0 +1,24 @@
+{
+ "id": "alpe-d-huez-grand-domaine",
+ "reachable": [
+  385,
+  385
+ ],
+ "auto_joins": 12,
+ "rule_joins": [],
+ "stuck_lift_ends": [],
+ "climbing_runs": 1,
+ "raised": 0,
+ "official": null,
+ "terrain_res": 1,
+ "terrain_shares": {
+  "other": 100.0
+ },
+ "notes": [
+  "FOUND MORE: the resort reaches beyond its download box; the box was widened from [6.0273, 45.0431, 6.1443, 45.1747] to [6.021, 45.0405, 6.1567, 45.1766]",
+  "lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Eau d'Olle Express (rides both ways)"
+ ],
+ "seconds": 284,
+ "failed": null,
+ "built": "2026-11-24"
+}

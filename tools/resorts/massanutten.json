@@ -1,0 +1,45 @@
+{
+ "id": "massanutten",
+ "name": "Massanutten",
+ "region": "Virginia, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "relation/5881053",
+ "include_ways": [
+  256741650,
+  256741651,
+  256741652,
+  256741653,
+  256741654,
+  256741655,
+  256741656,
+  256742045,
+  1230203954
+ ],
+ "osm_bbox": [
+  -78.7724,
+  38.3901,
+  -78.7476,
+  38.4072
+ ],
+ "openskimap": {
+  "id": "08bcd7a173c04efe03440e2dde2cb71e48c06bf8",
+  "cc": "US",
+  "runs": 22,
+  "lifts": 9,
+  "rated": 1.0,
+  "skimap": 197,
+  "web": "https://www.massresort.com/"
+ },
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ },
+ "isolated_lifts": [
+  "Lift 1"
+ ],
+ "isolated_notes": {
+  "Lift 1": "rule: not joined to the rest of the lifts on the map"
+ }
+}

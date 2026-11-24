@@ -1,0 +1,39 @@
+{
+ "id": "jack-frost-mountain",
+ "name": "Jack Frost Mountain",
+ "region": "Pennsylvania, USA",
+ "tz": "America/New_York",
+ "auto": true,
+ "area_osm": "way/390163427",
+ "include_ways": [
+  96606623,
+  96606624,
+  96606631,
+  96606634,
+  96606635,
+  96606638,
+  96606641
+ ],
+ "osm_bbox": [
+  -75.662,
+  41.102,
+  -75.6421,
+  41.1192
+ ],
+ "openskimap": {
+  "id": "4fbb65912b802e995555462c3a3952bce5cce852",
+  "cc": "US",
+  "runs": 21,
+  "lifts": 7,
+  "rated": 1.0,
+  "skimap": 254,
+  "web": "https://jfbb.com"
+ },
+ "area_name": "Jack Frost Mountain Resort",
+ "area_buffer": 300,
+ "terrain_source": "USGS 3DEP elevation (public domain) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

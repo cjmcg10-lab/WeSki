@@ -1,0 +1,42 @@
+{
+ "id": "mount-st-louis-moonstone",
+ "name": "Mount St. Louis Moonstone",
+ "region": "Ontario, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "include_ways": [
+  205687384,
+  205687385,
+  205687386,
+  205687388,
+  205687389,
+  205687391,
+  205687396,
+  205687397,
+  1220348826,
+  1385977464
+ ],
+ "osm_bbox": [
+  -79.6786,
+  44.6185,
+  -79.6583,
+  44.6342
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "59502ccf9594422399bf75afaa641f1943de0dc2",
+  "cc": "CA",
+  "runs": 41,
+  "lifts": 10,
+  "rated": 1.0,
+  "skimap": 132,
+  "web": "https://mountstlouis.com/"
+ },
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}

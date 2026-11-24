@@ -1,0 +1,42 @@
+{
+ "id": "kicking-horse",
+ "name": "Kicking Horse",
+ "region": "British Columbia, Canada",
+ "tz": "America/Edmonton",
+ "auto": true,
+ "area_osm": "way/476843455",
+ "include_ways": [
+  31289028,
+  31289030,
+  31289084,
+  31289145,
+  1483302018
+ ],
+ "osm_bbox": [
+  -117.1055,
+  51.2664,
+  -117.0399,
+  51.3033
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "64e116daf22181604ec3123222b9e6757d0d6ebb",
+  "cc": "CA",
+  "runs": 58,
+  "lifts": 5,
+  "rated": 1.0,
+  "skimap": 40,
+  "web": "https://kickinghorseresort.com/"
+ },
+ "area_name": "Kicking Horse Resort",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 59%, 30 m 41%)",
+ "terrain_res": 30,
+ "terrain_shares": {
+  "1m": 58.7,
+  "30m": 41.3
+ },
+ "hold": "8 runs no lift reaches"
+}

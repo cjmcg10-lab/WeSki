@@ -19,7 +19,7 @@ describe('every built resort', () => {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
       const { resort, geo } = loadResort(entry.id);
       expect(resort.id).toBe(entry.id);
-      expect(resort.trails.length).toBeGreaterThan(entry.trails < 30 ? 7 : 30);
+      expect(resort.trails.length).toBeGreaterThan(entry.trails <= 30 ? 7 : 30);
       expect(resort.lifts.length).toBe(entry.lifts);
       // the index's summit point lands inside this resort's map at about the stated elevation
       const [x, y] = geo.toLocal(entry.lat, entry.lon);

@@ -1,0 +1,43 @@
+{
+ "id": "mont-orford",
+ "name": "Mont Orford",
+ "region": "Quebec, Canada",
+ "tz": "America/Toronto",
+ "auto": true,
+ "area_osm": "relation/15656310",
+ "include_ways": [
+  105241452,
+  242170252,
+  242170263,
+  256851149,
+  258798276,
+  258799726,
+  905793134,
+  905793135
+ ],
+ "osm_bbox": [
+  -72.2477,
+  45.3045,
+  -72.2053,
+  45.3258
+ ],
+ "dem": {
+  "source": "canada"
+ },
+ "openskimap": {
+  "id": "443f083a450bb1a2f3beb7248d51c7c195c55a97",
+  "cc": "CA",
+  "runs": 37,
+  "lifts": 8,
+  "rated": 1.0,
+  "skimap": 91,
+  "web": "https://montorford.com/"
+ },
+ "area_name": "Mont Orford",
+ "area_buffer": 300,
+ "terrain_source": "NRCan HRDEM 1 m lidar mosaic, gaps from MRDEM 30 m (Open Government Licence - Canada) (1 m lidar 100%)",
+ "terrain_res": 1,
+ "terrain_shares": {
+  "1m": 100.0
+ }
+}
