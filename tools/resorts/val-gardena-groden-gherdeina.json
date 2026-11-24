@@ -113,8 +113,14 @@
    "kind": "funicular",
    "rail": true,
    "pts": [
-    [11.6721639, 46.5780002],
-    [11.6793831, 46.5979096]
+    [
+     11.6721639,
+     46.5780002
+    ],
+    [
+     11.6793831,
+     46.5979096
+    ]
    ],
    "why": "the Raschötz funicular (map lift 4), mapped in OpenStreetMap as a railway"
   },
@@ -124,8 +130,14 @@
    "rail": true,
    "both": true,
    "pts": [
-    [11.7367864, 46.5655827],
-    [11.7314225, 46.5572752]
+    [
+     11.7367864,
+     46.5655827
+    ],
+    [
+     11.7314225,
+     46.5572752
+    ]
    ],
    "why": "the underground train in S. Cristina between the Col Raiser and Saslong lifts (map lift 11), mapped as a railway"
   }
@@ -162,6 +174,5 @@
   386837390,
   386837391
  ],
- "rail_ways_note": "OpenSkiMap's railway pieces of the Raschötz funicular and the Ronda Express: build_data.py never takes railways as lifts, so they are drawn by extra_lifts (rail: true) along these tracks instead",
- "hold": "ratings not checked: the resort's typed slope lists (valgardena.it, dolomitisuperski.com) are not reachable from the build network, and the 2024-25 trail map (skimap.org 37723) names and numbers only its lifts and the 'Legendary 8', not the runs; OpenStreetMap ratings are shown until a list is read"
+ "rail_ways_note": "OpenSkiMap's railway pieces of the Raschötz funicular and the Ronda Express: build_data.py never takes railways as lifts, so they are drawn by extra_lifts (rail: true) along these tracks instead"
 }
