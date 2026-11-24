@@ -11,7 +11,7 @@ const args = process.argv.slice(2);
 const opt = (k, d) => { const i = args.indexOf(k); if (i < 0) return d; const v = args[i + 1]; args.splice(i, 2); return v; };
 const LIMIT = +opt('--limit', 12), OUT = opt('--json', null);
 const ids = args.length ? args : readdirSync('public/data', { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name).sort();
-const FLAT = /travers|catwalk|cat track|road|skiweg|weg\b|verbindung|liaison|chemin|route|connect|link|access|run-?out|ziehweg|piste de liaison|retour|boulevard|path|trail to|way to|schuss|bridge|tunnel/i;
+const FLAT = /travers|cat[- ]?walk|cat track|road|skiweg|weg\b|verbindung|liaison|chemin|route|connect|link|access|run-?out|ziehweg|piste de liaison|retour|boulevard|path|trail to|way to|schuss|bridge|tunnel/i;
 
 const all = [];
 for (const id of ids) {

@@ -19,7 +19,11 @@ describe('every built resort', () => {
     it(`${entry.name}: data is sane and every lift end can be reached from every other`, () => {
       const { resort, geo } = loadResort(entry.id);
       expect(resort.id).toBe(entry.id);
-      expect(resort.trails.length).toBeGreaterThan(entry.trails <= 30 ? 7 : 30);
+      // a small hill whose own complete list has 7 runs or fewer shows them all (tools/bulk/gate.py small_hill_runs)
+      const off = existsSync(`tools/official/${entry.id}.json`) ? JSON.parse(readFileSync(`tools/official/${entry.id}.json`, 'utf8')) : {};
+      const listed = new Set([...Object.keys(off.runs || {}), ...Object.keys(off.confirm || {})]);
+      const small = listed.size > 0 && listed.size <= 7 && [...listed].every((n) => resort.trails.some((t) => t.name === n));
+      expect(resort.trails.length).toBeGreaterThan(small ? listed.size - 1 : entry.trails <= 30 ? 7 : 30);
       expect(resort.lifts.length).toBe(entry.lifts);
       // the index's summit point lands inside this resort's map at about the stated elevation
       const [x, y] = geo.toLocal(entry.lat, entry.lon);

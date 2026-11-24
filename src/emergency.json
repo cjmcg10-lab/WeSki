@@ -231,6 +231,10 @@
    "source": "https://www.boltonvalley.com/the-resort/contact-us/",
    "checked": "2026-11-23"
   },
+  "boston-mills": {
+   "country": "US",
+   "checked": "2026-11-24"
+  },
   "boyne-highlands": {
    "country": "US",
    "checked": "2026-11-24"
@@ -702,6 +706,10 @@
    "label": "Mount Washington First Aid",
    "source": "https://skimap.org/skimaps/view/30655",
    "checked": "2026-11-23"
+  },
+  "mountain-high": {
+   "country": "US",
+   "checked": "2026-11-24"
   },
   "mt-bachelor": {
    "country": "US",

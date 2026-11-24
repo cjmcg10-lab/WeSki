@@ -35,6 +35,5 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
- },
- "hold": "only 7 runs on the map, but that is the whole resort: the 2025-26 trail map shows exactly these 7 (Summit, Tiger, Buttermilk, Jug Handle, Peter's Pride, North Bowl, Croyle), all in OpenStreetMap. Held only because the app's tests need more than 7 runs: combine with Brandywine (same resort, one ticket) into one map, or let the test accept a resort whose own list has 7 or fewer."
+ }
 }

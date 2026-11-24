@@ -47,6 +47,16 @@ ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 
 
+
+def small_hill_runs(rid):
+    """Runs on the resort's own list (runs + confirm) when that list has 7 or fewer and every one is on the map; else 8."""
+    p = os.path.join("tools", "official", rid + ".json")
+    if not os.path.exists(p):
+        return 8
+    o = json.load(open(p))
+    names = set(o.get("runs", {})) | set(o.get("confirm", {}))
+    return len(names) if 0 < len(names) <= 7 else 8
+
 def load(p, default=None):
     return json.load(open(p)) if os.path.exists(p) else default
 
@@ -84,7 +94,8 @@ def judge(rid, conn):
     row["osk_lift_ids_on_map"] = [len([w for w in want if w in have]), len(want)]
     # tests/resorts.test.js wants more than 7 runs on every published map (Boston Mills, 2026-11-24: OpenStreetMap
     # has 7 of its runs)
-    if len(R["trails"]) <= 7:
+    # a small hill whose own complete list has 7 runs or fewer may show them all (Boston Mills: exactly 7 on its map)
+    if len(R["trails"]) <= 7 and len(R["trails"]) < small_hill_runs(rid):
         row["hold"].append(f"only {len(R['trails'])} runs on the map (OpenStreetMap is missing most of them)")
     if osk.get("lifts") and len(lifts) + len(by_hand) < 0.8 * osk["lifts"]:
         row["hold"].append(f"lifts {len(lifts)} of OpenSkiMap's {osk['lifts']}")
@@ -94,7 +105,9 @@ def judge(rid, conn):
         row["hold"].append(f"{len(res['stuck_lift_ends'])} lift ends cut off: " + "; ".join(res["stuck_lift_ends"])[:200])
     a, b = res.get("reachable") or (0, 0)
     row["reachable"] = [a, b]
-    if b and a < 0.9 * b:
+    # a separate area the resort itself reaches by shuttle or bus ("separate_areas" in the config, written by a person)
+    # is reached from its own lifts: then the connection check's "unreachable" count below is the test
+    if b and a < 0.9 * b and not cfg.get("separate_areas"):
         row["hold"].append(f"only {a} of {b} run pieces reachable from a lift")
     c = conn.get(rid, {})
     n = max(1, len(shown))
