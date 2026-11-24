@@ -1,18 +1,16 @@
 # Chamonix: Grands Montets (les-grands-montets)
 
-Built 2026-11-24 by tools/pipeline.py. Terrain: ign.
+Built 2026-11-24 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
 
-**48 runs (26 named, 32.4 km), 9 lifts. 3 things to look at.**
+**39 runs (21 named, 24.4 km), 9 lifts. Ready.**
 
-- **LOOK**: ratings NOT checked: not ready to go live  
-  make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)
-- **LOOK**: reachable from the base: 40 of 48 run pieces  
-  not reachable: ['La Face', 'Pas du Chevre', 'Point de vue', 'Point de vue (sometimes groomed)', 'Pylônes']
-- **LOOK**: 1 runs climb more than 12 m  
-  Pylônes 104 m
-- info: 1 joins made automatically (look at the longest ones on the map)  
-  Jardin d'Enfants (top) ski 117 m
+- info: 9 run pieces hidden (not on the resort's list and not a link)  
+  Point de vue (860901464, 2093 m): hidden by hand: starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this run this season; Pas du Chevre (1365539613, 1694 m): hidden by hand: starts at the Grands Montets top station (3275 m), whose cable car is being rebuilt: the resort's 2026-27 map draws it dashed as 'Travaux de reconstruction en cours', so no lift reaches this
 - info: audit: dead end: 2, run climbs: 1
-- info: FOUND MORE: the resort reaches beyond its download box; the box was widened from [6.9176, 45.9437, 6.9716, 45.985] to [6.9129, 45.9363, 6.976, 45.9866]
+- info: same counts as the previous build
+- pass: ratings checked against the resort's own list  
+  18 on the list, 33 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 8 of 8 on the map
 - pass: 0 shown runs rated by guess
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
+- pass: 0 runs climb more than 12 m

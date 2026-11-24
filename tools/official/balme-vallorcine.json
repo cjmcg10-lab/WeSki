@@ -1,0 +1,43 @@
+{
+ "source": "Chamonix Balme - Le Tour - Vallorcine piste map 2026-27 (skimap.org map 46150, the resort's PDF): run labels are real text printed in the run's colour; matched to map runs by script, disagreements with OpenStreetMap read by eye from enlarged crops",
+ "fetched": "2026-11-24",
+ "scheme": "colour",
+ "runs": {
+  "Aiguillette": 2,
+  "Alpages": 2,
+  "Arve": 1,
+  "Belle Place Bas": 2,
+  "Belle Place Haut": 2,
+  "Béchat": 1,
+  "Caisets": 2,
+  "Les Caisets": 2,
+  "Col": 1,
+  "Ecuries": 2,
+  "Esserts Haut": 1,
+  "Les Posettes": 1,
+  "Liaison Balme": 1,
+  "Liaison Esserts": 1,
+  "Retour Charamillon": 1,
+  "Solonges": 2,
+  "Solonges Haut": 2,
+  "Stade Balme": 2,
+  "Variante Esserts": 2
+ },
+ "names_note": "Map labels: Les Alpages = Alpages (red on the map, OpenStreetMap blue), Béchat is blue on the map (OpenStreetMap red), Stade (red, beside the TK Col) = Stade Balme (OpenStreetMap blue), Le Col = Col, Les Esserts = Esserts Haut, Charamillon = Retour Charamillon, Belle Place = Belle Place Haut and Bas, Écuries = Ecuries.",
+ "not_runs": {
+  "Snow Park": "terrain park at Balme",
+  "Marmottes": "black line printed on the map near the Tête de Balme chair with no run of that name in OpenStreetMap; not placed"
+ },
+ "lifts": [
+  "Vallorcine",
+  "Tête de Balme",
+  "Plan des Reines",
+  "Posettes",
+  "Aiguillette",
+  "Col",
+  "Arve",
+  "Autannes",
+  "Charamillon"
+ ],
+ "lifts_source": "lift names printed on the same map (TC Vallorcine, TSD Tête de Balme, TK Plan des Reines, TK des Posettes, TK Aiguillette, TK Col, TK Arve, TSD Autannes, TC Charamillon)"
+}

@@ -1,22 +1,21 @@
 # Verbier – 4 Vallées (4-vallees-verbier-la-tzoumaz-nendaz-veys)
 
-Built 2026-11-24 by tools/pipeline.py. Terrain: swiss.
+Built 2026-11-24 by tools/pipeline.py. Terrain: not rebuilt (--checks-only).
 
-**480 runs (97 named, 198.3 km), 75 lifts. 4 things to look at.**
+**454 runs (96 named, 196.5 km), 75 lifts. 3 things to look at.**
 
-- **LOOK**: ratings NOT checked: not ready to go live  
-  make tools/official/<id>.json (a feed if there is one, else the trail map: see docs/ADDING_MOUNTAINS.md)
+- **LOOK**: 25 runs on the resort's list are not on the map  
+  Cabane, Compétition, Etablons, Etiértses, Gentianes téléski, Grenier, Greppon Blanc piste de liaison, Inalpe, Lacs II, Matze, Patiefray, Planards, Planards - Esserts, Route de Médran, Route du Marteau, Siviez, Sud, Taillay, Theytaz 1, Tournelle, Tracouet - Hte Nendaz par Alpage, Tracouet - bas de piste, Tronçon, Tropicale, Tsarbonné (draw them, or explain them in the official json: same_as / not_runs / elsewhere)
 - **LOOK**: 2 shown runs rated by guess  
   (no name)
-- **LOOK**: reachable from the base: 481 of 483 run pieces  
-  not reachable: ['unnamed#335', 'unnamed#336']
-- **LOOK**: 2 runs climb more than 12 m  
-  Moay 20 m; L'Eteygeon 27 m
-- info: 11 joins made automatically (look at the longest ones on the map)  
-  Itinéraire Le Châble bottom ski 128 m; Fontanet bottom ski 38 m; None bottom ski 167 m; None bottom ski 68 m; L'Eteygeon bottom walk 41 m; L'Eteygeon ski 41 m; Vallon d'Arbi ski 4 m; unnamed#360 ski 29 m; Tortin ski 23 m; Châble - Verbier (bottom) ski 128 m; Les Esserts-Les Planards (bottom) ski 120 m
-- info: 3 run pieces hidden (not on the resort's list and not a link)  
-  (no name) (55151514, 7335 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (446319329, 2121 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (267831678, 95 m): OpenStreetMap: backcountry, no name (not a resort run)
-- info: audit: flat black: 4, lift missing: 3, no rating: 3, run climbs: 3, run missing: 4, stub: 13
-- info: lifts fixed by rule (two-way gondola, or isolated: not joined to the rest): Lift, Magic carpet
-- info: build_canopy.py did not finish: build_canopy.py failed:
+- **LOOK**: 1 runs climb more than 12 m  
+  Moay 20 m
+- info: 22 run pieces hidden (not on the resort's list and not a link)  
+  (no name) (55151514, 7335 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (446319329, 2121 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (267831675, 716 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (761801230, 125 m): unnamed piece, not on the resort's list, leads nowhere on it; (no name) (267831678, 95 m): OpenStreetMap: backcountry, no name (not a resort run); (no name) (1488757570, 91 m): unnamed piece, not on the re
+- info: 14 lifts flagged for review were already on the previous build (checked then)
+- info: audit: flat black: 8, lift missing: 3, no rating: 3, run climbs: 2, run missing: 4, steep green: 1, stub: 13
+- info: same counts as the previous build
+- pass: ratings checked against the resort's own list  
+  98 on the list, 123 matched, 0 corrected from OpenStreetMap
+- pass: lifts on the resort's list: 69 of 69 on the map
 - pass: 0 lift ends cannot be reached or cannot get back to the rest (the tests fail on this)
