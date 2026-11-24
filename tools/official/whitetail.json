@@ -1,0 +1,47 @@
+{
+ "source": "Whitetail Resort trail map (James Niehues), skimap.org map 39011 (2025), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "101": 1,
+  "Almost Home": 0,
+  "Angel Drop": 1,
+  "Bob Small's Traverse": 1,
+  "Bold Decision": 3,
+  "Drop In": 2,
+  "Drop Out": 1,
+  "Exhibition": 2,
+  "Fallmount": 1,
+  "Fanciful": 1,
+  "Far Side": 2,
+  "Homerun": 1,
+  "Limelight": 1,
+  "Lower Angel Drop": 1,
+  "Northern Lights": 0,
+  "Ridge Runner": 1,
+  "Sidewinder": 0,
+  "Snow Dancer": 1,
+  "SnowPark": 0,
+  "Stalker": 1,
+  "Velvet": 0
+ },
+ "blue_black": [],
+ "lifts": [
+  "EZ Rider Quad",
+  "Expert's Choice Quad",
+  "First Class Magic Carpet",
+  "First Tracks",
+  "Lift Off Quad",
+  "The Launching Pad",
+  "U-Me Double",
+  "Whitetail Express Quad"
+ ],
+ "confirm": {
+  "Whitetail Learning Center": "the beginner area beside the Whitetail Lesson Center on the trail map (no difficulty symbol)"
+ },
+ "not_runs": {
+  "Half Pipe": "terrain park feature"
+ },
+ "lifts_explained": {
+  "First Tracks": "beginner carpet beside The Launching Pad at the lesson center; not in OpenStreetMap"
+ }
+}

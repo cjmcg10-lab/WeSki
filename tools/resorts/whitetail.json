@@ -40,5 +40,9 @@
  ],
  "isolated_notes": {
   "Magic carpet": "rule: not joined to the rest of the lifts on the map"
- }
+ },
+ "rename": {
+  "Jib Junction": "Lower Angel Drop"
+ },
+ "rename_note": "Jib Junction (OpenStreetMap) runs from the Angel Drop / Drop In junction to the base, where the 2025 trail map draws Lower Angel Drop (the 2025 map dropped the name Jib Junction)"
 }
