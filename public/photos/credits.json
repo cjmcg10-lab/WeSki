@@ -1,8 +1,93 @@
 {
+ "afton-alps": {
+  "artist": "Collin Knopp-Schwyn",
+  "lic": "CC BY 4.0",
+  "title": "File:Afton Alps, January 2014, Sally's Valley.jpg"
+ },
+ "alta": {
+  "artist": "Sbvr6",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:AltaPano.jpg"
+ },
+ "alyeska": {
+  "artist": "Jon Konrath",
+  "lic": "CC BY 2.0",
+  "title": "File:Mount Alpenglow from Alyeska Resort.jpg"
+ },
+ "aspen-highlands": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Aspen Highlands spring skiing.jpg"
+ },
+ "aspen-mountain": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Aspen Mountain spring skiing over Aspen.jpg"
+ },
+ "aspen-snowmass": {
+  "artist": "Wolfgang Moroder",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Snowmass gondola and Ski area.jpg"
+ },
+ "attitash-mountain": {
+  "artist": "Attitashmountain",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Attitash aerial.jpg"
+ },
+ "banff-sunshine-village": {
+  "artist": "Axel Pettersson",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Sunshine Village, December 2004 12.jpg"
+ },
+ "bear-valley": {
+  "artist": "Maxd1848",
+  "lic": "CC0",
+  "title": "File:Bear Valley overlook.jpg"
+ },
+ "beaver-creek-arrowhead-mountain": {
+  "artist": "Rudi Riet from Washington, DC, United States",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Birds of Prey (ski course), Beaver Creek.jpg"
+ },
+ "berkshire-east": {
+  "artist": "Pi.1415926535",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Berkshire East Ski Resort from Charlemont, September 2022.JPG"
+ },
+ "big-sky": {
+  "artist": "A-Reck",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:On the Lift at Big Sky Resort - panoramio.jpg"
+ },
+ "big-white": {
+  "artist": "Hamedog at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Gem Lake Express.jpg"
+ },
+ "blue-mountain-ontario": {
+  "artist": "Chensiyuan at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Blue Mountain Resort.JPG"
+ },
+ "blue-mountain-pennsylvania": {
+  "artist": "Jkarps",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Blue Mountain Ski Area Feb 2014.JPG"
+ },
+ "bogus-basin-mountain-recreation": {
+  "artist": "cifraser1",
+  "lic": "CC BY 2.0",
+  "title": "File:Bogus Basin ski area (2017).jpg"
+ },
  "bolton-valley": {
   "artist": "Robot psychiatrist",
   "lic": "CC BY-SA 4.0",
   "title": "File:Bolton Valley December 2014.JPG"
+ },
+ "boyne-mountain": {
+  "artist": "American Eagle",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Boyne Mountain.JPG"
  },
  "breckenridge": {
   "artist": "좀비 브렌다",
@@ -14,15 +99,50 @@
   "lic": "CC0",
   "title": "File:Bretton Woods Resort.jpg"
  },
+ "brian-head": {
+  "artist": "DarkNight0917",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Brian Head Dec 2023 03.jpg"
+ },
+ "bridger-bowl": {
+  "artist": "Richard Barley",
+  "lic": "CC BY 2.0",
+  "title": "File:Bridger Bowl.jpg"
+ },
+ "brighton": {
+  "artist": "Darkbowmen",
+  "lic": "CC BY-SA 2.5",
+  "title": "File:Usa Utah Brighton Peaks.jpg"
+ },
+ "bromley-mountain-bromley-mountain": {
+  "artist": "Jared C. Benedict",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Bromley Mountain aerial.jpg"
+ },
+ "bromont-montagne-d-experience": {
+  "artist": "Martin Boyer",
+  "lic": "CC BY-SA 2.0",
+  "title": "File:Bromont QC CA.jpg"
+ },
  "burke": {
   "artist": "Patrick McCaffrey",
   "lic": "CC BY-SA 3.0",
   "title": "File:Burke 3899w.JPG"
  },
+ "camelback-mountain": {
+  "artist": "Ekem at English Wikipedia",
+  "lic": "Public domain",
+  "title": "File:Camelbackski1.jpg"
+ },
  "cannon-mountain": {
   "artist": "Ericshawwhite",
   "lic": "CC BY-SA 3.0",
   "title": "File:Mt. Layfayette from Cannon Mountain Ski.JPG"
+ },
+ "catamount": {
+  "artist": "RkummerLandau",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Winter Aerial Shot of Catamount Mountain Resort.jpg"
  },
  "chamonix": {
   "artist": "Webwizzard",
@@ -34,10 +154,75 @@
   "lic": "Public domain",
   "title": "File:Copper Mountain East Village.jpg"
  },
+ "cranmore-mountain": {
+  "artist": "gotjen",
+  "lic": "CC BY 3.0",
+  "title": "File:Cranmore Mountain from parking lot - panoramio.jpg"
+ },
+ "crested-butte-mountain": {
+  "artist": "Peter from Wellesley",
+  "lic": "CC BY 2.0",
+  "title": "File:Silver Queen Chair, CBMR.jpg"
+ },
+ "crystal-mountain": {
+  "artist": "Patrickneil",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Crystal Mountain skiers.jpg"
+ },
+ "cypress-mountain": {
+  "artist": "Shaund (Wikivoyage)",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Cypress mtn.jpg"
+ },
+ "deer-valley": {
+  "artist": "Don Ramey Logan",
+  "lic": "CC BY 4.0",
+  "title": "File:Deer Valley Ski Resort Park City Mogul pistes.jpg"
+ },
+ "eldora": {
+  "artist": "KamenG",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Eldora Mountain Ski Resort at Top of International.jpg"
+ },
+ "fernie-alpine": {
+  "artist": "FJ48",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Fernie alpine resort February 2024 White pass quad.jpg"
+ },
+ "geto-kogen": {
+  "artist": "Sawa-love",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:C1 and installations.jpg"
+ },
+ "gore-mountain": {
+  "artist": "Ian Taylor (Iant333)",
+  "lic": "Public domain",
+  "title": "File:Ski 003.jpg"
+ },
+ "grand-targhee": {
+  "artist": "Ams100272",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Blackfoot-grand-targhee-march-2024.jpg"
+ },
+ "gunstock-recreation": {
+  "artist": "Jenk603",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Gunstock 0152As.jpg"
+ },
  "heavenly": {
   "artist": "JMatazzoni (WMF)",
   "lic": "CC BY-SA 4.0",
   "title": "File:Welcome to California sign, Heavenly resort, Lake Tahoe.jpg"
+ },
+ "homewood": {
+  "artist": "jrtaylor08",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Homewood summit - panoramio.jpg"
+ },
+ "hunter-mountain": {
+  "artist": "CurlingMan13",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Kaatskill Flyer Chairlift at Windham Mountain Resort.jpg"
  },
  "jackson-hole": {
   "artist": "Enricokamasa",
@@ -59,10 +244,30 @@
   "lic": "CC BY-SA 3.0",
   "title": "File:Bear Mountain Killington.jpg"
  },
+ "kimberley-alpine": {
+  "artist": "Connormah",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Kimberley Alpine Resort 2.JPG"
+ },
+ "kirkwood-mountain": {
+  "artist": "glenngould",
+  "lic": "CC BY 2.0",
+  "title": "File:Snowboarder and skier from a ski lift, Kirkwood, California, 2009.jpeg"
+ },
  "la-plagne": {
   "artist": "DimiTalen",
   "lic": "CC0",
   "title": "File:View of Plagne Villages from the Mélèzes skilift, La Plagne, 2009.jpg"
+ },
+ "lake-louise": {
+  "artist": "Pierre5018",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Lake Louise 2018-03 ski.jpg"
+ },
+ "le-massif": {
+  "artist": "4net",
+  "lic": "CC BY 3.0",
+  "title": "File:Le Massif Petite-Rivière-Saint-François - panoramio - 4net.jpg"
  },
  "les-arcs": {
   "artist": "DimiTalen",
@@ -74,6 +279,26 @@
   "lic": "CC0",
   "title": "File:Skiers ready to start skiing, Coins slope, Les Contamines-Montjoie, 2025.jpg"
  },
+ "loon": {
+  "artist": "Luinfana",
+  "lic": "Public domain",
+  "title": "File:Loonmtn northpeak.JPG"
+ },
+ "lost-trail": {
+  "artist": "CaptainEek",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Lost Trail Ski Chair 1.jpg"
+ },
+ "loveland-basin": {
+  "artist": "Xnatedawgx",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Headeduplift8Loveland.jpg"
+ },
+ "lutsen-mountains": {
+  "artist": "Elkman at English Wikipedia",
+  "lic": "CC BY-SA 3.0",
+  "title": "File:Lutsen Mountains.jpg"
+ },
  "magic-mountain": {
   "artist": "Jared C. Benedict",
   "lic": "CC BY-SA 4.0",
@@ -83,6 +308,11 @@
   "artist": "Plane777",
   "lic": "Public domain",
   "title": "File:Mammoth Mountain Ski Area.jpg"
+ },
+ "marmot-basin": {
+  "artist": "Marmot.basin",
+  "lic": "CC BY-SA 4.0",
+  "title": "File:Mid Mountain at Marmot Basin.jpg"
  },
  "mohawk-mountain": {
   "artist": "Jrclark",
