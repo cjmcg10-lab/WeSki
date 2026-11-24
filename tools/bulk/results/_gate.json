@@ -389,10 +389,10 @@
   "name": "Bear Valley",
   "region": "California, USA",
   "seconds": 54,
-  "hold": [
-   "19 dead-end runs"
+  "hold": [],
+  "soft": [
+   "19 dead ends explained in the config (dead_end_notes)"
   ],
-  "soft": [],
   "osk_lifts": 9,
   "osk_runs": 61,
   "lifts": 9,
@@ -418,7 +418,7 @@
   "guess_pct": 0,
   "ratings": "resort feed (Bear Valley trail map 2025 (skimap.org/s)",
   "terrain_res": 1,
-  "gate": "hold"
+  "gate": "publish"
  },
  {
   "id": "beaver-creek-arrowhead-mountain",

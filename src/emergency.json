@@ -130,6 +130,14 @@
    "country": "CA",
    "checked": "2026-11-23"
   },
+  "bear-valley": {
+   "country": "US",
+   "phone": "(209) 753-2301 ext. 669",
+   "tel": "+12097532301,669",
+   "label": "Bear Valley Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/45900",
+   "checked": "2026-11-24"
+  },
   "beaver-creek-arrowhead-mountain": {
    "country": "US",
    "checked": "2026-11-23"
@@ -206,6 +214,14 @@
   },
   "brian-head": {
    "country": "US",
+   "checked": "2026-11-24"
+  },
+  "bridger-bowl": {
+   "country": "US",
+   "phone": "406-556-5678",
+   "tel": "+14065565678",
+   "label": "Bridger Bowl emergency number (ski patrol)",
+   "source": "https://skimap.org/skimaps/view/37947",
    "checked": "2026-11-24"
   },
   "brighton": {
@@ -287,6 +303,14 @@
    "country": "US",
    "checked": "2026-11-24"
   },
+  "crested-butte-mountain": {
+   "country": "US",
+   "phone": "(970) 349-2236",
+   "tel": "+19703492236",
+   "label": "Crested Butte Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/36782",
+   "checked": "2026-11-24"
+  },
   "crystal-mountain": {
    "country": "US",
    "phone": "360-663-3064",
@@ -317,6 +341,14 @@
    "tel": "+13032588102",
    "label": "Eldora Ski Patrol",
    "source": "https://skimap.org/skimaps/view/45873",
+   "checked": "2026-11-24"
+  },
+  "fernie-alpine": {
+   "country": "CA",
+   "phone": "250.423.2426",
+   "tel": "+12504232426",
+   "label": "Fernie Patrol / Dispatch",
+   "source": "https://skimap.org/skimaps/view/41906",
    "checked": "2026-11-24"
   },
   "geto-kogen": {
@@ -1037,30 +1069,6 @@
    "source": "https://www.zermatt.swiss/en/info/emergency-numbers",
    "note": "On the Italian side (Cervinia), 112 works too.",
    "checked": "2026-11-23"
-  },
-  "bridger-bowl": {
-   "country": "US",
-   "phone": "406-556-5678",
-   "tel": "+14065565678",
-   "label": "Bridger Bowl emergency number (ski patrol)",
-   "source": "https://skimap.org/skimaps/view/37947",
-   "checked": "2026-11-24"
-  },
-  "crested-butte-mountain": {
-   "country": "US",
-   "phone": "(970) 349-2236",
-   "tel": "+19703492236",
-   "label": "Crested Butte Ski Patrol",
-   "source": "https://skimap.org/skimaps/view/36782",
-   "checked": "2026-11-24"
-  },
-  "fernie-alpine": {
-   "country": "CA",
-   "phone": "250.423.2426",
-   "tel": "+12504232426",
-   "label": "Fernie Patrol / Dispatch",
-   "source": "https://skimap.org/skimaps/view/41906",
-   "checked": "2026-11-24"
   }
  }
 }
