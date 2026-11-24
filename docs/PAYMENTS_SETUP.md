@@ -120,8 +120,15 @@ Paying needs an account, and accounts need sign-in emails.
 - Then copy the destination's **secret key** and put it in Cloudflare (as in A2) as secret `PADDLE_WEBHOOK_SECRET`.
   Do not send it to Claude.
 - Send to Claude: "Paddle webhook secret saved".
+- **Sandbox and live are separate accounts, each with its own destination and secret.** While the website still uses
+  the sandbox (test card purchases), the destination must exist in the sandbox dashboard
+  (`sandbox-vendors.paddle.com`) too, and `PADDLE_WEBHOOK_SECRET` in Cloudflare must hold the **sandbox** secret
+  (2026-11-24: a sandbox test purchase gave no pass because only the live destination existed; Paddle sent nothing).
+  On launch day it goes back to the live secret (B8).
 
 **B8. Claude switches on, you test.**
+- You, on launch day: put the **live** destination's secret back in Cloudflare as `PADDLE_WEBHOOK_SECRET` (Paddle live
+  dashboard → Developer tools → Notifications → the SkiWithMe destination shows its secret key).
 - Claude (in a pull request): turns on payments (`PAYWALL` on, Paddle set to live, your token and price ids).
 - You: once it is live, buy a Day Pass with your own card on the website, check the app shows the pass, then refund
   it in Paddle (Transactions → the purchase → Refund).
