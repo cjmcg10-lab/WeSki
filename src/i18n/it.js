@@ -591,4 +591,9 @@ export default {
   1536: "Gratis: oggi e domani per una montagna. Con un pass: tutte le montagne della lista, la settimana intera ora per ora, l’ordinamento per giorno e il pianificatore.",
   1537: "Vedi le previsioni complete",
   1538: "Le altre montagne restano nella lista per quando avrai un pass.",
+  1540: "Testa a testa",
+  1541: "{0}, {1}: punteggio sci {2}, {3}. Intervallo probabile da {4} a {5}. Affidabilità {6}.",
+  1542: "Intervallo probabile: {0}–{1}",
+  1543: "L’intervallo mostra come cambia il punteggio se temperatura, neve o vento finiscono all’estremo basso o alto della previsione d’insieme di MeteoSvizzera.",
+  1544: "Intervalli per i giorni da 6 a 8. Fonte: MeteoSvizzera",
 };

@@ -30,5 +30,8 @@
     "PADDLE_CLIENT_TOKEN": "",
     "PADDLE_PRICES": "{}"
   },
+  // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
+  // worker/meteoswiss.js). Most steps find nothing to do; a new run takes about 13 steps every 6 hours.
+  "triggers": { "crons": ["*/5 * * * *"] },
   "observability": { "enabled": true }
 }

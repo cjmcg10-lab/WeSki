@@ -591,4 +591,9 @@ export default {
   1536: "Gratuit : aujourd’hui et demain pour une montagne. Avec un pass : toutes vos montagnes, la semaine entière heure par heure, le tri par jour et le planificateur.",
   1537: "Voir les prévisions complètes",
   1538: "Vos autres montagnes restent dans votre liste pour quand vous aurez un pass.",
+  1540: "Au coude-à-coude",
+  1541: "{0}, {1} : score de ski {2}, {3}. Fourchette probable de {4} à {5}. Confiance {6}.",
+  1542: "Fourchette probable : {0}–{1}",
+  1543: "La fourchette montre comment le score change si la température, la neige ou le vent se situent au bas ou au haut de la prévision d’ensemble de MétéoSuisse.",
+  1544: "Fourchettes pour les jours 6 à 8. Source : MétéoSuisse",
 };

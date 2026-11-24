@@ -591,4 +591,9 @@ export default {
   1536: "Kostenlos: heute und morgen an einem Berg. Mit Pass: alle Berge deiner Liste, die ganze Woche Stunde für Stunde, Sortieren nach Tag und der Reiseplaner.",
   1537: "Ganze Vorhersage ansehen",
   1538: "Deine anderen Berge bleiben auf der Liste, bis du einen Pass hast.",
+  1540: "Knappe Sache",
+  1541: "{0}, {1}: Ski-Wert {2}, {3}. Wahrscheinlicher Bereich {4} bis {5}. Zuverlässigkeit {6}.",
+  1542: "Wahrscheinlicher Bereich: {0}–{1}",
+  1543: "Der Bereich zeigt, wie sich der Wert ändert, wenn Temperatur, Schnee oder Wind am unteren oder oberen Ende der Ensemble-Prognose von MeteoSchweiz liegen.",
+  1544: "Bereiche für die Tage 6 bis 8. Quelle: MeteoSchweiz",
 };

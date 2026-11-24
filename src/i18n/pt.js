@@ -591,4 +591,9 @@ export default {
   1536: "Grátis: hoje e amanhã numa montanha. Com um passe: todas as montanhas da sua lista, a semana inteira hora a hora, ordenar por dia e o planeador de viagem.",
   1537: "Ver a previsão completa",
   1538: "As suas outras montanhas ficam na lista para quando tiver um passe.",
+  1540: "Muito equilibrado",
+  1541: "{0}, {1}: pontuação de esqui {2}, {3}. Faixa provável de {4} a {5}. Confiança {6}.",
+  1542: "Faixa provável: {0}–{1}",
+  1543: "A faixa mostra como a pontuação muda se a temperatura, a neve ou o vento ficarem no extremo baixo ou alto da previsão por conjunto da MeteoSwiss.",
+  1544: "Faixas para os dias 6 a 8. Fonte: MeteoSwiss",
 };

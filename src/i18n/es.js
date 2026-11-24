@@ -591,4 +591,9 @@ export default {
   1536: "Gratis: hoy y mañana en una montaña. Con un pase: todas las montañas de tu lista, la semana entera hora a hora, ordenar por día y el planificador de viajes.",
   1537: "Ver el pronóstico completo",
   1538: "Tus otras montañas se quedan en tu lista para cuando tengas un pase.",
+  1540: "Muy reñido",
+  1541: "{0}, {1}: puntuación de esquí {2}, {3}. Rango probable de {4} a {5}. Confianza {6}.",
+  1542: "Rango probable: {0}–{1}",
+  1543: "El rango muestra cuánto cambia la puntuación si la temperatura, la nieve o el viento quedan en el extremo bajo o alto del pronóstico por conjuntos de MeteoSwiss.",
+  1544: "Rangos para los días 6 a 8. Fuente: MeteoSwiss",
 };

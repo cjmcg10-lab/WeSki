@@ -591,4 +591,9 @@ export default {
   1536: "Gratis: vandaag en morgen voor één berg. Met een pas: elke berg op je lijst, de hele week uur per uur, sorteren per dag en de reisplanner.",
   1537: "Bekijk de volledige voorspelling",
   1538: "Je andere bergen blijven op je lijst voor als je een pas hebt.",
+  1540: "Nek-aan-nek",
+  1541: "{0}, {1}: skiscore {2}, {3}. Waarschijnlijk bereik {4} tot {5}. Betrouwbaarheid {6}.",
+  1542: "Waarschijnlijk bereik: {0}–{1}",
+  1543: "Het bereik laat zien hoe de score verandert als temperatuur, sneeuw of wind aan de lage of hoge kant van de ensembleverwachting van MeteoSwiss uitvalt.",
+  1544: "Bereiken voor dag 6 tot 8. Bron: MeteoSwiss",
 };

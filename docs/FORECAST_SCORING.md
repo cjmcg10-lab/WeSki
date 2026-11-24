@@ -1,6 +1,6 @@
-# Forecast scoring engine (version 1.7.0)
+# Forecast scoring engine (version 1.8.0)
 
-Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Version 1.6.0 is issue #12 (a new explanation code, `EX_RAIN_AT_BASE_DRY`, found in the acceptance test). Version 1.7.0 is issue #51 (a `NT_VERY_COLD` day note; no weight or curve changed). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
+Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detail levels); the server side is in `docs/FORECAST_HISTORY.md`. Version 1.4.0 is issue #9 (the upper-hold cap, see Calibration round 1). Version 1.5.0 is issue #8 (weather alerts as day notes; no ensemble source was feasible, see `docs/FORECAST_SOURCES.md`). Version 1.6.0 is issue #12 (a new explanation code, `EX_RAIN_AT_BASE_DRY`, found in the acceptance test). Version 1.7.0 is issue #51 (a `NT_VERY_COLD` day note; no weight or curve changed). Version 1.8.0 is issue #57 (ranges for days 6 to 8 from MeteoSwiss ensembles for Swiss resorts: new day fields `range` and a real `uncertainty`, see Ranges; no weight or curve changed). Rules settled in #15. The engine is a pure ES module in `src/forecast/score/`: no network, no DOM, no clock. It turns the summit and base weather objects from `loadWeather()` into hourly and daily ski scores. This page is the contract for phase 2 (the calendar and day view). Change the shape here first, bump `SCORING_VERSION`, then change the code.
 
 ## Files
 
@@ -12,6 +12,7 @@ Issue #2, part of #1. Version 1.3.0 is issue #5 (snow history, confidence, detai
 | `explain.js` | Hour factors, day factors, the day explanation, confidence |
 | `day.js` | Ski window, best window, day score, status, `roundHalfUp` |
 | `codes.js` | Every code the engine can emit (`CODES`, `ALL_CODES`) |
+| `ensemble.js` | Ranges for days 6 to 8 from the MeteoSwiss ensemble (1.8.0) |
 | `index.js` | The entry point `scoreForecast` and the public exports |
 
 ## Calling it
@@ -46,18 +47,21 @@ const out = scoreForecast(resort, weather, opts);
 
 A caller that passes the `/api/weather` response as `weather` only needs to add `history`: the source fields above ride along in that response.
 
+`weather.ensemble` (1.8.0, optional, Swiss resorts only): `{ source: 'meteoswiss', model, run, time, summit, base }` as `/api/weather` sends it (see `docs/FORECAST_SOURCES.md`). `time` is local hour labels (hour starts) for whole local days from day 6 after the run's date; `summit` and `base` each hold `t`, `t10`, `t90` (°C, corrected to the site's height), `p`, `p10`, `p90` (mm in the hour), `w`, `w10`, `w90` (mean wind, m/s) and `g`, `g10`, `g90` (gust peak, m/s), one value per label, null where missing. See Ranges.
+
 ## Output
 
 ```
 {
-  version: '1.7.0',
+  version: '1.8.0',
   ageHours,                   // opts.ageHours or weather.ageHours, or null
   inputs: { ageHours, stale, resolutionKm, elevationMismatchM, historyHours, observedHours },
   resortId,
   siteMode: 'both' | 'single',
   siteReason: null | 'summit_missing' | 'base_missing' | 'small_vertical' | 'identical_wind',
   hours: { from: 9, to: 16, assumed: true },
-  days: [Day]
+  days: [Day],
+  ensemble                    // present only when weather.ensemble covered a day: { source, model, run, dates }
 }
 ```
 
@@ -85,7 +89,8 @@ Day (one per local date in the weather):
 | `liftHolds` | `[{ lift, status, from, to }]` the confirmed holds for this date (`from` and `to` are `null` when the resort gave no times), always an array |
 | `notes` | `[{ code, params }]` facts shown beside the day: `EX_LIFT_HOLD_CONFIRMED` [number of holds], `NT_OUT_OF_SEASON`, `NT_WEATHER_ALERT` [event name], one note per distinct alert event on that date, and `NT_VERY_COLD` [coldest °C]. Always an array. Not part of `explain` and never changes `score` or `status` |
 | `daysAhead` | Whole days from `today` |
-| `uncertainty` | Always `null` in version 1. It stays null until there are several forecasts or ensemble members to compare, so no Close call shows |
+| `range` | `{ low, high }` unrounded day scores (1.8.0): the lowest and highest score of the seven ensemble versions of the day (see Ranges), with `low <= score <= high`. `null` on every day the ensemble does not cover, and on a day that is not `ok` in every version |
+| `uncertainty` | Half the range, `(high - low) / 2`, on a day with a `range`; otherwise `null`. A Close call can only be shown where it is a number |
 
 Hour:
 
@@ -183,11 +188,24 @@ Window timing: no window → Low, `WR_NO_WINDOW`; 3 or more days ahead → Low, 
 | --- | --- | --- |
 | 0 to 1 | `hourly` | The full hourly view, the best 3-hour window and the peak hour. Day 1 ends at most 48 hours after the first hour of day 0, so hourly stops at 48 hours; day 2 reaches 72 hours and therefore uses `windows` |
 | 2 to 5 | `windows` | The day score and `broadWindow` (morning, midday or afternoon), no hours |
-| 6 to 9 | `range` | A range only. The engine has one deterministic forecast and cannot make a range, so until ensemble members exist (phase 7) show the day as an outlook with no hours, no window and no range |
+| 6 to 9 | `range` | A range only: the score with its `range` where the day has one (Swiss resorts, days 6 to 8), no hours and no window. A day with no `range` is an outlook: its score with Low confidence and no range |
 | 10 to 14 | `trend` | A trend only (phase 7 or later); nothing numeric from this engine |
 | 15 or more | `none` | Nothing |
 
-The weather source gives 7 days of hours today, so `range` and later levels do not occur yet.
+The main weather source gives 7 days of hours (days 0 to 6), so day 6 is the only `range` day for most mountains. Where the MeteoSwiss ensemble is available (Swiss resorts), days 7 and 8 are added from it. `trend` and later levels do not occur yet.
+
+## Ranges (1.8.0)
+
+Issue #57. Only for Swiss resorts, whose `/api/weather` answer carries `ensemble` (MeteoSwiss local forecasts, `docs/FORECAST_SOURCES.md`).
+
+1. **Which days.** Days 6, 7 and 8 after `today`, in order, while each one is a whole local day in the ensemble (every hour 00:00 to 23:00 with temperature, precipitation and wind at both sites; a daylight-saving day may have 23 or 25) and the first one follows straight on from a day the main source has. The first day that fails ends the list. On a forecast fetched late in the day, day 8 can be missing.
+2. **Central forecast.** For those days the ensemble's central hours replace the main source's hours at both sites. Each hour becomes the engine's weather: temperature as given, feels-like from the wind chill formula, snowfall in cm equal to the precipitation in mm at 0 °C or colder, half of it between 0 and 1.5 °C (weather code 68, sleet), none above (rain, code 61 or 63 from 2.5 mm), wind and gust (gust never below the wind), visibility null (the data has none), and weather code 71, 73 or 75 by the snowfall as elsewhere, or 2 when dry (the data carries no cloud amount, so fog and flat light cannot come from it). The whole forecast is then scored as usual: the snow surface is carried from day 5 into day 6 and through the ensemble days.
+3. **Six versions.** The same forecast is scored six more times, each with one quantity at its 10% or 90% value for every ensemble hour: temperature (`t10`, `t90`), precipitation (`p10`, `p90`) and wind with gust together (`w10` with `g10`, `w90` with `g90`). A missing quantile hour uses the central value.
+4. **The range.** For each ensemble day that is `ok` in all seven, `range` is the lowest and the highest of the seven day scores, and `uncertainty` is half the range. Otherwise both stay `null` and the day is shown as before.
+
+What it means: how much the day's score moves when the temperature, the snow or the wind turns out at the edge of the ensemble, one at a time. MeteoSwiss publishes quantiles per quantity, not whole ensemble members, so the seven are not coherent weather scenarios and the range is not a 10 to 90 percentile of the score. Mixing quantities (cold and snowy at once) is left out on purpose: the joint 10% outcome of two quantities is much rarer than 10%, so it would overstate the range. Confidence is unchanged (6 or more days ahead is Low, `CR_FAR_AHEAD`). All thresholds here are first guesses, to be checked against what happened once the archive holds ensemble days.
+
+**Close call.** In the calendar sorted by a date, the first two mountains are tagged "Close call" instead of "Top pick" when both are `ok` that day, at least one has an `uncertainty`, and their unrounded scores differ by no more than the larger uncertainty (a missing one counts as 0). Without an uncertainty nothing changes (design AC-13). The trip planner's "Too close to call" rule is unchanged.
 
 ## Codes
 
@@ -259,7 +277,7 @@ Which factor is chosen: each component's weighted distance from its reference (s
 
 Codes in ux-prd section 8 that the engine does not emit in v1: `F_LIGHT_WIND` (dropped: wind only ever subtracts), `IR_NO_SNOW_HISTORY` (not needed: missing history lowers confidence, it does not block a score), `CR_NEAR_TERM_AGREE`, `CR_MODELS_DISAGREE_PRECIP_TYPE`, `CR_MODELS_DISAGREE_TIMING` (later, phase 7, needs several forecasts), `CR_PIN_ONE_POINT`, `CR_ELEVATION_UNKNOWN` (later, phase 5, map pins), `WR_SNOW_ARRIVAL_UNCERTAIN`, `WR_WIND_SHIFT_UNCERTAIN`, `WR_CLEARING_UNCERTAIN` (later, phase 7).
 
-`outlook` codes (days 6 to 9) are not produced: phase 7 (#8) found no ensemble source that works from a Worker at no cost.
+`outlook` codes (days 6 to 9) are not produced. The ranges of 1.8.0 are numbers (`range`), not codes.
 
 ## Trip planner (#7)
 
@@ -289,11 +307,13 @@ Tests: `tests/forecast-trip.test.js`.
 
 ## Not in version 1
 
-Several forecasts or ensemble members and with them `uncertainty`, model agreement in confidence and ranges for days 6 to 9 (phase 7 checked every free source and found none feasible; `docs/FORECAST_SOURCES.md` says what would be needed, and `range: { low, high }` is not part of the output until members exist), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
+Ensemble ranges outside Switzerland, model agreement in confidence and day 9 (1.8.0 covers Swiss resorts, days 6 to 8, from MeteoSwiss quantiles; elsewhere `docs/FORECAST_SOURCES.md` says what would be needed), calibration of the numbers against a season of real days (round 1 below used past airport observations only), days 6 to 15 as ranges or trends (the weather source only gives 7 days of hours today).
 
 ## Tests
 
 `tests/forecast-score.test.js` with fixtures in `tests/fixtures/forecast/`. `real-stowe-2026-11-22.json` is a real `/api/weather` response (hourly blocks only). The five `scenario-*.json` files are derived from it by editing values; each says so in `_label`.
+
+`tests/forecast-ensemble.test.js` covers the ranges (1.8.0): the MeteoSwiss file reading, storage and serving on the server and the merge, the seven versions, `range`, `uncertainty` and Close call in the engine and calendar, on a trimmed real MeteoSwiss run (`tests/fixtures/forecast/meteoswiss-*.json`).
 
 `tests/forecast-history.test.js` covers the engine's history, confidence and detail levels (version 1.3.0); `tests/forecast-store.test.js` covers the server side (history store, observations, archive, stale fallback) with recorded NWS stations and observations (`nws-stations-stowe.json`, `nws-obs-kmvl.json`, real responses trimmed to the fields the app reads).
 

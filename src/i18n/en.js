@@ -1097,4 +1097,9 @@ export default {
   1536: "Free: today and tomorrow at one mountain. With a pass: every mountain on your list, the whole week hour by hour, sorting by day and the trip planner.",
   1537: "See the full forecast",
   1538: "Your other mountains are kept on your list for when you have a pass.",
+  1540: "Close call",
+  1541: "{0}, {1}: ski score {2}, {3}. Likely range {4} to {5}. Confidence {6}.",
+  1542: "Likely range: {0}–{1}",
+  1543: "The range shows how the score moves if the temperature, snow or wind ends up at the low or high end of the MeteoSwiss ensemble forecast.",
+  1544: "Ranges for days 6 to 8. Source: MeteoSwiss",
 };

@@ -6,7 +6,7 @@ import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
 import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
-import { weatherResponse, historyResponse } from './capture.js';
+import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
 import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
@@ -148,7 +148,23 @@ async function api(request, env, url, ctx) {
   return null;
 }
 
+/** The scheduled job (cron in wrangler.assets.jsonc): one step of reading MeteoSwiss ensemble files (worker/meteoswiss.js). */
+export async function runEnsemble(env, now = Date.now()) {
+  try {
+    const out = await env.FORECASTHIST.get(env.FORECASTHIST.idFromName(ENSEMBLE_STORE)).ensembleStep(now);
+    if (out.action !== 'none') console.log('meteoswiss', out);
+    return out;
+  } catch (e) {
+    console.error('meteoswiss step failed', { message: e.message });
+    return { action: 'error', message: e.message };
+  }
+}
+
 export default {
+  async scheduled(controller, env, ctx) {
+    ctx.waitUntil(runEnsemble(env, controller.scheduledTime || Date.now()));
+  },
+
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     // directions data is part of the paid tier: served only with a pass when the paywall is on

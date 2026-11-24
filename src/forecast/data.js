@@ -95,12 +95,13 @@ export async function loadForecast(resort, force = false, loader = loadWeather, 
   const quick = saved ? Promise.race([statusP, wait(STATUS_GRACE_MS).then(() => saved.status)]) : statusP;
   const [w, status] = await Promise.all([loader(place, force, { allowStale: true }), quick]);
   const serverStale = !!w.stale && !w.error;
-  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation, alerts: w.alerts ?? [] };
+  const weather = { summit: w.summit, base: w.base, ageHours: w.ageHours ?? null, stale: serverStale, resolutionKm: w.resolutionKm ?? null, gridElevation: w.gridElevation, alerts: w.alerts ?? [], ...(w.ensemble ? { ensemble: w.ensemble } : {}) };
   const history = peekHistory(place, now)?.data ?? undefined;
   return { resort: place, at: w.at, source: w.source, stale: !!w.stale, serverStale, weather, status, history, scored: scoreResort(place, weather, { now, at: w.at, status, history }) };
 }
 
-export function columnDates(forecasts, count = 7) {
+/** The calendar's dates: seven days, or nine when a mountain has ensemble days 7 and 8 (Swiss resorts, issue #57). */
+export function columnDates(forecasts, count = 9) {
   const dates = new Set();
   for (const fc of forecasts) for (const d of fc?.scored?.days ?? []) dates.add(d.date);
   return [...dates].sort().slice(0, count);
