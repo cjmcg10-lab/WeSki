@@ -278,5 +278,9 @@
  "lifts_explained": {
   "Loupiot": "beginner lift on the resort's list, not mapped in OpenStreetMap (none found within 6 km)",
   "Ourson": "beginner carpet on the resort's list, not mapped in OpenStreetMap near the resort; the 'Ourson' and 'Oursons' carpets the 6 km search found are at other resorts (45.51 N, and Val Thorens/Orelle side), so they are not added"
+ },
+ "hide": {
+  "Roches Grises": "served by the Creux Noirs chair, demolished in 2019 and not on the map (OpenStreetMap tags it removed; its note says the pistes are still marked, labelled Freeride Lab since 2022); no lift or mapped hike reaches its top, so directions could not use it",
+  "Freeride Lab": "served by the Creux Noirs chair, demolished in 2019 and not on the map (OpenStreetMap tags it removed; its note says the pistes are still marked, labelled Freeride Lab since 2022); no lift or mapped hike reaches its top, so directions could not use it"
  }
 }
