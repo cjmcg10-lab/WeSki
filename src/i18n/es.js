@@ -596,4 +596,8 @@ export default {
   1542: "Rango probable: {0}–{1}",
   1543: "El rango muestra cuánto cambia la puntuación si la temperatura, la nieve o el viento quedan en el extremo bajo o alto del pronóstico por conjuntos de MeteoSwiss.",
   1544: "Rangos para los días 6 a 8. Fuente: MeteoSwiss",
+  1545: "El nombre está mal",
+  1546: "Las pistas o remontes no se conectan aquí",
+  1547: "Debería ser:",
+  1548: "Elige cuál debería ser la dificultad.",
 };

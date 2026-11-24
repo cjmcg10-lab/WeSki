@@ -139,7 +139,9 @@ Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, th
    Claude the client-side token and the four price ids (these are not secret). Test in Paddle's sandbox first.
 5. Have a lawyer read the terms and privacy policy once (optional but recommended; Claude drafted them; they are
    not legal advice). Decide the governing-law state.
-6. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
+6. The daily email of map-mistake reports needs nothing to set up: it uses the sign-in mail account (Resend, step 3)
+   and goes to hello@builtbyroger.app. See `docs/MAP_REPORTS.md`.
+7. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
 
 Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
 plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).

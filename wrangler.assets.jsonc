@@ -41,10 +41,15 @@
     "MAIL_FROM": "SkiWithMe <signin@builtbyroger.app>",
     "PADDLE_ENV": "sandbox",
     "PADDLE_CLIENT_TOKEN": "test_03c17e15405c60d04760a656641",
+    "REPORT_DIGEST_TO": "hello@builtbyroger.app",
     "PADDLE_PRICES": "{\"pri_01m7xyhm3habdpnghh36ah1etv\":\"day\",\"pri_01m7xyk6z28t41kfe9d1n0qmqt\":\"week\",\"pri_01m7xyme122wvrre3pq6b8nawf\":\"season\",\"pri_01m7xyn989mnvsga49aqcd5729\":\"crew\"}"
   },
   // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
   // worker/meteoswiss.js). Most steps find nothing to do; a new run takes about 13 steps every 6 hours.
-  "triggers": { "crons": ["*/5 * * * *"] },
+  // The daily report email (worker/digest.js, docs/MAP_REPORTS.md) runs at 11:23 UTC (6:23 in Connecticut in winter):
+  // DIGEST_CRON in worker/index.js must match the second entry.
+  "triggers": { "crons": ["*/5 * * * *", "23 11 * * *"] },
+  // The report email is sent through Resend from MAIL_FROM to REPORT_DIGEST_TO, with the sign-in mail account
+  // (RESEND_API_KEY secret). Without the key or MAIL_FROM it sends nothing; it never sends on days without new reports.
   "observability": { "enabled": true }
 }

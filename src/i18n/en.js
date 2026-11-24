@@ -1102,4 +1102,8 @@ export default {
   1542: "Likely range: {0}–{1}",
   1543: "The range shows how the score moves if the temperature, snow or wind ends up at the low or high end of the MeteoSwiss ensemble forecast.",
   1544: "Ranges for days 6 to 8. Source: MeteoSwiss",
+  1545: "The name is wrong",
+  1546: "Runs or lifts don’t connect here",
+  1547: "It should be:",
+  1548: "Choose what the rating should be.",
 };

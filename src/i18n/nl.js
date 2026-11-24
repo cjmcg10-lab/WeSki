@@ -596,4 +596,8 @@ export default {
   1542: "Waarschijnlijk bereik: {0}–{1}",
   1543: "Het bereik laat zien hoe de score verandert als temperatuur, sneeuw of wind aan de lage of hoge kant van de ensembleverwachting van MeteoSwiss uitvalt.",
   1544: "Bereiken voor dag 6 tot 8. Bron: MeteoSwiss",
+  1545: "De naam klopt niet",
+  1546: "Pistes of liften sluiten hier niet op elkaar aan",
+  1547: "Het zou moeten zijn:",
+  1548: "Kies wat de moeilijkheid zou moeten zijn.",
 };

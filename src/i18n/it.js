@@ -596,4 +596,8 @@ export default {
   1542: "Intervallo probabile: {0}–{1}",
   1543: "L’intervallo mostra come cambia il punteggio se temperatura, neve o vento finiscono all’estremo basso o alto della previsione d’insieme di MeteoSvizzera.",
   1544: "Intervalli per i giorni da 6 a 8. Fonte: MeteoSvizzera",
+  1545: "Il nome è sbagliato",
+  1546: "Piste o impianti qui non si collegano",
+  1547: "Dovrebbe essere:",
+  1548: "Scegli quale dovrebbe essere la difficoltà.",
 };
