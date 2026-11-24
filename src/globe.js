@@ -195,7 +195,9 @@ export class Globe {
     this.me.visible = false;
     g.add(this.me);
     g.rotation.order = 'XYZ';
-    g.rotation.set(0.42, 1.9, 0);
+    // start with the US East Coast about a third of the way in from the left (owner, 2026-11-24): the globe turns left to
+    // right, so the United States, where most people using the app are, crosses the screen first
+    g.rotation.set(0.42, Math.PI / 2 - THREE.MathUtils.degToRad(-75 + 180) - THREE.MathUtils.degToRad(35), 0);
     this.scene.add(g);
 
     this.spin = true; this.tween = null; this.t = 0; this.last = performance.now(); this.alive = true;
