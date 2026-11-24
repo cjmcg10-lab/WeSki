@@ -41,5 +41,8 @@
  "terrain_shares": {
   "other": 100.0
  },
- "hold": "only 40 of 48 run pieces reachable from a lift; 5 runs no lift reaches"
+ "dead_end_notes": {
+  "Couloir de Poubelle": "freeride itinerary from the top of the Bochard / La Herse lifts; OpenStreetMap ends its line on the open slope above the groomed runs, so it joins nothing at its bottom (left as mapped)",
+  "Italian Bowl": "freeride itinerary from the top of the Bochard / La Herse lifts; OpenStreetMap ends its line on the open slope above the groomed runs, so it joins nothing at its bottom (left as mapped)"
+ }
 }

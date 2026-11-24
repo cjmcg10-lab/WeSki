@@ -654,7 +654,10 @@ phones.
    the trail-count test now only asks for more than 7 runs where the index lists fewer than 30. Built 2026-11-21 with the new pipeline (the owner asked to work up toward 2,000+):
    Palisades Tahoe, Deer Valley, Solitude, Crystal Mountain, Snowshoe, Big Sky, Jackson Hole, Snowbird, Alta, Telluride
    (60 in all). Next: Aspen Snowmass, Beaver Creek, Northstar, Tremblant, Blue Mountain, Bear Mountain, June, Taos,
-   Brighton, Sun Valley.
+   Brighton, Sun Valley. On 2026-11-24 the owner approved a list of 50 picked by a score (skiers 35%, people within
+   2.5 h 25%, big pass or sister 15%, how much a map helps 15%, ease of build 10%; see "Choosing which mountains to add
+   next" in `docs/ADDING_MOUNTAINS.md`): **use that score every time the owner asks for more mountains**, and batches
+   picked this way go live without a preview check (owner's waiver), as long as they pass the gate and the tests.
 5. Native wrapper (Capacitor) for the stores: background GPS, in-app purchases, demo mode for reviewers.
 6. Trademark: the owner intends to file "SKIWITHME" (one word) themselves at the USPTO; Claude drafts, the owner files.
 7. Open questions from the owner's phone: frame rate dropped from 120 to 30 fps at times; motion is now capped

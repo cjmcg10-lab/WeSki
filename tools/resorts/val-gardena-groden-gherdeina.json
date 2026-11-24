@@ -163,5 +163,6 @@
   386837391
  ],
  "rail_ways_note": "OpenSkiMap's railway pieces of the Raschötz funicular and the Ronda Express: build_data.py never takes railways as lifts, so they are drawn by extra_lifts (rail: true) along these tracks instead",
- "hold": "ratings not checked: the resort's typed slope lists (valgardena.it, dolomitisuperski.com) are not reachable from the build network, and the 2024-25 trail map (skimap.org 37723) names and numbers only its lifts and the 'Legendary 8', not the runs; OpenStreetMap ratings are shown until a list is read"
+ "hold": "ratings not checked: the resort's typed slope lists (valgardena.it, dolomitisuperski.com) are not reachable from the build network, and the 2024-25 trail map (skimap.org 37723) names and numbers only its lifts and the 'Legendary 8', not the runs; OpenStreetMap ratings are shown until a list is read",
+ "hold_by_hand": "ratings not yet checked against the resort's own slope list (valgardena.it and dolomitisuperski.com were blocked by the network)"
 }

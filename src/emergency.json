@@ -78,6 +78,11 @@
  "resorts": {
   "4-vallees-verbier-la-tzoumaz-nendaz-veys": {
    "country": "CH",
+   "phone": "144",
+   "tel": "144",
+   "label": "Valais emergency call centre (rescue)",
+   "source": "https://www.verbier.ch/en/practice/shop-stores-and-boutique/health-and-emergencies/",
+   "note": "No separate ski patrol number was found; the resort's own pages give 144.",
    "checked": "2026-11-24"
   },
   "49-north-mountain": {
@@ -90,6 +95,15 @@
   },
   "alpe-d-huez-grand-domaine": {
    "country": "FR",
+   "phone": "+33 4 76 80 37 38",
+   "tel": "+33476803738",
+   "label": "Alpe d'Huez piste rescue",
+   "source": "https://www.alpedhuez.com/en/winter/types-apidae/commerce-et-service-types-apidae/pistes-services",
+   "note": "Also printed as 'Numéro d'urgence domaine skiable' on the 2025-26 piste map (alpedhuez.com/wp-content/uploads/2025/11/PLAN-DES-PISTES-HIVER-2025-2026.pdf).",
+   "checked": "2026-11-24"
+  },
+  "alpental": {
+   "country": "US",
    "checked": "2026-11-24"
   },
   "alta": {
@@ -117,8 +131,16 @@
    "country": "CA",
    "checked": "2026-11-23"
   },
+  "arapahoe-basin": {
+   "country": "US",
+   "checked": "2026-11-24"
+  },
   "arizona-snowbowl": {
    "country": "US",
+   "phone": "928-214-4005",
+   "tel": "+19282144005",
+   "label": "Ski patrol",
+   "source": "https://skimap.org/skimaps/view/45907",
    "checked": "2026-11-24"
   },
   "aspen-highlands": {
@@ -159,6 +181,10 @@
   },
   "bear-mountain": {
    "country": "US",
+   "phone": "909-866-2447",
+   "tel": "+19098662447",
+   "label": "Ski patrol",
+   "source": "https://www.bigbearmountainresort.com/Contact-Us",
    "checked": "2026-11-24"
   },
   "bear-valley": {
@@ -196,6 +222,10 @@
   },
   "big-boulder": {
    "country": "US",
+   "phone": "570-443-8425",
+   "tel": "+15704438425",
+   "label": "Jack Frost Big Boulder Ski Patrol",
+   "source": "https://www.jfbb.com/-/aemasset/sitecore/jack-frost-big-boulder/maps/20231103_JFBB_winter-trail_map_001.pdf",
    "checked": "2026-11-24"
   },
   "big-sky": {
@@ -233,10 +263,18 @@
   },
   "boston-mills": {
    "country": "US",
+   "phone": "800-875-4241",
+   "tel": "+18008754241",
+   "label": "Ski patrol",
+   "source": "https://skimap.org/skimaps/view/38726",
    "checked": "2026-11-24"
   },
   "boyne-highlands": {
    "country": "US",
+   "phone": "231-526-3027",
+   "tel": "+12315263027",
+   "label": "Ski patrol",
+   "source": "https://www.highlandsharborsprings.com/mountain-safety",
    "checked": "2026-11-24"
   },
   "boyne-mountain": {
@@ -245,6 +283,10 @@
   },
   "brandywine": {
    "country": "US",
+   "phone": "800-875-4241",
+   "tel": "+18008754241",
+   "label": "Ski patrol",
+   "source": "https://skimap.org/skimaps/view/38728",
    "checked": "2026-11-24"
   },
   "breckenridge": {
@@ -358,6 +400,15 @@
    "source": "https://www.coppercolorado.com/the-mountain/mountain-safety-stats/general-safety-information/",
    "checked": "2026-11-23"
   },
+  "courchevel-meribel": {
+   "country": "FR",
+   "phone": "+33 4 79 08 69 98",
+   "tel": "+33479086998",
+   "label": "Méribel piste security",
+   "source": "https://static.apidae-tourisme.com/filestore/objets-touristiques/documents/103/48/38482023/c258698e4d561c70eb72cb0f1bb5021b990a6332669eaaff64e7b9dc7835pdf.pdf",
+   "note": "Printed as 'Sécurité des pistes – Méribel' on a Méribel piste map (found by web search; the file itself could not be opened from the container). On the Courchevel side the first-aid posts (e.g. Chenus) answer on +33 4 79 08 99 00 (courchevel.com/en/a/poste-de-secours-chenus-courchevel-7563385).",
+   "checked": "2026-11-24"
+  },
   "cranmore-mountain": {
    "country": "US",
    "checked": "2026-11-24"
@@ -384,6 +435,10 @@
   },
   "crystal-mountain-michigan": {
    "country": "US",
+   "phone": "231-378-4357",
+   "tel": "+12313784357",
+   "label": "Ski patrol",
+   "source": "https://crystalmountain.com/safety",
    "checked": "2026-11-24"
   },
   "cypress-mountain": {
@@ -452,6 +507,11 @@
   },
   "grouse-mountain": {
    "country": "CA",
+   "phone": "604.998.4321",
+   "tel": "+16049984321",
+   "label": "Patrol and emergencies",
+   "source": "https://grousemountain.com/summer-mountain-safety",
+   "note": "the resort page says FOR PATROL AND EMERGENCIES, CALL 604.998.4321; found by web search (page not opened from the container), and the page is the summer safety page",
    "checked": "2026-11-24"
   },
   "gunstock-recreation": {
@@ -468,6 +528,10 @@
   },
   "hidden-valley-pennsylvania": {
    "country": "US",
+   "phone": "582-682-7311",
+   "tel": "+15826827311",
+   "label": "Hidden Valley Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/30652",
    "checked": "2026-11-24"
   },
   "holiday-valley": {
@@ -488,6 +552,10 @@
   },
   "jack-frost-mountain": {
    "country": "US",
+   "phone": "570-443-4708",
+   "tel": "+15704434708",
+   "label": "Jack Frost Ski Patrol",
+   "source": "https://jfbbinfo.zendesk.com/hc/en-us/articles/24161987288859-How-can-I-contact-safety-ski-patrol",
    "checked": "2026-11-24"
   },
   "jackson-hole": {
@@ -512,6 +580,10 @@
   },
   "june-mountain": {
    "country": "US",
+   "phone": "760-914-0612",
+   "tel": "+17609140612",
+   "label": "Ski patrol",
+   "source": "https://www.junemountain.com/mountain-information/safety-and-conduct",
    "checked": "2026-11-24"
   },
   "keystone": {
@@ -521,6 +593,15 @@
    "label": "Keystone Ski Patrol",
    "source": "https://www.keystoneresort.com/footer/contactus.aspx",
    "checked": "2026-11-23"
+  },
+  "kicking-horse": {
+   "country": "CA",
+   "phone": "250.439.5420",
+   "tel": "+12504395420",
+   "label": "Ski patrol",
+   "source": "https://skimap.org/skimaps/view/37138",
+   "note": "printed on the resort 2025-26 trail map: ON-MOUNTAIN EMERGENCIES: Ski Patrol 250.439.5420",
+   "checked": "2026-11-24"
   },
   "killington": {
    "country": "US",
@@ -537,6 +618,10 @@
   "kirkwood-mountain": {
    "country": "US",
    "checked": "2026-11-23"
+  },
+  "kitzski": {
+   "country": "AT",
+   "checked": "2026-11-24"
   },
   "la-plagne": {
    "country": "FR",
@@ -574,8 +659,16 @@
    "source": "https://www.lescontamines.net/contact.html",
    "checked": "2026-11-23"
   },
+  "les-grands-montets": {
+   "country": "FR",
+   "checked": "2026-11-24"
+  },
   "liberty-mountain": {
    "country": "US",
+   "phone": "717-642-7014",
+   "tel": "+17176427014",
+   "label": "Liberty Ski Patrol",
+   "source": "https://lbinfo.zendesk.com/hc/en-us/articles/24308210404379-How-can-I-contact-safety-ski-patrol",
    "checked": "2026-11-24"
   },
   "loon": {
@@ -632,6 +725,14 @@
   },
   "massanutten": {
    "country": "US",
+   "phone": "540-289-4925",
+   "tel": "+15402894925",
+   "label": "Massanutten Ski & Bike Patrol",
+   "source": "https://www.massresort.com/play/safety-message/ski-patrol/",
+   "checked": "2026-11-24"
+  },
+  "mission-ridge": {
+   "country": "US",
    "checked": "2026-11-24"
   },
   "mohawk-mountain": {
@@ -648,6 +749,11 @@
   },
   "mont-orford": {
    "country": "CA",
+   "phone": "819 843-6548 p. 8448",
+   "tel": "+18198436548,8448",
+   "label": "Patrouille (ski patrol)",
+   "source": "https://skimap.org/skimaps/view/44295",
+   "note": "printed beside Patrouille on the resort 2025-26 trail map",
    "checked": "2026-11-24"
   },
   "mont-sainte-anne": {
@@ -707,6 +813,14 @@
    "source": "https://skimap.org/skimaps/view/30655",
    "checked": "2026-11-23"
   },
+  "mountain-creek": {
+   "country": "US",
+   "phone": "973-864-8888",
+   "tel": "+19738648888",
+   "label": "Mountain Creek Ski Patrol",
+   "source": "https://mountaincreek.com/skiing-riding/mountain-safety/",
+   "checked": "2026-11-24"
+  },
   "mountain-high": {
    "country": "US",
    "checked": "2026-11-24"
@@ -717,10 +831,18 @@
   },
   "mt-baker": {
    "country": "US",
+   "phone": "360-300-7070",
+   "tel": "+13603007070",
+   "label": "Ski patrol",
+   "source": "https://skimap.org/skimaps/view/49246",
    "checked": "2026-11-24"
   },
   "mt-brighton": {
    "country": "US",
+   "phone": "810-229-4046",
+   "tel": "+18102294046",
+   "label": "Ski patrol",
+   "source": "https://mtbrighton.zendesk.com/hc/en-us/articles/30163448578587-Are-there-any-medical-facilities-or-first-aid-stations-easily-accessible-on-the-mountain",
    "checked": "2026-11-24"
   },
   "mt-hood-meadows": {
@@ -753,6 +875,11 @@
   },
   "nakiska": {
    "country": "CA",
+   "phone": "1 (403) 591-7777 ext. 7238",
+   "tel": "+14035917777,7238",
+   "label": "Ski patrol",
+   "source": "https://skinakiska.com/?p=5769",
+   "note": "resort Emergency Line page: dial 1 (403) 591-7777 Ext. 7238 for ski patrol; found by web search (page not opened from the container)",
    "checked": "2026-11-24"
   },
   "nashoba-valley": {
@@ -890,6 +1017,10 @@
   },
   "roundtop-mountain": {
    "country": "US",
+   "phone": "717-432-1847",
+   "tel": "+17174321847",
+   "label": "Roundtop Ski Patrol Dispatch",
+   "source": "https://www.skiroundtop.com/-/aemasset/sitecore/roundtop/maps/20221130_RO_Winter-trail_map_001.pdf",
    "checked": "2026-11-24"
   },
   "saalbach": {
@@ -998,6 +1129,14 @@
    "source": "https://www.snowshoemtn.com/mountain-info/safety-and-conduct",
    "checked": "2026-11-23"
   },
+  "solden": {
+   "country": "US",
+   "phone": "+43 5254 508 825",
+   "tel": "+435254508825",
+   "label": "Ski patrol (alarm centre, Gaislachkoglbahn middle station)",
+   "source": "https://www.soelden.com/safety-tips",
+   "checked": "2026-11-24"
+  },
   "solitude": {
    "country": "US",
    "phone": "801-536-5753",
@@ -1009,6 +1148,15 @@
   "sommet-saint-sauveur": {
    "country": "CA",
    "checked": "2026-11-23"
+  },
+  "st-anton-st-christoph-stuben": {
+   "country": "US",
+   "phone": "+43 5446 2352 223",
+   "tel": "+4354462352223",
+   "label": "Ski patrol (Pistenrettung St. Anton, St. Christoph)",
+   "source": "https://skiarlberg.at/PDFs/Presse/2024-25/DE/Ski%20Guide%20Ski%20Arlberg%20%E2%80%93%20Winter%202024-25.pdf",
+   "note": "From the 2024-25 Ski Arlberg guide; Austria's mountain rescue number is 140.",
+   "checked": "2026-11-24"
   },
   "steamboat": {
    "country": "US",
@@ -1198,11 +1346,23 @@
   },
   "whitetail": {
    "country": "US",
+   "phone": "717-328-6644",
+   "tel": "+17173286644",
+   "label": "Whitetail Ski Patrol",
+   "source": "https://WWW.SKIWHITETAIL.COM/-/aemasset/sitecore/whitetail/maps/WT_TrailMap_WithSafety_202223_20221205.pdf",
    "checked": "2026-11-24"
   },
   "whitewater": {
    "country": "CA",
    "checked": "2026-11-23"
+  },
+  "wildcat-mountain": {
+   "country": "US",
+   "phone": "603-466-4294",
+   "tel": "+16034664294",
+   "label": "Wildcat Ski Patrol",
+   "source": "https://www.skiwildcat.com/-/aemasset/sitecore/wildcat/maps/20221122_WC_winter-trail_map_001.pdf",
+   "checked": "2026-11-24"
   },
   "wilmot-mountain": {
    "country": "US",
@@ -1226,10 +1386,18 @@
   },
   "wintergreen": {
    "country": "US",
+   "phone": "434-325-8365",
+   "tel": "+14343258365",
+   "label": "Wintergreen Ski Patrol",
+   "source": "https://skimap.org/skimaps/view/48788",
    "checked": "2026-11-24"
   },
   "wisp": {
    "country": "US",
+   "phone": "240-488-4311",
+   "tel": "+12404884311",
+   "label": "Wisp Ski Patrol",
+   "source": "https://www.wispresort.com/safety_stats/",
    "checked": "2026-11-24"
   },
   "wolf-creek": {

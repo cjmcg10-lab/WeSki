@@ -190,6 +190,24 @@ neighbouring runs, which need the terrain, are not counted.
 - **Missing runs**: trace by hand only runs the resort lists that OpenStreetMap lacks, and only after the
   ratings pass (the list tells you which are really missing).
 
+## Choosing which mountains to add next (owner's rule, 2026-11-24)
+
+Whenever the owner asks for more mountains, pick them with this score (highest first) and show the list with the reasons
+before building:
+
+| Weight | What | How |
+| --- | --- | --- |
+| 35% | Skiers per season | published visit numbers, or lift capacity and size as a stand-in |
+| 25% | People within about a 2.5 hour drive | population of the metro areas in reach |
+| 15% | On a big pass, or a sister of a mountain already built | Epic, Ikon, Indy; same owner or linked area |
+| 15% | How much a map helps | size, number of lifts, linked areas a skier can get lost in |
+| 10% | Ease of an accurate build | OpenStreetMap quality, an official trail list or feed |
+
+No fixed split by region: the score decides. Once the owner approves a list built this way, the batch goes through
+the automatic builder and the AI pass (ratings, held maps, patrol numbers) and is pushed live **without a preview check**
+(owner, 2026-11-24: "No need for me to even check it through preview. I trust the build process."). Every map still has to
+pass the gate and the tests; held maps stay out until fixed.
+
 ## Batching
 
 - Group mountains by source: all Alterra feed resorts together, all skimap.org picture maps together, all

@@ -79,6 +79,9 @@ def judge(rid, conn):
     for h in str(cfg.get("hold", "")).split("; "):
         if h.startswith("overlaps "):   # set by tools/bulk/run_batch.py: two maps of one place
             row["hold"].append(h)
+    # a hold a person set ("hold_by_hand", e.g. ratings that could not be checked) stays until a person removes it
+    if cfg.get("hold_by_hand"):
+        row["hold"].append(str(cfg["hold_by_hand"]))
     if res.get("failed") or not R:
         row["hold"].append("build stopped: " + (res.get("failed") or "no map").splitlines()[0][:120])
         return cfg, row
@@ -107,7 +110,9 @@ def judge(rid, conn):
     row["reachable"] = [a, b]
     # a separate area the resort itself reaches by shuttle or bus ("separate_areas" in the config, written by a person)
     # is reached from its own lifts: then the connection check's "unreachable" count below is the test
-    if b and a < 0.9 * b and not cfg.get("separate_areas"):
+    # the build's count includes runs hidden afterwards (verify_exists: closed lifts, backcountry) and areas reached by
+    # shuttle, so when the connection check (shown runs only, moving as directions do) finds every run reached, it wins
+    if b and a < 0.9 * b and not cfg.get("separate_areas") and conn.get(rid, {}).get("unreachable", [None]):
         row["hold"].append(f"only {a} of {b} run pieces reachable from a lift")
     c = conn.get(rid, {})
     n = max(1, len(shown))
