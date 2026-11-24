@@ -341,11 +341,14 @@ export function sheetCalendar() {
     ${offlineBanner()}
     ${failedAll && online() ? `<div class="card"><p class="sub">${t('Couldn’t load any forecasts. Your mountains are saved. Check your connection and try again.')}</p><button class="btn alt" data-act="fc-refresh">${t('Try again')}</button></div>` : ''}
     <div class="fc-actions" role="group" aria-label="${esc(t('Forecast actions'))}"><button class="btn sm alt" data-act="fc-add">${t('Add a mountain')}</button><button class="btn sm alt" data-act="fc-edit">${t('Edit list')}</button><button class="btn sm alt" data-act="fc-today">${t('Back to today')}</button><button class="btn sm alt" data-act="fc-trip">${t('Plan a trip')}</button></div>
-    <p class="fc-legend">${t('Score out of 100')} · ${bars(2)} ${t('Bars show confidence')} · ${t('Tap a score for hourly detail')}</p>
-    ${!forecasts.length || forecasts.some(historyShort) ? `<p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>` : ''}
-    ${sortLine}
+    ${sortDate ? sortLine : ''}
     ${table}
     <div class="wx-foot fc-foot"><div class="grow"><b>${esc(updated)}</b>${stale ? `<br>${t('Some forecasts are older than usual.')}` : ''}<br>${t('All times are each mountain’s local time.')}${noSeason ? `<br>${t('Season dates are unknown for some mountains: their scores assume the lifts are running.')}` : ''}${fc.footer ? `<br><span class="fc-line">${esc(fc.footer)}</span>` : ''}</div><button class="btn" data-act="fc-refresh">${esc(refreshLabel)}</button></div>
+    <div class="fc-notes">
+    <p class="fc-legend">${t('Score out of 100')} · ${bars(2)} ${t('Bars show confidence')} · ${t('Tap a score for hourly detail')}</p>
+    ${!forecasts.length || forecasts.some(historyShort) ? `<p class="fc-legend">${t('Snow history is limited for now, so confidence is Medium at best.')}</p>` : ''}
+    ${sortDate ? '' : sortLine}
+    </div>
     ${credits(forecasts)}`, false];
 }
 
