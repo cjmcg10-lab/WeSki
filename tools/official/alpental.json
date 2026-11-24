@@ -1,0 +1,46 @@
+{
+ "source": "Alpental trail map 2025-26 (skimap.org map 38150, The Summit at Snoqualmie), read by hand at full size",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Adrenalin": 3,
+  "Breakover": 3,
+  "Cascade Traverse": 1,
+  "Debbie's Gold": 1,
+  "Dom": 2,
+  "Edelweiss Bowl": 2,
+  "Eisfallen": 2,
+  "Felsen": 3,
+  "Gala": 1,
+  "Gunmount": 2,
+  "Ingrid's Inspiration": 2,
+  "Internationale": 3,
+  "Kante": 2,
+  "Lower Internationale": 2,
+  "Meister": 2,
+  "Powder Bowl": 2,
+  "Rollen": 2,
+  "Saint Bernard": 0,
+  "Schlucht": 3,
+  "Sessel": 1,
+  "Shot Six": 3,
+  "Snake Dance": 3,
+  "The Fan": 3,
+  "Upper Internationale": 3,
+  "Lower Return to Lifts": 1
+ },
+ "blue_black": [],
+ "lifts": [
+  "Armstrong Express",
+  "Edelweiss",
+  "Internationale",
+  "Saint Bernard",
+  "Sessel"
+ ],
+ "hide": {
+  "The Phantom": "Snoqualmie Mountain backcountry line across the valley, outside Alpental's ski area boundary (tagged piste:grooming=backcountry in OpenStreetMap; not on the resort's trail map; reached only by the Snoqualmie Mountain ski tour)",
+  "Slot Couloir": "Snoqualmie Mountain backcountry line across the valley, outside Alpental's ski area boundary (tagged piste:grooming=backcountry in OpenStreetMap; not on the resort's trail map; reached only by the Snoqualmie Mountain ski tour)",
+  "Snot Couloir": "Snoqualmie Mountain backcountry line across the valley, outside Alpental's ski area boundary (tagged piste:grooming=backcountry in OpenStreetMap; not on the resort's trail map; reached only by the Snoqualmie Mountain ski tour)",
+  "Crooked Couloir": "Snoqualmie Mountain backcountry line across the valley, outside Alpental's ski area boundary (tagged piste:grooming=backcountry in OpenStreetMap; not on the resort's trail map; reached only by the Snoqualmie Mountain ski tour)"
+ },
+ "note": "Powder Bowl, Breakover, Shot Six and Felsen are named on the map in orange with no symbol: they keep OpenStreetMap's rating. The Alpental Back Bowls have 'no designated trails or runs' (beacon, shovel, probe and partner required, per the map), so OpenStreetMap's named lines there (Brownie Bowl, Hoadleys, Pumpkin Patch, Upper Snake Dance, What's That Trees, Bluffs, Chicken Shot, High Traverse, Homework, Shot 4, Shot 5, Alpental Goat Trail) are not on the resort's list and are hidden unless they link listed runs. Lower Return to Lifts is the map's 'Return Route from Back Bowls' (orange line, no symbol), kept at OpenStreetMap's blue."
+}
