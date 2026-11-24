@@ -11,10 +11,9 @@ import { statusResponse } from './resort-status.js';
 import { feedbackResponse, archiveExportResponse, networkOf } from './calibration.js';
 import { elevationResponse } from './elevation.js';
 import { count, flush, routeKey, usageResponse, mailResponse } from './usage.js';
-import { runDigest, DIGEST_INDEX, isKnownResort } from './digest.js';
-
-/** The daily report email's Cron Trigger: must match the second entry of "crons" in both wrangler configs. */
-export const DIGEST_CRON = '23 11 * * *';
+// DIGEST_CRON lives in digest.js: a Worker module's named exports must be functions, classes or handlers, and
+// local workerd (wrangler dev) refuses to start on an exported string.
+import { runDigest, DIGEST_INDEX, DIGEST_CRON, isKnownResort } from './digest.js';
 export { Accounts, ResortLog, ForecastHistory } from './stores.js';
 
 const ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O/1/I/L
