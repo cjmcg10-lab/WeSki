@@ -12,7 +12,7 @@ The **Forecast** tab (and the Forecast button on the start screen) lets anyone b
 - **Plan a trip.** Pick days, or a range, and the mountains are ranked by their average over the days they all forecast, with the strongest and weakest day each, and "too close to call" when the gap is smaller than the forecast can tell apart.
 - **Offline.** The list, the last forecasts and the catalog are kept on the phone; the screens say how old a forecast is.
 
-The whole section is free (owner decision, 2026-11-21). The map, groups and tracking are unchanged.
+The whole section was free (owner decision, 2026-11-21). Since 2026-11-23 (#115) it needs a pass, apart from a free taste: today's and tomorrow's score for one mountain (see `docs/PAID_TIER.md`). The map, groups and tracking are unchanged.
 
 ## How a score is made
 

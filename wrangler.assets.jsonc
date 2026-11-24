@@ -32,7 +32,7 @@
     { "tag": "v2", "new_sqlite_classes": ["Accounts", "ResortLog"] },
     { "tag": "v3", "new_sqlite_classes": ["ForecastHistory"] }
   ],
-  // Launch switches. PAYWALL "on" makes groups (creating), directions and the 7-day forecast need a pass.
+  // Launch switches. PAYWALL "on" makes creating groups, directions, the full Forecast, saved days and offline downloads need a pass.
   // Secrets (set by the owner in the Cloudflare dashboard, never in this file): RESEND_API_KEY,
   // PADDLE_WEBHOOK_SECRET. See docs/PAID_TIER.md.
   "vars": {

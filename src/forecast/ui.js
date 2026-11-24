@@ -9,6 +9,7 @@ import { createPinScreen } from './pinscreen.js';
 import { createTripScreen } from './tripscreen.js';
 import { MATCH_KM } from './pin.js';
 import { loadForecast, withHistory, sourceAgeHours, columnDates, bandOf, timeBlocks, windowSummary, blockOfHour, ageHoursOf, isStale, rescored, localToday, statusAgeHours } from './data.js';
+import { forecastActionPaid, tasteResort, tasteDates, forecastDayOpen } from '../passrules.js';
 import { esc, codeText, CODE_TEXT, ageText, fmtHour, fmtHourRange, fmtWeekday, fmtDayNumber, fmtLongDate, fmtShortDate, locale } from './text.js';
 
 const SHEETS = ['forecast', 'fcday', 'fcadd', 'fcedit', 'fcpin', 'fctrip'];
@@ -55,6 +56,11 @@ function current(resort) {
   }
   return entry(resort.id);
 }
+// Part of the SkiWithMe Pass (owner, 2026-11-23): without one, a free taste of one mountain's today and tomorrow.
+const hasPass = () => host.pass?.() ?? true;
+const tasteOf = () => tasteResort(fc.here, fc.list);
+const todayOf = (r) => (r?.tz ? localToday(r.tz) : null);
+
 // The mountain the skier is at, when the Forecast opens from inside a resort (setHere): shown first, tagged
 // "You're here", even when it is not on their list; "Keep on my list" saves it.
 const hereExtra = () => (fc.here && !fc.list.some((r) => r.id === fc.here.id) ? [fc.here] : []);
@@ -263,7 +269,47 @@ function emptyCalendar() {
   return `<div class="card fc-empty"><h3>${t('Where should you ski?')}</h3><p class="sub">${t('Add mountains to your list and compare their ski scores for the week.')}</p><button class="btn" data-act="fc-add">${t('Add a mountain')}</button></div>`;
 }
 
+/** The free taste: today's and tomorrow's score for one mountain, then the way to the full forecast. */
+function tasteDayCard(resort, forecast, date, i) {
+  const label = i === 0 ? t('Today') : t('Tomorrow');
+  const day = dayOf(forecast, date);
+  const open = `data-act="fc-day" data-r="${esc(resort.id)}" data-d="${date}"`;
+  if (!day || day.status === 'closed' || day.status === 'insufficient') {
+    const word = !day ? t('No forecast') : day.status === 'closed' ? t('Closed') : t('Insufficient data');
+    return `<button class="fc-cell none fc-taste-day" ${open}><span class="win">${label} · ${esc(fmtShortDate(date))}</span><b class="st">${esc(word)}</b></button>`;
+  }
+  const { shown, band, label: word } = bandOf(day.score);
+  const w = windowSummary(day);
+  return `<button class="fc-cell b${band} fc-taste-day" ${open} aria-label="${esc(t('{0}, {1}: ski score {2}, {3}. Confidence {4}.', resort.name, fmtLongDate(date), shown, t(word), t(day.confidence.level)))}"><span class="win">${label} · ${esc(fmtShortDate(date))}</span><span class="sc"><b>${shown}</b><span class="lb">${t(word)}</span></span>${w.kind === 'hidden' ? '' : `<span class="win" aria-hidden="true">${esc(windowText(w))}</span>`}</button>`;
+}
+
+function sheetTaste() {
+  const resort = tasteOf();
+  const lockCard = `<div class="card fc-lock"><h3>${t('See the full week, calendar and trip planner with a pass')}</h3><p class="sub">${t('Free: today and tomorrow at one mountain. With a pass: every mountain on your list, the whole week hour by hour, sorting by day and the trip planner.')}</p><button class="btn" data-act="fc-upsell">${t('See the full forecast')} <span class="pass-badge">${t('Pass')}</span></button></div>`;
+  if (!resort) return [t('Forecast'), `${emptyCalendar()}${lockCard}`, false];
+  if (!fc.started) { fc.started = true; syncWatchlist(); }
+  if (!fc.data.has(resort.id)) { setEntry(resort, { state: 'loading' }); loadOne(resort, false); }
+  const e = current(resort);
+  const forecast = e.fc;
+  let body;
+  if (e.state === 'nodata') body = `<div class="card"><p class="sub">${esc(unavailableText(resort))}</p></div>`;
+  else if (!forecast && e.state === 'loading') body = `<div class="card"><span class="sk big"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
+  else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load the forecast for {0}.', nameOf(resort)) : t('Not saved on this device while you’re offline.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  else {
+    const dates = tasteDates(forecast.scored.days.map((d) => d.date), todayOf(resort));
+    body = dates.length
+      ? `<div class="fc-taste">${dates.map((d, i) => tasteDayCard(resort, forecast, d, i)).join('')}</div><p class="fc-legend">${t('Score out of 100')} · ${t('Tap a score for hourly detail')}</p>`
+      : `<div class="card"><p class="sub">${t('No forecast')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  }
+  const here = fc.hereId === resort.id ? `<span class="tag fc-here">${t('You’re here')}</span>` : '';
+  const more = fc.list.length > 1 || (fc.here && fc.list.length) ? `<p class="fc-note">${t('Your other mountains are kept on your list for when you have a pass.')}</p>` : '';
+  return [t('Forecast'), `${offlineBanner()}
+    <div class="card fc-taste-head"><b translate="no">${esc(resort.name)}</b> <small translate="no">${esc(resort.pin ? coords(resort) : resort.region || '')}</small> ${here}</div>
+    ${body}${more}${lockCard}${forecast ? credits([forecast]) : ''}`, false];
+}
+
 export function sheetCalendar() {
+  if (!hasPass()) return sheetTaste();
   start();
   if (!fc.list.length && !fc.here && !fc.editRows.some((r) => r.removed)) return [t('Forecast'), emptyCalendar(), false];
   const all = rows();
@@ -398,17 +444,21 @@ export function sheetDay(arg) {
   // the mountain you're at opens like any on your list, without having to keep it first
   const resort = fc.list.find((r) => r.id === arg?.id) ?? (fc.here?.id === arg?.id ? fc.here : null);
   if (!resort) return sheetCalendar();
-  start();
+  const free = !hasPass();
+  if (free && tasteOf()?.id !== resort.id) return sheetCalendar();
+  if (!free) start();
   const e = current(resort);
   const forecast = e.fc;
   const dates = forecast ? forecast.scored.days.map((d) => d.date) : [];
   const i = dates.indexOf(arg.date);
-  const step = (dir, d) => (d ? `<button class="btn sm alt" data-act="fc-step" data-dir="${dir}" data-r="${esc(resort.id)}" data-d="${d}" aria-label="${esc(t(dir === 'prev' ? 'Previous day, {0}' : 'Next day, {0}', fmtLongDate(d)))}">${dir === 'prev' ? `‹ ${esc(fmtWeekday(d))}` : `${esc(fmtWeekday(d))} ›`}</button>` : '<span></span>');
+  const locked = (d) => free && !forecastDayOpen(false, dates, d, todayOf(resort));
+  const step = (dir, d) => (d && locked(d) ? `<button class="btn sm alt" data-act="fc-upsell">${esc(fmtWeekday(d))} › <span class="pass-badge">${t('Pass')}</span></button>` : d ? `<button class="btn sm alt" data-act="fc-step" data-dir="${dir}" data-r="${esc(resort.id)}" data-d="${d}" aria-label="${esc(t(dir === 'prev' ? 'Previous day, {0}' : 'Next day, {0}', fmtLongDate(d)))}">${dir === 'prev' ? `‹ ${esc(fmtWeekday(d))}` : `${esc(fmtWeekday(d))} ›`}</button>` : '<span></span>');
   const stepper = i >= 0 || forecast ? `<div class="fc-stepper" role="group" aria-label="${esc(t('Change day'))}">${step('prev', dates[i - 1])}${step('next', dates[i + 1])}</div>` : '';
   let body;
   if (e.state === 'nodata') body = `<div class="card"><p class="sub">${esc(unavailableText(resort))}</p></div>`;
   else if (e.state === 'loading' && !forecast) body = `<div class="card"><span class="sk big"></span><span class="sk"></span><p class="sub">${t('Loading forecasts…')}</p></div>`;
   else if (!forecast) body = `<div class="card"><p class="sub">${online() ? t('Couldn’t load this day. Check your connection and try again.') : t('This day isn’t saved on this device. It will load when you’re back online.')}</p><button class="btn alt" data-act="fc-retry" data-r="${esc(resort.id)}">${t('Try again')}</button></div>`;
+  else if (locked(arg.date)) body = `<div class="card fc-lock"><p>${t('See the full week, calendar and trip planner with a pass')}</p><button class="btn" data-act="fc-upsell">${t('See the full forecast')} <span class="pass-badge">${t('Pass')}</span></button></div>`;
   else body = dayBody(resort, forecast, dayOf(forecast, arg.date));
   const hours = forecast ? ageHoursOf(forecast.at) : 0;
   const foot = forecast ? `<div class="wx-foot fc-foot"><div class="grow"><b>${ageLine(forecast)}</b>${isStale(hours) || forecast.serverStale ? `<br>${t('Some forecasts are older than usual.')}` : ''}</div><button class="btn" data-act="fc-refresh">${esc(fc.updating ? t('Updating…') : online() ? t('Refresh') : t('Refresh when online'))}</button></div>${credits([forecast])}` : '';
@@ -625,8 +675,15 @@ function useCatalog(catalogId, pinId, fromPinScreen) {
   if (fromPinScreen) { fc.pinDraft = null; showNew(resort.id); } else { host.render(); focusSel('[data-act="fc-home"]'); }
 }
 
+/** Paid parts of the Forecast without a pass (rules in src/passrules.js). */
+function paidAction(act) {
+  const shown = fc.list.length + (fc.here && !fc.list.some((r) => r.id === fc.here.id) ? 1 : 0);
+  return forecastActionPaid(act, hasPass(), { shown, listed: fc.list.length });
+}
+
 export function onClick(b) {
   const d = b.dataset;
+  if (paidAction(d.act)) { host.upsell?.('forecast'); return; }
   if (pin.onClick(d.act, d) || trip.onClick(d.act, d)) return;
   switch (d.act) {
     case 'fc-home': {
