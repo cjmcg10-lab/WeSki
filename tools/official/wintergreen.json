@@ -1,0 +1,57 @@
+{
+ "source": "Wintergreen Resort trail map, skimap.org map 48788 (2026), read by hand",
+ "fetched": "2026-11-24",
+ "runs": {
+  "Big Acorn": 2,
+  "Cliffhanger": 3,
+  "Cross Cut": 2,
+  "Devils Elbow": 2,
+  "Dobie": 0,
+  "Eagles Swoop": 1,
+  "Hydraulic": 2,
+  "Loggers Alley": 2,
+  "Lower Cliffhanger": 3,
+  "Lower Crosstrail": 0,
+  "Lower Diamond Hill": 0,
+  "Lower Dobie": 0,
+  "Lower Sunrise": 1,
+  "Lower Tyro": 1,
+  "Lower Wild Turkey": 2,
+  "Outer Limits": 2,
+  "Potato Patch": 0,
+  "Sunrise": 1,
+  "Sunrise Glades": 2,
+  "Tequila": 1,
+  "The Gap": 2,
+  "Upper Cliffhanger": 2,
+  "Upper Crosstrail": 0,
+  "Upper Diamond Hill": 0,
+  "Upper Dobie": 0,
+  "Upper Sunrise": 2,
+  "Upper Tyro": 1,
+  "Upper Wild Turkey": 2,
+  "Wild Turkey": 2
+ },
+ "blue_black": [],
+ "not_runs": {
+  "Progression Park": "terrain park (freestyle terrain symbol)",
+  "Terrain Park": "terrain park (freestyle terrain symbol)",
+  "Ridgely's Fun Park": "children's play area at the base, no trail rating"
+ },
+ "lifts": [
+  "Big Acorn",
+  "Blue Ridge Express",
+  "Highlands Express",
+  "Loggers Alley",
+  "Potato Patch"
+ ],
+ "same_as": {
+  "Lower Cliffhanger": "Cliffhanger",
+  "Upper Cliffhanger": "Cliffhanger",
+  "Lower Dobie": "Dobie",
+  "Upper Dobie": "Dobie",
+  "Lower Sunrise": "Sunrise",
+  "Lower Wild Turkey": "Wild Turkey",
+  "Upper Wild Turkey": "Wild Turkey"
+ }
+}

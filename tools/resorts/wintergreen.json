@@ -37,5 +37,11 @@
  "terrain_res": 1,
  "terrain_shares": {
   "1m": 100.0
+ },
+ "rename": {
+  "Logger Alley": "Loggers Alley",
+  "Lower Cross Trail": "Lower Crosstrail",
+  "Upper Cross Trail": "Upper Crosstrail",
+  "Upper Diamond": "Upper Diamond Hill"
  }
 }
