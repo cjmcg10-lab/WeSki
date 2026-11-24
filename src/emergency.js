@@ -33,13 +33,13 @@ export function fmtCoords(lat, lon) {
   };
 }
 
-/** The shown lift closest to (x, y), if within `max` metres: { name, d, osm } (osm: its OpenStreetMap id, or null). */
+/** The shown lift closest to (x, y), if within `max` metres: { name, d }. */
 export function nearestLift(resort, x, y, max = 120) {
   let best = null;
   for (const l of resort?.lifts || []) {
     if (l.hide || !l.name || !l.pts || l.pts.length < 4) continue;
     const n = nearestOnLine(l.pts, x, y);
-    if (n.d <= max && (!best || n.d < best.d)) best = { name: l.name, d: n.d, osm: l.osm ?? null };
+    if (n.d <= max && (!best || n.d < best.d)) best = { name: l.name, d: n.d };
   }
   return best;
 }

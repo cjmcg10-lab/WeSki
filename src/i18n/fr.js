@@ -596,8 +596,4 @@ export default {
   1542: "Fourchette probable : {0}–{1}",
   1543: "La fourchette montre comment le score change si la température, la neige ou le vent se situent au bas ou au haut de la prévision d’ensemble de MétéoSuisse.",
   1544: "Fourchettes pour les jours 6 à 8. Source : MétéoSuisse",
-  1545: "Le nom est faux",
-  1546: "Les pistes ou remontées ne se rejoignent pas ici",
-  1547: "Elle devrait être :",
-  1548: "Choisissez quel devrait être le niveau.",
 };

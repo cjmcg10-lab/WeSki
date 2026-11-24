@@ -83,35 +83,6 @@ export function decodeCanopy(bytes) {
   return { w, h, cell: dv.getFloat32(12, true), cover: b.subarray(16, 16 + n), height: b.subarray(16 + n, 16 + 2 * n) };
 }
 
-/**
- * What covers the land around the resort (tools/build_landcover.py): landcover.z8 = gzip("SWL1", nx, ny, cell size,
- * forest bytes, water bytes, bare-rock bytes), one value per point of the coarse surrounding grid (resort.json
- * "surround"), each the share of the cell (0-255), rows from south to north.
- * Returns {nx, ny, cell, rgba: Uint8Array (forest, water, bare, 255 per point: ready for a texture)}.
- */
-export function decodeLandcover(bytes) {
-  const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
-  if (b.length < 16 || b[0] !== 0x53 || b[1] !== 0x57 || b[2] !== 0x4c || b[3] !== 0x31) throw new Error('not a land cover grid');
-  const dv = new DataView(b.buffer, b.byteOffset, b.length), nx = dv.getUint32(4, true), ny = dv.getUint32(8, true), n = nx * ny;
-  if (!n || b.length !== 16 + 3 * n) throw new Error('land cover grid is cut short');
-  const rgba = new Uint8Array(n * 4);
-  for (let k = 0; k < n; k++) { rgba[k * 4] = b[16 + k]; rgba[k * 4 + 1] = b[16 + n + k]; rgba[k * 4 + 2] = b[16 + 2 * n + k]; rgba[k * 4 + 3] = 255; }
-  return { nx, ny, cell: dv.getFloat32(12, true), rgba };
-}
-
-/** A gzipped grid file (.z8), unzipped, or null when it is missing or the browser cannot unzip it. */
-async function fetchZ8(url, fetcher) {
-  if (typeof DecompressionStream === 'undefined') return null;
-  const r = await fetcher(url);
-  if (!r.ok || (r.headers.get('content-type') || '').includes('text/html')) return null;
-  return new Uint8Array(await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer());
-}
-
-/** The land cover grid for a resort, or null when it has none (older maps) or it cannot be read. */
-export async function fetchLandcover(base, fetcher = fetch) {
-  try { const b = await fetchZ8(`${base}.z8`, fetcher); return b ? decodeLandcover(b) : null; } catch { return null; }
-}
-
 /** The canopy grid for a resort, or null when it has none (older maps) or the browser cannot unzip it. */
 export async function fetchCanopy(base, fetcher = fetch) {
   if (typeof DecompressionStream === 'undefined') return null;

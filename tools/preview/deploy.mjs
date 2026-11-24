@@ -64,7 +64,7 @@ for (const id of ids) {
   writeFileSync(join(tmp, 'resort.json'), JSON.stringify(R));
   for (const [name, buf] of Object.entries(packResort(dir, R))) writeFileSync(join(tmp, name), buf);
   const send = ['resort.json', 'graph.json', 'terrain.z16', 'surround.z16'].map((f) => [f, join(tmp, f)])
-    .concat(['terrain.bin', 'surround.bin', 'canopy.z8', 'landcover.z8'].map((f) => [f, join(dir, f)]));
+    .concat(['terrain.bin', 'surround.bin', 'canopy.z8'].map((f) => [f, join(dir, f)]));
   let n = 0;
   for (const [f, file] of send) if (existsSync(file)) { put(`preview/data/${id}/${f}`, file, f.endsWith('.json') ? 'application/json' : 'application/octet-stream'); n++; }
   console.log(`${id}: ${n} map files uploaded to preview/data/${id}/`);

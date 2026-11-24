@@ -344,15 +344,7 @@ python3 tools/build_index.py public/data                 # the committed index l
   capacity (chairs are spaced from it), bubble, heating, detachable; building roof shape and colour, wall colour or
   material, storeys. US resorts have almost none of these tags (Jay Peak, Cannon, Magic, Stowe: none); Zermatt has
   capacity on 37 of 66 lifts and 11 bubble chairs. Buildings without tags get a gabled roof along their long side.
-- `python3 -I tools/build_landcover.py <id>` (2026-11-24) writes `public/data/<id>/landcover.z8`: the share of forest,
-  water and bare rock in every 140 m cell of the surrounding land (`surround.bin`'s grid), from ESA WorldCover 10 m 2021
-  (CC BY 4.0, read from `esa-worldcover.s3.eu-central-1.amazonaws.com` at a reduced resolution: about 2 s and 10-25 KB per
-  resort). The app colours the surrounding land from it per pixel (forest, snow on open ground, ice on lakes, rock),
-  with a soft noise on the line between forest and field so it does not follow the grid, and fades the detailed map's
-  own tree pattern into it over the last ~400 m inside its edge (`LAND_GLSL` in `src/map.js`). Before, the surrounding
-  land was coloured by height alone (almost all forest), so snowy clearings stopped in a straight line at the edge.
-  Maps without the file still fade their clearings into forest at the edge. Needs `surround.bin` (run after `build_extras.py`).
-- `pipeline.py` runs these after every build; `maps_r2.mjs` uploads and downloads `canopy.z8` and `landcover.z8` when there is one.
+- `pipeline.py` runs both after every build; `maps_r2.mjs` uploads and downloads `canopy.z8` when there is one.
 - Runs are drawn at their measured width (`w`), or 26 m (greens 30 m) instead of 50-60 m; slope outlines are filled.
 - **Preview a branch before it reaches main:** `node tools/preview/deploy.mjs <ids>` bundles the app into the
   separate Worker `skiwithme-preview` (https://skiwithme-preview.cjmcg10.workers.dev) and uploads the named

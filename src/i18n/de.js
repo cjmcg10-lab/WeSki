@@ -596,8 +596,4 @@ export default {
   1542: "Wahrscheinlicher Bereich: {0}–{1}",
   1543: "Der Bereich zeigt, wie sich der Wert ändert, wenn Temperatur, Schnee oder Wind am unteren oder oberen Ende der Ensemble-Prognose von MeteoSchweiz liegen.",
   1544: "Bereiche für die Tage 6 bis 8. Quelle: MeteoSchweiz",
-  1545: "Der Name ist falsch",
-  1546: "Pisten oder Lifte sind hier nicht verbunden",
-  1547: "Sie sollte sein:",
-  1548: "Wähle, welche Schwierigkeit es sein sollte.",
 };

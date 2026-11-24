@@ -68,36 +68,6 @@ const UP = new THREE.Vector3(0, 1, 0);
 // real line speeds of the carriers other than chairs (m/s)
 const CARRIER_SPEED = { cabin: 5, bar: 2.5, platter: 2.5, rope: 1.8, pad: 0.8 };
 
-// The land round the map, from its land cover file (SkiMap.landUniforms): forest where ESA's map has trees, snow on open
-// ground (fields, clearings: winter), ice on lakes, rock where the ground is bare. The cover is a share per 140 m cell;
-// a soft two-scale noise wobbles the line between forest and field so edges look natural instead of following the grid,
-// and far away (where the wobble is smaller than a pixel) the shares simply blend. c: the ground's colour without land
-// cover (height bands and rock); lp: local metres from the map's corner; alt: height in the mesh's units.
-const LAND_GLSL = `
-uniform sampler2D uLand;
-uniform float uHasLand, uLandC, uLandTl;
-uniform vec2 uLandO, uLandS, uMapO, uMapS;
-uniform vec3 cLOpen, cLIce, cLRock;
-float landHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
-float landNoise(vec2 p) {
-  vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f);
-  return mix(mix(landHash(i), landHash(i + vec2(1.0, 0.0)), f.x), mix(landHash(i + vec2(0.0, 1.0)), landHash(i + vec2(1.0, 1.0)), f.x), f.y);
-}
-float landEdge(float share, float n) {
-  float t = share + n * 0.9 * min(1.0, share * (1.0 - share) * 4.0 + 0.15);   // wobble only where forest and field mix
-  float w = max(fwidth(t) * 0.75, 0.05);
-  return smoothstep(0.5 - w, 0.5 + w, t);
-}
-vec3 landColour(vec3 c, vec2 lp, float alt) {
-  vec4 L = uHasLand > 0.5 ? texture2D(uLand, (lp - uLandO + 0.5 * uLandC) / uLandS) : vec4(1.0, 0.0, 0.0, 1.0);
-  float n = landNoise(lp / 55.0) * 0.65 + landNoise(lp / 17.0) * 0.35 - 0.5;
-  if (alt <= uLandTl + 60.0) {
-    c = mix(cLOpen, c, landEdge(L.r, n));
-    c = mix(c, cLIce, landEdge(L.g, -n) * step(0.02, L.g));
-  }
-  return mix(c, cLRock, L.b * 0.85);
-}`;
-
 export class SkiMap {
   /**
    * The ground's heavy set-up (snow mask, colour fields, the ground cut into pieces), worked out in a background
@@ -128,9 +98,6 @@ export class SkiMap {
     // map (a different grid) is ignored, and the old trees are drawn instead
     const g0 = resort.grid;
     this.canopy = canopy && canopy.w === (g0.nx - 1) * 2 && canopy.h === (g0.ny - 1) * 2 ? canopy : null;
-    // what covers the land around the map (tools/build_landcover.py), one value per point of the surrounding grid
-    const lc = opts.landcover, sr0 = resort.surround;
-    this.land = lc && sr0 && lc.nx === sr0.nx && lc.ny === sr0.ny ? lc : null;
     // European and Japanese maps have red pistes, so their lifts are drawn in slate instead of red
     const sc = scheme(resort);
     COLORS.lift = sc.lift; COLORS.liftInk = sc.liftInk; POI_STYLE.lift[0] = sc.lift; POI_STYLE.lifttop[0] = sc.lift;
@@ -240,7 +207,7 @@ export class SkiMap {
       o.geometry?.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((x) => x.dispose());
       for (const g of o.userData?.geos || []) g?.dispose();      // coarser ground pieces not drawn right now
     });
-    this.groundTex?.dispose(); this.zoneTex?.dispose(); this.canopyTex?.dispose(); this.landTex?.dispose();
+    this.groundTex?.dispose(); this.zoneTex?.dispose(); this.canopyTex?.dispose();
     this.renderer.dispose();
     this.renderer.forceContextLoss?.();
     this.renderer.domElement.remove();
@@ -374,30 +341,6 @@ export class SkiMap {
   }
 
   /**
-   * The land cover round the map (tools/build_landcover.py) as the graphics chip reads it: forest, water and bare-rock
-   * shares in a small texture, one texel per point of the surrounding grid. Shared by the detailed ground (its edge
-   * fades into it) and the surrounding land (coloured from it), so both draw exactly the same thing where they meet.
-   */
-  landUniforms() {
-    if (this._landU) return this._landU;
-    const land = this.land, sr = this.resort.surround, { nx, ny, cell } = this.resort.grid;
-    const tex = new THREE.DataTexture(land ? land.rgba : new Uint8Array([255, 0, 0, 255]), land ? land.nx : 1, land ? land.ny : 1, THREE.RGBAFormat, THREE.UnsignedByteType);
-    tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.needsUpdate = true;
-    this.landTex = tex;
-    const lin = (r, g, b) => new THREE.Color().setRGB(r / 255, g / 255, b / 255, THREE.SRGBColorSpace);
-    this._landU = {
-      uLand: { value: tex }, uHasLand: { value: land ? 1 : 0 },
-      // texel centres: point (i, j) of the surrounding grid is at local metres (x0 + i * cell, y0 + j * cell)
-      uLandO: { value: new THREE.Vector2(sr ? sr.x0 : 0, sr ? sr.y0 : 0) }, uLandC: { value: sr ? sr.cell : 1 },
-      uLandS: { value: new THREE.Vector2(land ? land.nx * sr.cell : 1, land ? land.ny * sr.cell : 1) },
-      uMapO: { value: new THREE.Vector2(this.geo.W / 2, this.geo.H / 2) }, uMapS: { value: new THREE.Vector2((nx - 1) * cell, (ny - 1) * cell) },
-      uLandTl: { value: (this.resort.treeline || 1300) - this.resort.grid.zmin },
-      cLOpen: { value: lin(228, 235, 240) }, cLIce: { value: lin(196, 212, 222) }, cLRock: { value: lin(124, 132, 141) },
-    };
-    return this._landU;
-  }
-
-  /**
    * The ground's look. Instead of one flat colour per triangle (saw-toothed squares along every run),
    * the snow, glade and zone shapes are stored as distance fields: each pixel holds how far it is
    * from the nearest edge. The graphics chip draws the edge exactly where that distance is zero, so
@@ -431,7 +374,7 @@ export class SkiMap {
     const U = {
       uBias: this.groundBias,
       uField: { value: fieldTex }, uZone: { value: zoneTex }, uCanopy: { value: canopyTex }, uHasCanopy: { value: cv ? 1 : 0 },
-      cOpen: { value: lin(228, 235, 240) }, ...this.landUniforms(),
+      cOpen: { value: lin(228, 235, 240) },
       uOrigin: { value: new THREE.Vector2(geo.W / 2, geo.H / 2) }, uSize: { value: new THREE.Vector2(W, H) },
       uTl: { value: tl }, uCell: { value: cell },
       cSnow: { value: lin(246, 250, 253) }, cGlade: { value: lin(176, 205, 190) }, cRock: { value: lin(124, 132, 141) }, cAlpine: { value: lin(226, 234, 240) },
@@ -454,7 +397,6 @@ uniform sampler2D uField;
 uniform sampler2D uCanopy;
 uniform float uHasCanopy;
 uniform vec3 cOpen;
-${LAND_GLSL}
 uniform highp usampler2D uZone;
 uniform vec2 uOrigin, uSize;
 uniform float uTl, uCell;
@@ -475,17 +417,7 @@ vec3 groundColour() {
   vec3 c = alt > uTl - 260.0 ? mix(cHigh, cAlpine, smoothstep(uTl + 40.0, uTl + 80.0, alt))
                              : mix(mix(cLow, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
   // with real tree cover: forest only where the trees are; clearings and meadows below the treeline are snow
-  vec3 band = c;
   if (uHasCanopy > 0.5 && !alpine) c = mix(cOpen, c, smoothstep(0.45 - cvw, 0.45 + cvw, cv));
-  // Near the map's edge the fine pattern fades into the coarse land around it, coloured exactly as buildSurround colours
-  // the surrounding land, so forest, snowy fields, lakes and rock carry on across the edge instead of stopping at it.
-  // Without a land cover file the coarse land is forest (as the surrounding land is drawn then).
-  {
-    vec2 lp = vec2(vGPos.x + uOrigin.x, uOrigin.y - vGPos.z);                  // local metres from the map's corner
-    float edge = min(min(lp.x, uSize.x - lp.x), min(lp.y, uSize.y - lp.y));
-    float k = smoothstep(60.0, 420.0, edge);
-    if (k < 1.0) c = mix(landColour(band, lp, alt), c, k);
-  }
   c = mix(c, alt > uTl + 60.0 ? cSnow : cGlade, edgeOf(f.g, fw.g));
   c = mix(c, cRock, smoothstep(-0.06, 0.06, relief - (alpine ? 0.7 : 0.95)));
   float s = edgeOf(f.r, fw.r);
@@ -533,10 +465,8 @@ vec3 groundColour() {
     // steep ground as the detailed map has it (groundMaterial), fading out with the height correction (further out
     // the coarse mesh is too coarse for it: grey blotches). up: the up part of the point's normal; near: 1 at the
     // border, 0 from FEATHER metres out.
-    // (forest, snowy fields, lakes and bare rock from the land cover file are added per pixel by the material below)
     const colour = (z, up, near, out, o) => {
       if (z > tl + 60) c.setRGB(0.76, 0.81, 0.85); else if (z > tl - 260) c.copy(high); else if (z > tl - 440) c.copy(mid); else c.copy(band).lerp(low, Math.min(1, Math.max(0, (tl - 820 - z) / 250)));
-
       const relief = (1.2 * Math.sqrt(Math.max(0, 1 - up * up))) / Math.max(up, 0.05);
       if (near > 0) c.lerp(rock, near * smoothstep(-0.15, 0.15, relief - (z > tl + 60 ? 0.7 : 0.95)));
       out[o * 3] = c.r; out[o * 3 + 1] = c.g; out[o * 3 + 2] = c.b;
@@ -559,19 +489,6 @@ vec3 groundColour() {
     for (let k = 0; k < S.skirtSrc.length; k++) { const v = nx * ny + k, o = S.skirtSrc[k]; C[v * 3] = col[o * 3]; C[v * 3 + 1] = col[o * 3 + 1]; C[v * 3 + 2] = col[o * 3 + 2]; }
     const attrs = { position: new THREE.BufferAttribute(S.pos, 3), normal: new THREE.BufferAttribute(S.nrm, 3), color: new THREE.BufferAttribute(C, 3) };
     const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
-    if (this.land) {
-      // forest, snowy fields, lakes and bare rock from the land cover, per pixel (landColour, shared with the map's edge)
-      const U = this.landUniforms();
-      mat.onBeforeCompile = (sh) => {
-        Object.assign(sh.uniforms, U);
-        sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vLPos;')
-          .replace('#include <begin_vertex>', '#include <begin_vertex>\nvLPos = position;');
-        sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>\nvarying vec3 vLPos;\n${LAND_GLSL}`)
-          .replace('#include <color_fragment>', `#include <color_fragment>
-diffuseColor.rgb = landColour(diffuseColor.rgb, vec2(vLPos.x + uMapO.x, uMapO.y - vLPos.z), vLPos.y);`);
-      };
-      mat.customProgramCacheKey = () => 'land';
-    }
     this.surroundGroup = this.piecesOf(S, attrs, new THREE.BufferAttribute(S.index, 1), mat);
     this.scene.add(this.surroundGroup);
     // the strip from the coarse mesh's hole to the detailed ground's edge: its inner points are the detailed ground's
@@ -581,8 +498,7 @@ diffuseColor.rgb = landColour(diffuseColor.rgb, vec2(vLPos.x + uMapO.x, uMapO.y 
     st.verts.forEach((v, k) => {
       const src = v.kind === 0 ? S : D;
       for (let a = 0; a < 3; a++) { P[k * 3 + a] = src.pos[v.o * 3 + a]; N[k * 3 + a] = src.nrm[v.o * 3 + a]; }
-      if (v.kind === 0) for (let a = 0; a < 3; a++) K[k * 3 + a] = col[v.o * 3 + a];
-      else colour(P[k * 3 + 1] + zmin, N[k * 3 + 1], 1, K, k);
+      if (v.kind === 0) for (let a = 0; a < 3; a++) K[k * 3 + a] = col[v.o * 3 + a]; else colour(P[k * 3 + 1] + zmin, N[k * 3 + 1], 1, K, k);
     });
     const sg = new THREE.BufferGeometry();
     sg.setAttribute('position', new THREE.BufferAttribute(P, 3)); sg.setAttribute('normal', new THREE.BufferAttribute(N, 3)); sg.setAttribute('color', new THREE.BufferAttribute(K, 3));

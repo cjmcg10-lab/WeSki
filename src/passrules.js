@@ -83,7 +83,7 @@ export function mountainFiles(id, { z16 = true, pass = false, graphInline = fals
   const at = (f) => `/data/${id}/${f}`;
   return {
     required: ['resort.json', heights[0]].map(at),
-    optional: [heights[1], 'canopy.z8', 'landcover.z8', ...(pass && !graphInline ? ['graph.json'] : [])].map(at),
+    optional: [heights[1], 'canopy.z8', ...(pass && !graphInline ? ['graph.json'] : [])].map(at),
   };
 }
 

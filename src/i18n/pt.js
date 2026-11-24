@@ -596,8 +596,4 @@ export default {
   1542: "Faixa provável: {0}–{1}",
   1543: "A faixa mostra como a pontuação muda se a temperatura, a neve ou o vento ficarem no extremo baixo ou alto da previsão por conjunto da MeteoSwiss.",
   1544: "Faixas para os dias 6 a 8. Fonte: MeteoSwiss",
-  1545: "O nome está errado",
-  1546: "Pistas ou teleféricos não se ligam aqui",
-  1547: "Deveria ser:",
-  1548: "Escolha qual deveria ser a dificuldade.",
 };

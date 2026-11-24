@@ -122,38 +122,6 @@ describe('compact height grids (.z16)', async () => {
   });
 });
 
-describe('land cover round the map (landcover.z8)', async () => {
-  const { gzipSync } = await import('node:zlib');
-  const { decodeLandcover, fetchLandcover } = await import('../src/heights.js');
-  // a 3 x 2 grid: forest, water and bare-rock shares
-  const make = (nx, ny, extra = 0) => {
-    const n = nx * ny, b = new Uint8Array(16 + 3 * n + extra), dv = new DataView(b.buffer);
-    b.set([0x53, 0x57, 0x4c, 0x31]); dv.setUint32(4, nx, true); dv.setUint32(8, ny, true); dv.setFloat32(12, 140, true);
-    for (let k = 0; k < n; k++) { b[16 + k] = 10 * k; b[16 + n + k] = 100 + k; b[16 + 2 * n + k] = 200 + k; }
-    return b;
-  };
-  it('reads the three shares into texture texels', () => {
-    const L = decodeLandcover(make(3, 2));
-    expect([L.nx, L.ny, L.cell]).toEqual([3, 2, 140]);
-    expect([...L.rgba.slice(4, 8)]).toEqual([10, 101, 201, 255]);
-    expect([...L.rgba.slice(20, 24)]).toEqual([50, 105, 205, 255]);
-  });
-  it('refuses a file that is not a land cover grid, or is cut short', () => {
-    expect(() => decodeLandcover(new Uint8Array(20))).toThrow();
-    expect(() => decodeLandcover(make(3, 2).subarray(0, 30))).toThrow();
-  });
-  it('downloads and unzips it, and gives null when the map has none', async () => {
-    const ok = async () => new Response(gzipSync(make(3, 2)));
-    expect((await fetchLandcover('/data/x/landcover', ok)).nx).toBe(3);
-    expect(await fetchLandcover('/data/x/landcover', async () => new Response('', { status: 404 }))).toBeNull();
-  });
-  it('the server serves a land cover file from R2', async () => {
-    const env = { MAPS: bucket({ 'data/test-mtn/landcover.z8': 'zz' }) };
-    const [q, u] = req('/data/test-mtn/landcover.z8');
-    expect((await fromR2(q, env, u, ids)).status).toBe(200);
-  });
-});
-
 describe('real tree cover (canopy.z8)', async () => {
   const { readFileSync, existsSync } = await import('node:fs');
   const { gunzipSync } = await import('node:zlib');

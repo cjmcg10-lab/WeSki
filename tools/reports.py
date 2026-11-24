@@ -23,8 +23,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SERVER = "https://skiwithme.builtbyroger.app"
 MARKER = os.path.join(ROOT, "tools", ".reports_seen.json")
 KINDS = {"missing": "Run or lift missing", "not_real": "Not real / does not exist", "wrong_rating": "Wrong rating",
-         "wrong_place": "In the wrong place", "closed_for_good": "Closed for good", "wrong_name": "Wrong name",
-         "no_connection": "Runs or lifts do not connect", "other": "Other"}
+         "wrong_place": "In the wrong place", "closed_for_good": "Closed for good", "other": "Other"}
 
 
 # ---------------------------------------------------------------- pure helpers (tested in tools/test_reports.py)
@@ -96,16 +95,9 @@ def dist_to_line(p, line):
 
 def find_feature(resort, ref, x=None, y=None, reach=60):
     """What a report refers to -> (kind 'run'|'lift', feature, how) or None.
-    The app sends the run's OSM way id ("lift:<OSM id or name>" for a lift; older phones sent the run number when a
-    run had no OSM id); with no ref, the nearest run or lift
+    The app sends the run's OSM way id, or its run number when it has none; with no ref, the nearest run or lift
     within `reach` metres of the spot is given as a guess."""
     ref = str(ref or "").strip()
-    if ref.startswith("lift:"):          # phones since 2026-11-24: "lift:<OSM id or name>" for a report on a lift
-        want = ref[5:]
-        for f in resort.get("lifts") or []:
-            if (f.get("osm") is not None and str(f["osm"]) == want) or (f.get("name") or "") == want:
-                return "lift", f, "osm" if str(f.get("osm")) == want else "name"
-        ref = ""
     if ref:
         for kind, key in (("run", "trails"), ("lift", "lifts")):
             for f in resort.get(key) or []:

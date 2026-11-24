@@ -97,7 +97,7 @@ describe('offline maps', () => {
   it('downloads the whole mountain; directions data only with a pass', () => {
     const free = mountainFiles('stowe', { pass: false });
     expect(free.required).toEqual(['/data/stowe/resort.json', '/data/stowe/terrain.z16']);
-    expect(free.optional).toEqual(['/data/stowe/surround.z16', '/data/stowe/canopy.z8', '/data/stowe/landcover.z8']);
+    expect(free.optional).toEqual(['/data/stowe/surround.z16', '/data/stowe/canopy.z8']);
     expect(mountainFiles('stowe', { pass: true }).optional).toContain('/data/stowe/graph.json');
     expect(mountainFiles('stowe', { pass: true, graphInline: true }).optional).not.toContain('/data/stowe/graph.json');
     expect(mountainFiles('stowe', { z16: false }).required).toContain('/data/stowe/terrain.bin');

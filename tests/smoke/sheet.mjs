@@ -220,31 +220,6 @@ try {
   await page.locator('#sheet [data-act="open-sheet"][data-s="pass"]').click();
   await keeps('Sign-in email', '#f-email');
   await page.locator('#sheet [data-act="close-sheet"]').click();
-
-  // ---- 5. Report a map mistake: a wrong rating needs "It should be:" (#112), and the report names the run
-  const sentReports = [];
-  page.on('request', (r) => { if (r.url().endsWith('/api/reports') && r.method() === 'POST') sentReports.push(JSON.parse(r.postData() || '{}')); });
-  await page.locator('#searchbtn').click();
-  await page.locator('#f-search').fill('a');
-  await page.locator('#search-list .srow[data-k="trail"]').first().click();
-  await page.locator('#sheet [data-act="report-open"]').click({ timeout: 10000 });
-  await page.locator('#sheet [data-act="report-kind"][data-v="wrong_rating"]').click();
-  const choices = await page.locator('#report-should button').allTextContents();
-  if (!(await page.locator('#sheet label', { hasText: 'It should be:' }).count())) fail('Wrong rating shows no "It should be:" label');
-  if (choices.length !== 4 || !/Green/.test(choices[0]) || !/Double black/.test(choices[3])) fail(`Wrong rating "It should be" choices are not green to double black: ${JSON.stringify(choices)}`);
-  await page.locator('#f-report').fill('the sign at the top says black');
-  await page.locator('#sheet [data-act="report-send"]').click();
-  await page.waitForTimeout(300);
-  if (sentReports.length) fail('a wrong-rating report was sent without saying what the rating should be');
-  await page.locator('#report-should [data-v="2"]').click();
-  if (await page.inputValue('#f-report') !== 'the sign at the top says black') fail('choosing a rating lost the typed note');
-  await page.locator('#sheet [data-act="report-send"]').click();
-  await page.waitForTimeout(500);
-  const sentReport = sentReports[0];
-  if (!sentReport) fail('the report was not sent after choosing a rating');
-  else if (sentReport.kind !== 'wrong_rating' || sentReport.should !== 2 || sentReport.scale !== 'us' || !sentReport.name || !/^(\d{6,}|)$/.test(sentReport.ref)) fail(`report body is wrong: ${JSON.stringify({ ...sentReport, dev: undefined })}`);
-  else console.log(`Report sheet: "${sentReport.name}" (ref ${sentReport.ref || 'none'}) should be ${choices[2].trim()}.`);
-  if (await page.locator('#sheet:not(.hidden)').count()) await page.locator('#sheet [data-act="close-sheet"]').click();
   // the same panels opened over the start screen
   await page.goto(ORIGIN);
   await page.locator('[data-act="start-forecast"]').waitFor({ state: 'visible', timeout: 30000 });

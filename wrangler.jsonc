@@ -29,6 +29,7 @@
     "PADDLE_ENV": "sandbox",
     "PADDLE_CLIENT_TOKEN": "",
     "REPORT_DIGEST_TO": "hello@builtbyroger.app",
+    "REPORT_DIGEST_FROM": "reports@builtbyroger.app",
     "PADDLE_PRICES": "{}"
   },
   // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
@@ -36,7 +37,11 @@
   // The daily report email (worker/digest.js, docs/MAP_REPORTS.md) runs at 11:23 UTC (6:23 in Connecticut in winter):
   // DIGEST_CRON in worker/index.js must match the second entry.
   "triggers": { "crons": ["*/5 * * * *", "23 11 * * *"] },
-  // The report email is sent through Resend from MAIL_FROM to REPORT_DIGEST_TO, with the sign-in mail account
-  // (RESEND_API_KEY secret). Without the key or MAIL_FROM it sends nothing; it never sends on days without new reports.
+  // The report email sends nothing until the REPORT_MAIL binding below is switched on, and nothing on days without
+  // new reports.
+  // Cloudflare's own email sending. Switch on (remove the // on the next line) only after the owner has enabled Email
+  // Routing on builtbyroger.app and verified the inbox (docs/MAP_REPORTS.md). No destination is fixed here, so the
+  // binding may send to any address verified in the account; the Worker sends only to REPORT_DIGEST_TO.
+  // "send_email": [{ "name": "REPORT_MAIL" }],
   "observability": { "enabled": true }
 }
