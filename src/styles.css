@@ -927,3 +927,11 @@ textarea.field { resize: vertical; font: inherit; }
 #start-panel .clr-x i { background: rgba(255, 255, 255, .18); border-color: rgba(255, 255, 255, .22); color: #fff; }
 /* the browser's own clear button on search fields: hidden, so there are never two */
 input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; appearance: none; display: none; }
+/* map-mistake reports (#112): "N other skiers reported this" in the report sheet, known problems on a pin */
+.report-dup { margin: 12px 0 4px; padding: 10px 12px; border: 1.5px solid var(--teal); border-radius: 11px; background: var(--teal-soft); }
+.report-dup b { display: block; }
+.report-dup .sub { margin: 4px 0 0; }
+.known-prob h4 { margin: 0 0 6px; }
+.known-prob .sub { margin: 4px 0; }
+.known-prob .cols2 { margin-top: 8px; gap: 8px; }
+.known-prob .cols2 .btn { margin: 0; }

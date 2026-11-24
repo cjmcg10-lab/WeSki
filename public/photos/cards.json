@@ -4,6 +4,21 @@
   "runs": 83,
   "lifts": 7
  },
+ "afton-alps": {
+  "made": "2026-11-24",
+  "runs": 37,
+  "lifts": 20
+ },
+ "alta": {
+  "made": "2026-11-24",
+  "runs": 143,
+  "lifts": 11
+ },
+ "alyeska": {
+  "made": "2026-11-24",
+  "runs": 92,
+  "lifts": 7
+ },
  "angel-fire": {
   "made": "2026-11-24",
   "runs": 89,
@@ -14,15 +29,140 @@
   "runs": 63,
   "lifts": 4
  },
+ "aspen-highlands": {
+  "made": "2026-11-24",
+  "runs": 111,
+  "lifts": 5
+ },
+ "aspen-mountain": {
+  "made": "2026-11-24",
+  "runs": 142,
+  "lifts": 6
+ },
+ "aspen-snowmass": {
+  "made": "2026-11-24",
+  "runs": 129,
+  "lifts": 18
+ },
+ "attitash-mountain": {
+  "made": "2026-11-24",
+  "runs": 72,
+  "lifts": 8
+ },
+ "banff-sunshine-village": {
+  "made": "2026-11-24",
+  "runs": 160,
+  "lifts": 14
+ },
+ "bear-valley": {
+  "made": "2026-11-24",
+  "runs": 97,
+  "lifts": 9
+ },
+ "beaver-creek-arrowhead-mountain": {
+  "made": "2026-11-24",
+  "runs": 163,
+  "lifts": 25
+ },
  "belleayre-mountain-center": {
   "made": "2026-11-24",
   "runs": 51,
   "lifts": 8
  },
+ "berkshire-east": {
+  "made": "2026-11-24",
+  "runs": 41,
+  "lifts": 6
+ },
+ "big-sky": {
+  "made": "2026-11-24",
+  "runs": 340,
+  "lifts": 40
+ },
+ "big-white": {
+  "made": "2026-11-24",
+  "runs": 106,
+  "lifts": 16
+ },
+ "blue-mountain-ontario": {
+  "made": "2026-11-24",
+  "runs": 50,
+  "lifts": 13
+ },
+ "blue-mountain-pennsylvania": {
+  "made": "2026-11-24",
+  "runs": 33,
+  "lifts": 15
+ },
+ "bogus-basin-mountain-recreation": {
+  "made": "2026-11-24",
+  "runs": 105,
+  "lifts": 11
+ },
+ "bolton-valley": {
+  "made": "2026-11-24",
+  "runs": 79,
+  "lifts": 6
+ },
+ "boyne-mountain": {
+  "made": "2026-11-24",
+  "runs": 62,
+  "lifts": 10
+ },
+ "breckenridge": {
+  "made": "2026-11-24",
+  "runs": 213,
+  "lifts": 35
+ },
+ "bretton-woods": {
+  "made": "2026-11-24",
+  "runs": 105,
+  "lifts": 9
+ },
+ "brian-head": {
+  "made": "2026-11-24",
+  "runs": 59,
+  "lifts": 13
+ },
+ "bridger-bowl": {
+  "made": "2026-11-24",
+  "runs": 61,
+  "lifts": 11
+ },
+ "brighton": {
+  "made": "2026-11-24",
+  "runs": 62,
+  "lifts": 8
+ },
+ "bromley-mountain-bromley-mountain": {
+  "made": "2026-11-24",
+  "runs": 47,
+  "lifts": 8
+ },
+ "bromont-montagne-d-experience": {
+  "made": "2026-11-24",
+  "runs": 107,
+  "lifts": 11
+ },
  "brundage": {
   "made": "2026-11-24",
   "runs": 79,
   "lifts": 6
+ },
+ "burke": {
+  "made": "2026-11-24",
+  "runs": 56,
+  "lifts": 5
+ },
+ "camelback-mountain": {
+  "made": "2026-11-24",
+  "runs": 35,
+  "lifts": 15
+ },
+ "cannon-mountain": {
+  "made": "2026-11-24",
+  "runs": 101,
+  "lifts": 9
  },
  "cascade-mountain": {
   "made": "2026-11-24",
@@ -34,39 +174,389 @@
   "runs": 151,
   "lifts": 7
  },
+ "catamount": {
+  "made": "2026-11-24",
+  "runs": 46,
+  "lifts": 7
+ },
  "china-peak-mountain": {
   "made": "2026-11-24",
   "runs": 44,
   "lifts": 11
+ },
+ "copper-mountain": {
+  "made": "2026-11-24",
+  "runs": 149,
+  "lifts": 23
+ },
+ "cranmore-mountain": {
+  "made": "2026-11-24",
+  "runs": 55,
+  "lifts": 8
+ },
+ "crested-butte-mountain": {
+  "made": "2026-11-24",
+  "runs": 243,
+  "lifts": 15
+ },
+ "crystal-mountain": {
+  "made": "2026-11-24",
+  "runs": 139,
+  "lifts": 11
+ },
+ "cypress-mountain": {
+  "made": "2026-11-24",
+  "runs": 63,
+  "lifts": 8
+ },
+ "deer-valley": {
+  "made": "2026-11-24",
+  "runs": 235,
+  "lifts": 34
  },
  "dodge-ridge": {
   "made": "2026-11-24",
   "runs": 67,
   "lifts": 11
  },
+ "eldora": {
+  "made": "2026-11-24",
+  "runs": 61,
+  "lifts": 10
+ },
+ "fernie-alpine": {
+  "made": "2026-11-24",
+  "runs": 133,
+  "lifts": 10
+ },
+ "geto-kogen": {
+  "made": "2026-11-24",
+  "runs": 13,
+  "lifts": 5
+ },
+ "gore-mountain": {
+  "made": "2026-11-24",
+  "runs": 111,
+  "lifts": 14
+ },
+ "grand-targhee": {
+  "made": "2026-11-24",
+  "runs": 94,
+  "lifts": 6
+ },
  "great-divide": {
   "made": "2026-11-24",
   "runs": 125,
   "lifts": 6
+ },
+ "gunstock-recreation": {
+  "made": "2026-11-24",
+  "runs": 51,
+  "lifts": 6
+ },
+ "heavenly": {
+  "made": "2026-11-24",
+  "runs": 132,
+  "lifts": 24
  },
  "holiday-valley": {
   "made": "2026-11-24",
   "runs": 69,
   "lifts": 13
  },
+ "homewood": {
+  "made": "2026-11-24",
+  "runs": 65,
+  "lifts": 7
+ },
+ "hunter-mountain": {
+  "made": "2026-11-24",
+  "runs": 65,
+  "lifts": 11
+ },
+ "jackson-hole": {
+  "made": "2026-11-24",
+  "runs": 143,
+  "lifts": 17
+ },
+ "jay-peak": {
+  "made": "2026-11-24",
+  "runs": 91,
+  "lifts": 9
+ },
+ "keystone": {
+  "made": "2026-11-24",
+  "runs": 154,
+  "lifts": 20
+ },
+ "killington": {
+  "made": "2026-11-24",
+  "runs": 152,
+  "lifts": 22
+ },
+ "kimberley-alpine": {
+  "made": "2026-11-24",
+  "runs": 62,
+  "lifts": 5
+ },
+ "kirkwood-mountain": {
+  "made": "2026-11-24",
+  "runs": 74,
+  "lifts": 13
+ },
+ "la-plagne": {
+  "made": "2026-11-24",
+  "runs": 158,
+  "lifts": 87
+ },
+ "lake-louise": {
+  "made": "2026-11-24",
+  "runs": 161,
+  "lifts": 13
+ },
+ "le-massif": {
+  "made": "2026-11-24",
+  "runs": 59,
+  "lifts": 9
+ },
+ "les-arcs": {
+  "made": "2026-11-24",
+  "runs": 128,
+  "lifts": 78
+ },
+ "les-contamines": {
+  "made": "2026-11-24",
+  "runs": 46,
+  "lifts": 27
+ },
+ "loon": {
+  "made": "2026-11-24",
+  "runs": 76,
+  "lifts": 12
+ },
+ "lost-trail": {
+  "made": "2026-11-24",
+  "runs": 69,
+  "lifts": 8
+ },
+ "loveland-basin": {
+  "made": "2026-11-24",
+  "runs": 86,
+  "lifts": 7
+ },
+ "lutsen-mountains": {
+  "made": "2026-11-24",
+  "runs": 90,
+  "lifts": 7
+ },
  "mad-river-glen": {
   "made": "2026-11-24",
   "runs": 60,
   "lifts": 5
+ },
+ "magic-mountain": {
+  "made": "2026-11-24",
+  "runs": 52,
+  "lifts": 6
+ },
+ "mammoth": {
+  "made": "2026-11-24",
+  "runs": 170,
+  "lifts": 28
+ },
+ "marmot-basin": {
+  "made": "2026-11-24",
+  "runs": 91,
+  "lifts": 6
+ },
+ "mohawk-mountain": {
+  "made": "2026-11-24",
+  "runs": 27,
+  "lifts": 7
+ },
+ "monarch-mountain": {
+  "made": "2026-11-24",
+  "runs": 77,
+  "lifts": 9
+ },
+ "mont-sainte-anne": {
+  "made": "2026-11-24",
+  "runs": 70,
+  "lifts": 9
+ },
+ "mont-sutton": {
+  "made": "2026-11-24",
+  "runs": 60,
+  "lifts": 7
+ },
+ "mont-tremblant-mont-tremblant": {
+  "made": "2026-11-24",
+  "runs": 114,
+  "lifts": 14
+ },
+ "montana-snowbowl": {
+  "made": "2026-11-24",
+  "runs": 60,
+  "lifts": 6
+ },
+ "mount-ashland": {
+  "made": "2026-11-24",
+  "runs": 52,
+  "lifts": 6
+ },
+ "mount-rose-tahoe": {
+  "made": "2026-11-24",
+  "runs": 69,
+  "lifts": 8
+ },
+ "mount-snow": {
+  "made": "2026-11-24",
+  "runs": 88,
+  "lifts": 19
+ },
+ "mount-southington": {
+  "made": "2026-11-24",
+  "runs": 14,
+  "lifts": 7
+ },
+ "mount-sunapee": {
+  "made": "2026-11-24",
+  "runs": 74,
+  "lifts": 10
+ },
+ "mount-washington-alpine": {
+  "made": "2026-11-24",
+  "runs": 100,
+  "lifts": 10
+ },
+ "mt-bachelor": {
+  "made": "2026-11-24",
+  "runs": 106,
+  "lifts": 15
+ },
+ "mt-hood-meadows": {
+  "made": "2026-11-24",
+  "runs": 126,
+  "lifts": 11
+ },
+ "mt-hood-skibowl": {
+  "made": "2026-11-24",
+  "runs": 70,
+  "lifts": 9
+ },
+ "mt-norquay": {
+  "made": "2026-11-24",
+  "runs": 74,
+  "lifts": 7
+ },
+ "mt-seymour": {
+  "made": "2026-11-24",
+  "runs": 44,
+  "lifts": 5
+ },
+ "mt-spokane": {
+  "made": "2026-11-24",
+  "runs": 65,
+  "lifts": 8
+ },
+ "northstar-at-tahoe": {
+  "made": "2026-11-24",
+  "runs": 92,
+  "lifts": 20
+ },
+ "okemo": {
+  "made": "2026-11-24",
+  "runs": 125,
+  "lifts": 21
+ },
+ "pajarito-mountain": {
+  "made": "2026-11-24",
+  "runs": 42,
+  "lifts": 6
+ },
+ "palisades-tahoe": {
+  "made": "2026-11-24",
+  "runs": 296,
+  "lifts": 44
+ },
+ "panorama-mountain": {
+  "made": "2026-11-24",
+  "runs": 132,
+  "lifts": 10
+ },
+ "park-city": {
+  "made": "2026-11-24",
+  "runs": 358,
+  "lifts": 41
  },
  "pats-peak": {
   "made": "2026-11-24",
   "runs": 36,
   "lifts": 11
  },
+ "pico-mountain": {
+  "made": "2026-11-24",
+  "runs": 57,
+  "lifts": 7
+ },
+ "pizol": {
+  "made": "2026-11-24",
+  "runs": 39,
+  "lifts": 14
+ },
+ "powder-mountain": {
+  "made": "2026-11-24",
+  "runs": 150,
+  "lifts": 9
+ },
+ "powder-ridge": {
+  "made": "2026-11-24",
+  "runs": 12,
+  "lifts": 8
+ },
+ "purgatory": {
+  "made": "2026-11-24",
+  "runs": 103,
+  "lifts": 12
+ },
+ "ragged": {
+  "made": "2026-11-24",
+  "runs": 56,
+  "lifts": 5
+ },
+ "red-mountain": {
+  "made": "2026-11-24",
+  "runs": 103,
+  "lifts": 8
+ },
  "red-river": {
   "made": "2026-11-24",
   "runs": 68,
+  "lifts": 7
+ },
+ "revelstoke-mountain": {
+  "made": "2026-11-24",
+  "runs": 71,
+  "lifts": 7
+ },
+ "saalbach": {
+  "made": "2026-11-24",
+  "runs": 100,
+  "lifts": 82
+ },
+ "saddleback": {
+  "made": "2026-11-24",
+  "runs": 66,
+  "lifts": 5
+ },
+ "sandia-peak": {
+  "made": "2026-11-24",
+  "runs": 62,
+  "lifts": 5
+ },
+ "santa-fe-santa-fe-q38555": {
+  "made": "2026-11-24",
+  "runs": 79,
   "lifts": 7
  },
  "schweitzer-mountain": {
@@ -74,19 +564,224 @@
   "runs": 92,
   "lifts": 10
  },
+ "seven-springs-mountain": {
+  "made": "2026-11-24",
+  "runs": 41,
+  "lifts": 16
+ },
+ "sierra-at-tahoe": {
+  "made": "2026-11-24",
+  "runs": 49,
+  "lifts": 13
+ },
  "silver-mountain": {
   "made": "2026-11-24",
   "runs": 75,
   "lifts": 7
+ },
+ "silver-star-mountain": {
+  "made": "2026-11-24",
+  "runs": 142,
+  "lifts": 11
+ },
+ "ski-sundown": {
+  "made": "2026-11-24",
+  "runs": 17,
+  "lifts": 5
+ },
+ "skiwelt": {
+  "made": "2026-11-24",
+  "runs": 169,
+  "lifts": 80
+ },
+ "smugglers-notch": {
+  "made": "2026-11-24",
+  "runs": 83,
+  "lifts": 9
+ },
+ "snow-summit": {
+  "made": "2026-11-24",
+  "runs": 30,
+  "lifts": 15
  },
  "snow-valley-mountain": {
   "made": "2026-11-24",
   "runs": 28,
   "lifts": 13
  },
+ "snowbasin": {
+  "made": "2026-11-24",
+  "runs": 137,
+  "lifts": 13
+ },
+ "snowbird": {
+  "made": "2026-11-24",
+  "runs": 211,
+  "lifts": 14
+ },
+ "snowshoe": {
+  "made": "2026-11-24",
+  "runs": 63,
+  "lifts": 13
+ },
+ "solitude": {
+  "made": "2026-11-24",
+  "runs": 87,
+  "lifts": 9
+ },
+ "sommet-saint-sauveur": {
+  "made": "2026-11-24",
+  "runs": 39,
+  "lifts": 17
+ },
+ "steamboat": {
+  "made": "2026-11-24",
+  "runs": 195,
+  "lifts": 23
+ },
+ "stevens-pass": {
+  "made": "2026-11-24",
+  "runs": 75,
+  "lifts": 14
+ },
+ "stowe": {
+  "made": "2026-11-24",
+  "runs": 129,
+  "lifts": 12
+ },
+ "stratton": {
+  "made": "2026-11-24",
+  "runs": 117,
+  "lifts": 17
+ },
+ "sugar-bowl": {
+  "made": "2026-11-24",
+  "runs": 111,
+  "lifts": 13
+ },
+ "sugarbush": {
+  "made": "2026-11-24",
+  "runs": 132,
+  "lifts": 18
+ },
+ "sugarloaf": {
+  "made": "2026-11-24",
+  "runs": 154,
+  "lifts": 15
+ },
+ "sun-peaks": {
+  "made": "2026-11-24",
+  "runs": 174,
+  "lifts": 13
+ },
+ "sun-valley-bald-mountain": {
+  "made": "2026-11-24",
+  "runs": 101,
+  "lifts": 12
+ },
+ "sundance": {
+  "made": "2026-11-24",
+  "runs": 71,
+  "lifts": 10
+ },
+ "sunday-river": {
+  "made": "2026-11-24",
+  "runs": 136,
+  "lifts": 19
+ },
  "tamarack": {
   "made": "2026-11-24",
   "runs": 75,
   "lifts": 7
+ },
+ "taos-valley": {
+  "made": "2026-11-24",
+  "runs": 111,
+  "lifts": 14
+ },
+ "telluride": {
+  "made": "2026-11-24",
+  "runs": 139,
+  "lifts": 19
+ },
+ "three-summits": {
+  "made": "2026-11-24",
+  "runs": 72,
+  "lifts": 20
+ },
+ "tignes-val-disere": {
+  "made": "2026-11-24",
+  "runs": 182,
+  "lifts": 80
+ },
+ "timberline-lodge": {
+  "made": "2026-11-24",
+  "runs": 51,
+  "lifts": 12
+ },
+ "vail": {
+  "made": "2026-11-24",
+  "runs": 212,
+  "lifts": 32
+ },
+ "val-thorens": {
+  "made": "2026-11-24",
+  "runs": 103,
+  "lifts": 33
+ },
+ "wachusett": {
+  "made": "2026-11-24",
+  "runs": 27,
+  "lifts": 8
+ },
+ "waterville-valley": {
+  "made": "2026-11-24",
+  "runs": 67,
+  "lifts": 10
+ },
+ "welch-village": {
+  "made": "2026-11-24",
+  "runs": 48,
+  "lifts": 10
+ },
+ "whistler-blackcomb": {
+  "made": "2026-11-24",
+  "runs": 529,
+  "lifts": 36
+ },
+ "whiteface": {
+  "made": "2026-11-24",
+  "runs": 100,
+  "lifts": 11
+ },
+ "whitefish-mountain": {
+  "made": "2026-11-24",
+  "runs": 113,
+  "lifts": 16
+ },
+ "whitewater": {
+  "made": "2026-11-24",
+  "runs": 95,
+  "lifts": 5
+ },
+ "windham-mountain": {
+  "made": "2026-11-24",
+  "runs": 56,
+  "lifts": 10
+ },
+ "winter-park": {
+  "made": "2026-11-24",
+  "runs": 185,
+  "lifts": 25
+ },
+ "wolf-creek": {
+  "made": "2026-11-24",
+  "runs": 170,
+  "lifts": 11
+ },
+ "zermatt": {
+  "made": "2026-11-24",
+  "runs": 149,
+  "lifts": 66
  }
 }

@@ -38,6 +38,13 @@ python3 tools/skimap.py get <map id> <out file>
   downloading 400 MB tiles). Outside the USA, the config needs `"dem"` (see the top of `tools/pipeline.py`).
   Downloads and full logs go to the work folder (`--work`, default `/tmp/weski-pipe`); the screen shows one
   line per step and a summary table. Rebuilding an existing mountain reuses its built terrain (exact, no download).
+- At the end `pipeline.py` makes each built mountain's **mountain card** (`tools/mountain_cards.mjs`, 2026-11-24):
+  the app's only picture of a mountain, a view of its 3D map with its numbers laid over it, saved as
+  `public/photos/<id>.jpg` (768 x 360) and `<id>-s.jpg` (208 x 112) and listed in `public/photos/cards.json`.
+  It needs Chromium (`PW_CHROMIUM=/opt/pw-browsers/chromium`; the pipeline sets it when that path exists) and
+  takes about 7 s a mountain. If it fails, the score card gets a LOOK line and `tests/cards.test.js` fails until
+  `node tools/mountain_cards.mjs <id>` (or `--missing`) has made it. Look at the card before pushing: the whole
+  ski area should be in view, not hidden behind a nearer hill. Commit `public/photos` with the map work.
 - The score card (`tools/cards/<id>.md`, committed) says Ready or lists what to look at: ratings not checked,
   official runs missing from the map, runs rated by guess, runs not reachable from the base, joins the build
   made by itself, hidden pieces, new lifts to review, runs that climb, audit flags, and fewer lifts or named

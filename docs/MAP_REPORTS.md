@@ -1,8 +1,11 @@
 # Map-mistake reports and map help: daily email, confidence scores, suggested fixes
 
 Written 2026-11-24 for issue #112. Steps 1 and 2 (the daily email and confidence scores) and the GPS-evidence step
-(on-map share, places people leave the map, suggested fixes, the weekly tool and workflow) are built. Joins and stubs
-from the issue's table and the phone changes of step 5 are not built yet.
+(on-map share, places people leave the map, suggested fixes, the weekly tool and workflow) are built, and so is the
+phone side of step 5 ("N other skiers reported this" and the replies "This spot is fine" / "It's been fixed, thanks";
+see "On the phone" below). Joins and stubs from the issue's table are not built yet. Step 5's other idea, sending
+short simplified lines of the off-run squares, was deliberately **not** built: the off-run squares already sent are
+enough to find missing runs and lines drawn off their place, and lines would add detail about where one person went.
 
 ## In short: what the owner sees, what is automatic, what needs the owner
 
@@ -129,6 +132,27 @@ On the phone (More → Privacy & map help, the flag button on the map, or a drop
 | `wrong_name` | The name is wrong (added 2026-11-24) | the run or lift |
 | `no_connection` | Runs or lifts don't connect here (added 2026-11-24) | spot, 60 m |
 | `other` | Something else | the run or lift, or spot (60 m) when the pin is on neither |
+| `fine` | "This spot is fine", on a pin where a problem is known (added 2026-11-24) | a reply: joins the problem it answers |
+| `fixed` | "It's been fixed, thanks", the same (added 2026-11-24) | a reply: joins the problem it answers |
+
+## On the phone (step 5)
+
+- **"N other skiers reported this".** The report sheet loads the mountain's problem list (`GET /api/reports/<id>/problems`,
+  at most every 5 minutes, again right after this phone sends something). When the report being written would join a
+  problem already there (same kind and same run or lift, or within the problem's spot radius: the phone uses the
+  server's own `thingKeys`, in `src/reportmatch.js`), the sheet says "N other skiers reported this" (N is `people`:
+  phones plus older reports sent without an install id). The skier can tap "Add my report too" (it joins the problem
+  and counts as one more phone agreeing) or "Already reported, thanks" (nothing is sent). If this phone sent a matching
+  report itself (kept on the phone as `myReports`), it says "You reported this already" and does not count itself.
+- **Replies on a pin.** A dropped pin (or a tapped run or lift) where a problem is known shows "Known map problem here"
+  with each problem's kind, run and number of skiers, and two buttons: "This spot is fine" and "It's been fixed,
+  thanks". A tap sends one reply per problem shown (at most 3) with `kind` `fine` or `fixed` and `about` = the problem's
+  kind, the run or lift at the pin, the place, the install id and, as for reports, the distance from the phone's GPS
+  (never while "Simulated location" is on). After that the card says "Thanks for letting us know." (`myReplies` on the
+  phone). Offline or with no known problem, nothing extra shows.
+- **Server checks** (`cleanReport` in `worker/evidence.js`): a reply must have `about` set to one of the eight problem
+  kinds (not a reply kind) and an install id; only replies may carry `about`; a reply's note, run number and rating
+  are dropped. Replies share the 10-a-day limit per network with reports.
 
 "It should be:" offers the resort's own scale: green, blue, black, double black in North America; the piste colours
 green, blue, red, black and freeride (yellow) in Europe and Japan, as the map legend shows them. The phone sends the
@@ -177,7 +201,14 @@ When automatic fixes are added, tighten them there if they start adding or remov
      run means nothing).
    - "Wrong rating": never judged from GPS. A wrong, easier rating can send someone onto terrain above their level, so
      ratings always go to a person and the resort's own list.
-7. Score = report points + map-help points. Medium from 1.5, high from 3. Example: three phones on the spot today
+7. Replies ("This spot is fine", "It's been fixed, thanks") are counter-evidence. A reply answers a problem of the
+   kind in its `about`, about the same run or lift (or, for a spot problem, within its radius). Each phone's newest
+   reply takes away `counterPoints` (1 point), fading over 60 days and counting 1.5 times when sent from within 200 m,
+   exactly like a report. One phone counts once per problem however often it taps, so one person can cancel at most
+   one report's worth. A phone whose reply is newer than its own report has changed its mind: its report stops
+   counting; a report newer than the same phone's reply wins instead. Replies are never problems of their own, and
+   the reasons say e.g. "2 phones say the spot is fine, 1 phone says it has been fixed (-3)".
+8. Score = report points + map-help points - reply points (never below 0). Medium from 1.5, high from 3. Example: three phones on the spot today
    score 4.5 (high); one phone far away scores 1 (low).
 
 Map help does not record tracks, so "tracks crossing a gap" can only show as off-run squares at the gap.
@@ -185,7 +216,9 @@ Map help does not record tracks, so "tracks crossing a gap" can only show as off
 ## Where things are stored
 
 - Reports: the `reports` table of each mountain's `ResortLog` Durable Object (`worker/stores.js`). Columns added for
-  #112: `dev` (hash), `near`, `run`, `lat`, `lon`, `should`, `scale`, added to old objects on first use.
+  #112: `dev` (hash), `near`, `run`, `lat`, `lon`, `should`, `scale`, and `about` (the problem kind a reply answers),
+  added to old objects on first use. The daily email lists replies too, each with the problem it answers and that
+  problem's new confidence.
 - The mountain's `kv` row `digestSent`: the highest report id already emailed.
 - The `ResortLog` object named `_digest` (not a valid resort id, so it never clashes): `digest_due` lists mountains with
   reports not yet emailed or new map-help days; `kv` `lastDigestDay` stops a second email on the same day if the cron

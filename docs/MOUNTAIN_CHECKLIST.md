@@ -64,9 +64,12 @@ the score card in `tools/cards/<id>.md` says which items still need a person. Se
       may climb; fix with `node tools/fit_terrain.mjs`).
 
 ### 5. Looks and content
-- [ ] A real photo of the mountain (free licence, ideally winter, showing the slopes) in `public/photos/`
-      as `<id>.jpg` (768 x 360) and `<id>-s.jpg` (208 x 112), with the photographer and licence in
-      `public/photos/credits.json`.
+- [ ] The mountain card (the app's picture of the mountain, made from its 3D map; no photos since
+      2026-11-24): `public/photos/<id>.jpg` (768 x 360) and `<id>-s.jpg` (208 x 112), listed in
+      `public/photos/cards.json`. `tools/pipeline.py` makes it; otherwise
+      `PW_CHROMIUM=/opt/pw-browsers/chromium node tools/mountain_cards.mjs <id>`. Rerun it after every rebuild
+      (the numbers on it come from the map). Look at it: the ski area fills the right side and is not hidden
+      behind a nearer hill. `tests/cards.test.js` fails without it.
 - [ ] Name, region and position correct in the home list, on the globe and on the mountain card.
 - [ ] Summit, vertical, trail and lift counts on the card look right against the resort's own figures.
 - [ ] Weather shows for summit and base at sensible heights.
@@ -102,7 +105,8 @@ the score card in `tools/cards/<id>.md` says which items still need a person. Se
 ## Where each mountain stands (2026-11-18)
 
 "Ratings" means the resort's own published ratings have been applied (`tools/official/<id>.json` exists).
-"Photo" means a real photo is in place of the drawn picture.
+"Photo" is history: it said whether a real photo replaced the drawn picture. Since 2026-11-24 every built mountain
+shows its mountain card (made from its 3D map) instead, and the photos are gone.
 Every mountain, including those built before 2026-11-18, should also be checked against sections 6
 and 7 (languages, spoken directions, and getting back out to the globe). These checks are about the app
 as a whole, so one pass at any mountain covers the app; the per-mountain part is the place names.

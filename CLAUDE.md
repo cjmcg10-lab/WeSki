@@ -593,13 +593,19 @@ keys go in through the credential form, never chat.
 
 ## Mountain cards (2026-11-24)
 
-Mountains with no free photo in `public/photos/credits.json` get a picture made from our own map instead:
-`node tools/mountain_cards.mjs <ids> | --missing` (needs the maps pulled; `PW_CHROMIUM=/opt/pw-browsers/chromium`).
-It opens the app's 3D map (vite dev, `?skip=<id>`), puts the camera below the base looking up the fall line framed on
-all shown runs, evening light, and lays the numbers from resort.json over it (summit, vertical, named runs by rating,
-unrated ones counted apart, lifts). Writes `public/photos/<id>.jpg` and `<id>-s.jpg` (same sizes as the photos) and
-`public/photos/cards.json`; the app uses a card only when there is no photo. Rerun it after rebuilding a mountain.
-Text in the picture is English only.
+Every built mountain's picture in the app (list thumbnail and the big resort card) is its mountain card, made from
+our own map (owner, 2026-11-24: "push that for all mountains... a much better design"). The Wikimedia photos and
+`public/photos/credits.json` were removed then, and their credits with them. `node tools/mountain_cards.mjs <ids> |
+--all | --missing` (needs the maps pulled; `PW_CHROMIUM=/opt/pw-browsers/chromium`; about 7 s a mountain, all 157 in
+about 20 minutes). It opens the app's 3D map (vite dev, `?skip=<id>`), puts the camera below the base looking up the
+fall line framed on all shown runs, evening light (haze scaled to the camera distance, so big areas are not washed
+out), and lays the numbers from resort.json over it (summit, vertical, named runs by rating, unrated ones counted
+apart, lifts; metres first outside the USA). Writes `public/photos/<id>.jpg` (768 x 360) and `<id>-s.jpg` (208 x 112)
+and `public/photos/cards.json`. `tools/pipeline.py` makes the cards of the mountains it builds (after build_index;
+`--no-cards` skips it, a failure is a LOOK line on the score card) and `tests/cards.test.js` fails when a built
+mountain has no card or a file in `public/photos` belongs to no built mountain. Rerun it after rebuilding a mountain
+(the numbers change). Text in the picture is English only. It never uses a port another vite already answers on
+(another worktree's server once answered instead of ours and gave wrong pictures): it takes the next free port from 5197. Coming-soon mountains keep the painted `thumbSvg`.
 
 ## Emergency button (2026-11-23, issue #92)
 
