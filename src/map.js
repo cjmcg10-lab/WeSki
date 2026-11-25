@@ -64,6 +64,10 @@ const QUALITY = [
 const SHARP_AFTER_MS = 250;
 // Trees further than this are thinned out with distance (to a share of FAR_TREES), and so are the land's far pieces.
 const TREES_FULL_M = 2500, FAR_TREES = 0.35;
+// Tree density on every map (buildTrees): at most this many trees per hectare of full forest, planted all the way within
+// about 300 m of the ski terrain, thinning out over TREE_FADE_M beyond that, and on past the map's edge over TREE_FRINGE_M
+// into the land around it (from its land cover file), so the forest fades out instead of stopping at a line.
+const TREES_PER_HA = 10, TREE_FADE_M = 700, TREE_FRINGE_M = 900;
 const STATION_COLOR = 0x8b2f2f;
 const UP = new THREE.Vector3(0, 1, 0);
 // real line speeds of the carriers other than chairs (m/s)
@@ -436,7 +440,7 @@ export class SkiMap {
       uOrigin: { value: new THREE.Vector2(geo.W / 2, geo.H / 2) }, uSize: { value: new THREE.Vector2(W, H) },
       uTl: { value: tl }, uCell: { value: cell },
       cSnow: { value: lin(246, 250, 253) }, cGlade: { value: lin(176, 205, 190) }, cRock: { value: lin(124, 132, 141) }, cAlpine: { value: lin(226, 234, 240) },
-      cHigh: { value: lin(150, 182, 176) }, cMid: { value: lin(44, 104, 80) }, cLow: { value: lin(52, 122, 78) }, cZone: { value: Z },
+      cHigh: { value: lin(150, 182, 176) }, cMid: { value: lin(44, 104, 80) }, cLow: { value: lin(52, 122, 78) }, cValley: { value: lin(0x6a, 0x9a, 0x68) }, cZone: { value: Z },
     };
     const mat = new THREE.MeshLambertMaterial();
     mat.onBeforeCompile = (sh) => {
@@ -459,7 +463,7 @@ ${LAND_GLSL}
 uniform highp usampler2D uZone;
 uniform vec2 uOrigin, uSize;
 uniform float uTl, uCell;
-uniform vec3 cSnow, cGlade, cRock, cAlpine, cHigh, cMid, cLow, cZone[8];
+uniform vec3 cSnow, cGlade, cRock, cAlpine, cHigh, cMid, cLow, cValley, cZone[8];
 // crisp but anti-aliased edge where a field crosses 0.5
 float edgeOf(float f, float fw) { float w = max(fw * 0.5, 0.002); return smoothstep(0.5 - w, 0.5 + w, f); }
 vec3 groundColour() {
@@ -473,8 +477,11 @@ vec3 groundColour() {
   float relief = 1.2 * sqrt(max(0.0, 1.0 - n.y * n.y)) / max(n.y, 0.05);   // rise over run, as the old per-triangle measure
   bool alpine = alt > uTl + 60.0;
   // forest bands by height, blended over ~40 m; alpine snow above the treeline; rock on steep ground
+  // low ground (more than 820 m below the treeline) turns a lighter valley green, exactly as buildSurround colours the
+  // land around the map, so low hills do not sit as a dark square in lighter land
+  vec3 low = mix(cLow, cValley, clamp((uTl - 820.0 - alt) / 250.0, 0.0, 1.0));
   vec3 c = alt > uTl - 260.0 ? mix(cHigh, cAlpine, smoothstep(uTl + 40.0, uTl + 80.0, alt))
-                             : mix(mix(cLow, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
+                             : mix(mix(low, cMid, smoothstep(uTl - 460.0, uTl - 420.0, alt)), cHigh, smoothstep(uTl - 280.0, uTl - 240.0, alt));
   // with real tree cover: forest only where the trees are; clearings and meadows below the treeline are snow
   vec3 band = c;
   if (uHasCanopy > 0.5 && !alpine) c = mix(cOpen, c, smoothstep(0.45 - cvw, 0.45 + cvw, cv));
@@ -596,36 +603,107 @@ diffuseColor.rgb = landColour(diffuseColor.rgb, vec2(vLPos.x + uMapO.x, uMapO.y 
 
   buildTrees() {
     const { nx, ny, cell, zmin } = this.resort.grid, mask = this.snowMask, h = this.geo.h, tl = this.resort.treeline || 1300;
-    // only plant near the ski terrain (keeps the instance count phone-friendly)
-    const q = 6, qx = Math.ceil(nx / q), qy = Math.ceil(ny / q), near = new Uint8Array(qx * qy);
-    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (mask[j * nx + i] > 0.3) {
-      const ci = (i / q) | 0, cj = (j / q) | 0;
-      for (let b = Math.max(0, cj - 4); b <= Math.min(qy - 1, cj + 4); b++) for (let a = Math.max(0, ci - 4); a <= Math.min(qx - 1, ci + 4); a++) near[b * qx + a] = 1;
+    const W = this.geo.W, H = this.geo.H;
+    // How much forest is planted at each spot: all of it within about 300 m of the ski terrain, then thinning out
+    // gradually (TREE_FADE_M) instead of stopping dead, and on past the map's edge into the land around it (below).
+    // Measured on a grid of blocks of q cells: d = blocks from the nearest ski terrain (a chamfer distance).
+    const q = 6, qx = Math.ceil(nx / q), qy = Math.ceil(ny / q), blk = q * cell, dist = new Float32Array(qx * qy).fill(1e9);
+    for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) if (mask[j * nx + i] > 0.3) dist[((j / q) | 0) * qx + ((i / q) | 0)] = 0;
+    for (let pass = 0; pass < 2; pass++) {
+      const order = pass ? [qy - 1, -1, -1, qx - 1, -1, -1] : [0, qy, 1, 0, qx, 1];
+      for (let b = order[0]; b !== order[1]; b += order[2]) for (let a = order[3]; a !== order[4]; a += order[5]) {
+        let v = dist[b * qx + a];
+        for (const [da, db, w] of [[-1, 0, 1], [0, -1, 1], [-1, -1, 1.414], [1, -1, 1.414]]) {
+          const x = a + (pass ? -da : da), y = b + (pass ? -db : db);
+          if (x >= 0 && y >= 0 && x < qx && y < qy) v = Math.min(v, dist[y * qx + x] + w);
+        }
+        dist[b * qx + a] = v;
+      }
     }
+    const NEAR = 4;
+    let FADE = TREE_FADE_M / blk, fringeM = TREE_FRINGE_M;
+    const weightAt = (gi, gj) => { const d = dist[((gj / q) | 0) * qx + ((gi / q) | 0)]; return d <= NEAR ? 1 : Math.max(0, 1 - (d - NEAR) / FADE); };
+    const near = (gi, gj) => dist[((gj / q) | 0) * qx + ((gi / q) | 0)] <= NEAR;
     let seed = 7;
     const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
     const spots = [];
+    this.treeStats = null;
     if (this.canopy) {
       // Real trees: planted where Meta's canopy map has them, as densely as it says, at its height. Never on a
       // groomed run, slope outline, base area or lift line; glades keep theirs (they are runs through the trees).
-      const cv = this.canopy, c = cv.cell, BUDGET = 9000;   // about 4x the old random trees, at half the triangles each
-      let total = 0;
-      const ok = (ci, cj) => {
+      // Every map is planted to the same density (at most TREES_PER_HA per hectare of full forest), within the budget:
+      // small hills used to get one tree per canopy cell and looked far denser than the big resorts.
+      // The fade zone and the land past the edge get a small allowance of their own (EXTRA), so they never thin out
+      // the forest near the runs: where they would need more, the fade is made shorter (never sparser, which would show
+      // as a step where it starts).
+      const cv = this.canopy, c = cv.cell, BUDGET = 9000, EXTRA = 2500;   // about 4x the old random trees, at half the triangles each
+      const wt = (ci, cj) => {
         const gi = Math.min(nx - 1, Math.round(((ci + 0.5) * c) / cell)), gj = Math.min(ny - 1, Math.round(((cj + 0.5) * c) / cell));
-        return near[((gj / q) | 0) * qx + ((gi / q) | 0)] && mask[gj * nx + gi] < 0.45;
+        return mask[gj * nx + gi] < 0.45 ? weightAt(gi, gj) : 0;
       };
-      for (let cj = 0; cj < cv.h; cj++) for (let ci = 0; ci < cv.w; ci++) {
-        const k = cj * cv.w + ci;
-        if (cv.cover[k] > 60 && ok(ci, cj)) total += cv.cover[k] / 255;
+      // the land round the map: its forest share (land cover file), planted out to TREE_FRINGE_M past the edge, fading
+      // as it goes, and by the same rule near the edge (so where the trees inside the map have already thinned out, few go on)
+      const lc = this.land, sr = this.resort.surround;
+      const perCell = (sr ? sr.cell * sr.cell : 0) / (c * c);   // canopy cells per land cover cell
+      const fringeOf = () => {
+        const out = [];
+        if (!lc || !sr) return out;
+        for (let j = 0; j < sr.ny; j++) for (let i = 0; i < sr.nx; i++) {
+          const f = lc.rgba[(j * sr.nx + i) * 4] / 255;
+          if (f < 0.15) continue;
+          const x = sr.x0 + i * sr.cell, y = sr.y0 + j * sr.cell;
+          const ex = Math.max(0, -x, x - W), ey = Math.max(0, -y, y - H), o = Math.hypot(ex, ey);
+          if (o <= 0 || o > fringeM + sr.cell) continue;
+          const gi = Math.round(Math.min(Math.max(x, 0), W) / cell), gj = Math.round(Math.min(Math.max(y, 0), H) / cell);
+          const w = weightAt(Math.min(nx - 1, gi), Math.min(ny - 1, gj)) * Math.max(0, 1 - o / fringeM);
+          if (w > 0) out.push([x, y, f * w]);
+        }
+        return out;
+      };
+      // forest near the runs (core) and in the fade zone and past the edge (outer), in canopy cells' worth of full cover
+      const measure = () => {
+        let core = 0, outer = 0;
+        for (let cj = 0; cj < cv.h; cj++) for (let ci = 0; ci < cv.w; ci++) {
+          const k = cj * cv.w + ci;
+          if (cv.cover[k] <= 60) continue;
+          const w = wt(ci, cj), f = cv.cover[k] / 255;
+          if (w >= 1) core += f; else outer += f * w;
+        }
+        const fr = fringeOf();
+        for (const [, , fw] of fr) outer += fw * perCell;
+        return { core, outer, fr };
+      };
+      let m = measure();
+      const keep = Math.min(TREES_PER_HA * c * c / 1e4, BUDGET / Math.max(1, m.core));
+      for (const k of [0.7, 0.5, 0.35, 0.22]) {
+        if (m.outer * keep <= EXTRA) break;
+        FADE = (TREE_FADE_M * k) / blk; fringeM = TREE_FRINGE_M * k; m = measure();
       }
-      const keep = Math.min(1, BUDGET / Math.max(1, total));     // one tree per cell at full cover, within the budget
+      const keepOut = Math.min(keep, EXTRA / Math.max(1, m.outer)), fringe = m.fr, hs = [];
+      for (let k = 0; k < cv.cover.length && hs.length < 4000; k += 7) if (cv.cover[k] > 128 && cv.height[k]) hs.push(cv.height[k]);
       for (let cj = 0; cj < cv.h; cj++) for (let ci = 0; ci < cv.w; ci++) {
         const k = cj * cv.w + ci;
-        if (cv.cover[k] <= 60 || rnd() > (cv.cover[k] / 255) * keep || !ok(ci, cj)) continue;
+        if (cv.cover[k] <= 60) continue;
+        const w = wt(ci, cj);
+        if (rnd() > (cv.cover[k] / 255) * (w >= 1 ? keep : keepOut * w)) continue;
         spots.push([(ci + rnd()) * c, (cj + rnd()) * c, rnd(), Math.min(35, Math.max(4, cv.height[k] || 12))]);
       }
+      // fringe trees: as many per land cover cell as its forest share gives at this density, the typical tree height
+      hs.sort((a, b) => a - b);
+      const tall = Math.min(30, Math.max(8, hs[hs.length >> 1] || 14));
+      let nf = 0;
+      for (const [x, y, fw] of fringe) {
+        const want = fw * perCell * keepOut;
+        let n = Math.floor(want) + (rnd() < want % 1 ? 1 : 0);
+        while (n-- > 0) {
+          const px = x + (rnd() - 0.5) * sr.cell, py = y + (rnd() - 0.5) * sr.cell;
+          if (px >= 0 && px <= W && py >= 0 && py <= H) continue;      // inside the map: its own trees are there
+          spots.push([px, py, rnd(), tall * (0.8 + rnd() * 0.4)]); nf++;
+        }
+      }
+      this.treeStats = { trees: spots.length, fringe: nf, keep, perHa: (keep * 1e4) / (c * c), budgetPerHa: (Math.min(1, BUDGET / Math.max(1, m.core)) * 1e4) / (c * c), outPerHa: (keepOut * 1e4) / (c * c), fadeM: Math.round(FADE * blk), fringeM };
     } else for (let j = 1; j < ny - 1; j += 2) for (let i = 1; i < nx - 1; i += 2) {
-      if (!near[((j / q) | 0) * qx + ((i / q) | 0)] || mask[j * nx + i] > 0.15) continue;
+      if (!near(i, j) || mask[j * nx + i] > 0.15) continue;
       // trees thin out over the last 150 m below the treeline and stop at it
       const up = zmin + h[j * nx + i] / 10 - (tl - 150);
       if (up > 0 && rnd() < up / 150) continue;
