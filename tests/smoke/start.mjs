@@ -99,13 +99,21 @@ try {
   if (new Set(frames.map((x) => x[2])).size > 1) fail('the search field changed height when the keyboard closed');
   // dragging the list down and back up: the search field keeps its height on every frame
   const fh = (await rect('#f-resort')).height;
-  await page.evaluate(() => { window.__fh = []; const fl = document.querySelector('#f-resort'), t0 = performance.now(), f = () => { window.__fh.push(fl.getBoundingClientRect().height); if (performance.now() - t0 < 2400) requestAnimationFrame(f); }; f(); });
+  await page.evaluate(() => { window.__fh = []; const fl = document.querySelector('#f-resort'), t0 = performance.now(), f = () => { window.__fh.push(fl.getBoundingClientRect().height); const fb = document.querySelector('[data-act="start-forecast"]').getBoundingClientRect(); (window.__fb ||= []).push(Math.round(fb.top) + ':' + (fb.height > 0 ? 1 : 0)); if (performance.now() - t0 < 2400) requestAnimationFrame(f); }; f(); });
   for (const dy of [600, -600]) {
     const g = await page.locator('#start-panel .grab').boundingBox();
     await page.evaluate(async ({ x, y, dy }) => { const el = document.elementFromPoint(x, y); const ev = (t, yy) => el.dispatchEvent(new PointerEvent(t, { bubbles: true, clientX: x, clientY: yy, pointerId: 1, pointerType: 'touch', isPrimary: true }));
       ev('pointerdown', y); for (let i = 1; i <= 12; i++) { await new Promise((r) => requestAnimationFrame(r)); ev('pointermove', y + dy * i / 12); } ev('pointerup', y + dy); }, { x: g.x + g.width / 2, y: g.y + g.height / 2, dy });
     await page.waitForTimeout(900);
+    if (dy > 0) {
+      // shrunk to its title: the title still shows above the Join Group / Forecast bar
+      const [t2, bar] = [await rect('#start-panel h2'), await rect('#start > .start-actions')];
+      if (t2.bottom > bar.top + 1) fail(`with the list shrunk, its title is hidden behind the Join Group / Forecast bar (title bottom ${t2.bottom}, bar top ${bar.top})`);
+    }
   }
+  // Join Group and Forecast stay exactly where they are while the list slides (owner, 2026-11-25)
+  const fbs = [...new Set(await page.evaluate(() => window.__fb))];
+  if (fbs.length !== 1 || !fbs[0].endsWith(':1')) fail(`the Forecast button moved or vanished while the list slid (${fbs.slice(0, 6).join(', ')})`);
   const hs = await page.evaluate(() => window.__fh);
   if (hs.some((h) => Math.abs(h - fh) > 0.5)) fail(`the search field changed height while the list was dragged (${Math.min(...hs)} to ${Math.max(...hs)} px, at rest ${fh})`);
   if (fh < 40) fail(`the search field is squeezed (${fh} px high)`);
