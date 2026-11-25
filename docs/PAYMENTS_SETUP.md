@@ -126,6 +126,19 @@ Paying needs an account, and accounts need sign-in emails.
   (2026-11-24: a sandbox test purchase gave no pass because only the live destination existed; Paddle sent nothing).
   On launch day it goes back to the live secret (B8).
 
+**B7b. Done in code (2026-11-25, while still on the sandbox).**
+- The webhook only accepts deliveries from Paddle's published addresses. The worker reads them from Paddle at run time
+  (`https://api.paddle.com/ips` live, `https://sandbox-api.paddle.com/ips` sandbox; `worker/paddleips.js`, cached for
+  an hour, never written into the code), turns everything else away with 403, and answers 503 (Paddle retries) if
+  the list cannot be read. The signature check still runs after it.
+- Each account keeps its Paddle customer id (`ctm_...`) from its purchases, and checkout passes it to Paddle as
+  `pwCustomer` for Paddle Retain (only the Paddle id, never our id or email).
+- `.dev.vars.example` lists the secrets (no values); `.dev.vars` is git-ignored.
+- The code reads everything Paddle-specific from settings: there are no sandbox price ids or sandbox URLs in the code.
+  Going live changes only `PADDLE_ENV`, `PADDLE_CLIENT_TOKEN` and `PADDLE_PRICES` in `wrangler.assets.jsonc` (B8) and the
+  `PADDLE_WEBHOOK_SECRET` secret in Cloudflare. Merging that change deploys it, so it waits until verification has
+  passed and the domain is approved.
+
 **B8. Claude switches on, you test.**
 - You, on launch day: put the **live** destination's secret back in Cloudflare as `PADDLE_WEBHOOK_SECRET` (Paddle live
   dashboard → Developer tools → Notifications → the SkiWithMe destination shows its secret key).

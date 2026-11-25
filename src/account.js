@@ -85,6 +85,8 @@ export async function checkout(plan, onDone) {
       if (c.paddle.env === 'sandbox') P.Environment.set('sandbox');
       P.Initialize({
         token: c.paddle.token,
+        // Paddle Retain recognises a returning customer by their Paddle customer id (ctm_...), never our id or email
+        ...(/^ctm_/.test(me?.paddleCustomer || '') ? { pwCustomer: { id: me.paddleCustomer } } : {}),
         eventCallback: (ev) => { if (ev.name === 'checkout.completed') paddleDone?.(); },
       });
       return P;

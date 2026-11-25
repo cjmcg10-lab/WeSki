@@ -651,4 +651,5 @@ export default {
   1649: "Questo acquisto appartiene a un altro account SkiWithMe. Accedi con quell’account per usarlo.",
   1650: "Acquisti ripristinati.",
   1651: "Nessun acquisto da ripristinare per questo Account Apple.",
+  1652: 'Rimborsi',
 };
