@@ -823,7 +823,7 @@ async function goSki(id, btn, joinCode = null) {
   await landing;
   document.body.classList.remove('flying');
   renderChrome();
-  if (joinCode) { await joinGroup(joinCode); openSheet('group'); }
+  if (joinCode) { await joinGroup(joinCode, true); openSheet('group'); }
 }
 
 /** Leave the mountain: climb away into the haze, then pull back from the ground to the spinning globe. */
@@ -1841,9 +1841,10 @@ function profileForm() {
 function sheetGroup() {
   const g = S.group;
   if (!g) {
-    return ['Group', `<div class="plain"><div class="sec-title">Profile <small>(optional)</small></div>${profileFields()}</div>
-      <div class="card"><h4>Create a private group</h4><p class="sub">Up to 20 people. Share the code with friends; nobody can see a location until that person turns sharing on.</p><button class="btn" data-act="create-group">Create Group${passBadge()}</button><p class="note" style="text-align:center;margin-bottom:0">Only share your location when you choose.</p></div>
-      <div class="card"><h4>Join with a code</h4><input class="field code" id="f-code" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" /><button class="btn outline" data-act="join-group" style="margin-bottom:2px">Join Group</button></div>`];
+    return ['Group', `<div class="card"><h4>Create a private group</h4><p class="sub">Up to 20 people. Share the code with friends; everyone in the group sees where the others are.</p><button class="btn" data-act="create-group">Create Group${passBadge()}</button></div>
+      <div class="card"><h4>Join with a code</h4><input class="field code" id="f-code" maxlength="6" placeholder="CODE" autocapitalize="characters" autocomplete="off" /><button class="btn outline" data-act="join-group" style="margin-bottom:2px">Join Group</button></div>
+      <p class="note" style="text-align:center">Your location is shared with the group as soon as you create or join it. You can pause it any time.</p>
+      <div class="plain"><div class="sec-title">Profile <small>(optional)</small></div>${profileFields()}</div>`];
   }
   const st = g.state, mine = st?.members.find((m) => m.id === S.profile.id);
   const owner = st?.owner === S.profile.id;
@@ -3006,12 +3007,12 @@ async function onClick(e) {
     case 'create-group':
       if (!acct.hasPass()) { upsell('group'); break; }
       b.disabled = true;
-      try { await joinGroup(await createGroup()); openSheet('group'); } catch (err) { b.disabled = false; if (err.pass) upsell('group'); else toast(err.message); }
+      try { await joinGroup(await createGroup(), true); openSheet('group'); } catch (err) { b.disabled = false; if (err.pass) upsell('group'); else toast(err.message); }
       break;
     case 'join-group': {
       const code = ($('#f-code').value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
       if (code.length !== 6) { toast('Enter the 6-character group code.'); break; }
-      joinGroup(code); openSheet('group');
+      joinGroup(code, true); openSheet('group');
       break;
     }
     case 'share-code': {

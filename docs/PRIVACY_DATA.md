@@ -137,9 +137,13 @@ purchases (plan, dates, Paddle ids), crew emails. Deleted with the account. Padd
 Unchanged: positions relay through the group's Durable Object while sharing is on; the room is wiped when the group
 ends or 12 hours after its last activity.
 
+Since 2026-11-25 (owner's request) sharing switches on when a skier creates or joins a group: the Group screen says
+so right under the Create and Join buttons, so pressing them is the informed choice. The switch on the group screen
+pauses it, and leaving the group stops it. A group restored after a restart keeps the skier's last choice.
+
 ## Legal points to keep true
 
-- EU/UK: consent for map help and sharing (both opt-in switches), withdrawal at any time, access/delete requests
+- EU/UK: consent for map help (opt-in switch) and sharing (creating or joining a group, with the notice beside the buttons), withdrawal at any time, access/delete requests
   answered within 30 days, children under 16 only with a parent.
 - US states that treat precise geolocation as sensitive (for example California, Colorado, Connecticut, Virginia,
   Oregon, Texas): we collect it only with the user's choice, for the stated purpose, never sell or share it for
