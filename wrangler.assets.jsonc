@@ -36,13 +36,13 @@
   // Secrets (set by the owner in the Cloudflare dashboard, never in this file): RESEND_API_KEY,
   // PADDLE_WEBHOOK_SECRET. See docs/PAID_TIER.md.
   "vars": {
-    "PAYWALL": "off",
+    "PAYWALL": "on",
     "WEATHER": "open-meteo",
     "MAIL_FROM": "SkiWithMe <signin@builtbyroger.app>",
-    "PADDLE_ENV": "sandbox",
-    "PADDLE_CLIENT_TOKEN": "test_03c17e15405c60d04760a656641",
+    "PADDLE_ENV": "production",
+    "PADDLE_CLIENT_TOKEN": "live_de7b25c9af4415729c20436185d",
     "REPORT_DIGEST_TO": "hello@builtbyroger.app",
-    "PADDLE_PRICES": "{\"pri_01m7xyhm3habdpnghh36ah1etv\":\"day\",\"pri_01m7xyk6z28t41kfe9d1n0qmqt\":\"week\",\"pri_01m7xyme122wvrre3pq6b8nawf\":\"season\",\"pri_01m7xyn989mnvsga49aqcd5729\":\"crew\"}"
+    "PADDLE_PRICES": "{\"pri_01m803hqh1qe0m0q21169zxe75\":\"day\",\"pri_01m803h3hzbfnmt8vs22sb1rje\":\"week\",\"pri_01m803g5sb42nyc7g12k9p13aq\":\"season\",\"pri_01m803f82tc1pqjrdxgkg10bn8\":\"crew\"}"
   },
   // Scheduled job: every 5 minutes one step of reading MeteoSwiss ensemble files for Swiss resorts (issue #57,
   // worker/meteoswiss.js). Most steps find nothing to do; a new run takes about 13 steps every 6 hours.
