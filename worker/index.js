@@ -4,6 +4,7 @@ import { DurableObject } from 'cloudflare:workers';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, newSignInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
+import { verifyAppleJws, appleRecord, readNotification } from './apple.js';
 import { cleanSummary, cleanReport } from './evidence.js';
 import { fromR2 } from './maps.js';
 import { weatherResponse, historyResponse, ENSEMBLE_STORE } from './capture.js';
@@ -82,7 +83,7 @@ async function groupOk(url, env, resort) {
 async function api(request, env, url, ctx) {
   const path = url.pathname, method = request.method;
   // state-changing requests must come from the app's own pages (cookies are SameSite=Lax as well)
-  if (method === 'POST' && path !== '/api/paddle/webhook') {
+  if (method === 'POST' && path !== '/api/paddle/webhook' && path !== '/api/apple/notifications') {
     const origin = request.headers.get('origin');
     if (origin && origin !== url.origin) return json({ error: 'Wrong origin' }, 403);
   }
@@ -192,6 +193,22 @@ async function api(request, env, url, ctx) {
     let ev;
     try { ev = JSON.parse(raw); } catch { return json({ error: 'Bad body' }, 400); }
     await accounts(env).applyPurchase(ev.event_id || ev.notification_id, purchaseFromEvent(ev, priceMap(env)));
+    return json({ ok: true });
+  }
+  if (path === '/api/apple/transaction' && method === 'POST') {
+    // the iPhone app sends each purchase it makes or restores: Apple's signed transaction, checked here
+    const b = await readJson(request, 20000);
+    const tx = await verifyAppleJws(b?.jws);
+    const rec = tx && appleRecord(tx);
+    if (!rec) return json({ error: 'not_apple' }, 400);
+    const r = await accounts(env).appleFromApp(session(request), `apple-tx:${tx.transactionId}${tx.revocationDate ? ':r' : ''}`, tx.appAccountToken || null, rec);
+    return json(r, r.ok ? 200 : r.error === 'signed_out' ? 401 : 409);
+  }
+  if (path === '/api/apple/notifications' && method === 'POST') {
+    // App Store Server Notifications v2: renewals, upgrades, cancellations ending, refunds. Signed by Apple.
+    const n = await readNotification(await readJson(request, 100000));
+    if (!n) return json({ error: 'Bad signature' }, 401);
+    await accounts(env).appleFromApple(n.id, n.token, n.record);
     return json({ ok: true });
   }
   if (path === '/api/contrib' && method === 'POST') {

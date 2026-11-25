@@ -322,7 +322,7 @@ function hideSplash() {
 // ---------- terms and safety agreement
 // Shown before anything else until agreed. Asked again when the terms change (TERMS_V, the date on the legal pages),
 // after a year, or whenever this phone has no record of it (cleared data, new phone, a browser that dropped it).
-const TERMS_V = '2026-11-24', CONSENT_MAX_MS = 365 * 864e5;
+const TERMS_V = '2026-11-25', CONSENT_MAX_MS = 365 * 864e5;
 function consentOk() {
   const c = prefs.get('consent', null);
   return !!c && c.v === TERMS_V && Date.now() - c.at < CONSENT_MAX_MS;
@@ -2087,8 +2087,21 @@ async function buyPlan(plan) {
     setTimeout(() => ($('#f-email') || $('#f-signcode'))?.focus(), 350);
     return;
   }
+  if (acct.nativeStore()) { await buyInApp(plan); return; }
   try { await acct.checkout(plan, async (ok) => { toast(ok ? 'Thank you! Your pass is on.' : 'Payment received. Your pass will appear in a minute.'); await afterPassChange(); renderSheet(); }); }
   catch (err) { toast(err.message); }
+}
+
+/** Inside the iPhone app every pass is bought through Apple (App Store rules): Apple's sheet, then our server checks
+ *  Apple's signed receipt and puts the pass on the account. */
+async function buyInApp(plan) {
+  const r = await acct.buyApple(plan).catch(() => ({ error: 'store' }));
+  if (r.cancelled) toast('Purchase cancelled.');
+  else if (r.pending) toast('Payment is pending. Your pass appears once Apple confirms it.', 5000);
+  else if (r.ok) toast('Purchase complete. Your pass is on your account.');
+  else if (r.error === 'other_account') toast('This purchase belongs to another SkiWithMe account. Sign in with that account to use it.', 6000);
+  else toast('Could not complete the purchase. You were not charged. Try again later.', 5000);
+  await afterPassChange(); renderSheet();
 }
 
 /** The devices signed in to this account (at most 2), so a shared sign-in is easy to spot. */
@@ -2113,7 +2126,7 @@ function sheetPass(why) {
       <button class="btn alt" data-act="signout">Sign out</button>
       <button class="btn alt" data-act="signout-all">Sign out of all devices</button>
       <button class="learn" data-act="acct-delete-ask">Delete my account</button>
-      ${S.askDelete ? '<p class="note">This deletes your account, sign-ins, crew list and pass on our server, and any pass ends. Cancel a renewing Season Pass first, from the link in your Paddle receipt. Paddle keeps its payment records as the law requires. Ski days saved on this phone stay on this phone.</p><button class="btn danger" data-act="acct-delete">Delete my account</button>' : ''}</div>`;
+      ${S.askDelete ? '<p class="note">This deletes your account, sign-ins, crew list and pass on our server, and any pass ends. Cancel a renewing Season Pass first: from the link in your Paddle receipt, or for one bought in the iPhone app, in iPhone Settings → your name → Subscriptions. Paddle and Apple keep their payment records as the law requires. Ski days saved on this phone stay on this phone.</p><button class="btn danger" data-act="acct-delete">Delete my account</button>' : ''}</div>`;
   } else if (!c.signIn) {
     who = '<div class="card"><h4>Sign in</h4><p class="sub">Accounts open with the paid launch. Until then everything is free.</p></div>';
   } else if (S.signin?.sent) {
@@ -2127,23 +2140,27 @@ function sheetPass(why) {
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
   who = simNote() + who;
-  const canBuy = !!c.paddle;
+  // inside the iPhone app: Apple only, with Apple's own prices (in the buyer's currency) once the App Store answers
+  const store = acct.nativeStore();
+  if (store && !S.storePrices) { S.storePrices = {}; store.prices().then((p) => { S.storePrices = p || {}; if (S.sheet === 'pass') renderSheet(); }).catch(() => {}); }
+  const canBuy = store ? true : !!c.paddle;
   // what each plan offers this account: no Day or Week while a yearly pass is on, Season to Crew as an upgrade
-  const pick = planChoices(me?.signedIn ? me : null);
+  const pick = planChoices(me?.signedIn ? me : null, Date.now(), !!store);
   const button = (k) => {
     const a = pick.action[k] || 'buy';
     if (a === 'have') return `<div class="per ok-text">${t('Your pass')}</div>`;
     if (a === 'upgrade') return `<button class="btn sm" data-act="upgrade-ask">${t('Upgrade')}</button>`;
     return a === 'buy' && canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : '';
   };
-  const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">$${p.price.toFixed(2)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
+  const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">${esc(S.storePrices?.[k] || `$${p.price.toFixed(2)}`)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
     ${button(k)}</div></div>`).join('');
   const planNote = [
     pick.yearly && pick.yearly.plan !== 'comp' ? t('Your {0} is on until {1}, so Day and Week passes are not needed.', t(P[pick.yearly.plan]?.name || 'Pass'), fmtDay(pick.yearly.until)) : '',
     pick.shortUntil ? t('A new Day or Week Pass starts when your current pass ends: {0}.', `${fmtDay(pick.shortUntil)} ${fmtClock(pick.shortUntil)}`) : '',
   ].filter(Boolean).map((x) => `<p class="note">${x}</p>`).join('')
     + (pick.action.crew === 'upgrade' && S.askUpgrade
-      ? `<p class="note">${t('Upgrade to the Crew Season Pass? Paddle charges the difference for the rest of your year now, then {0} a year. Your pass then covers you and 3 friends.', `$${P.crew?.price?.toFixed(2)}`)}</p><button class="btn" data-act="upgrade">${t('Confirm upgrade')}</button>`
+      ? `<p class="note">${store ? t('Upgrade to the Crew Season Pass? Apple starts it now and refunds the unused part of your Season Pass, then charges {0} a year. Your pass then covers you and 3 friends.', esc(S.storePrices?.crew || `$${P.crew?.price?.toFixed(2)}`))
+        : t('Upgrade to the Crew Season Pass? Paddle charges the difference for the rest of your year now, then {0} a year. Your pass then covers you and 3 friends.', `$${P.crew?.price?.toFixed(2)}`)}</p><button class="btn" data-act="upgrade">${t('Confirm upgrade')}</button>`
       : '');
   const trial = me?.signedIn && !me.trialUsed && !me.pass?.active ? '<button class="btn alt" data-act="trial">Try a free day</button>' : '';
   return ['SkiWithMe Pass', `
@@ -2151,7 +2168,9 @@ function sheetPass(why) {
     ${open ? '<div class="card"><p class="ok-text" style="margin:0">Everything is free while SkiWithMe is in preview.</p></div>' : ''}
     <div class="card"><div class="cols2"><div><h4>Free</h4><ul class="ticks">${FREE_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div><div><h4>With a pass</h4><ul class="ticks plus">${PASS_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div></div></div>
     ${who}
-    <div class="card"><h4>Plans</h4>${plans}${planNote}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : 'Payments open with the paid launch.'}</p></div>
+    <div class="card"><h4>Plans</h4>${plans}${planNote}${trial}${store ? `<p class="note">${t('Payment is charged to your Apple Account. Season and Crew Season passes renew every year at the price shown until you cancel. Cancel at least 24 hours before the renewal date in Manage subscription (or iPhone Settings → your name → Subscriptions). Day and Week passes do not renew.')}</p>
+      <button class="btn alt" data-act="store-restore">${t('Restore purchases')}</button><button class="btn alt" data-act="store-manage">${t('Manage subscription')}</button>`
+    : `<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : 'Payments open with the paid launch.'}</p>${canBuy ? `<p class="note">${t('Season and Crew Season passes renew every year at the price shown until you cancel. Cancel any time from the link in your Paddle receipt; the pass runs to the end of the year you paid for. Day and Week passes do not renew.')}</p>` : ''}`}</div>
     <p class="foot"><a href="/about" target="_blank">About</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy</a> · <a href="/legal/refunds" target="_blank">Refunds</a></p>`];
 }
 
@@ -2906,8 +2925,19 @@ async function onClick(e) {
       await afterPassChange(); renderSheet(); break;
     }
     case 'upgrade-ask': S.askUpgrade = !S.askUpgrade; renderSheet(); break;
+    case 'store-restore': {
+      if (!acct.signedIn()) { buyPlan(null); break; }
+      const r = await acct.restoreApple().catch(() => ({ error: 'store' }));
+      toast(r.none ? 'No purchases to restore for this Apple Account.' : r.ok ? 'Purchases restored.'
+        : r.error === 'other_account' ? 'This purchase belongs to another SkiWithMe account. Sign in with that account to use it.'
+          : 'Could not complete the purchase. You were not charged. Try again later.', 5000);
+      await afterPassChange(); renderSheet(); break;
+    }
+    case 'store-manage': acct.nativeStore()?.manage().catch(() => {}); break;
     case 'upgrade': {
-      S.askUpgrade = false; toast('Upgrading…');
+      S.askUpgrade = false;
+      if (acct.nativeStore()) { await buyInApp('crew'); break; }
+      toast('Upgrading…');
       const r = await acct.upgradeToCrew().catch(() => ({ error: 'net' }));
       toast(r.ok ? (r.done ? 'Upgraded: your pass now covers you and 3 friends.' : 'Upgrade received. Your Crew Pass will appear in a minute.')
         : r.error === 'not_open' ? 'Upgrading is not open yet. Write to hello@builtbyroger.app and we will switch your pass.'
