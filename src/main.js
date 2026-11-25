@@ -211,7 +211,8 @@ function initMap(id) {
       fetchHeights(`/data/${id}/surround`, resortP.then((R) => R.surround), undefined, noZ16).catch(() => null),
       fetchCanopy(`/data/${id}/canopy`),         // real tree cover; older maps have none and keep the old trees
       // what covers the land around the map (forest, fields, water), for maps built with it
-      resortP.then((R) => (R.sources?.landcover ? fetchLandcover(`/data/${id}/landcover`) : null)),
+      // (tried for every map: a map without one answers "not found" and keeps its plain surroundings)
+      fetchLandcover(`/data/${id}/landcover`),
     ]);
     if (mapId !== id) return;                 // another resort was picked while this one was loading
     const heights = new Uint16Array(buf);

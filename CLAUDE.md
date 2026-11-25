@@ -611,6 +611,16 @@ mountain has no card or a file in `public/photos` belongs to no built mountain. 
 (the numbers change). Text in the picture is English only. It never uses a port another vite already answers on
 (another worktree's server once answered instead of ours and gave wrong pictures): it takes the next free port from 5197. Coming-soon mountains keep the painted `thumbSvg`.
 
+## Trees and the edge blend (2026-11-25, preview only)
+
+`buildTrees` in `src/map.js` caps trees at `TREES_PER_HA` (10 per hectare of full canopy) so small hills are no
+denser than big resorts (Southington had 87/ha, Stowe 10); big maps keep the 9,000-tree budget. Trees thin out
+gradually past the ski terrain (`TREE_FADE_M`, shortened on big maps) and carry on past the map edge as "fringe" trees
+on land-cover forest (`TREE_FRINGE_M`), from a separate 2,500-tree budget. The detailed ground uses the surround's
+valley green below treeline-820 m (`cValley`), so low hills no longer show a darker square. The app always tries
+`landcover.z8` (404 = none). The 210 land-cover files were uploaded to R2 `preview/data/<id>/` only; once the owner
+approves, push them live (`maps_r2.mjs` already carries `landcover.z8`) and merge the branch.
+
 ## Emergency button (2026-11-23, issue #92)
 
 A red SOS button at the top of the map's right-hand column (and "Emergency" at the top of More) opens a sheet with the
