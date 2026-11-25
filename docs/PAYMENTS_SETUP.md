@@ -207,8 +207,9 @@ Do these once Part C is done. Claude builds the app side at the same time.
   - Production Server URL: `https://skiwithme.builtbyroger.app/api/apple/notifications`
   - Sandbox Server URL: the same address
   - Version: **Version 2**
-- Do this after Claude's server change is live (Claude will say when), or Apple's test message fails. After saving,
-  the same page has **Request a Test Notification**: press it and tell Claude, who checks it arrived.
+- Do this after Claude's server change is live (Claude will say when). There is no test button on this page (Apple
+  only offers a test message through its server API, which needs a key); the first sandbox purchase in TestFlight is
+  the real test, and Claude checks that Apple's message arrived.
 
 **D6. (Not needed.)** The server checks Apple's purchases with Apple's own certificates, which need no key
   (built 2026-11-25). No `APPLE_IAP_KEY` secret is needed. If a key is ever wanted later (to ask Apple about a purchase
