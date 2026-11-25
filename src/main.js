@@ -403,7 +403,18 @@ async function restoreAfterReload(back, acctReady) {
 // ---------- start screen (globe + resort picker)
 let globe = null, clouds = null;
 /** Show the globe. With `from` (a resort) it starts on the ground there, hidden, ready to pull back. */
+/** The list keeps room at its bottom for the Join Group / Forecast bar, which stays put over it. */
+let actsWatch = null;
+function watchStartActs() {
+  const a = $('#start > .start-actions');
+  if (!a || actsWatch) return;
+  const set = () => { if (a.offsetHeight) { $('#start').style.setProperty('--acts-h', a.offsetHeight + 'px'); startGeomLast = null; } };
+  actsWatch = typeof ResizeObserver === 'function' ? new ResizeObserver(set) : null;
+  actsWatch?.observe(a); set();
+}
+
 async function openStart(from = null) {
+  watchStartActs();
   const el = $("#start");
   S.allDays = null;   // re-read saved days next time History is shown
   const [{ Globe }, meta, bin] = await Promise.all([import('./globe.js'), fetchOk('/data/globe.json').then((r) => r.json()), fetchOk('/data/globe.bin').then((r) => r.arrayBuffer()), loadPlaces()]);
@@ -484,7 +495,9 @@ function startGeom() {
   p.classList.remove('full');
   p.style.height = ''; p.style.maxHeight = '';
   const h = p.offsetHeight, hd = p.querySelector('h2');
-  const mini = Math.max(0, h - (hd.offsetTop + hd.offsetHeight + 16));
+  // Join Group and Forecast stay put at the bottom, over the list: the shrunk list shows its title above them
+  const acts = $('#start > .start-actions')?.offsetHeight || 0;
+  const mini = Math.max(0, h - (hd.offsetTop + hd.offsetHeight + (acts ? 6 : 16)) - acts);
   p.classList.toggle('full', keep.full);
   p.style.height = keep.h; p.style.maxHeight = keep.mh;
   if (keep.pt) p.style.setProperty('--padt', keep.pt);
