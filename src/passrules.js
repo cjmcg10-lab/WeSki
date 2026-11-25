@@ -106,10 +106,11 @@ export function staleMountains({ cached, opened = {}, today, pass, keep = [], kn
  * {action: {plan: 'buy' | 'have' | 'upgrade' | 'none'}, yearly: {plan, until} | null, shortUntil}:
  * - while a yearly pass is on (own Season or Crew, a crew seat, the owner pass) Day and Week are not sold;
  * - the Season Pass you have shows as yours; with a website Season Pass the Crew Pass is an upgrade
- *   (Paddle charges only the difference); one bought in the iPhone app is upgraded there, so no button here;
+ *   (Paddle charges only the difference); one bought in the iPhone app is upgraded through Apple, so inside the
+ *   app (inApp) it is the Apple Season Pass that shows Upgrade and a website one shows none;
  * - while a Day or Week Pass runs, shortUntil is when the last one bought ends: a new one starts then.
  */
-export function planChoices(me, now = Date.now()) {
+export function planChoices(me, now = Date.now(), inApp = false) {
   const own = (me?.purchases || []).filter((p) => (p.starts ?? 0) <= now && p.ends > now);
   const ownCrew = own.find((p) => p.plan === 'crew'), ownSeason = own.find((p) => p.plan === 'season');
   const pass = me?.pass || {};
@@ -122,7 +123,7 @@ export function planChoices(me, now = Date.now()) {
     Object.assign(action, { day: 'none', week: 'none', season: 'none', crew: 'have' });
     yearly = { plan: 'crew', until: ownCrew.ends };
   } else if (ownSeason) {
-    Object.assign(action, { day: 'none', week: 'none', season: 'have', crew: ownSeason.store === 'paddle' ? 'upgrade' : 'none' });
+    Object.assign(action, { day: 'none', week: 'none', season: 'have', crew: ownSeason.store === (inApp ? 'apple' : 'paddle') ? 'upgrade' : 'none' });
     yearly = { plan: 'season', until: ownSeason.ends };
   } else if (pass.active && pass.member) {
     Object.assign(action, { day: 'none', week: 'none' });

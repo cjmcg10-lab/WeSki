@@ -220,3 +220,78 @@ describe('Day and Week passes add up; Season upgrades to Crew (owner, 2026-11-24
     expect(await a.seasonToUpgrade('0'.repeat(64))).toEqual({ error: 'signed_out' });
   });
 });
+
+describe('Apple purchases from the iPhone app (issue #118)', () => {
+  const D = 86400000;
+  const rec = (over = {}) => ({ id: 'apple:100', plan: 'week', status: 'active', starts: Date.now(), ends: Date.now() + 7 * D, sub: null, ...over });
+
+  it('gives each account its own App Store token, kept between visits', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t = (await a.me(s.session)).appleToken;
+    expect(t).toMatch(/^[0-9a-f-]{36}$/);
+    expect((await a.me(s.session)).appleToken).toBe(t);
+  });
+
+  it('records a purchase the app sends, once, and shows it as an Apple purchase', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t = (await a.me(s.session)).appleToken;
+    expect(await a.appleFromApp(s.session, 'apple-tx:100', t, rec())).toEqual({ ok: true });
+    expect(await a.appleFromApp(s.session, 'apple-tx:100', t, rec())).toEqual({ ok: true });
+    const me = await a.me(s.session);
+    expect(me.purchases).toHaveLength(1);
+    expect(me.purchases[0].store).toBe('apple');
+    expect(me.pass).toMatchObject({ active: true, plan: 'week' });
+  });
+
+  it("refuses a purchase made for another account, and keeps one account's purchase from moving", async () => {
+    const a = store();
+    const one = await a.openSession('one@example.com', UA.iphone);
+    const two = await a.openSession('two@example.com', UA.iphone);
+    const t1 = (await a.me(one.session)).appleToken;
+    expect(await a.appleFromApp(two.session, 'apple-tx:100', t1, rec())).toEqual({ error: 'other_account' });
+    await a.appleFromApp(one.session, 'apple-tx:100', t1, rec());
+    expect(await a.appleFromApp(two.session, 'apple-tx:100b', null, rec())).toEqual({ error: 'other_account' });
+    expect((await a.me(two.session)).pass.active).toBe(false);
+    expect(await a.appleFromApp('0'.repeat(64), 'apple-tx:1', null, rec())).toEqual({ error: 'signed_out' });
+  });
+
+  it('adds up Day and Week passes as on the website', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const now = Date.now();
+    await a.appleFromApp(s.session, 'apple-tx:1', null, rec({ id: 'apple:1', starts: now, ends: now + 7 * D }));
+    await a.appleFromApp(s.session, 'apple-tx:2', null, rec({ id: 'apple:2', starts: now + 1000, ends: now + 1000 + 7 * D }));
+    expect((await a.me(s.session)).pass.until).toBe(now + 14 * D);
+  });
+
+  it('follows a subscription through renewal, upgrade, out-of-order messages and a refund', async () => {
+    const a = store();
+    const s = await a.openSession('ski@example.com', UA.iphone);
+    const t = (await a.me(s.session)).appleToken;
+    const now = Date.now();
+    const season = rec({ id: 'apple:500', plan: 'season', starts: now, ends: now + 365 * D, sub: 'apple:500' });
+    await a.appleFromApp(s.session, 'apple-tx:500', t, season);
+    // renewal message from Apple: the account comes from the token
+    a.appleFromApple('apple-n:1', t, { ...season, ends: now + 730 * D });
+    // an older message arriving late does not shorten it
+    a.appleFromApple('apple-n:2', null, season);
+    let me = await a.me(s.session);
+    expect(me.purchases[0].ends).toBe(now + 730 * D);
+    // upgrade to Crew within the subscription group: same record, now Crew
+    a.appleFromApple('apple-n:3', t, { ...season, plan: 'crew', ends: now + 730 * D });
+    expect((await a.me(s.session)).pass.plan).toBe('crew');
+    // refund: Apple revokes it
+    a.appleFromApple('apple-n:4', t, { ...season, plan: 'crew', status: 'revoked', revoked: true, ends: now - 1000 });
+    me = await a.me(s.session);
+    expect(me.pass.active).toBe(false);
+    expect(me.purchases[0].status).toBe('revoked');
+  });
+
+  it('ignores Apple messages about purchases it does not know', () => {
+    const a = store();
+    expect(a.appleFromApple('apple-n:9', null, rec())).toEqual({ ok: true, unknown: true });
+    expect(a.appleFromApple('apple-n:10', null, null)).toEqual({ ok: true });
+  });
+});

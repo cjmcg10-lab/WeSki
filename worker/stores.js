@@ -43,6 +43,8 @@ export class Accounts extends DurableObject {
       CREATE TABLE IF NOT EXISTS usage (day TEXT, k TEXT, n INTEGER, PRIMARY KEY (day, k));
       CREATE TABLE IF NOT EXISTS revokes (hash TEXT PRIMARY KEY, account TEXT, expires INTEGER);
     `);
+    // each account's App Store token (a UUID the iPhone app attaches to purchases, so Apple's messages name the account)
+    if (!this.rows('PRAGMA table_info(accounts)').some((c) => c.name === 'apple_token')) this.sql.exec('ALTER TABLE accounts ADD COLUMN apple_token TEXT');
   }
 
   /** Record that the signed-in person agreed to terms version v (the phone sends it after sign-in and after agreeing). */
@@ -194,14 +196,19 @@ export class Accounts extends DurableObject {
     const acc = this.one('SELECT * FROM accounts WHERE id = ?', id);
     const own = this.rows('SELECT * FROM purchases WHERE account = ?', id);
     const crewOf = this.rows(`SELECT p.* FROM crew c JOIN purchases p ON p.account = c.owner WHERE c.email = ? AND p.plan = 'crew'`, acc.email);
+    let appleToken = acc.apple_token;
+    if (!appleToken) {
+      appleToken = crypto.randomUUID();
+      this.sql.exec('UPDATE accounts SET apple_token = ? WHERE id = ?', appleToken, id);
+    }
     return {
-      account: id, email: acc.email, trialUsed: !!acc.trial_used,
+      account: id, email: acc.email, trialUsed: !!acc.trial_used, appleToken,
       pass: this.isComp(acc.email) ? { active: true, plan: 'comp', until: 4102444800000, comp: true, trial: false }
         : this.rows('SELECT a.email FROM crew c JOIN accounts a ON a.id = c.owner WHERE c.email = ?', acc.email).some((r) => this.isComp(r.email))
           ? { active: true, plan: 'crew', until: 4102444800000, member: true, trial: false }
           : entitlement(own, crewOf, acc.trial_until),
       purchases: own.map((p) => ({ plan: p.plan, status: p.status, starts: p.starts, ends: p.ends, renews: PLANS[p.plan]?.renews,
-        store: /^(sub|txn)_/.test(p.id) ? 'paddle' : 'apple' })),
+        store: /^apple:/.test(p.id) ? 'apple' : 'paddle' })),
       crew: this.rows('SELECT email FROM crew WHERE owner = ?', id).map((r) => r.email),
       devices: this.rows('SELECT hash, created, seen, device FROM sessions WHERE account = ? ORDER BY seen DESC', id)
         .map((d) => ({ created: d.created, seen: d.seen, name: deviceName(d.device), current: d.hash === mine })),
@@ -241,6 +248,54 @@ export class Accounts extends DurableObject {
       this.sql.exec('INSERT OR REPLACE INTO purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?)', p.id, p.account, p.plan, p.status, p.starts, p.ends, p.sub, Date.now());
     }
     return true;
+  }
+
+  /**
+   * A verified App Store pass record (worker/apple.js appleRecord) for an account: {ok} or {error}. Day and Week
+   * passes add up as on the website; a Season or Crew subscription is one record whose end only moves forward
+   * (messages can arrive out of order), except when Apple refunds or revokes it. A purchase stays with the account
+   * that first recorded it.
+   */
+  applyApple(eventId, account, p) {
+    if (!p || !account) return { error: 'no_pass' };
+    const before = this.one('SELECT * FROM purchases WHERE id = ?', p.id);
+    if (before && before.account !== account) return { error: 'other_account' };
+    if (this.one('SELECT id FROM events WHERE id = ?', eventId)) return { ok: true };
+    this.sql.exec('INSERT INTO events VALUES (?, ?)', eventId, Date.now());
+    const put = (r) => this.sql.exec('INSERT OR REPLACE INTO purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?)', r.id, account, r.plan, r.status, r.starts, r.ends, r.sub, Date.now());
+    if (p.revoked) {
+      put(before ? { ...before, status: 'revoked', ends: Math.min(before.ends, p.ends) } : p);
+      return { ok: true };
+    }
+    if (ONE_OFF.includes(p.plan)) {
+      if (before) return { ok: true };
+      const prev = this.one(`SELECT MAX(ends) AS e FROM purchases WHERE account = ? AND plan IN (${ONE_OFF.map(() => '?').join(', ')}) AND ends > ?`,
+        account, ...ONE_OFF, p.starts);
+      put(prev?.e ? { ...p, starts: prev.e, ends: prev.e + (p.ends - p.starts) } : p);
+      return { ok: true };
+    }
+    put(before && before.status !== 'revoked' ? { ...p, starts: before.starts, ends: Math.max(before.ends, p.ends) } : p);
+    return { ok: true };
+  }
+
+  /** The iPhone app sends a purchase it just made (or restored) for the signed-in account. token: the purchase's
+   *  appAccountToken. A purchase made for another account is refused; one with no token (or an unknown one) joins
+   *  the signed-in account, unless another account already has it. */
+  async appleFromApp(session, eventId, token, p) {
+    const id = await this.accountFor(session);
+    if (!id) return { error: 'signed_out' };
+    const owner = token ? this.one('SELECT id FROM accounts WHERE apple_token = ?', token)?.id : null;
+    if (owner && owner !== id) return { error: 'other_account' };
+    return this.applyApple(eventId, id, p);
+  }
+
+  /** A verified App Store Server Notification: the account comes from the token, or from the purchase already
+   *  recorded. Unknown purchases are ignored (the app sends them itself after buying). */
+  appleFromApple(eventId, token, p) {
+    if (!p) return { ok: true };
+    const account = (token && this.one('SELECT id FROM accounts WHERE apple_token = ?', token)?.id)
+      || this.one('SELECT account FROM purchases WHERE id = ?', p.id)?.account;
+    return account ? this.applyApple(eventId, account, p) : { ok: true, unknown: true };
   }
 
   /** The website Season Pass subscription this account can upgrade to Crew: {sub} or {error}. */

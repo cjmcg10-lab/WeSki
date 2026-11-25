@@ -99,3 +99,40 @@ export async function checkout(plan, onDone) {
   P.Checkout.open({ items: [{ priceId: price, quantity: 1 }], customer: { email: me.email }, customData: { account: me.account } });
 }
 let paddleDone = null;
+
+/** The App Store inside the iPhone app (ios-beta/native.js sets window.SkiWithMeStore), or null on the web.
+ *  The app never shows Paddle: inside it every pass is bought through Apple. */
+export const nativeStore = () => (typeof window !== 'undefined' && window.SkiWithMeStore) || null;
+
+/** Send Apple's signed transaction(s) to our server, which checks them with Apple's certificates and puts the pass on
+ *  this account. Returns the worst answer: {ok} or {error}. */
+async function claimApple(list) {
+  let out = { ok: true };
+  for (const jws of list) {
+    const r = await post('/api/apple/transaction', { jws });
+    if (!r.ok) out = r;
+  }
+  await refreshMe();
+  return out;
+}
+
+/** Buy one plan through Apple. Returns {ok} | {cancelled} | {pending} | {error}. */
+export async function buyApple(plan) {
+  const store = nativeStore();
+  if (!store) return { error: 'no_store' };
+  if (!me?.signedIn) return { error: 'signed_out' };
+  const r = await store.buy(plan, me.appleToken);
+  if (r?.cancelled || r?.pending) return r;
+  if (!r?.jws) return { error: 'store' };
+  return claimApple([r.jws]);
+}
+
+/** Ask Apple again for every pass bought with this Apple Account (a new phone, a reinstall). */
+export async function restoreApple() {
+  const store = nativeStore();
+  if (!store) return { error: 'no_store' };
+  if (!me?.signedIn) return { error: 'signed_out' };
+  const list = await store.restore();
+  if (!list.length) return { ok: true, none: true };
+  return claimApple(list);
+}
