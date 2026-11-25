@@ -100,3 +100,35 @@ export function staleMountains({ cached, opened = {}, today, pass, keep = [], kn
   if (pass || !known) return [];
   return [...new Set(cached)].filter((id) => !keep.includes(id) && opened[id] !== today);
 }
+
+/**
+ * What the Plans list offers to this account (owner, 2026-11-24). me: /api/me's answer. Returns
+ * {action: {plan: 'buy' | 'have' | 'upgrade' | 'none'}, yearly: {plan, until} | null, shortUntil}:
+ * - while a yearly pass is on (own Season or Crew, a crew seat, the owner pass) Day and Week are not sold;
+ * - the Season Pass you have shows as yours; with a website Season Pass the Crew Pass is an upgrade
+ *   (Paddle charges only the difference); one bought in the iPhone app is upgraded there, so no button here;
+ * - while a Day or Week Pass runs, shortUntil is when the last one bought ends: a new one starts then.
+ */
+export function planChoices(me, now = Date.now()) {
+  const own = (me?.purchases || []).filter((p) => (p.starts ?? 0) <= now && p.ends > now);
+  const ownCrew = own.find((p) => p.plan === 'crew'), ownSeason = own.find((p) => p.plan === 'season');
+  const pass = me?.pass || {};
+  const action = { day: 'buy', week: 'buy', season: 'buy', crew: 'buy' };
+  let yearly = null;
+  if (pass.comp) {
+    for (const k of Object.keys(action)) action[k] = 'none';
+    yearly = { plan: 'comp', until: pass.until };
+  } else if (ownCrew) {
+    Object.assign(action, { day: 'none', week: 'none', season: 'none', crew: 'have' });
+    yearly = { plan: 'crew', until: ownCrew.ends };
+  } else if (ownSeason) {
+    Object.assign(action, { day: 'none', week: 'none', season: 'have', crew: ownSeason.store === 'paddle' ? 'upgrade' : 'none' });
+    yearly = { plan: 'season', until: ownSeason.ends };
+  } else if (pass.active && pass.member) {
+    Object.assign(action, { day: 'none', week: 'none' });
+    yearly = { plan: 'crew', until: pass.until, member: true };
+  }
+  const short = (me?.purchases || []).filter((p) => !p.renews && p.ends > now);
+  const shortUntil = !yearly && short.length ? Math.max(...short.map((p) => p.ends)) : 0;
+  return { action, yearly, shortUntil };
+}

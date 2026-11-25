@@ -26,7 +26,7 @@ import { watchUpdates } from './update.js';
 import { placeTr } from './placenames.js';
 import { watchClearButtons, syncClear, scan as addClearButtons } from './clearfield.js';
 import * as acct from './account.js';
-import { historyView, dayOpen, canDownload, mountainFiles, mountainOfPath, staleMountains, localDay } from './passrules.js';
+import { historyView, dayOpen, canDownload, mountainFiles, mountainOfPath, staleMountains, localDay, planChoices } from './passrules.js';
 import * as fcUi from './forecast/ui.js';
 import { emergencyFor, mainNumber, telHref, fmtCoords, nearestLift, nearestRun, sourceHost } from './emergency.js';
 import { FEEDBACK_TAGS, FEEDBACK_LABELS, FEEDBACK_MAX_AGE_DAYS, feedbackAsked, answerFeedback, flushFeedback } from './feedback.js';
@@ -322,7 +322,7 @@ function hideSplash() {
 // ---------- terms and safety agreement
 // Shown before anything else until agreed. Asked again when the terms change (TERMS_V, the date on the legal pages),
 // after a year, or whenever this phone has no record of it (cleared data, new phone, a browser that dropped it).
-const TERMS_V = '2026-11-23', CONSENT_MAX_MS = 365 * 864e5;
+const TERMS_V = '2026-11-24', CONSENT_MAX_MS = 365 * 864e5;
 function consentOk() {
   const c = prefs.get('consent', null);
   return !!c && c.v === TERMS_V && Date.now() - c.at < CONSENT_MAX_MS;
@@ -2035,7 +2035,7 @@ function sheetMore() {
 }
 
 // ---------- SkiWithMe Pass (paid tier), sign-in, map help, reports, safety notice
-const PLAN_TEXT = { day: '24 hours from when you buy it', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
+const PLAN_TEXT = { day: '24 hours', week: '7 days in a row', season: 'A full year. Renews each year; cancel any time.', crew: 'Season Pass for you and 3 friends' };
 const FREE_LIST = ['3D map of every mountain', 'The map you open stays on your phone that day, even without signal', 'Where you are and which run you are on', 'Search, mountain weather, map legend', 'Ski forecast for today and tomorrow at one mountain', 'Join a friend’s group and share locations', 'Group meeting points, with directions there or to friends', 'Track and save every ski day, with today’s stats', 'Emergency numbers, offline'];
 const PASS_LIST = ['Turn-by-turn and spoken directions anywhere on the mountain', 'Create your own groups', 'All your saved ski days, stats and replays, including days recorded before you bought the pass', 'The full ski forecast: week, calendar and trip planner', 'Download mountains for offline use'];
 const fmtDay = (x) => new Date(x).toLocaleDateString(locale(), { month: 'short', day: 'numeric', year: 'numeric' });
@@ -2071,6 +2071,7 @@ function upsell(why) {
     <p class="kicker">${ICON.ticket} ${t('Part of the SkiWithMe Pass')}</p>
     <h2>${title}</h2><p>${text}</p>
     ${P.day && P.season ? `<p class="sub">${t('Day Pass {0} · Season Pass {1} a year', price('day'), price('season'))}</p>` : ''}
+    ${P.crew ? `<p class="sub">${t('Skiing with friends? The Crew Season Pass covers 4 people for {0} a year.', price('crew'))}</p>` : ''}
     ${trialBtn}
     <button class="btn ${trialBtn ? 'alt' : ''}" data-act="up-plans" data-why="${why}">See plans</button>
     <button class="learn" data-act="modal-cancel">Not now</button></div>`;
@@ -2090,6 +2091,13 @@ async function buyPlan(plan) {
   catch (err) { toast(err.message); }
 }
 
+/** The devices signed in to this account (at most 2), so a shared sign-in is easy to spot. */
+function deviceList(devices) {
+  if (!devices?.length) return '';
+  const names = devices.map((d) => `<span translate="no">${esc(d.name || t('Unknown device'))}</span>${d.current ? ` (${t('this device')})` : ''}`);
+  return `<p class="sub">${t('Signed in on: {0}', names.join(', '))}</p>`;
+}
+
 const simNote = () => (acct.simulatingFree() ? `<div class="sim-note"><p class="sub">${esc(t('Free tier simulation is on, so this phone acts as if it had no pass. Your pass is not affected.'))}</p><button class="btn alt" data-act="simfree-off">${esc(t('Turn off'))}</button></div>` : '');
 
 function sheetPass(why) {
@@ -2101,7 +2109,9 @@ function sheetPass(why) {
     const own = me.pass?.comp || (me.purchases || []).find((p) => p.plan === 'crew' && p.ends > Date.now());
     who = `<div class="card"><h4>Your account</h4><p class="sub" translate="no">${esc(me.email)}</p><p class="${me.pass?.active ? 'ok-text' : 'sub'}">${passStatus(me)}</p>
       ${own ? `<label class="lbl">Your crew (up to 3 friends’ emails)</label>${[0, 1, 2].map((i) => `<input class="field" id="f-crew${i}" type="email" autocomplete="off" placeholder="friend@example.com" value="${esc(me.crew?.[i] || '')}" />`).join('')}<button class="btn alt" data-act="crew-save">Save crew</button><p class="note">Each friend signs in with that email to use the pass.</p>` : ''}
+      ${deviceList(me.devices)}
       <button class="btn alt" data-act="signout">Sign out</button>
+      <button class="btn alt" data-act="signout-all">Sign out of all devices</button>
       <button class="learn" data-act="acct-delete-ask">Delete my account</button>
       ${S.askDelete ? '<p class="note">This deletes your account, sign-ins, crew list and pass on our server, and any pass ends. Cancel a renewing Season Pass first, from the link in your Paddle receipt. Paddle keeps its payment records as the law requires. Ski days saved on this phone stay on this phone.</p><button class="btn danger" data-act="acct-delete">Delete my account</button>' : ''}</div>`;
   } else if (!c.signIn) {
@@ -2112,21 +2122,36 @@ function sheetPass(why) {
       <button class="btn" data-act="signin-code">Sign in</button><button class="learn" data-act="signin-again">Use a different email</button></div>`;
   } else {
     const want = S.buyAfter && P[S.buyAfter];
-    who = `<div class="card${want ? ' buy-first' : ''}" id="signin-card"><h4>${want ? 'Create your account or sign in' : 'Sign in'}</h4><p class="sub">${want ? t('To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.', esc(want.name)) : 'With your email: no password. Your pass then works on up to 3 phones.'}</p>
+    who = `<div class="card${want ? ' buy-first' : ''}" id="signin-card"><h4>${want ? 'Create your account or sign in' : 'Sign in'}</h4><p class="sub">${want ? t('To buy the {0}, enter your email. We send a 6-digit code: no password. Then checkout opens.', esc(want.name)) : 'With your email: no password. Your pass then works on up to 2 devices.'}</p>
       <input class="field" id="f-email" type="email" autocomplete="email" placeholder="you@example.com" value="${esc(S.signin?.email || '')}" />
       <button class="btn" data-act="signin-start">Email me a code</button></div>`;
   }
   who = simNote() + who;
   const canBuy = !!c.paddle;
+  // what each plan offers this account: no Day or Week while a yearly pass is on, Season to Crew as an upgrade
+  const pick = planChoices(me?.signedIn ? me : null);
+  const button = (k) => {
+    const a = pick.action[k] || 'buy';
+    if (a === 'have') return `<div class="per ok-text">${t('Your pass')}</div>`;
+    if (a === 'upgrade') return `<button class="btn sm" data-act="upgrade-ask">${t('Upgrade')}</button>`;
+    return a === 'buy' && canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : '';
+  };
   const plans = Object.entries(P).map(([k, p]) => `<div class="plan${k === 'season' ? ' best' : ''}"><div class="grow"><b>${esc(p.name)}</b>${k === 'season' ? ' <span class="tag">best value</span>' : ''}<div class="sub">${PLAN_TEXT[k] || ''}</div></div><div class="pr"><div class="price">$${p.price.toFixed(2)}</div><div class="per">${p.renews ? 'a year' : ''}</div>
-    ${canBuy ? `<button class="btn sm" data-act="buy" data-plan="${k}">Buy</button>` : ''}</div></div>`).join('');
+    ${button(k)}</div></div>`).join('');
+  const planNote = [
+    pick.yearly && pick.yearly.plan !== 'comp' ? t('Your {0} is on until {1}, so Day and Week passes are not needed.', t(P[pick.yearly.plan]?.name || 'Pass'), fmtDay(pick.yearly.until)) : '',
+    pick.shortUntil ? t('A new Day or Week Pass starts when your current pass ends: {0}.', `${fmtDay(pick.shortUntil)} ${fmtClock(pick.shortUntil)}`) : '',
+  ].filter(Boolean).map((x) => `<p class="note">${x}</p>`).join('')
+    + (pick.action.crew === 'upgrade' && S.askUpgrade
+      ? `<p class="note">${t('Upgrade to the Crew Season Pass? Paddle charges the difference for the rest of your year now, then {0} a year. Your pass then covers you and 3 friends.', `$${P.crew?.price?.toFixed(2)}`)}</p><button class="btn" data-act="upgrade">${t('Confirm upgrade')}</button>`
+      : '');
   const trial = me?.signedIn && !me.trialUsed && !me.pass?.active ? '<button class="btn alt" data-act="trial">Try a free day</button>' : '';
   return ['SkiWithMe Pass', `
     ${reason ? `<div class="card"><p style="margin:0">${reason}</p></div>` : ''}
     ${open ? '<div class="card"><p class="ok-text" style="margin:0">Everything is free while SkiWithMe is in preview.</p></div>' : ''}
     <div class="card"><div class="cols2"><div><h4>Free</h4><ul class="ticks">${FREE_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div><div><h4>With a pass</h4><ul class="ticks plus">${PASS_LIST.map((x) => `<li>${x}</li>`).join('')}</ul></div></div></div>
     ${who}
-    <div class="card"><h4>Plans</h4>${plans}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : 'Payments open with the paid launch.'}</p></div>
+    <div class="card"><h4>Plans</h4>${plans}${planNote}${trial}<p class="note">${canBuy ? 'Payments are handled by Paddle, our reseller. Prices in US dollars; tax is added where it applies.' : 'Payments open with the paid launch.'}</p></div>
     <p class="foot"><a href="/about" target="_blank">About</a> · <a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy</a> · <a href="/legal/refunds" target="_blank">Refunds</a></p>`];
 }
 
@@ -2875,6 +2900,20 @@ async function onClick(e) {
       break;
     }
     case 'signout': await acct.signOut().catch(() => {}); await afterPassChange(); renderSheet(); break;
+    case 'signout-all': {
+      const r = await acct.signOutAll().catch(() => ({}));
+      toast(r.ok ? 'Signed out of all devices.' : 'Could not reach the server. Try again.');
+      await afterPassChange(); renderSheet(); break;
+    }
+    case 'upgrade-ask': S.askUpgrade = !S.askUpgrade; renderSheet(); break;
+    case 'upgrade': {
+      S.askUpgrade = false; toast('Upgrading…');
+      const r = await acct.upgradeToCrew().catch(() => ({ error: 'net' }));
+      toast(r.ok ? (r.done ? 'Upgraded: your pass now covers you and 3 friends.' : 'Upgrade received. Your Crew Pass will appear in a minute.')
+        : r.error === 'not_open' ? 'Upgrading is not open yet. Write to hello@builtbyroger.app and we will switch your pass.'
+          : 'Could not upgrade. Nothing was charged. Try again later.');
+      await afterPassChange(); renderSheet(); break;
+    }
     case 'acct-delete-ask': S.askDelete = !S.askDelete; renderSheet(); break;
     case 'acct-delete': {
       const r = await acct.deleteAccount().catch(() => ({}));
