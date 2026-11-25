@@ -141,6 +141,12 @@ describe('what the Plans list offers (owner, 2026-11-24)', () => {
     expect(choices([buy('season', now - D, now + 200 * D, 'apple')]).action.crew).toBe('none');
   });
 
+  it('inside the iPhone app it is the other way round: Apple Season upgrades, website Season does not', () => {
+    const inApp = (p) => planChoices({ signedIn: true, pass: { active: true }, purchases: [p] }, now, true).action.crew;
+    expect(inApp(buy('season', now - D, now + 200 * D, 'apple'))).toBe('upgrade');
+    expect(inApp(buy('season', now - D, now + 200 * D, 'paddle'))).toBe('none');
+  });
+
   it('a Crew Pass, a crew seat or the owner pass hide Day and Week', () => {
     expect(choices([buy('crew', now - D, now + 9 * D)]).action).toEqual({ day: 'none', week: 'none', season: 'none', crew: 'have' });
     expect(choices([], { active: true, member: true, plan: 'crew', until: now + D }).action).toMatchObject({ day: 'none', week: 'none', season: 'buy' });

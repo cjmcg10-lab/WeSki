@@ -147,6 +147,34 @@ passed on once and works for ever, while every new sign-in with a code needs the
 Server pieces: `worker/accounts.js` (pure logic, tested in `tests/accounts.test.js`), `worker/stores.js` (`Accounts`
 Durable Object, SQLite), `worker/index.js` (routes). Phone: `src/account.js`, the `pass` sheet in `src/main.js`.
 
+### Apple in-app purchases (iPhone app, #118, built 2026-11-25)
+
+- Inside the iPhone app every pass is bought through Apple; Paddle's checkout cannot open there (`ios-beta/prepare.mjs`
+  makes `checkout` throw). Products `app.builtbyroger.skiwithme.{day,week,season,crew}`: Day and Week non-renewing,
+  Season and Crew auto-renewing yearly in the group "SkiWithMe Pass" (Crew above Season). Plugin `@capgo/native-purchases`
+  (StoreKit 2) in `ios-beta/package.json`; `ios-beta/native.js` exposes `window.SkiWithMeStore` {prices, buy, restore,
+  manage}, which `src/account.js` (`nativeStore`, `buyApple`, `restoreApple`) and the pass sheet use. On the web it is
+  absent and nothing changes.
+- Each account has an App Store token (`apple_token`, a random UUID, in `/api/me` as `appleToken`), passed to Apple as
+  `appAccountToken`, so Apple's messages name the account. Buying needs a signed-in account (as on the web).
+- The app sends Apple's signed transaction to `POST /api/apple/transaction` after buying or restoring; Apple sends App
+  Store Server Notifications v2 to `POST /api/apple/notifications` (renewals, upgrade to Crew, expiry, refunds). Both are
+  checked by `worker/apple.js`: the x5c chain must end at Apple Root CA - G3 (SHA-256 fingerprint pinned), each certificate
+  signed by the next, Apple's marker extensions on the intermediate and leaf, dates valid at signing, ES256 signature, bundle
+  id and (in production) the app's Apple ID 6837861984. Sandbox transactions are accepted too: App Review and TestFlight
+  buy in Apple's sandbox, against this same server. No Apple key or secret is needed.
+- Records (`applyApple` in `worker/stores.js`): `apple:<transactionId>` for a Day or Week Pass (adds up like the web);
+  `apple:<originalTransactionId>` for a subscription's whole life (its end only moves forward, so late messages cannot
+  shorten it; an upgrade turns it into Crew); a refund or revocation ends it. A purchase made for another account's token
+  is refused (409 `other_account`); one with no or an unknown token joins the signed-in account unless another account has
+  it. In the app the Apple Season Pass shows Upgrade (buys Crew through Apple, which prorates); a website Season Pass shows
+  no button there.
+- The pass sheet in the app shows Apple's prices (StoreKit `priceString`), the renewal wording Apple requires, Restore
+  purchases and Manage subscription. Terms §4 and §4a, the refund policy and the privacy policy cover Apple (2026-11-25,
+  `TERMS_V` bumped).
+- Not checked yet: anything on a real iPhone (needs a TestFlight build and the Paid Apps Agreement active); signing in
+  inside the app (the session cookie goes through Capacitor's native requests).
+
 ## What the owner must do before turning the paywall on
 
 Step-by-step setup for Paddle (website) and Apple (iPhone app), with what to have ready: `docs/PAYMENTS_SETUP.md`

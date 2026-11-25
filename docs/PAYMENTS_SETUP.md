@@ -207,13 +207,13 @@ Do these once Part C is done. Claude builds the app side at the same time.
   - Production Server URL: `https://skiwithme.builtbyroger.app/api/apple/notifications`
   - Sandbox Server URL: the same address
   - Version: **Version 2**
-- Do this after Claude's server change is live (Claude will say when), or Apple's test message fails.
+- Do this after Claude's server change is live (Claude will say when). There is no test button on this page (Apple
+  only offers a test message through its server API, which needs a key); the first sandbox purchase in TestFlight is
+  the real test, and Claude checks that Apple's message arrived.
 
-**D6. Make a key for checking purchases with Apple.**
-- Do: App Store Connect → Users and Access → **Integrations** → **In-App Purchase** → Generate (name it
-  "SkiWithMe server"). Download the `.p8` file (you can only download it once; keep a copy somewhere safe).
-- Put the whole file's text into Cloudflare (as in A2) as secret `APPLE_IAP_KEY`. Do not send it to Claude.
-- Send to Claude: the **Key ID** and the **Issuer ID** shown on that page (not secret).
+**D6. (Not needed.)** The server checks Apple's purchases with Apple's own certificates, which need no key
+  (built 2026-11-25). No `APPLE_IAP_KEY` secret is needed. If a key is ever wanted later (to ask Apple about a purchase
+  directly), it is made under Users and Access → Integrations → In-App Purchase.
 
 **D7. Make a test buyer.**
 - Need: the spare email address.
@@ -241,9 +241,8 @@ Do these once Part C is done. Claude builds the app side at the same time.
 | Bank details, EIN, photo ID | typed into Paddle's and Apple's own sites | yes |
 | `RESEND_API_KEY` | Cloudflare secret | yes |
 | `PADDLE_WEBHOOK_SECRET` | Cloudflare secret | yes |
-| `APPLE_IAP_KEY` (the `.p8` file's text) | Cloudflare secret | yes |
 | Paddle `live_` token, four `pri_` price ids | send to Claude | no |
-| App's Apple ID number, IAP Key ID, Issuer ID | send to Claude | no |
+| App's Apple ID number | send to Claude | no |
 
 ## What Claude builds (for reference)
 
