@@ -653,4 +653,8 @@ export default {
   1651: "Geen aankopen om te herstellen voor dit Apple Account.",
   1652: 'Terugbetalingen',
   1653: 'Licht of donker, eenheden, beeldsnelheid',
+  1654: 'Kies een berg',
+  1655: 'Kiezen',
+  1656: '{0} kiezen',
+  1657: '{0} gekozen voor de gratis voorspelling.',
 };

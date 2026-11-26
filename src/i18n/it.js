@@ -653,4 +653,8 @@ export default {
   1651: "Nessun acquisto da ripristinare per questo Account Apple.",
   1652: 'Rimborsi',
   1653: 'Chiaro o scuro, unità, frequenza dei fotogrammi',
+  1654: 'Scegli una montagna',
+  1655: 'Scegli',
+  1656: 'Scegli {0}',
+  1657: '{0} scelta per la previsione gratuita.',
 };

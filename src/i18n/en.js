@@ -1159,4 +1159,8 @@ export default {
   1651: "No purchases to restore for this Apple Account.",
   1652: "Refunds",
   1653: "Dark or light, units, frame rate",
+  1654: "Choose a mountain",
+  1655: "Choose",
+  1656: "Choose {0}",
+  1657: "{0} chosen for the free forecast.",
 };

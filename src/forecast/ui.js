@@ -22,6 +22,7 @@ const fc = {
   scrollLeft: 0, scrollTop: 0, bodyScroll: 0, focusSel: null,
   catalog: null, catalogError: false, q: '', added: [], saveFailed: null, editRows: [], listSaveFailed: false,
   flash: null, tod: null, pinDraft: null, pinView: null, dayFrom: null,
+  pick: null,   // without a pass: the mountain chosen with "Change mountain" (shown before the one you are at)
 };
 
 export const isForecastSheet = (name) => SHEETS.includes(name);
@@ -58,7 +59,7 @@ function current(resort) {
 }
 // Part of the SkiWithMe Pass (owner, 2026-11-23): without one, a free taste of one mountain's today and tomorrow.
 const hasPass = () => host.pass?.() ?? true;
-const tasteOf = () => tasteResort(fc.here, fc.list);
+const tasteOf = () => fc.pick || tasteResort(fc.here, fc.list);
 const todayOf = (r) => (r?.tz ? localToday(r.tz) : null);
 
 // The mountain the skier is at, when the Forecast opens from inside a resort (setHere): shown first, tagged
@@ -170,6 +171,7 @@ function start() {
 
 /** Open the Forecast at this mountain (a resort id), or with none (from the start screen). */
 export function setHere(id) {
+  fc.pick = null;
   fc.hereId = id || null;
   fc.here = id ? fc.list.find((r) => r.id === id) ?? null : null;
   if (!id || fc.here) return;
@@ -286,7 +288,7 @@ function tasteDayCard(resort, forecast, date, i) {
 function sheetTaste() {
   const resort = tasteOf();
   const lockCard = `<div class="card fc-lock"><h3>${t('See the full week, calendar and trip planner with a pass')}</h3><p class="sub">${t('Free: today and tomorrow at one mountain. With a pass: every mountain on your list, the whole week hour by hour, sorting by day and the trip planner.')}</p><button class="btn" data-act="fc-upsell">${t('See the full forecast')} <span class="pass-badge">${t('Pass')}</span></button></div>`;
-  if (!resort) return [t('Forecast'), `${emptyCalendar()}${lockCard}`, false];
+  if (!resort) return [t('Forecast'), `<div class="card fc-empty"><h3>${t('Where should you ski?')}</h3><p class="sub">${t('Free: today and tomorrow at one mountain. With a pass: every mountain on your list, the whole week hour by hour, sorting by day and the trip planner.')}</p><button class="btn" data-act="fc-choose">${t('Choose a mountain')}</button></div>${lockCard}`, false];
   if (!fc.started) { fc.started = true; syncWatchlist(); }
   if (!fc.data.has(resort.id)) { setEntry(resort, { state: 'loading' }); loadOne(resort, false); }
   const e = current(resort);
@@ -304,7 +306,7 @@ function sheetTaste() {
   const here = fc.hereId === resort.id ? `<span class="tag fc-here">${t('You’re here')}</span>` : '';
   const more = fc.list.length > 1 || (fc.here && fc.list.length) ? `<p class="fc-note">${t('Your other mountains are kept on your list for when you have a pass.')}</p>` : '';
   return [t('Forecast'), `${offlineBanner()}
-    <div class="card fc-taste-head"><b translate="no">${esc(resort.name)}</b> <small translate="no">${esc(resort.pin ? coords(resort) : resort.region || '')}</small> ${here}</div>
+    <div class="card fc-taste-head"><b translate="no">${esc(resort.name)}</b> <small translate="no">${esc(resort.pin ? coords(resort) : resort.region || '')}</small> ${here}<button class="btn sm alt fc-change" data-act="fc-choose">${t('Change mountain')}</button></div>
     ${body}${more}${lockCard}${forecast ? credits([forecast]) : ''}`, false];
 }
 
@@ -483,7 +485,9 @@ function resultsHtml() {
     const notes = full ? [...missingNotes(full), ...(canForecast(full) ? [] : [unavailableText(full)])] : [];
     const alias = r.match && r.match.field !== 'name' ? `<small translate="no">${esc(t('Also known as “{0}”', r.match.text))}</small>` : '';
     const added = fc.added.includes(r.id), listed = onList(r.id) && !added;
-    const control = listed
+    const control = !hasPass()
+      ? `<button class="btn sm" data-act="fc-pick" data-r="${esc(r.id)}" aria-label="${esc(t('Choose {0}', label))}">${t('Choose')}</button>`
+      : listed
       ? `<span class="sub">${t('On your list')}</span><button class="btn sm alt" data-act="fc-show" data-r="${esc(r.id)}" aria-label="${esc(t('Show {0} on the calendar', label))}">${t('Show')}</button>`
       : added
         ? `<span class="sub">${t('Added')}</span><button class="btn sm alt" data-act="fc-unadd" data-r="${esc(r.id)}" aria-label="${esc(t('Remove {0}', label))}">${t('Remove')}</button>`
@@ -527,10 +531,11 @@ function updateResults() {
 export function sheetAdd() {
   ensureCatalog();
   const bar = fc.added.length ? `<div class="fc-stickybar"><button class="btn" data-act="fc-home" data-first="${esc(fc.added[0])}">${t('Show on calendar ({0})', fc.added.length)}</button></div>` : '';
-  return [t('Add a mountain'), `${back('fc-home', 'Forecast')}
+  const free = !hasPass();   // without a pass the search chooses the one free mountain instead of adding to a list
+  return [free ? t('Choose a mountain') : t('Add a mountain'), `${back('fc-home', 'Forecast')}
     <label class="lbl" for="fc-q">${t('Search mountains')}</label>
     <input class="field" id="fc-q" type="search" autocomplete="off" autocorrect="off" spellcheck="false" value="${esc(fc.q)}" placeholder="${esc(t('Search mountains'))}" />
-    <p class="fc-pinlink"><button class="btn sm alt" data-act="fc-pin-new">${t('Can’t find it? Add by map pin')}</button></p>
+    ${free ? '' : `<p class="fc-pinlink"><button class="btn sm alt" data-act="fc-pin-new">${t('Can’t find it? Add by map pin')}</button></p>`}
     <div id="fc-results" aria-live="polite">${resultsHtml()}</div>${bar}`, false];
 }
 
@@ -553,6 +558,20 @@ function addResort(id) {
   host.announce(t('{0} added to your list.', resort.name));
   host.render();
   focusSel(`[data-act="fc-unadd"][data-r="${id}"]`);
+}
+
+/** Without a pass: show this mountain's free forecast. It goes first on the list, so the start screen opens it next time. */
+function pickResort(id) {
+  const resort = fc.catalog ? resortFor(fc.catalog, id) : null;
+  if (!resort) return;
+  const before = fc.list;
+  fc.list = insertAt(fc.list.filter((r) => r.id !== resort.id), resort, 0);
+  if (!persist()) fc.list = before;   // still shown for now, just not remembered
+  fc.pick = resort;
+  if (!fc.data.has(resort.id)) setEntry(resort, { state: 'loading' });
+  loadOne(resort, false);
+  host.announce(t('{0} chosen for the free forecast.', resort.name));
+  openCalendar();
 }
 
 function dropAdded(id) {
@@ -700,6 +719,8 @@ export function onClick(b) {
       break;
     }
     case 'fc-add': fc.q = ''; host.open('fcadd'); focusSel('#fc-q'); break;
+    case 'fc-choose': fc.q = ''; host.open('fcadd'); focusSel('#fc-q'); break;   // free: pick the one mountain
+    case 'fc-pick': pickResort(d.r); break;
     case 'fc-edit': host.open('fcedit'); break;
     case 'fc-today': {
       const s = document.querySelector('.fc-scroll');

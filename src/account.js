@@ -100,7 +100,10 @@ export async function checkout(plan, onDone) {
         token: c.paddle.token,
         // Paddle Retain recognises a returning customer by their Paddle customer id (ctm_...), never our id or email
         ...(/^ctm_/.test(me?.paddleCustomer || '') ? { pwCustomer: { id: me.paddleCustomer } } : {}),
-        eventCallback: (ev) => { if (ev.name === 'checkout.completed') paddleDone?.(); },
+        eventCallback: (ev) => {
+          if (ev.name === 'checkout.completed') paddleDone?.();
+          if (ev.name === 'checkout.closed') payBar(false);
+        },
       });
       return P;
     });
@@ -111,9 +114,34 @@ export async function checkout(plan, onDone) {
     for (let i = 0; i < 10 && !me?.pass?.active; i++) { await new Promise((r) => setTimeout(r, 2000)); await refreshMe(); }
     onDone?.(!!me?.pass?.active);
   };
+  payBar(true);
   P.Checkout.open({ items: [{ priceId: price, quantity: 1 }], customer: { email: me.email }, customData: { account: me.account } });
 }
 let paddleDone = null;
+
+/** Paddle's checkout covers the whole screen with its own close button in the top corner, which in the home-screen app
+ *  on an iPhone sits under the clock and battery where it cannot be tapped (owner, 2026-11-26). While the checkout is
+ *  open the app shows its own bar with a Close button below the phone's top edge, and the checkout starts below the
+ *  bar (html.paying and #pay-bar in styles.css). Close works before paying, after giving up, and after a purchase. */
+export function payBar(on) {
+  if (typeof document === 'undefined') return;
+  let bar = document.getElementById('pay-bar');
+  document.documentElement.classList.toggle('paying', !!on);
+  if (!on) { bar?.remove(); barKeeper?.disconnect(); barKeeper = null; return; }
+  if (bar) return;
+  bar = document.createElement('div');
+  bar.id = 'pay-bar';
+  bar.innerHTML = '<button type="button" aria-label="Close"><span>Close</span><b aria-hidden="true">✕</b></button>';
+  bar.querySelector('button').addEventListener('click', () => {
+    try { window.Paddle?.Checkout?.close(); } catch { /* checkout already gone */ }
+    payBar(false);
+  });
+  document.body.appendChild(bar);
+  // Paddle's frame takes the highest layer too, and of two equal layers the later one is drawn on top: keep the bar last.
+  barKeeper = new MutationObserver(() => { if (bar.isConnected && document.body.lastElementChild !== bar) document.body.appendChild(bar); });
+  barKeeper.observe(document.body, { childList: true });
+}
+let barKeeper = null;
 
 /** The App Store inside the iPhone app (ios-beta/native.js sets window.SkiWithMeStore), or null on the web.
  *  The app never shows Paddle: inside it every pass is bought through Apple. */
