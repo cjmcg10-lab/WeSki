@@ -35,11 +35,8 @@
  "way_pts": {
   "235493841": {
    "pts": [
-    [-72.898502, 44.130544],
-    [-72.89846, 44.130669],
-    [-72.898339, 44.130805],
-    [-72.898207, 44.1309],
-    [-72.898054, 44.130984],
+    [-72.899362, 44.130874],
+    [-72.898646, 44.130957],
     [-72.897867, 44.131119],
     [-72.89753, 44.131413],
     [-72.897272, 44.13172],
@@ -56,7 +53,7 @@
     [-72.895909, 44.133922]
    ],
    "len": 458,
-   "why": "naip photo: drawn 48.4 m beside the cut run"
+   "why": "naip photo: drawn 48.4 m beside the cut run; top joins Moonshine's end and runs diagonally onto the open slope (the earlier line started 90 m to the side and drew a hook, owner's report 2026-11-26)"
   }
  }
 }
