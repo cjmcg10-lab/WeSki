@@ -51,7 +51,9 @@ window.fetch = async function(input, options = {}) {
     return new Response(result.status === 204 ? null : JSON.stringify(result.data), {status: result.status, headers:{'content-type':'application/json'}});
   }
   const [, prefix, id, name] = url.pathname.split('/');
-  if (prefix !== 'data' || !(await remoteMaps).has(id) || !['resort.json','graph.json','terrain.bin','surround.bin','terrain.z16','surround.z16'].includes(name)) return bundledFetch(input, options);
+  // Every file of a mountain kept in R2 comes from the server, so the app shows the same map as the website
+  // (tree cover canopy.z8 and the land around it landcover.z8 were once left to the bundle, which lacks them).
+  if (prefix !== 'data' || !name || !(await remoteMaps).has(id)) return bundledFetch(input, options);
   const json = name.endsWith('.json');
   const saved = await mapFile(url.pathname);
   const savedBytes = saved?.bytes ?? saved;
