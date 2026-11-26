@@ -23,7 +23,7 @@
   // Secrets (set by the owner in the Cloudflare dashboard, never in this file): RESEND_API_KEY,
   // PADDLE_WEBHOOK_SECRET. See docs/PAID_TIER.md.
   "vars": {
-    "PAYWALL": "off",
+    "PAYWALL": "on",
     "WEATHER": "open-meteo",
     "MAIL_FROM": "",
     "PADDLE_ENV": "sandbox",

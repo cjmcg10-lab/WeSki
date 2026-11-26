@@ -113,6 +113,10 @@ Paying needs an account, and accounts need sign-in emails.
 - Do: Paddle → Developer tools → Authentication → Client-side tokens → New token (name it "SkiWithMe app").
 - Send to Claude: the token (it starts with `live_`; it is public, made to sit in the app).
 
+**B6 done (2026-11-25).** Live client-side token, named "SkiWithMe web app": `live_de7b25c9af4415729c20436185d`
+(public by design). It goes into `PADDLE_CLIENT_TOKEN` together with `PADDLE_ENV` "production" and the live price ids in
+the go-live pull request, which is merged only after verification and website approval.
+
 **B7. Tell Paddle where to send "someone paid" messages.**
 - Do: Paddle → Developer tools → Notifications → New destination.
   - URL: `https://skiwithme.builtbyroger.app/api/paddle/webhook`
