@@ -1,0 +1,15 @@
+# Secrets for running the worker locally (npx wrangler dev reads .dev.vars). Copy this file to .dev.vars and fill
+# it in; .dev.vars is never committed. On the live site these are Cloudflare secrets (Workers & Pages -> skiwithme ->
+# Settings -> Variables and Secrets), never values in the code or in wrangler.assets.jsonc.
+#
+# Paddle: the signing secret of the notification destination (sandbox secret while testing, live secret at launch).
+PADDLE_WEBHOOK_SECRET=
+# Paddle: API key (permission to read and write subscriptions), used only for the Season to Crew upgrade.
+PADDLE_API_KEY=
+# Sign-in emails.
+RESEND_API_KEY=
+# Accounts with every paid feature (comma-separated emails).
+COMP_EMAILS=
+#
+# Not secret, set in wrangler.assets.jsonc "vars": PADDLE_ENV ("sandbox" or "production"), PADDLE_CLIENT_TOKEN
+# (test_... or live_...), PADDLE_PRICES ({price id: plan}), PAYWALL.

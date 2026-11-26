@@ -651,4 +651,5 @@ export default {
   1649: "Deze aankoop hoort bij een ander SkiWithMe-account. Meld je aan met dat account om hem te gebruiken.",
   1650: "Aankopen hersteld.",
   1651: "Geen aankopen om te herstellen voor dit Apple Account.",
+  1652: 'Terugbetalingen',
 };

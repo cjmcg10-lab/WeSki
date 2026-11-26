@@ -45,6 +45,8 @@ export class Accounts extends DurableObject {
     `);
     // each account's App Store token (a UUID the iPhone app attaches to purchases, so Apple's messages name the account)
     if (!this.rows('PRAGMA table_info(accounts)').some((c) => c.name === 'apple_token')) this.sql.exec('ALTER TABLE accounts ADD COLUMN apple_token TEXT');
+    // the account's Paddle customer id (ctm_...), from its purchases: Paddle Retain needs it at checkout (pwCustomer)
+    if (!this.rows('PRAGMA table_info(accounts)').some((c) => c.name === 'paddle_customer')) this.sql.exec('ALTER TABLE accounts ADD COLUMN paddle_customer TEXT');
   }
 
   /** Record that the signed-in person agreed to terms version v (the phone sends it after sign-in and after agreeing). */
@@ -202,7 +204,7 @@ export class Accounts extends DurableObject {
       this.sql.exec('UPDATE accounts SET apple_token = ? WHERE id = ?', appleToken, id);
     }
     return {
-      account: id, email: acc.email, trialUsed: !!acc.trial_used, appleToken,
+      account: id, email: acc.email, trialUsed: !!acc.trial_used, appleToken, paddleCustomer: acc.paddle_customer || null,
       pass: this.isComp(acc.email) ? { active: true, plan: 'comp', until: 4102444800000, comp: true, trial: false }
         : this.rows('SELECT a.email FROM crew c JOIN accounts a ON a.id = c.owner WHERE c.email = ?', acc.email).some((r) => this.isComp(r.email))
           ? { active: true, plan: 'crew', until: 4102444800000, member: true, trial: false }
@@ -246,6 +248,7 @@ export class Accounts extends DurableObject {
     }
     if (p && (!before || before.account === p.account)) {
       this.sql.exec('INSERT OR REPLACE INTO purchases VALUES (?, ?, ?, ?, ?, ?, ?, ?)', p.id, p.account, p.plan, p.status, p.starts, p.ends, p.sub, Date.now());
+      if (/^ctm_[a-z0-9]+$/i.test(p.customer || '')) this.sql.exec('UPDATE accounts SET paddle_customer = ? WHERE id = ?', p.customer, p.account);
     }
     return true;
   }

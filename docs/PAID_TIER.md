@@ -181,8 +181,8 @@ Step-by-step setup for Paddle (website) and Apple (iPhone app), with what to hav
 (2026-11-24: same prices on the website and in the iPhone app, yearly plans renew until cancelled, website and
 app launch together).
 
-1. Form the LLC (recommended first; payments, trademark and terms in its name). Then put the company name and a
-   contact email into `public/legal/*.html` (search for "to be added before the paid launch").
+1. (Done 2026-11-25) Built By Roger LLC, 78 Laning St, Apt 2-1A, Southington, CT 06489, and hello@builtbyroger.app
+   are in the contact section of every legal page and the About page.
 2. (Done 2026-11-20) The app is at https://skiwithme.builtbyroger.app; the website Paddle reviews is
    https://skiwithme.builtbyroger.app/about.
 3. Resend (free up to 3,000 emails a month): create an account, verify the domain, create an API key. In Cloudflare
@@ -199,8 +199,8 @@ app launch together).
    and goes to hello@builtbyroger.app. See `docs/MAP_REPORTS.md`.
 7. Then Claude sets `PAYWALL` to `"on"`, `PADDLE_ENV` to `"production"`, and checks a real purchase end to end.
 
-Weather: Open-Meteo's free tier is for non-commercial use. Before the paid launch either buy Open-Meteo's commercial
-plan or switch to MET Norway (free for commercial use with credit; the owner must accept their terms personally).
+Weather: (Done 2026-11-21) the app uses the US National Weather Service and MET Norway, both allowed for commercial
+use (MET Norway with the credit shown under the forecast); Open-Meteo is no longer used.
 
 ## Running costs and usage alerts
 

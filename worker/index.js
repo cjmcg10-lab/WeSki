@@ -1,6 +1,7 @@
 // SkiWithMe Cloudflare Worker: serves the app (embedded static files) and private group rooms.
 // One Durable Object per group code relays opt-in GPS positions between up to 20 members.
 import { DurableObject } from 'cloudflare:workers';
+import { paddleIps, ipAllowed } from './paddleips.js';
 import { FILES } from './static/manifest.js';
 import { applyMessage, publicState, newRoom, roomInfo, IDLE_MS } from './room.js';
 import { PLANS, EMAIL_RE, normEmail, sessionFromCookie, sessionCookie, signInEmail, newSignInEmail, verifyPaddle, purchaseFromEvent, sha256, SESSION_TTL_MS } from './accounts.js';
@@ -188,6 +189,10 @@ async function api(request, env, url, ctx) {
     return json({ ok: true });
   }
   if (path === '/api/paddle/webhook' && method === 'POST') {
+    // only Paddle's published addresses may deliver; the list comes from Paddle (worker/paddleips.js)
+    const ips = await paddleIps(env.PADDLE_ENV === 'production');
+    if (!ips) return json({ error: 'Address list unavailable' }, 503); // Paddle retries later
+    if (!ipAllowed(request.headers.get('cf-connecting-ip'), ips)) return json({ error: 'Forbidden' }, 403);
     const raw = await request.text();
     if (!(await verifyPaddle(request.headers.get('paddle-signature'), raw, env.PADDLE_WEBHOOK_SECRET))) return json({ error: 'Bad signature' }, 401);
     let ev;
