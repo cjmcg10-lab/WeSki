@@ -652,4 +652,5 @@ export default {
   1650: "Aankopen hersteld.",
   1651: "Geen aankopen om te herstellen voor dit Apple Account.",
   1652: 'Terugbetalingen',
+  1653: 'Licht of donker, eenheden, beeldsnelheid',
 };

@@ -16,14 +16,25 @@ const post = async (url, body = {}) => {
 };
 
 /** Prices and switches from the server. Offline or no server (local preview): everything open. */
+// The last answers are kept on the phone, so an app opened without signal neither opens every paid feature (as if
+// payments were off) nor locks out someone who paid. A kept pass still ends at its end time (`until`).
+const KEEP_CFG = 'weski:cfg', KEEP_ME = 'weski:me';
+const kept = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch { return null; } };
+const keep = (k, v) => { try { if (v) localStorage.setItem(k, JSON.stringify(v)); else localStorage.removeItem(k); } catch { /* private mode */ } };
+const signedOutMe = () => ({ signedIn: false, paywall: config().paywall });
+
 export async function loadConfig() {
-  try { cfg = await get('/api/config'); cfgOk = true; } catch { cfg = cfg || { paywall: false, signIn: false, paddle: null, plans: {} }; }
+  try { cfg = await get('/api/config'); cfgOk = true; keep(KEEP_CFG, { paywall: !!cfg.paywall }); }
+  catch { cfg = cfg || { paywall: !!kept(KEEP_CFG)?.paywall, signIn: false, paddle: null, plans: {} }; }
   return cfg;
 }
 export const config = () => cfg || { paywall: false, signIn: false, paddle: null, plans: {} };
 
 export async function refreshMe() {
-  try { me = await get('/api/me'); meOk = true; } catch { /* offline: keep what we knew */ }
+  try {
+    me = await get('/api/me'); meOk = true;
+    keep(KEEP_ME, me?.signedIn ? { signedIn: true, email: me.email, pass: me.pass } : null);
+  } catch { if (!me) me = kept(KEEP_ME); /* offline: keep what we knew */ }
   return me;
 }
 export const account = () => me;
@@ -37,8 +48,10 @@ export const simulatingFree = () => simFree;
 export function hasPass() {
   if (simFree) return false;
   if (!config().paywall) return true;
-  return !!me?.pass?.active;
+  return passActive(me);
 }
+/** A pass counts only for a signed-in account, and only until its end time (a Day pass ends while the app is open). */
+export const passActive = (m, now = Date.now()) => !!(m?.signedIn && m.pass?.active && (!m.pass.until || m.pass.until > now));
 
 /** Has the server answered about this phone's pass in this session? Nothing is removed from the phone on a guess
  *  (offline, a failed request, or "Simulate free tier" only change what is shown). */
@@ -52,10 +65,10 @@ export async function syncConsent(v) {
   if (r.ok) me.terms = [...(me.terms || []), { v, at: Date.now() }];
 }
 export const finishSignIn = async (email, code) => { const r = await post('/api/auth/code', { email, code }); if (r.ok) await refreshMe(); return r; };
-export const signOut = async () => { const r = await post('/api/auth/signout'); me = { signedIn: false, paywall: config().paywall }; return r; };
+export const signOut = async () => { const r = await post('/api/auth/signout'); me = signedOutMe(); keep(KEEP_ME, null); return r; };
 /** Sign out every device of this account, this one included. */
-export const signOutAll = async () => { const r = await post('/api/auth/signout-all'); me = { signedIn: false, paywall: config().paywall }; return r; };
-export const deleteAccount = async () => { const r = await post('/api/account/delete'); if (r.ok) me = { signedIn: false, paywall: config().paywall }; return r; };
+export const signOutAll = async () => { const r = await post('/api/auth/signout-all'); me = signedOutMe(); keep(KEEP_ME, null); return r; };
+export const deleteAccount = async () => { const r = await post('/api/account/delete'); if (r.ok) { me = signedOutMe(); keep(KEEP_ME, null); } return r; };
 export const startTrial = async () => { const r = await post('/api/trial'); await refreshMe(); return r; };
 export const setCrew = async (emails) => { const r = await post('/api/crew', { emails }); await refreshMe(); return r; };
 /** Website Season Pass to Crew: Paddle switches the subscription and charges the difference; the Crew Pass arrives by

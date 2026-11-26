@@ -652,4 +652,5 @@ export default {
   1650: "Acquisti ripristinati.",
   1651: "Nessun acquisto da ripristinare per questo Account Apple.",
   1652: 'Rimborsi',
+  1653: 'Chiaro o scuro, unità, frequenza dei fotogrammi',
 };

@@ -40,7 +40,8 @@ const ACCOUNT = process.env.CLOUDFLARE_ACCOUNT_ID || JSON.parse(curl(['https://a
 const BUCKET = JSON.parse(readFileSync('public/data/r2.json', 'utf8')).bucket;
 
 // 1. the app
-execFileSync('npm', ['run', 'build:assets'], { stdio: 'inherit' });
+// the preview keeps the testing switches (simulated location, simulate free tier) that the live app leaves out
+execFileSync('npm', ['run', 'build:assets'], { stdio: 'inherit', env: { ...process.env, VITE_TEST_TOOLS: '1' } });
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8', '.webmanifest': 'application/manifest+json; charset=utf-8', '.png': 'image/png',
   '.svg': 'image/svg+xml', '.webp': 'image/webp', '.jpg': 'image/jpeg', '.woff2': 'font/woff2', '.woff': 'font/woff', '.bin': 'application/octet-stream' };
