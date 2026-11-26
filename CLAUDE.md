@@ -574,8 +574,8 @@ Read `docs/PAID_TIER.md` (free/paid split, plans, enforcement, the owner's to-do
   `public/sw.js` leaves page loads of `/legal/` and `/about` to the network (answering them broke on that redirect).
 - "Before you ski" terms and safety agreement: a full screen that cannot be skipped (`showConsent`, `TERMS_V` in
   `src/main.js`; see `docs/PAID_TIER.md`). Bump `TERMS_V` whenever the terms change. Legal pages in `public/legal/` (terms, privacy,
-  refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the contact address and
-  company name are placeholders ("to be added before the paid launch"), and a lawyer's read is recommended.
+  refunds, credits incl. the ODbL offer of the derived database). They are drafts by Claude: the company's name, postal address
+  (78 Laning St, Apt 2-1A, Southington, CT 06489) and email are filled in (2026-11-25), and a lawyer's read is recommended.
 - `tools/evidence.py <id>` counts public OpenStreetMap GPS traces along each run (results in `tools/evidence/`).
   Public traces are sparse (tens per resort); the app's own map-help counts are meant to become the main source.
 
