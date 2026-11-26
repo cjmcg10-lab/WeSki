@@ -31,29 +31,5 @@
    ]
   }
  ],
- "extra_note": "Rob Roy (Mt. Ellen, between Lower Rim Run and Lookin' Good down to Glen House) is drawn from the 2025-26 trail map the owner uploaded.",
- "way_pts": {
-  "235493841": {
-   "pts": [
-    [-72.899362, 44.130874],
-    [-72.898646, 44.130957],
-    [-72.897867, 44.131119],
-    [-72.89753, 44.131413],
-    [-72.897272, 44.13172],
-    [-72.89717, 44.131924],
-    [-72.897079, 44.132117],
-    [-72.896915, 44.132342],
-    [-72.896811, 44.132577],
-    [-72.896786, 44.132766],
-    [-72.896774, 44.132964],
-    [-72.896673, 44.133228],
-    [-72.896478, 44.13345],
-    [-72.896316, 44.133585],
-    [-72.896153, 44.133719],
-    [-72.895909, 44.133922]
-   ],
-   "len": 458,
-   "why": "naip photo: drawn 48.4 m beside the cut run; top joins Moonshine's end and runs diagonally onto the open slope (the earlier line started 90 m to the side and drew a hook, owner's report 2026-11-26)"
-  }
- }
+ "extra_note": "Rob Roy (Mt. Ellen, between Lower Rim Run and Lookin' Good down to Glen House) is drawn from the 2025-26 trail map the owner uploaded."
 }
