@@ -64,7 +64,7 @@ export const normEmail = (e) => String(e || '').trim().toLowerCase();
 
 /**
  * Turn one verified Paddle event into a purchase record (or null if it does not change any pass).
- * prices: {paddle price id: plan id}. Returns {id, account, plan, status, starts, ends, sub}.
+ * prices: {paddle price id: plan id}. Returns {id, account, plan, status, starts, ends, sub, customer}.
  */
 export function purchaseFromEvent(ev, prices) {
   const d = ev?.data;
@@ -75,7 +75,7 @@ export function purchaseFromEvent(ev, prices) {
   const plan = PLANS[item];
   if (ev.event_type === 'transaction.completed' && !plan.renews) {
     const starts = Date.parse(d.billed_at || d.created_at || ev.occurred_at);
-    return { id: d.id, account, plan: item, status: 'active', starts, ends: starts + plan.days * 86400000, sub: null };
+    return { id: d.id, account, plan: item, status: 'active', starts, ends: starts + plan.days * 86400000, sub: null, customer: d.customer_id || null };
   }
   if (ev.event_type?.startsWith('subscription.') && plan.renews) {
     const period = d.current_billing_period;
@@ -83,7 +83,7 @@ export function purchaseFromEvent(ev, prices) {
     const status = d.status; // active, trialing, past_due, paused, canceled
     const on = status === 'active' || status === 'trialing' || status === 'past_due';
     return { id: d.id, account, plan: item, status, starts: Date.parse(d.started_at || d.created_at || ev.occurred_at),
-      ends: on && ends ? ends + GRACE_MS : Date.parse(d.canceled_at || ev.occurred_at), sub: d.id };
+      ends: on && ends ? ends + GRACE_MS : Date.parse(d.canceled_at || ev.occurred_at), sub: d.id, customer: d.customer_id || null };
   }
   return null;
 }

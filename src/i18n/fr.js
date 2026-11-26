@@ -651,4 +651,5 @@ export default {
   1649: "Cet achat appartient à un autre compte SkiWithMe. Connecte-toi avec ce compte pour l’utiliser.",
   1650: "Achats restaurés.",
   1651: "Aucun achat à restaurer pour ce compte Apple.",
+  1652: 'Remboursements',
 };

@@ -1157,4 +1157,5 @@ export default {
   1649: "This purchase belongs to another SkiWithMe account. Sign in with that account to use it.",
   1650: "Purchases restored.",
   1651: "No purchases to restore for this Apple Account.",
+  1652: "Refunds",
 };

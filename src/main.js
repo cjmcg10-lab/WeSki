@@ -337,7 +337,7 @@ function showConsent() {
       <h2 id="consent-h">Before you ski</h2>
       <p>SkiWithMe is a guide, not a safety device. Maps, ratings, closures and directions can be wrong or out of date, and GPS can be off by tens of metres.</p>
       <ul class="ticks"><li>Resort signs, ropes, closures and ski patrol always come first.</li><li>Ski only terrain within your ability. A route can include runs harder than you chose when there is no other way.</li><li>Do not look at your phone while moving. Use spoken directions and stop in a safe place to check the map.</li><li>Your battery and signal can fail: know how to get down without the app.</li></ul>
-      <p class="consent-links"><a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy policy</a></p>
+      <p class="consent-links"><a href="/legal/terms" target="_blank">Terms</a> · <a href="/legal/privacy" target="_blank">Privacy policy</a> · <a href="/legal/refunds" target="_blank">Refunds</a> · <a href="/about" target="_blank">About</a> · <a href="mailto:hello@builtbyroger.app" translate="no">hello@builtbyroger.app</a></p>
       <label class="consent-tick"><input type="checkbox" id="f-consent" /><span>I have read and agree to the Terms of Use and the Privacy Policy, including the assumption of risk.</span></label>
       <button class="btn" id="consent-ok" disabled>I understand and agree</button></div>`;
     document.body.appendChild(el);

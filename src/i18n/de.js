@@ -651,4 +651,5 @@ export default {
   1649: "Dieser Kauf gehört zu einem anderen SkiWithMe-Konto. Melde dich mit diesem Konto an, um ihn zu nutzen.",
   1650: "Käufe wiederhergestellt.",
   1651: "Für diesen Apple Account gibt es keine Käufe zum Wiederherstellen.",
+  1652: 'Erstattungen',
 };
