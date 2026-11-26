@@ -1091,6 +1091,10 @@ if (window.visualViewport) {
 window.addEventListener('scroll', () => { if (document.activeElement === $('#f-resort') || sheetField()) unscrollPage(); });
 dragPanel($('#sheet'), { zone: 64, onDown: () => closeSheet() });
 window.addEventListener('resize', () => requestAnimationFrame(() => layoutGlobe(false)));
+// The title can grow after the first layout without the window resizing: in the iPhone app the phone's top safe area
+// and the title font arrive late, and the globe kept its first, too-large size. Frame it again whenever the title moves.
+new ResizeObserver(() => requestAnimationFrame(() => layoutGlobe(false))).observe($('.start-top'), { box: 'border-box' });
+document.fonts?.ready.then(() => requestAnimationFrame(() => layoutGlobe(false)));
 document.addEventListener('input', onInput);
 document.addEventListener('change', onInput);
 document.addEventListener('visibilitychange', () => { if (!S.map) return; if (document.visibilityState === 'visible') wakeLock(); else autosave(); });
