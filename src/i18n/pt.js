@@ -652,4 +652,5 @@ export default {
   1650: "Compras restauradas.",
   1651: "Não há compras para restaurar nesta Conta Apple.",
   1652: 'Reembolsos',
+  1653: 'Claro ou escuro, unidades, taxa de quadros',
 };

@@ -652,4 +652,5 @@ export default {
   1650: "Käufe wiederhergestellt.",
   1651: "Für diesen Apple Account gibt es keine Käufe zum Wiederherstellen.",
   1652: 'Erstattungen',
+  1653: 'Hell oder dunkel, Einheiten, Bildrate',
 };

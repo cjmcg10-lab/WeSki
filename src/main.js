@@ -63,7 +63,10 @@ fitScreen();
 window.addEventListener('resize', fitScreen);
 window.addEventListener('orientationchange', () => setTimeout(fitScreen, 250));
 // kept for this visit only (a reload keeps it, closing the app ends it)
-function simFreeSaved() { try { return sessionStorage.getItem('weski:simFree') === '1'; } catch { return false; } }
+// The two testing switches (simulated location, simulate free tier) exist only on the preview and in local
+// development, never on the live site or in the iPhone app (owner, 2026-11-26). The preview build sets VITE_TEST_TOOLS.
+const TEST_TOOLS = import.meta.env.DEV || import.meta.env.VITE_TEST_TOOLS === '1';
+function simFreeSaved() { if (!TEST_TOOLS) return false; try { return sessionStorage.getItem('weski:simFree') === '1'; } catch { return false; } }
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const STALE_S = 120;          // a friend's location older than this is "stale"
 const PALETTE = ['#ff3b30', '#ff9f0a', '#ffd60a', '#34c759', '#00c7be', '#0a84ff', '#5e5ce6', '#bf5af2', '#ff2d92', '#8e6e53'];
@@ -81,7 +84,7 @@ const S = {
   voice: prefs.get('voice', false),        // spoken directions
   closures: new Set(),
   place: null,              // the resort currently open (an entry of PLACES)
-  testMode: prefs.get('testMode', false),
+  testMode: TEST_TOOLS && prefs.get('testMode', false),
   simFree: simFreeSaved(),   // "Simulate free tier": lasts until the app is closed, so a pass never stays hidden by mistake
   showFps: prefs.get('showFps', false),
   fps120: prefs.get('fps120', false),
@@ -303,6 +306,17 @@ async function afterPassChange() {
   if (S.simFree && acct.account()?.pass?.active) setSimFree(false);   // a pass just bought or redeemed is never hidden
   if (S.resort && (!S.router || !acct.hasPass())) { S.graphP = loadGraph(S.place.id); await S.graphP; }
   if (S.nav && !S.router) endNav();
+  watchPassEnd();
+}
+
+/** When a pass ends while the app is open (a Day pass at midnight), go back to the free tier at that moment. */
+let passEndTimer = 0;
+function watchPassEnd() {
+  clearTimeout(passEndTimer);
+  const me = acct.account(), until = me?.pass?.until;
+  if (!acct.config().paywall || !acct.passActive(me) || !until) return;
+  const wait = until - Date.now() + 1000;
+  if (wait > 0 && wait < 2 ** 31 - 1) passEndTimer = setTimeout(() => afterPassChange().then(() => { renderChrome(); renderAcctChip(); renderSheet(); }), wait);
 }
 
 function bootFailed(e) {
@@ -358,7 +372,7 @@ async function boot() {
   if (!consentOk()) { hideSplash(); await showConsent(); }
   prefs.set('simFree', false);   // older versions kept the simulation on between launches
   acct.setSimFree(S.simFree);
-  const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); tidyMaps(); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
+  const acctReady = acct.loadConfig().then(() => acct.refreshMe()).then(() => { acct.syncConsent(TERMS_V).catch(() => {}); tidyMaps(); watchPassEnd(); renderAcctChip(); if (S.sheet === 'more' || S.sheet === 'pass') renderSheet(); });
   {
     const q = new URLSearchParams(location.search);
     if (q.has('signedin') || q.has('signin')) {
@@ -1729,7 +1743,7 @@ function renderAcctChip() {
   const c = acct.config(), me = acct.account();
   el.classList.toggle('hidden', !c.signIn && !me?.signedIn);
   if (me?.signedIn) {
-    const paid = !!me.pass?.active && !acct.simulatingFree();
+    const paid = acct.passActive(me) && !acct.simulatingFree();
     el.className = `acct-chip me${paid ? ' paid' : ''}`;
     el.setAttribute('aria-label', paid ? t('Your account and SkiWithMe Pass') : t('Your account'));
     el.innerHTML = `<b translate="no">${esc((me.email || '?')[0].toUpperCase())}</b>${paid ? `<i>${ICON.ticket}</i>` : ''}`;
@@ -2032,7 +2046,7 @@ function sheetMore() {
     <div class="card"><h4>Offline map</h4>${offlineBlock(S.place.id, S.place.name)}</div>
     ${offlineListCard()}
     <div class="card"><h4>Language</h4><select class="field" id="f-lang" translate="no" style="margin:6px 0 8px">${LANGS.map(([k, n]) => `<option value="${k}" ${getLang() === k ? 'selected' : ''}>${n}</option>`).join('')}</select><div class="sub">Words in the app, spoken directions, and the meaning of foreign place names on the map (shown in brackets under the real name).</div></div>
-    <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>Dark or light, units, frame rate, simulated location</small></div><span class="chev">›</span></button></div>
+    <div class="card"><button class="row-link" data-act="open-sheet" data-s="advanced">${ICON.gear}<div class="grow">Appearance &amp; advanced<small>${TEST_TOOLS ? 'Dark or light, units, frame rate, simulated location' : 'Dark or light, units, frame rate'}</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="privacy">${ICON.lock}<div class="grow">Privacy &amp; map help<small>${prefs.get('contrib', null) ? 'Helping improve the maps' : 'Help improve the maps, report a mistake'}</small></div><span class="chev">›</span></button></div>
     <button class="btn outline" data-act="change-resort">${ICON.mtn}Change mountain</button>
     <div class="card"><h4>Install SkiWithMe</h4><div class="icon-row">${ICON.share}<div class="txt">In Safari tap Share → Add to Home Screen. Open SkiWithMe from the icon for full screen and offline use.</div></div></div>
@@ -2401,11 +2415,11 @@ function sheetAdvanced() {
       <div class="divide"></div>
       <div class="rowf"><div class="grow"><h4>Smooth edges</h4><div class="sub">Softens jagged edges on the 3D map. Applies the next time you open a mountain.</div></div><label class="switch"><input type="checkbox" id="f-smooth" ${smoothEdges() ? 'checked' : ''} /><i></i></label></div>
       ${L('smooth', 'Off by default on very sharp screens, where jagged edges are hard to see and smoothing them costs the most speed. Turn it off if the map feels slow; turn it on if edges look jagged.')}</div>
-    <div class="card"><div class="rowf"><div class="grow"><h4>Simulated location</h4>${S.testMode ? `<span class="pill sim" style="margin:2px 0 6px">${ICON.sim}Simulated location</span>` : ''}<div class="sub">${S.testMode ? 'Tap the map to place your simulated position.' : 'Try sharing and rerouting away from the mountain.'}</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div>
+    ${TEST_TOOLS ? `<div class="card"><div class="rowf"><div class="grow"><h4>Simulated location</h4>${S.testMode ? `<span class="pill sim" style="margin:2px 0 6px">${ICON.sim}Simulated location</span>` : ''}<div class="sub">${S.testMode ? 'Tap the map to place your simulated position.' : 'Try sharing and rerouting away from the mountain.'}</div></div><label class="switch"><input type="checkbox" id="f-test" ${S.testMode ? 'checked' : ''} /><i></i></label></div>
       ${L('sim', 'Tap the map, then “Put me here”. Sharing, directions and tracking then use that spot instead of GPS. Turn this off to go back to real GPS.')}
       <div class="divide"></div>
       <div class="rowf"><div class="grow"><h4>Simulate free tier</h4><div class="sub">See the app as someone without a pass.</div></div><label class="switch"><input type="checkbox" id="f-simfree" ${S.simFree ? 'checked' : ''} /><i></i></label></div>
-      ${L('simfree', 'This phone acts as if it had no pass: paid buttons show the Pass badge and open the pass pop-up. Nothing is bought or changed on your account. Turn it off to go back.')}</div>
+      ${L('simfree', 'This phone acts as if it had no pass: paid buttons show the Pass badge and open the pass pop-up. Nothing is bought or changed on your account. Turn it off to go back.')}</div>` : ''}
     <button class="btn alt" data-act="tab" data-tab="more">Back to More</button>`];
 }
 
