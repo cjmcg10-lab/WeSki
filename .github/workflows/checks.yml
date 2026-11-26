@@ -113,7 +113,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # built like the preview, with the testing switches the free-tier test turns on (the live build leaves them out)
       - run: npm run build:assets
+        env:
+          VITE_TEST_TOOLS: '1'
       # the downloaded browser is kept between runs, keyed on the Playwright version in package-lock.json
       - name: Remember the downloaded browser
         id: browser-cache

@@ -16,10 +16,7 @@ replace('src/group.js','new WebSocket(`${proto}://${location.host}/api/groups/${
 replace('src/account.js','export const setSimFree = (on) => { simFree = !!on; };','export const setSimFree = () => { simFree = false; };');
 // Inside the iPhone app passes are bought through Apple only (ios-beta/native.js): Paddle's checkout must never open.
 replace('src/account.js','const c = config();',"throw new Error('Passes are bought through the App Store in the iPhone app.');");
-const mainLines = readFileSync(main, 'utf8').split('\n');
-const simLine = mainLines.findIndex(line => line.includes('id="f-simfree"'));
-if (simLine < 1 || !mainLines[simLine + 1].includes("L('simfree'")) throw Error('Review iOS integration at ' + main + ': f-simfree');
-replace(main, mainLines.slice(simLine - 1, simLine + 2).join('\n'), '    </div>');
+// The testing switches (simulated location, simulate free tier) are left out by src/main.js itself outside the preview.
 replace(main, "v.querySelector('iframe').src = href;", "v.querySelector('iframe').src = href.replace(/^(\\/(?:legal\\/[a-z]+|about))(?=$|#)/, '$1.html');");
 const withHtml = text => text.replace(/href="(\/legal\/[a-z]+|\/about)(#[^"]*)?"/g, 'href="$1.html$2"');
 for (const file of [...readdirSync('public/legal').filter(name => name.endsWith('.html')).map(name => 'public/legal/' + name), 'public/about.html']) {

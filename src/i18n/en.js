@@ -1158,4 +1158,5 @@ export default {
   1650: "Purchases restored.",
   1651: "No purchases to restore for this Apple Account.",
   1652: "Refunds",
+  1653: "Dark or light, units, frame rate",
 };
