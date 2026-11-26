@@ -653,4 +653,8 @@ export default {
   1651: "Für diesen Apple Account gibt es keine Käufe zum Wiederherstellen.",
   1652: 'Erstattungen',
   1653: 'Hell oder dunkel, Einheiten, Bildrate',
+  1654: 'Berg wählen',
+  1655: 'Wählen',
+  1656: '{0} wählen',
+  1657: '{0} für die kostenlose Vorhersage gewählt.',
 };

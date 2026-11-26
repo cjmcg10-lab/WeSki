@@ -653,4 +653,8 @@ export default {
   1651: "Não há compras para restaurar nesta Conta Apple.",
   1652: 'Reembolsos',
   1653: 'Claro ou escuro, unidades, taxa de quadros',
+  1654: 'Escolha uma montanha',
+  1655: 'Escolher',
+  1656: 'Escolher {0}',
+  1657: '{0} escolhida para a previsão gratuita.',
 };

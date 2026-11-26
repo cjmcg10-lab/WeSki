@@ -1115,14 +1115,16 @@ document.addEventListener('visibilitychange', () => { if (!S.map) return; if (do
 window.addEventListener('pagehide', () => { autosave(); if (S.crumbRec) saveTracks(true); });
 boot();
 
-/** Shown when tracking starts (unless switched off): the screen has to stay on. */
+/** Shown when tracking starts (unless switched off): the screen has to stay on, pocket mode helps (website only). */
 function trackNotice() {
   if (prefs.get('trackNoteOff', false)) return;
   if ($('#modal .maphelp') && !$('#modal').classList.contains('hidden')) { S.noteAfterAsk = true; return; }
   $('#modal').innerHTML = `<div class="modal-box"><button class="x" data-act="modal-cancel" aria-label="Close">✕</button>
     <h2>Keep SkiWithMe open</h2>
     <p>Tracking only runs while the app is open on screen. If the phone locks or you switch apps, tracking pauses until you come back.</p>
+    ${POCKET ? '<p>To save battery, turn on <b>Pocket mode</b>: the screen goes dark and ignores touches in your pocket, while tracking, GPS and spoken directions keep going. Press and hold to unlock.</p>' : ''}
     <label class="check"><input type="checkbox" id="f-tracknote" /> Don't show this again</label>
+    ${POCKET ? '<button class="btn" data-act="track-pocket">Turn on pocket mode</button>' : ''}
     <button class="btn alt" data-act="modal-cancel">Got it</button></div>`;
   $('#modal').classList.remove('hidden');
 }
@@ -1454,7 +1456,7 @@ async function startNav(target) {
 
 function endNav() {
   S.nav = null;
-  speaker.stop(); releaseWake();
+  speaker.stop(); releaseWake(); setPocket(false);
   S.map.setRoute(null);
   S.map.setNavPin(null);
   S.loc.simPath = null;
@@ -1546,11 +1548,31 @@ function setVoice(on) {
     else if (S.nav?.route) { guide.reset(); S.nav.fresh = true; speakNav(); }
     else speaker.say('Spoken directions are on.');
     wakeLock();
-  } else { speaker.stop(); }
+  } else { speaker.stop(); setPocket(false); }
   renderChrome();
 }
 // Speech may only start from a tap on iPhone: unlock it on the first touch after opening the app.
 document.addEventListener('pointerdown', () => { if (S.voice) speaker.unlock(); }, { once: true });
+
+/** Pocket mode (website only; the iPhone app leaves it out, owner 2026-11-26): a black, touch-proof screen that keeps
+ *  the phone awake so tracking, GPS and voice keep going in a pocket. Press and hold for 1.5 s to unlock. */
+const POCKET = !globalThis.Capacitor?.isNativePlatform?.();
+function setPocket(on) {
+  const el = $('#pocket');
+  if (!el) return;
+  el.classList.toggle('hidden', !on);
+  if (on) wakeLock();
+}
+{
+  const el = document.getElementById('pocket');
+  if (!POCKET) { el?.remove(); document.querySelector('#fabs [data-act="pocket"]')?.remove(); }
+  else if (el) {
+    let hold = null;
+    const end = () => { clearTimeout(hold); el.classList.remove('holding'); };
+    el.addEventListener('pointerdown', (e) => { e.preventDefault(); el.classList.add('holding'); hold = setTimeout(() => { end(); setPocket(false); }, 1500); });
+    for (const ev of ['pointerup', 'pointercancel', 'pointerleave']) el.addEventListener(ev, end);
+  }
+}
 
 /** Warning text when a route has to use trails above the skier's chosen maximum. */
 function overWarning(r) {
@@ -1694,6 +1716,7 @@ function renderChrome() {
   html += '<div class="btns">';
   if (r) html += `<button data-act="steps">Steps (${r.steps.length})</button>`;
   if ((p?.meet || w?.meet)) html += `<button class="primary" data-act="meet">Set a shared meeting point</button>`;
+  if (POCKET && S.voice && r) html += `<button data-act="pocket">Pocket mode</button>`;
   if (S.testMode && r && !nav.arrived) html += `<button data-act="sim-go">▶ Simulate skiing it</button>`;
   html += '</div>';
   if (html !== S.navHtml) { S.navHtml = html; nb.innerHTML = html; } // don't replace buttons mid-tap
@@ -2041,7 +2064,7 @@ function sheetMore() {
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="pass">${ICON.ticket}<div class="grow">SkiWithMe Pass<small>${acct.config().paywall ? (me?.signedIn ? passStatus(me) : 'Sign in, plans and prices') : 'Free during the preview · plans and prices'}</small></div><span class="chev">›</span></button></div>
     <div class="card"><button class="row-link" data-act="open-sheet" data-s="routeprefs">${ICON.route}<div class="grow">Route preferences<small>Hardest trail: ${esc(levelName(S.resort, S.maxDiff))} · Uphill: ${esc(TOLERANCE[S.uphill].label)}</small></div><span class="chev">›</span></button></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Spoken directions</h4><div class="sub">Turn-by-turn voice through the speaker or headphones, timed ahead of each turn for your speed.</div></div><label class="switch"><input type="checkbox" id="f-voice" ${S.voice ? 'checked' : ''} /><i></i></label></div>
-      <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>Keep the screen on for directions.</span></div></div>
+      <div class="rowf sub" style="margin-top:10px;gap:12px">${ICON.phone}<span>${POCKET ? 'Keep screen on for directions • Use Pocket mode while riding.' : 'Keep the screen on for directions.'}</span></div></div>
     <div class="card"><div class="rowf"><div class="grow"><h4>Closures</h4><div class="sub">${n.length ? `${n.length} marked closed: ${esc(n.slice(0, 4).join(', '))}${n.length > 4 ? '…' : ''}` : 'Avoid trails and lifts you mark closed.'}</div></div><button class="btn sm" data-act="open-closures">Edit</button></div>${S.group ? '<p class="note">Closures are shared with your group.</p>' : ''}</div>
     <div class="card"><h4>Offline map</h4>${offlineBlock(S.place.id, S.place.name)}</div>
     ${offlineListCard()}
@@ -2910,6 +2933,7 @@ async function onClick(e) {
     case 'simfree-off':
       setSimFree(false); toast('Free tier simulation off.');
       break;
+    case 'track-pocket': $('#modal').classList.add('hidden'); closeSheet(); setPocket(true); break;
     case 'locate':
       if (S.testMode) { if (S.me) S.map.focus(S.me.x, S.me.y, 700); else toast('Test mode: tap the map, then “Put me here”.'); break; }
       ensureLocation();
@@ -3082,6 +3106,7 @@ async function onClick(e) {
     case 'play-close': stopReplay(); break;
     case 'uphill': S.uphill = d.v; prefs.set('uphill', S.uphill); if (S.nav) recalcNav(true); renderSheet(); break;
     case 'voice': setVoice(!S.voice); break;
+    case 'pocket': setPocket(true); break;
     case 'max-diff': S.maxDiff = +d.v; prefs.set('maxDiff', S.maxDiff); if (S.nav) recalcNav(true); renderSheet(); break;
     case 'units': S.units = d.v; prefs.set('units', S.units); S.map.setUnits(S.units); renderSheet(); renderChrome(); break;
     case 'open-closures': S.closureQ = ''; openSheet('closures'); break;

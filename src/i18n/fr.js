@@ -653,4 +653,8 @@ export default {
   1651: "Aucun achat à restaurer pour ce compte Apple.",
   1652: 'Remboursements',
   1653: 'Clair ou sombre, unités, fréquence d’images',
+  1654: 'Choisir une montagne',
+  1655: 'Choisir',
+  1656: 'Choisir {0}',
+  1657: '{0} choisie pour la prévision gratuite.',
 };
