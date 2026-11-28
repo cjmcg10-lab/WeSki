@@ -78,5 +78,16 @@
 <div id="rotate" aria-live="polite"><div><svg viewBox="0 0 64 64" width="72" height="72" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><rect x="20" y="8" width="24" height="44" rx="5"/><path d="M29 46h6"/><path d="M52 22a22 22 0 0 1 0 20M48 38l4 4 4-4"/></svg><b>Turn your phone upright</b><span>SkiWithMe is made for holding your phone upright.</span></div></div>
 
   <script type="module" src="/src/main.js"></script>
+  <!-- Cloudflare Web Analytics (cookieless page-view counts). Loaded only on the live website: not on local test
+       copies, the preview or the iPhone app, where its report would be refused and show as an error. -->
+  <script>
+    if (location.hostname === 'skiwithme.builtbyroger.app') {
+      const s = document.createElement('script');
+      s.defer = true;
+      s.src = 'https://static.cloudflareinsights.com/beacon.min.js';
+      s.dataset.cfBeacon = '{"token": "d8ed7a151e79428b9b095a2ce9003512"}';
+      document.body.appendChild(s);
+    }
+  </script>
 </body>
 </html>
